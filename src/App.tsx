@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import LandingPage from "./LandingPage";
 import SignupPage from "./SignupPage";
+import SigninPage from "./SigninPage";
+import DashboardPage from "./DashboardPage";
 import EmailVerificationPage from "./EmailVerificationPage";
 
 export default function App() {
@@ -12,20 +14,16 @@ export default function App() {
     return () => window.removeEventListener("popstate", syncPath);
   }, []);
 
-  const openSignup = () => {
-    if (window.location.pathname !== "/signup") window.history.pushState({}, "", "/signup");
-    setPath("/signup");
-    window.scrollTo({ top: 0, behavior: "auto" });
-  };
-
-  const openLanding = () => {
-    if (window.location.pathname !== "/") window.history.pushState({}, "", "/");
-    setPath("/");
+  const navigate = (nextPath: string) => {
+    if (window.location.pathname !== nextPath) window.history.pushState({}, "", nextPath);
+    setPath(nextPath);
     window.scrollTo({ top: 0, behavior: "auto" });
   };
 
   const normalizedPath = path.replace(/\/$/, "") || "/";
   if (normalizedPath === "/verify-email") return <EmailVerificationPage />;
   if (normalizedPath === "/signup") return <SignupPage />;
-  return <LandingPage onSignup={openSignup} />;
+  if (normalizedPath === "/signin" || normalizedPath === "/sign-in") return <SigninPage />;
+  if (normalizedPath === "/dashboard") return <DashboardPage />;
+  return <LandingPage onSignup={() => navigate("/signup")} />;
 }
