@@ -1,5 +1,5 @@
-const CACHE_NAME = "hallschat-shell-v3";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/pwa-192.svg", "/pwa-512.svg"];
+const CACHE_NAME = "hallschat-shell-v4";
+const APP_SHELL = ["/", "/manifest.webmanifest", "/hallschat-bubble-v4.svg", "/hallschat-bubble-v4-512.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
