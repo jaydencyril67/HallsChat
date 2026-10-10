@@ -2,6 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { ArrowUpRight, Compass, Heart, ImagePlus, MessageCircle, Send, ShieldCheck, UsersRound, UserRound, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
+import { navigate } from "./utils/navigate";
 
 type Account = { id: string; name: string; username: string; email: string; createdAt?: string };
 type SocialPost = {
@@ -50,7 +51,7 @@ export default function HomePage() {
   useEffect(() => {
     let cancelled = false;
     const token = localStorage.getItem("hallschat_token");
-    if (!token) { window.location.replace("/signin"); return; }
+    if (!token) { navigate("/signin", { replace: true }); return; }
     fetch(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then(async response => {
         const payload = await response.json().catch(() => ({}));
@@ -160,7 +161,7 @@ export default function HomePage() {
     const content = draft.trim();
     if ((!content && selectedImages.length === 0) || publishing) return;
     const token = localStorage.getItem("hallschat_token");
-    if (!token) { window.location.replace("/signin"); return; }
+    if (!token) { navigate("/signin", { replace: true }); return; }
     setPublishing(true);
     setFeedError("");
     setNotice("");
@@ -190,7 +191,7 @@ export default function HomePage() {
   async function toggleLike(post: SocialPost) {
     if (likingIds.includes(post.id)) return;
     const token = localStorage.getItem("hallschat_token");
-    if (!token) { window.location.replace("/signin"); return; }
+    if (!token) { navigate("/signin", { replace: true }); return; }
     setLikingIds(current => [...current, post.id]);
     try {
       const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(post.id)}/like`, {
