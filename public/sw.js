@@ -1,12 +1,14 @@
-const CACHE_NAME = "hallschat-shell-v6";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/crown-chat.svg", "/crown-chat-512.svg"];
+const CACHE_NAME = "hallschat-pwa-v7";
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest", "/crown-chat.svg?v=2", "/crown-chat-512.svg?v=2"];
+const CACHEABLE_EXTENSIONS = [".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".webp", ".ico", ".woff", ".woff2"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).catch(() => {
+      // Do not block installation if an optional shell asset is unavailable.
+    })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
@@ -22,40 +24,37 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   const request = event.request;
+  if (request.method !== "GET") return;
+
   const url = new URL(request.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
 
-  if (request.method !== "GET" || url.origin !== self.location.origin) return;
-
-  // Never cache API requests or user-specific responses.
-  if (url.pathname.startsWith("/api/")) return;
-
+  // Always prefer the deployed page. Use the cached shell only when offline.
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put("/", copy));
-          }
-          return response;
-        })
-        .catch(async () => (await caches.match(request)) || (await caches.match("/")))
+      fetch(request).catch(async () =>
+        (await caches.match("/index.html")) || (await caches.match("/"))
+      )
     );
     return;
   }
 
-  if (["script", "style", "image", "font"].includes(request.destination)) {
-    event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((response) => {
-          if (response && response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        });
-      })
-    );
-  }
-}
+  // Cache static files only; Vite's built JS/CSS assets use hashed filenames.
+  const isStaticAsset = CACHEABLE_EXTENSIONS.some((extension) =>
+    url.pathname.endsWith(extension)
+  );
+  if (!isStaticAsset) return;
+
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((response) => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        }
+        return response;
+      });
+    })
+  );
+});
