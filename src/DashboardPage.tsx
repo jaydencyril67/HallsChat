@@ -148,11 +148,7 @@ export default function DashboardPage() {
         <div className="social-layout">
           <section className="social-feed-column" aria-label="Social feed">
             <form className="social-composer" onSubmit={publishPost}>
-              <div className="social-composer-top">
-                <div className="social-avatar social-avatar-self">{initials(user.name)}</div>
-                <label className="social-composer-label" htmlFor="social-post-content">What's on your mind, {user.name.trim().split(/\s+/)[0] || "there"}?</label>
-              </div>
-              <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} placeholder="Share something with your HallsChat community…" rows={3} />
+              <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} placeholder="What's on your mind? Share something with your HallsChat community…" rows={6} />
               <div className="social-composer-bottom">
                 <label className="social-visibility"><span className="social-visibility-icon">{visibility === "public" ? <Globe2 size={15}/> : <LockKeyhole size={15}/>}</span><select aria-label="Post audience" value={visibility} onChange={event => setVisibility(event.target.value as "public" | "private")}><option value="public">Public post</option><option value="private">Only me</option></select></label>
                 <span className="social-char-count">{draft.length}/2000</span>
