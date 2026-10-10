@@ -472,3 +472,21 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-empty-feed strong{color:var(--theme-text);font-size:13px}
 .social-empty-feed svg{color:var(--theme-primary-hover)}
 @media(max-width:480px){.social-image-previews{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.social-image-preview img{aspect-ratio:1/1}.social-image-preview>span{display:none}.social-image-preview>button{top:3px;right:3px;width:18px;height:18px}.social-image-preview>button svg{width:11px;height:11px}.social-composer-tools{gap:7px}.social-add-image{padding:0 9px;font-size:10px}.social-post-image-link img{max-height:340px}}
+
+
+/* HallsChat image preview modal — CryBots interactions with the burgundy theme. */
+.social-image-preview-open{display:block;width:100%;padding:0;border:0;background:transparent;cursor:zoom-in}
+.social-image-preview-open img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}
+.social-image-modal{position:fixed;inset:0;z-index:10000;display:flex;flex-direction:column;background:rgba(12,3,7,.97);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#fff}
+.social-image-modal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:max(14px,env(safe-area-inset-top)) 16px 14px;border-bottom:1px solid rgba(255,220,226,.14);background:rgba(75,13,27,.35)}
+.social-image-modal-title{font-size:.96rem;font-weight:750;color:#fff2f4}
+.social-image-modal-subtitle{margin-top:3px;color:#cbaeb5;font-size:.75rem}
+.social-image-modal-close{display:inline-flex;flex-shrink:0;align-items:center;justify-content:center;min-width:64px;height:44px;padding:0 14px;border-radius:12px;border:1px solid rgba(239,114,137,.35);background:rgba(125,24,46,.35);color:#fff0f3;box-shadow:0 6px 24px rgba(0,0,0,.24);font:inherit;font-size:.88rem;font-weight:650}
+.social-image-modal-stage{position:relative;display:flex;flex:1;min-height:0;align-items:center;justify-content:center;overflow:hidden;touch-action:none;padding:12px}
+.social-image-modal-stage img{display:block;max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;user-select:none;-webkit-user-select:none}
+.social-image-modal-controls{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px calc(16px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,220,226,.14);background:rgba(75,13,27,.35)}
+.social-image-modal-controls button{display:inline-flex;align-items:center;justify-content:center;width:44px;height:42px;border-radius:12px;border:1px solid rgba(255,226,231,.18);background:rgba(148,35,58,.22);color:#fff3f5;cursor:pointer}
+.social-image-modal-controls button:disabled{cursor:default}
+.social-image-modal-controls .social-image-modal-reset{width:auto;padding:0 16px;gap:8px}
+.social-image-modal-reset span{font-size:.82rem;font-weight:650}
+@media(prefers-reduced-motion:reduce){.social-image-modal-stage img{transition:none!important}}
