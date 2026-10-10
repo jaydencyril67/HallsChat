@@ -18,6 +18,7 @@ export default function SignupPage() {
   const [confirmationEmail, setConfirmationEmail] = useState("");
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
+  const [resendError, setResendError] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,6 +60,7 @@ export default function SignupPage() {
   async function handleResendConfirmation() {
     setResending(true);
     setResendMessage("");
+    setResendError(false);
     const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
     try {
       const response = await fetch(`${apiBase}/api/auth/resend-confirmation`, {
@@ -70,6 +72,7 @@ export default function SignupPage() {
       if (!response.ok) throw new Error(payload.message || "Unable to resend the confirmation email.");
       setResendMessage(payload.message || "If your account is awaiting confirmation, a new link will be sent when eligible.");
     } catch (err) {
+      setResendError(true);
       setResendMessage(err instanceof Error ? err.message : "Unable to resend right now. Please try again.");
     } finally {
       setResending(false);
@@ -86,9 +89,9 @@ export default function SignupPage() {
       <h1 id="confirmation-heading">Check your email</h1>
       <p>We've sent a confirmation link to <strong>{confirmationEmail}</strong>. Open the email and tap <strong>Confirm email address</strong> to finish creating your HallsChat account.</p>
       <div className="signup-confirmation-tip">The link expires in 15 minutes. If you don't see the email, check your spam or promotions folder.</div>
-      {resendMessage && <div className="signup-feedback signup-feedback-success" role="status">{resendMessage}</div>}
+      {resendMessage && <div className={resendError ? "signup-feedback signup-feedback-error" : "signup-feedback signup-feedback-success"} role="status">{resendMessage}</div>}
       <button className="button button-primary signup-submit" type="button" onClick={handleResendConfirmation} disabled={resending}>{resending ? "Sending…" : "Resend confirmation email"} {!resending && <ArrowRight size={17} />}</button>
-      <button className="signup-confirmation-back" type="button" onClick={() => { setShowCheckEmail(false); setResendMessage(""); }}>Back to signup</button>
+      <button className="signup-confirmation-back" type="button" onClick={() => { setShowCheckEmail(false); setResendMessage(""); setResendError(false); }}>Back to signup</button>
     </section> : <>
     <div className="signup-shell">
       <section className="signup-story">
