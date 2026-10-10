@@ -1,7 +1,7 @@
 import { ArrowDownRight, ArrowRight, Check, Heart, LockKeyhole, MessageCircle, Smartphone, Users, Video } from "lucide-react";
 import AppHeader from "./AppHeader";
 
-type LandingPageProps = { onExplore: () => void };
+type LandingPageProps = { onSignup: () => void };
 
 const features = [
   { icon: <MessageCircle size={20} />, number: "01", title: "Conversations that feel close", description: "A thoughtful space for everyday messages, little updates, and the people you want within reach." },
@@ -16,7 +16,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
   </span>;
 }
 
-export default function LandingPage({ onExplore }: LandingPageProps) {
+export default function LandingPage({ onSignup }: LandingPageProps) {
   return <main className="landing-page">
     <div className="landing-glow landing-glow-one" aria-hidden="true" />
     <div className="landing-glow landing-glow-two" aria-hidden="true" />
@@ -28,7 +28,7 @@ export default function LandingPage({ onExplore }: LandingPageProps) {
         <h1>Your people.<br /><span>Your kind of</span><br /><em>connection.</em></h1>
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
-          <button className="button button-primary landing-cta" onClick={onExplore}>Explore HallsChat <ArrowRight size={17} /></button>
+          <button className="button button-primary landing-cta" onClick={onSignup}>Create your account <ArrowRight size={17} /></button>
           <a className="landing-text-link" href="#why-hallschat">Get to know us <ArrowDownRight size={16} /></a>
         </div>
         <div className="landing-social-proof">
@@ -75,11 +75,11 @@ export default function LandingPage({ onExplore }: LandingPageProps) {
       <div className="landing-final-symbol"><MessageCircle size={24} /><span>♥</span></div>
       <span className="landing-final-kicker">CLOSER CONVERSATIONS. STRONGER CONNECTIONS.</span>
       <h2>Your next good<br /><em>conversation starts here.</em></h2>
-      <p>Take a first look around HallsChat and see the experience taking shape.</p>
-      <button className="button button-primary landing-cta" onClick={onExplore}>Open the interactive preview <ArrowRight size={17} /></button>
+      <p>Create your HallsChat account and make room for the conversations that matter.</p>
+      <button className="button button-primary landing-cta" onClick={onSignup}>Get started with HallsChat <ArrowRight size={17} /></button>
     </section>
 
     <footer className="landing-footer"><a className="landing-brand-link" href="#top"><Brand compact /></a><span>Made for meaningful moments.</span><a href="#top" className="landing-back-top">Back to top ↑</a><small>© {new Date().getFullYear()} HallsChat. Built with care.</small></footer>
-    <div className="landing-preview-disclaimer">You’re viewing an early preview. Accounts and live message delivery are not available yet.</div>
+    <div className="landing-preview-disclaimer">Welcome to HallsChat. Create an account to get started.</div>
   </main>;
 }
