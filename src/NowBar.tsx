@@ -106,7 +106,7 @@ export default function NowBar() {
   };
 
   return (
-    <div className={`nowbar-dock ${mode === "expanded" && view === "actions" ? "nowbar-dock-expanded" : ""}`}>
+    <div className={`nowbar-dock ${view === "title" ? "nowbar-dock-title" : ""} ${mode === "expanded" && view === "actions" ? "nowbar-dock-expanded" : ""}`}>
       <div
         ref={barRef}
         className={`nowbar-shell ${view === "title" ? "nowbar-shell-title" : "nowbar-shell-actions"} ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""} ${pressing ? "nowbar-pressing" : ""}`}
