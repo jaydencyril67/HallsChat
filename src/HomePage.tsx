@@ -247,7 +247,7 @@ export default function HomePage() {
               {posts.map(post => <article className="social-post" key={post.id}>
                 <div className="social-post-head"><div className="social-avatar">{initials(post.author?.name || "HallsChat member")}</div><div className="social-post-author"><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div></div>
                 {post.content && <p className="social-post-content">{post.content}</p>}
-                {Array.isArray(post.images) && post.images.length > 0 && <div className={`social-post-images social-post-images-${Math.min(post.images.length, 4)}`}>
+                {Array.isArray(post.images) && post.images.length > 0 && <div className={`social-post-images social-post-images-${Math.min(post.images.length, 4)}`} style={{ gridTemplateColumns: `repeat(${Math.min(post.images.length, 4)}, minmax(0, 1fr))` }}>
                   {post.images.map((url, index) => <a className="social-post-image-link" href={url} target="_blank" rel="noreferrer" key={url}><img src={url} alt={`Image ${index + 1} in post by ${post.author?.name || "HallsChat member"}`} loading="lazy" /></a>)}
                 </div>}
                 <div className="social-post-actions"><button type="button" className={post.likedByMe ? "social-like is-liked" : "social-like"} onClick={() => toggleLike(post)} disabled={likingIds.includes(post.id)} aria-pressed={post.likedByMe}><Heart size={17} fill={post.likedByMe ? "currentColor" : "none"}/><span>{post.likeCount > 0 ? post.likeCount : "Like"}</span></button><span className="social-post-action-muted"><MessageCircle size={16}/> Comments coming next</span></div>
