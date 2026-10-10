@@ -149,3 +149,28 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .nowbar-shell-expanded .nowbar-actions-expanded{max-height:100%;overflow-y:auto;overscroll-behavior:contain;}
 .nowbar-pressing{transform:scale(.995);}
 @media(max-width:480px){.nowbar-title .nowbar-page-label{max-width:calc(100vw - 104px)}.nowbar-shell-title{max-width:calc(100vw - 20px)}.nowbar-shell-expanded{width:calc(100vw - 20px);}}
+
+
+/* Match CryBots text-mode NowBar geometry: content-height capsule, reference border and glow. */
+.nowbar-shell-title{
+  min-height:0;
+  padding:10px 12px;
+  border:2.5px solid rgba(255,255,255,.88);
+  border-radius:20px;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12),var(--theme-header-shadow),inset 0 1px 0 rgba(255,255,255,.12);
+}
+.nowbar-shell-title .nowbar-title{
+  min-height:0;
+  padding:2px 4px;
+  line-height:normal;
+}
+.nowbar-shell-title .nowbar-orb{
+  background:linear-gradient(135deg,#7dd3fc,#a78bfa);
+  box-shadow:0 0 18px rgba(125,211,252,.55);
+}
+@media(max-width:480px){
+  .nowbar-shell-title{
+    padding:10px 12px;
+    border-radius:20px;
+  }
+}
