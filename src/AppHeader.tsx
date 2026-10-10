@@ -16,14 +16,14 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
 
   return <header className="topbar" aria-label="HallsChat app header">
     <a className="header-artwork" href={homeHref} aria-label="HallsChat home">
-      <span className="header-logo"><img src="/crown-chat.svg?v=5" alt="" /></span>
+      <span className="header-logo"><img src="/crown-chat.svg?v=6" alt="" /></span>
     </a>
     <div className="header-brand">
       <strong>{isOnline ? "HALLSCHAT" : "NO INTERNET"}</strong>
       {!isOnline && <small>Check your connection</small>}
     </div>
     <a className="header-artwork header-artwork-right" href={homeHref} aria-label="Back to top">
-      <span className="header-logo"><img src="/crown-chat.svg?v=5" alt="" /></span>
+      <span className="header-logo"><img src="/crown-chat.svg?v=6" alt="" /></span>
     </a>
   </header>;
 }
