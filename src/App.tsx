@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import LandingPage from "./LandingPage";
-import { MessageCircle, Search, Plus, Users, Phone, Settings, MoreHorizontal, Paperclip, Send, CheckCheck, Bell, ChevronDown, CircleHelp, Video, ArrowLeft, Smile } from "lucide-react";
+import { MessageCircle, Search, Plus, Users, Phone, Settings, MoreHorizontal, Paperclip, Send, CheckCheck, ChevronDown, Video, ArrowLeft, Smile } from "lucide-react";
 
 type Chat = { id: number; name: string; message: string; time: string; unread: number; color: string; initials: string; online?: boolean; group?: boolean };
 const starterChats: Chat[] = [
