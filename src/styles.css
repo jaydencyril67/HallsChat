@@ -82,7 +82,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar, *::befor
 
 
 /* Email confirmation screens */
-.signup-confirmation-panel{width:min(520px,calc(100% - 32px));min-height:430px;margin:0 auto;padding:clamp(26px,5vw,48px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;border:1px solid rgba(255,220,226,.12);border-radius:24px;background:linear-gradient(150deg,rgba(45,12,21,.96),rgba(26,7,13,.98));box-shadow:0 28px 90px #0005;text-align:center}
+.signup-confirmation-panel{width:min(520px,calc(100% - 32px));min-height:430px;margin:86px auto 40px;padding:clamp(26px,5vw,48px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;border:1px solid rgba(255,220,226,.12);border-radius:24px;background:linear-gradient(150deg,rgba(45,12,21,.96),rgba(26,7,13,.98));box-shadow:0 28px 90px #0005;text-align:center}
 .signup-confirmation-icon{width:64px;height:64px;margin-bottom:4px;display:grid;place-items:center;border:1px solid #d13c5040;border-radius:20px;background:#c42b4018;color:#f16a7c}
 .signup-confirmation-icon-error{border-color:#e65a6c55;background:#a91d3019;color:#ff9aa7}
 .signup-confirmation-panel h1{margin:0;font:800 clamp(26px,5vw,34px)/1.2 Manrope,sans-serif;letter-spacing:-.9px}
