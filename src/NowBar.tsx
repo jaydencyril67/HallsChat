@@ -135,7 +135,7 @@ export default function NowBar() {
             <ChevronDown size={16} />
           </div>
         ) : (
-          <div ref={barRef} className={`nowbar-actions ${mode === "expanded" ? "nowbar-actions-expanded" : ""}`}>
+          <div className={`nowbar-actions ${mode === "expanded" ? "nowbar-actions-expanded" : ""}`}>
             {actions.map(({ label, icon: Icon }) => (
               <div className="nowbar-slot" key={label}>
                 <button
