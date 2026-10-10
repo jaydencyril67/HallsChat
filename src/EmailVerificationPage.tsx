@@ -17,7 +17,7 @@ export default function EmailVerificationPage() {
       return () => { cancelled = true; };
     }
 
-    const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     fetch(`${apiBase}/api/auth/verify-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
