@@ -11,7 +11,7 @@ const features = [
 
 function Brand({ compact = false }: { compact?: boolean }) {
   return <span className={`landing-brand ${compact ? "landing-brand-compact" : ""}`}>
-    <span className="landing-brand-mark"><img src="/crown-chat.svg?v=4" alt="" /></span>
+    <span className="landing-brand-mark"><img src="/crown-chat.svg?v=5" alt="" /></span>
     <span className="landing-brand-word">Halls<span>Chat</span></span>
   </span>;
 }
@@ -73,7 +73,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
     </section>
 
     <section className="landing-final-cta">
-      <div className="landing-final-symbol"><img src="/crown-chat.svg?v=4" alt="HallsChat" /></div>
+      <div className="landing-final-symbol"><img src="/crown-chat.svg?v=5" alt="HallsChat" /></div>
       <span className="landing-final-kicker">CLOSER CONVERSATIONS. STRONGER CONNECTIONS.</span>
       <h2>Your next good<br /><em>conversation starts here.</em></h2>
       <p>Create your HallsChat account and make room for the conversations that matter.</p>
