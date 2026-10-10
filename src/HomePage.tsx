@@ -2,6 +2,7 @@ import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { ArrowUpRight, Compass, Heart, ImagePlus, MessageCircle, Send, ShieldCheck, UsersRound, UserRound, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
+import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
 
 type Account = { id: string; name: string; username: string; email: string; createdAt?: string };
@@ -47,6 +48,7 @@ export default function HomePage() {
   const [uploadStatus, setUploadStatus] = useState("");
   const [likingIds, setLikingIds] = useState<string[]>([]);
   const [notice, setNotice] = useState("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -221,7 +223,7 @@ export default function HomePage() {
               <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} placeholder="What's on your mind? Share something with your HallsChat community…" rows={4} />
               {selectedImages.length > 0 && <div className="social-image-previews" aria-label="Images attached to your post">
                 {selectedImages.map((item, index) => <div className="social-image-preview" key={item.preview}>
-                  <img src={item.preview} alt={item.file.name} />
+                  <button type="button" className="social-image-preview-open" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview ${item.file.name}`}><img src={item.preview} alt={item.file.name} /></button>
                   <button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove ${item.file.name}`} disabled={publishing}><X size={14} /></button>
                   <span>{item.file.name}</span>
                 </div>)}
@@ -248,7 +250,7 @@ export default function HomePage() {
                 <div className="social-post-head"><div className="social-avatar">{initials(post.author?.name || "HallsChat member")}</div><div className="social-post-author"><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div></div>
                 {post.content && <p className="social-post-content">{post.content}</p>}
                 {Array.isArray(post.images) && post.images.length > 0 && <div className={`social-post-images social-post-images-${Math.min(post.images.length, 4)}`} style={{ gridTemplateColumns: `repeat(${Math.min(post.images.length, 4)}, minmax(0, 1fr))` }}>
-                  {post.images.map((url, index) => <a className="social-post-image-link" href={url} target="_blank" rel="noreferrer" key={url}><img src={url} alt={`Image ${index + 1} in post by ${post.author?.name || "HallsChat member"}`} loading="lazy" /></a>)}
+                  {post.images.map((url, index) => <button type="button" className="social-post-image-link" onClick={() => setPreviewImage(url)} aria-label={`Preview image ${index + 1} in post`} key={url}><img src={url} alt={`Image ${index + 1} in post by ${post.author?.name || "HallsChat member"}`} loading="lazy" /></button>)}
                 </div>}
                 <div className="social-post-actions"><button type="button" className={post.likedByMe ? "social-like is-liked" : "social-like"} onClick={() => toggleLike(post)} disabled={likingIds.includes(post.id)} aria-pressed={post.likedByMe}><Heart size={17} fill={post.likedByMe ? "currentColor" : "none"}/><span>{post.likeCount > 0 ? post.likeCount : "Like"}</span></button><span className="social-post-action-muted"><MessageCircle size={16}/> Comments coming next</span></div>
               </article>)}
@@ -259,6 +261,7 @@ export default function HomePage() {
         </div>
       </>}
     </section>
+    {previewImage && <ImagePreviewModal imageUrl={previewImage} onClose={() => setPreviewImage(null)} />}
     <NowBar />
   </main>;
 }
