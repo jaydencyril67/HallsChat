@@ -106,19 +106,30 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar, *::befor
 html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 
-/* CryBots-inspired NowBar navigation for the signed-in HallsChat dashboard. */
-.nowbar{position:fixed;z-index:80;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(680px,calc(100% - 20px));padding:7px;border:1px solid rgba(255,220,226,.16);border-radius:17px;background:rgba(30,8,15,.94);box-shadow:0 12px 42px #0008,0 0 28px #a91d3017;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:flex;align-items:center;gap:6px}
-.nowbar-items{display:flex;align-items:center;gap:6px;min-width:0;flex:1;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
-.nowbar-items::-webkit-scrollbar{display:none}
-.nowbar-item{height:40px;min-width:76px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#c3a6ad;font-size:11px;font-weight:600;white-space:nowrap;transition:background .16s,border-color .16s,color .16s}
-.nowbar-item svg{flex-shrink:0}
-.nowbar-item:hover{background:#ffffff08;color:#fff0f2}
-.nowbar-item-active{border-color:#d64a5b35;background:linear-gradient(145deg,#b8203238,#78152638);color:#ff9aa7;box-shadow:inset 0 0 0 1px #b8203210}
-.nowbar-toggle{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border:1px solid rgba(255,220,226,.1);border-radius:11px;background:#ffffff06;color:#e6c6cd}
-.nowbar-toggle:hover{border-color:#d64a5b55;background:#b8203218;color:#fff}
-.nowbar-expanded{align-items:stretch}
-.nowbar-expanded .nowbar-items{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:40px;gap:6px;overflow-y:auto;max-height:100px}
-.nowbar-expanded .nowbar-item{width:100%;min-width:0;padding:0 6px;gap:6px}
-.nowbar-expanded .nowbar-toggle{align-self:flex-start}
-.dashboard-page{padding-bottom:110px}
-@media(max-width:480px){.nowbar{width:calc(100% - 16px);bottom:max(8px,env(safe-area-inset-bottom));padding:6px;border-radius:15px;gap:5px}.nowbar-item{min-width:70px;padding:0 9px;font-size:10px;gap:6px}.nowbar-toggle{width:38px;height:40px;flex-basis:38px}.nowbar-expanded .nowbar-items{grid-template-columns:repeat(4,minmax(0,1fr));max-height:92px}.nowbar-expanded .nowbar-item{font-size:9px;gap:4px}.nowbar-expanded .nowbar-item svg{width:15px;height:15px}}
+/* HallsChat NowBar: follows CryBots' title/actions dock, hold-to-expand and scrollable navigation layout. */
+.nowbar-dock{z-index:80;width:min(560px,calc(100vw - 32px));pointer-events:none;display:flex;align-items:flex-end;justify-content:center;position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%)}
+.nowbar-dock-expanded{width:fit-content;max-width:calc(100vw - 32px);height:180px;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 24px rgba(56,189,248,.16),0 18px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
+.nowbar-shell{position:relative;display:flex;align-items:center;gap:12px;padding:10px 12px;border:2.5px solid rgba(255,255,255,.88);border-radius:20px;background:linear-gradient(180deg,rgba(11,18,32,.98),rgba(8,14,26,.96));box-shadow:0 0 0 1px rgba(255,255,255,.12),0 0 24px rgba(56,189,248,.14),0 18px 50px rgba(0,0,0,.82),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(18px) saturate(120%);-webkit-backdrop-filter:blur(18px) saturate(120%);pointer-events:auto;overflow:hidden;align-self:stretch;width:100%;min-width:0}
+.nowbar-shell-expanded{display:flex;align-items:stretch;justify-content:center;width:fit-content;max-width:100%;height:100%;padding:12px;border-radius:26px;gap:8px}
+.nowbar-rail{position:absolute;inset:50% 10px auto;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);transform:translateY(-50%);pointer-events:none}
+.nowbar-title{position:relative;z-index:1;width:100%;min-width:0;min-height:40px;padding:2px 4px;display:flex;align-items:center;justify-content:center;gap:10px;border:0;background:transparent;color:#e5eefc;font-size:.95rem;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.nowbar-title svg{flex-shrink:0;opacity:.8}
+.nowbar-orb{width:10px;height:10px;flex-shrink:0;border-radius:999px;background:linear-gradient(135deg,#7dd3fc,#a78bfa);box-shadow:0 0 18px rgba(125,211,252,.55)}
+.nowbar-actions{position:relative;z-index:1;display:flex;align-items:center;gap:12px;min-width:0;overflow-x:auto;overflow-y:hidden;white-space:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;flex:1}
+.nowbar-actions::-webkit-scrollbar{display:none}
+.nowbar-slot{flex:0 0 auto;min-width:92px;display:flex;justify-content:center}
+.nowbar-action{width:100%;min-height:40px;padding:7px 6px 6px;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:linear-gradient(180deg,rgba(11,18,32,.98),rgba(8,14,26,.92));color:#e5eefc;cursor:pointer;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;transition:transform 180ms ease,background 180ms ease,border-color 180ms ease}
+.nowbar-action-active{border-color:rgba(56,189,248,.85);box-shadow:inset 0 0 0 1px rgba(56,189,248,.16),0 0 12px rgba(56,189,248,.1)}
+.nowbar-icon{width:20px;height:20px;display:grid;place-items:center;flex-shrink:0}
+.nowbar-icon svg{width:18px;height:18px}
+.nowbar-label-compact,.nowbar-label-expanded{max-width:100%;font-size:.58rem;font-weight:700;letter-spacing:.04em;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nowbar-actions-expanded{display:grid;grid-template-columns:repeat(3,minmax(112px,max-content));grid-auto-rows:minmax(40px,auto);align-items:stretch;align-self:stretch;gap:8px;padding:0;overflow-x:hidden;overflow-y:auto;white-space:normal;align-content:start;flex:none}
+.nowbar-actions-expanded .nowbar-slot{min-width:0;width:max-content;max-width:100%;min-height:0}
+.nowbar-actions-expanded .nowbar-action{width:100%;min-width:112px;max-width:100%;min-height:40px;padding:9px 10px 8px;gap:4px}
+.nowbar-label-expanded{text-align:center}
+.nowbar-back-title{position:relative;z-index:2;width:30px;height:30px;flex:0 0 30px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.25);border-radius:9px;background:rgba(255,255,255,.05);color:#e5eefc}
+.nowbar-back-title svg{transform:rotate(180deg)}
+.nowbar-title:focus-visible,.nowbar-action:focus-visible,.nowbar-back-title:focus-visible{outline:2px solid rgba(255,255,255,.72);outline-offset:2px}
+.dashboard-page{padding-bottom:125px}
+@media(max-width:480px){.nowbar-dock{width:calc(100vw - 20px);bottom:max(12px,env(safe-area-inset-bottom))}.nowbar-shell{gap:8px;padding:9px 10px;border-radius:18px}.nowbar-actions{gap:8px}.nowbar-slot{min-width:82px}.nowbar-actions-expanded{grid-template-columns:repeat(3,minmax(92px,max-content));gap:7px}.nowbar-actions-expanded .nowbar-action{min-width:92px}.nowbar-back-title{width:28px;height:28px;flex-basis:28px}}
+@media(prefers-reduced-motion:reduce){.nowbar-action{transition:none}}
