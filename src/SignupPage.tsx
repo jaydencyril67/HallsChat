@@ -62,7 +62,7 @@ export default function SignupPage({ onBack }: SignupPageProps) {
   return <main className="signup-page">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
-    <AppHeader />
+    <AppHeader homeHref="/" />
     <div className="signup-shell">
       <section className="signup-story">
         <button type="button" className="signup-back-link" onClick={onBack}><ArrowLeft size={15} /> Back to HallsChat</button>
