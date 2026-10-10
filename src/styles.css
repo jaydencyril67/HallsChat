@@ -269,7 +269,6 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .nowbar-actions-expanded .nowbar-action{box-sizing:border-box}
 .nowbar-label-expanded{flex:0 1 auto;max-width:100%;text-overflow:ellipsis}
 .nowbar-shell-title,.nowbar-shell-actions,.nowbar-shell-expanded{
-  transition:width 220ms ease,max-width 220ms ease,min-height 220ms ease,border-radius 220ms ease,padding 220ms ease;
 }
 @media(max-width:480px){
   .nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title){max-width:calc(100vw - 20px)}
