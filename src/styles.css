@@ -147,7 +147,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .nowbar-shell-actions .nowbar-actions{flex:0 1 auto;max-width:100%;}
 .nowbar-shell-expanded{max-width:calc(100vw - 20px);}
 .nowbar-shell-expanded .nowbar-actions-expanded{max-height:100%;overflow-y:auto;overscroll-behavior:contain;}
-.nowbar-pressing{transform:scale(.995);}
+/* No press-scale: keep the NowBar steady on touch, like CryBots. */
 @media(max-width:480px){.nowbar-title .nowbar-page-label{max-width:calc(100vw - 104px)}.nowbar-shell-title{max-width:calc(100vw - 20px)}.nowbar-shell-expanded{width:calc(100vw - 20px);}}
 
 
