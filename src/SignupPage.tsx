@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, MailCheck, ShieldCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
 
 export default function SignupPage() {
@@ -14,6 +14,10 @@ export default function SignupPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showCheckEmail, setShowCheckEmail] = useState(false);
+  const [confirmationEmail, setConfirmationEmail] = useState("");
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -43,13 +47,8 @@ export default function SignupPage() {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || "We couldn't create your account. Please try again.");
-      setSuccess(payload.message || "Your HallsChat account has been created.");
-      setName("");
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-      setAcceptedTerms(false);
+      setConfirmationEmail(payload.email || email.trim().toLowerCase());
+      setShowCheckEmail(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to connect right now. Please try again.");
     } finally {
@@ -57,10 +56,40 @@ export default function SignupPage() {
     }
   }
 
+  async function handleResendConfirmation() {
+    setResending(true);
+    setResendMessage("");
+    const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+    try {
+      const response = await fetch(`${apiBase}/api/auth/resend-confirmation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: confirmationEmail })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Unable to resend the confirmation email.");
+      setResendMessage(payload.message || "If your account is awaiting confirmation, a new link will be sent when eligible.");
+    } catch (err) {
+      setResendMessage(err instanceof Error ? err.message : "Unable to resend right now. Please try again.");
+    } finally {
+      setResending(false);
+    }
+  }
+
   return <main className="signup-page">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
     <AppHeader homeHref="/" />
+    {showCheckEmail ? <section className="signup-confirmation-panel" aria-labelledby="confirmation-heading">
+      <div className="signup-confirmation-icon"><MailCheck size={30} /></div>
+      <span className="signup-form-kicker">ONE QUICK STEP</span>
+      <h1 id="confirmation-heading">Check your email</h1>
+      <p>We've sent a confirmation link to <strong>{confirmationEmail}</strong>. Open the email and tap <strong>Confirm email address</strong> to finish creating your HallsChat account.</p>
+      <div className="signup-confirmation-tip">The link expires in 15 minutes. If you don't see the email, check your spam or promotions folder.</div>
+      {resendMessage && <div className="signup-feedback signup-feedback-success" role="status">{resendMessage}</div>}
+      <button className="button button-primary signup-submit" type="button" onClick={handleResendConfirmation} disabled={resending}>{resending ? "Sending…" : "Resend confirmation email"} {!resending && <ArrowRight size={17} />}</button>
+      <button className="signup-confirmation-back" type="button" onClick={() => { setShowCheckEmail(false); setResendMessage(""); }}>Back to signup</button>
+    </section> : <>
     <div className="signup-shell">
       <section className="signup-story">
         <div className="signup-story-content">
@@ -98,5 +127,6 @@ export default function SignupPage() {
       </section>
     </div>
     <footer className="signup-page-footer"><span>© {new Date().getFullYear()} HallsChat</span><span>Closer conversations. Stronger connections.</span></footer>
+    </>}
   </main>;
 }
