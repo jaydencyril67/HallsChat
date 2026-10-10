@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowUpRight, LogOut, MessageCircle, ShieldCheck, UserRound } from "lucide-react";
 import AppHeader from "./AppHeader";
+import NowBar from "./NowBar";
 
 type Account = { id: string; name: string; username: string; email: string; createdAt?: string };
 
@@ -53,5 +54,6 @@ export default function DashboardPage() {
         <p className="dashboard-footnote">HallsChat is just getting started. Your dashboard will grow as new features are added.</p>
       </>}
     </section>
+    <NowBar />
   </main>;
 }
