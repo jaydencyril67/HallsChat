@@ -126,7 +126,7 @@ export default function SignupPage() {
           <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? "Creating your account…" : "Create account"} {!submitting && <ArrowRight size={17} />}</button>
           <p className="signup-form-note"><LockKeyhole size={13} /> Your password is protected with one-way password hashing.</p>
         </form>
-        <div className="signup-bottom-note">Already have an account? <span>Sign-in will be added with the authentication flow.</span></div>
+        <div className="signup-bottom-note">Already have an account? <a href="/signin">Sign in</a></div>
       </section>
     </div>
     <footer className="signup-page-footer"><span>© {new Date().getFullYear()} HallsChat</span><span>Closer conversations. Stronger connections.</span></footer>
