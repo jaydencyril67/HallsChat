@@ -161,11 +161,6 @@ export default function DashboardPage() {
             </div>}
           </section>
 
-          <aside className="social-sidebar">
-            <article className="social-profile-card"><div className="social-profile-cover" /><div className="social-profile-body"><div className="social-avatar social-avatar-profile">{initials(user.name)}</div><h2>{user.name}</h2><p>@{user.username}</p><div className="social-profile-divider" /><div className="social-profile-email"><span>Email</span><strong>{user.email}</strong></div><div className="social-profile-verified"><ShieldCheck size={15}/> Email verified</div></div></article>
-            <article className="social-side-card"><div className="social-side-title"><UsersRound size={17}/><h3>Find your people</h3></div><p>Communities and people discovery are next on the roadmap. We're building the foundations first.</p><span className="social-coming-soon"><Compass size={13}/> Community discovery · Coming next</span></article>
-            <article className="social-side-note"><LockKeyhole size={16}/><p><strong>Your space, your choice.</strong><br/>Choose an audience for every post. Private posts are visible only to you.</p></article>
-          </aside>
         </div>
       </>}
     </section>
