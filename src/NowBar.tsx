@@ -17,7 +17,7 @@ const actions = [
 
 function getPageTitle() {
   const path = (window.location.pathname || "/").replace(/\/$/, "") || "/";
-  if (path === "/dashboard" || path === "/home") return "HOME";
+  if (path === path === "/home") return "HOME";
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
   if (path === "/signup") return "SIGN UP";
   if (path === "/confirm-email" || path === "/verify-email") return "CONFIRM EMAIL";
