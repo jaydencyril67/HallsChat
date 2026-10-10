@@ -136,7 +136,7 @@ export default function DashboardPage() {
     <section className="dashboard-shell social-shell">
       {loading ? <div className="dashboard-state" role="status">Getting your space ready…</div> : error ? <div className="dashboard-state dashboard-error"><p>{error}</p><a className="button button-primary" href="/signin">Back to sign in <ArrowUpRight size={16} /></a></div> : user && <>
         <div className="social-welcome">
-          <div><span className="signup-form-kicker">YOUR PEOPLE. YOUR SPACE.</span><h1>Good to see you, {user.name.trim().split(/\s+/)[0] || "there"}.</h1><p>Share a thought, catch up with your people, and find your community.</p></div>
+          <div><h1>Good to see you, {user.name.trim().split(/\s+/)[0] || "there"}.</h1><p>Share a thought, catch up with your people, and find your community.</p></div>
         </div>
         <div className="social-layout">
           <section className="social-feed-column" aria-label="Social feed">
