@@ -29,6 +29,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
           <button className="button button-primary landing-cta" onClick={onSignup}>Create your account <ArrowRight size={17} /></button>
+          <p className="landing-signin-note">Already have an account? <a href="/signin">Sign in</a></p>
           <a className="landing-text-link" href="#why-hallschat">Get to know us <ArrowDownRight size={16} /></a>
         </div>
         <div className="landing-social-proof">
@@ -77,6 +78,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
       <h2>Your next good<br /><em>conversation starts here.</em></h2>
       <p>Create your HallsChat account and make room for the conversations that matter.</p>
       <button className="button button-primary landing-cta" onClick={onSignup}>Get started with HallsChat <ArrowRight size={17} /></button>
+      <p className="landing-signin-note">Already have an account? <a href="/signin">Sign in</a></p>
     </section>
 
     <footer className="landing-footer"><a className="landing-brand-link" href="#top"><Brand compact /></a><span>Made for meaningful moments.</span><a href="#top" className="landing-back-top">Back to top ↑</a><small>© {new Date().getFullYear()} HallsChat. Built with care.</small></footer>
