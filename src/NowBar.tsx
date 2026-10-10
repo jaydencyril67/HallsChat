@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  Bell, ChevronDown, CircleHelp, ContactRound, Home, MessageCircle,
-  Phone, Settings, UsersRound
-} from "lucide-react";
+import { Bell, ChevronDown, CircleHelp, ContactRound, Home, MessageCircle, Phone, Settings, UsersRound } from "lucide-react";
 
 type View = "title" | "actions";
 type Mode = "compact" | "expanded";
@@ -19,7 +16,7 @@ const actions = [
 ];
 
 function getPageTitle() {
-  const path = window.location.pathname.replace(/\/$/, "") || "/";
+  const path = window.location.pathname.replace(/\\/$/, "") || "/";
   if (path === "/dashboard") return "DASHBOARD";
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
   if (path === "/signup") return "SIGN UP";
@@ -31,7 +28,6 @@ export default function NowBar() {
   const [mode, setMode] = useState<Mode>("compact");
   const [pageTitle, setPageTitle] = useState(getPageTitle);
   const [activeAction, setActiveAction] = useState("HOME");
-  const [pressing, setPressing] = useState(false);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTriggered = useRef(false);
   const barRef = useRef<HTMLDivElement | null>(null);
@@ -52,7 +48,6 @@ export default function NowBar() {
 
   const startHold = () => {
     holdTriggered.current = false;
-    setPressing(true);
     holdTimer.current = setTimeout(() => {
       holdTriggered.current = true;
       setView("actions");
@@ -61,7 +56,6 @@ export default function NowBar() {
   };
 
   const stopHold = () => {
-    setPressing(false);
     if (holdTimer.current) {
       clearTimeout(holdTimer.current);
       holdTimer.current = null;
@@ -81,27 +75,30 @@ export default function NowBar() {
       <div
         ref={barRef}
         className={`nowbar-shell ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""}`}
-        role="group"
-        aria-label="HallsChat quick navigation"
+        role="button"
+        tabIndex={0}
+        aria-label={view === "title" ? `${pageTitle} page. Tap to show navigation buttons.` : "Navigation buttons. Tap to show current page."}
+        onClick={toggleView}
+        onMouseDown={startHold}
+        onMouseUp={stopHold}
+        onMouseLeave={stopHold}
+        onTouchStart={startHold}
+        onTouchEnd={stopHold}
+        onTouchCancel={stopHold}
+        onKeyDown={event => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleView();
+          }
+        }}
       >
         <div className="nowbar-rail" aria-hidden="true" />
         {view === "title" ? (
-          <button
-            type="button"
-            className="nowbar-title"
-            aria-label={`${pageTitle} page. Tap to show navigation buttons.`}
-            onClick={toggleView}
-            onMouseDown={startHold}
-            onMouseUp={stopHold}
-            onMouseLeave={stopHold}
-            onTouchStart={startHold}
-            onTouchEnd={stopHold}
-            onTouchCancel={stopHold}
-          >
-            <span className="nowbar-orb" aria-hidden="true" />
+          <div className="nowbar-title" aria-hidden="true">
+            <span className="nowbar-orb" />
             <span>{pageTitle}</span>
-            <ChevronDown size={16} aria-hidden="true" />
-          </button>
+            <ChevronDown size={16} />
+          </div>
         ) : (
           <div className={`nowbar-actions ${mode === "expanded" ? "nowbar-actions-expanded" : ""}`}>
             {actions.map(({ label, icon: Icon }) => (
@@ -110,7 +107,8 @@ export default function NowBar() {
                   type="button"
                   className={`nowbar-action ${activeAction === label ? "nowbar-action-active" : ""}`}
                   aria-label={label}
-                  onClick={() => {
+                  onClick={event => {
+                    event.stopPropagation();
                     setActiveAction(label);
                     setPageTitle(label);
                     setView("title");
@@ -124,16 +122,6 @@ export default function NowBar() {
               </div>
             ))}
           </div>
-        )}
-        {view === "actions" && (
-          <button
-            type="button"
-            className="nowbar-back-title"
-            aria-label="Show current page title"
-            onClick={() => { setView("title"); setMode("compact"); }}
-          >
-            <ChevronDown size={16} />
-          </button>
         )}
       </div>
     </div>
