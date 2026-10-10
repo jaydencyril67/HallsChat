@@ -457,13 +457,17 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-image-preview img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover}
 .social-image-preview>button{position:absolute;top:5px;right:5px;display:grid;place-items:center;width:25px;height:25px;padding:0;border:1px solid rgba(255,255,255,.22);border-radius:50%;background:rgba(15,7,10,.78);color:white}
 .social-image-preview>span{display:block;overflow:hidden;padding:5px 6px;color:var(--theme-muted);font-size:9px;text-overflow:ellipsis;white-space:nowrap}
-.social-post-images{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:12px 0 5px;overflow:hidden;border-radius:13px}
-.social-post-image-link{display:block;min-width:0;overflow:hidden;background:var(--theme-surface-raised)}
-.social-post-image-link img{display:block;width:100%;max-height:440px;aspect-ratio:4/3;object-fit:cover;transition:transform .18s ease}
+.social-post-images{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:10px 0 5px;overflow:hidden;border-radius:9px}
+.social-post-image-link{display:block;min-width:0;overflow:hidden;background:var(--theme-surface-raised);border-radius:6px}
+.social-post-image-link img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;transition:transform .18s ease}
 .social-post-image-link:hover img{transform:scale(1.015)}
 .social-post-images-1{grid-template-columns:minmax(0,1fr)}
-.social-post-images-1 .social-post-image-link img{aspect-ratio:4/3;max-height:520px}
-.social-post-images-3 .social-post-image-link:first-child{grid-row:span 2}
+.social-post-images-1 .social-post-image-link img{aspect-ratio:4/3;max-height:220px}
+.social-post-images-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.social-post-images-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.social-post-images-3 .social-post-image-link:first-child{grid-row:auto}
+.social-post-images-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:480px){.social-post-images{gap:3px}.social-post-image-link{border-radius:4px}}
 .social-empty-feed{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:36px 18px;border:1px dashed var(--theme-line);border-radius:15px;color:var(--theme-muted);text-align:center;font-size:11px}
 .social-empty-feed strong{color:var(--theme-text);font-size:13px}
 .social-empty-feed svg{color:var(--theme-primary-hover)}
