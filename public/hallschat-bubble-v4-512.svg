@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bg" x1="12" y1="8" x2="180" y2="184" gradientUnits="userSpaceOnUse"><stop stop-color="#54152D"/><stop offset="1" stop-color="#210812"/></linearGradient>
+    <linearGradient id="bubble" x1="43" y1="35" x2="145" y2="151" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF5EE"/><stop offset="1" stop-color="#EFC1CF"/></linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="43" fill="url(#bg)"/>
+  <path d="M58 37h76c15 0 26 12 26 27v38c0 15-11 27-26 27H93l-34 25 7-25c-19-3-31-15-31-32V64c0-15 9-27 23-27Z" fill="#12060D" opacity=".24" transform="translate(0 5)"/>
+  <path d="M58 34h76c15 0 26 12 26 27v38c0 15-11 27-26 27H93l-34 25 7-25c-19-3-31-15-31-32V61c0-15 9-27 23-27Z" fill="url(#bubble)" stroke="#FFF9F5" stroke-width="2"/>
+  <path d="M57 53c4-5 10-8 17-9" fill="none" stroke="#FFFFFF" stroke-opacity=".8" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="70" cy="81" r="6" fill="#74213F"/><circle cx="96" cy="81" r="6" fill="#74213F"/><circle cx="122" cy="81" r="6" fill="#74213F"/>
+</svg>
