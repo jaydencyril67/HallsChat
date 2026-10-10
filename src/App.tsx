@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import LandingPage from "./LandingPage";
 import { MessageCircle, Search, Plus, Users, Phone, Settings, MoreHorizontal, Paperclip, Send, CheckCheck, Bell, ChevronDown, CircleHelp, Video, ArrowLeft, Smile } from "lucide-react";
 
@@ -28,6 +28,17 @@ function ChatDemo() {
   const [messages, setMessages] = useState<Record<number, typeof starterMessages>>({ 1: starterMessages });
   const [mobileChat, setMobileChat] = useState(false);
   const [nowbarExpanded, setNowbarExpanded] = useState(false);
+  const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
+  useEffect(() => {
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+    updateOnlineStatus();
+    return () => {
+      window.removeEventListener("online", updateOnlineStatus);
+      window.removeEventListener("offline", updateOnlineStatus);
+    };
+  }, []);
   const activeChat = chats.find(c => c.id === activeId) ?? null;
   const visibleChats = useMemo(() => chats.filter(c => c.name.toLowerCase().includes(query.toLowerCase()) || c.message.toLowerCase().includes(query.toLowerCase())), [chats, query]);
   const activeMessages = activeId ? (messages[activeId] ?? []) : [];
@@ -59,7 +70,7 @@ function ChatDemo() {
       <div className="sidebar-footer"><div className="secure-dot"/> <span>Your conversations, your space</span><button className="icon-button tiny" onClick={() => setDark(v => !v)} aria-label="Toggle theme"><Settings size={17}/></button></div>
     </aside>
     <section className={`workspace ${mobileChat ? "workspace-mobile-chat" : ""}`}>
-      <header className="topbar"><div className="topbar-context"><span className="live-indicator"/> <span>MESSAGES</span><span className="crumb">/</span><strong>{activeChat?.name ?? tab}</strong></div><div className="top-actions"><button className="icon-button" aria-label="Notifications"><Bell size={18}/><i className="notification-dot"/></button><button className="icon-button" aria-label="Help"><CircleHelp size={18}/></button><div className="user-avatar">Y</div></div></header>
+      <header className="topbar" aria-label="HallsChat app header"><span className="header-artwork"><span className="header-logo"><MessageCircle size={19} strokeWidth={2.4}/><i/></span></span><div className="header-brand"><strong>{isOnline ? "HALLSCHAT" : "NO INTERNET"}</strong>{!isOnline && <small>Check your connection</small>}</div><span className="header-artwork header-artwork-right"><span className="header-logo"><MessageCircle size={19} strokeWidth={2.4}/><i/></span></span></header>
       {tab === "Chats" && activeChat ? <div className="conversation-layout">
         <section className="conversation">
           <header className="conversation-header"><button className="icon-button back-mobile" onClick={() => setMobileChat(false)} aria-label="Back to chats"><ArrowLeft size={19}/></button><div className="avatar-wrap"><div className="avatar large" style={{background:activeChat.color}}>{activeChat.initials}</div>{activeChat.online && <i className="online-dot"/>}</div><div className="contact-heading"><strong>{activeChat.name}</strong><span>{activeChat.online ? "Active now" : activeChat.group ? "Group conversation" : "Last seen recently"}</span></div><div className="conversation-actions"><button className="icon-button" aria-label="Voice call"><Phone size={18}/></button><button className="icon-button" aria-label="Video call"><Video size={18}/></button><button className="icon-button" aria-label="Conversation details"><MoreHorizontal size={19}/></button></div></header>
