@@ -125,17 +125,17 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .nowbar-action-active{border-color:var(--theme-header-border);box-shadow:inset 0 0 0 1px rgba(255,255,255,.10),0 0 10px rgba(255,255,255,.06)}
 .nowbar-icon{width:20px;height:20px;display:grid;place-items:center;flex-shrink:0}
 .nowbar-icon svg{width:18px;height:18px}
-.nowbar-label-compact,.nowbar-label-expanded{max-width:100%;font-size:.58rem;font-weight:700;letter-spacing:.04em;line-height:1;white-space:nowrap}
+.nowbar-label-compact,.nowbar-label-expanded{max-width:100%;font-size:.58rem;font-weight:700;letter-spacing:.04em;line-height:1;white-space:nowrap}.nowbar-label-expanded{min-width:0;overflow:hidden;text-align:center}
 .nowbar-label-compact{overflow:hidden;text-overflow:ellipsis}
-.nowbar-actions-expanded{display:grid;grid-template-columns:repeat(3,minmax(112px,max-content));grid-auto-rows:minmax(40px,auto);align-items:stretch;align-self:stretch;gap:8px;padding:0;overflow-x:hidden;overflow-y:auto;white-space:normal;align-content:start;flex:none}
+.nowbar-actions-expanded{display:grid;grid-template-columns:repeat(3,minmax(112px,max-content));grid-auto-rows:minmax(54px,auto);align-items:stretch;align-self:stretch;gap:8px;padding:0;overflow-x:hidden;overflow-y:auto;white-space:normal;align-content:start;flex:none}
 .nowbar-actions-expanded .nowbar-slot{min-width:0;width:max-content;max-width:100%;min-height:0}
 .nowbar-actions-expanded .nowbar-action{width:100%;min-width:112px;max-width:100%;min-height:40px;padding:9px 10px 8px;gap:4px}
-.nowbar-marquee-viewport{display:block;min-width:0;max-width:100%;overflow:hidden;text-align:center}
+.nowbar-marquee-viewport{display:block;flex:1;min-width:0;max-width:100%;overflow:hidden;text-align:center}
 .nowbar-marquee-track{display:inline-flex;white-space:nowrap;animation:nowbar-label-marquee 7s ease-in-out infinite;will-change:transform}
 @keyframes nowbar-label-marquee{0%,15%{transform:translateX(0)}45%,70%{transform:translateX(calc(-100% + 75px))}100%{transform:translateX(0)}}
 .nowbar-title:focus-visible,.nowbar-action:focus-visible{outline:2px solid rgba(255,255,255,.72);outline-offset:2px}
 .dashboard-page{padding-bottom:125px}
-@media(max-width:480px){.nowbar-dock{width:calc(100vw - 20px);bottom:max(12px,env(safe-area-inset-bottom))}.nowbar-shell{gap:8px;padding:9px 10px;border-radius:18px}.nowbar-actions{gap:8px}.nowbar-slot{min-width:82px}.nowbar-actions-expanded{grid-template-columns:repeat(3,minmax(92px,max-content));gap:7px}.nowbar-actions-expanded .nowbar-action{min-width:92px}}
+@media(max-width:480px){.nowbar-dock{width:calc(100vw - 20px);bottom:max(12px,env(safe-area-inset-bottom))}.nowbar-shell{gap:8px;padding:9px 10px;border-radius:18px}.nowbar-actions{gap:8px}.nowbar-slot{min-width:82px}.nowbar-actions-expanded{grid-template-columns:repeat(3,minmax(112px,max-content));gap:8px}.nowbar-actions-expanded .nowbar-action{min-width:112px}}
 @media(prefers-reduced-motion:reduce){.nowbar-action,.nowbar-title>span{transition:none}.nowbar-marquee-track{animation:none}}
 
 /* NowBar sizing: title/text mode hugs its content like CryBots; action mode keeps its own scrollable rail. */
