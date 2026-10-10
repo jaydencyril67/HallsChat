@@ -45,7 +45,7 @@ export default function SignupPage({ onBack }: SignupPageProps) {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || "We couldn't create your account. Please try again.");
-      setSuccess(payload.message || "Your account has been created. Check your email for the next step.");
+      setSuccess(payload.message || "Your HallsChat account has been created.");
       setName("");
       setUsername("");
       setEmail("");
@@ -93,11 +93,11 @@ export default function SignupPage({ onBack }: SignupPageProps) {
             <label className="signup-field"><span>Password</span><span className="signup-password-wrap"><input autoComplete="new-password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" required minLength={8} /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
             <label className="signup-field"><span>Confirm password</span><span className="signup-password-wrap"><input autoComplete="new-password" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter password" required minLength={8} /><button type="button" aria-label={showConfirmPassword ? "Hide password confirmation" : "Show password confirmation"} onClick={() => setShowConfirmPassword(v => !v)}>{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
           </div>
-          <label className="signup-terms"><input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} /><span>I agree to the <a href="/terms" onClick={e => e.preventDefault()}>Terms</a> and <a href="/privacy" onClick={e => e.preventDefault()}>Privacy Policy</a>.</span></label>
+          <label className="signup-terms"><input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} /><span>I agree to HallsChat’s Terms and Privacy Policy.</span></label>
           {error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
           {success && <div className="signup-feedback signup-feedback-success" role="status">{success}</div>}
           <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? "Creating your account…" : "Create account"} {!submitting && <ArrowRight size={17} />}</button>
-          <p className="signup-form-note"><LockKeyhole size={13} /> Your password is sent securely over HTTPS when the service is configured.</p>
+          <p className="signup-form-note"><LockKeyhole size={13} /> Your password is protected with one-way password hashing.</p>
         </form>
         <div className="signup-bottom-note">Already have an account? <span>Sign-in will be added with the authentication flow.</span></div>
       </section>
