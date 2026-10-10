@@ -1,9 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react";
+import AppHeader from "./AppHeader";
 
-type SignupPageProps = { onBack: () => void };
-
-export default function SignupPage({ onBack }: SignupPageProps) {
+export default function SignupPage() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -61,6 +60,7 @@ export default function SignupPage({ onBack }: SignupPageProps) {
   return <main className="signup-page">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
+    <AppHeader homeHref="/" />
     <div className="signup-shell">
       <section className="signup-story">
         <div className="signup-story-content">
