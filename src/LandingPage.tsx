@@ -28,7 +28,7 @@ export default function LandingPage({ onExplore }: LandingPageProps) {
         <h1>Your people.<br /><span>Your kind of</span><br /><em>connection.</em></h1>
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
-          <button className="landing-cta" onClick={onExplore}>Explore HallsChat <ArrowRight size={17} /></button>
+          <button className="button button-primary landing-cta" onClick={onExplore}>Explore HallsChat <ArrowRight size={17} /></button>
           <a className="landing-text-link" href="#why-hallschat">Get to know us <ArrowDownRight size={16} /></a>
         </div>
         <div className="landing-social-proof">
@@ -76,7 +76,7 @@ export default function LandingPage({ onExplore }: LandingPageProps) {
       <span className="landing-final-kicker">CLOSER CONVERSATIONS. STRONGER CONNECTIONS.</span>
       <h2>Your next good<br /><em>conversation starts here.</em></h2>
       <p>Take a first look around HallsChat and see the experience taking shape.</p>
-      <button className="landing-cta" onClick={onExplore}>Open the interactive preview <ArrowRight size={17} /></button>
+      <button className="button button-primary landing-cta" onClick={onExplore}>Open the interactive preview <ArrowRight size={17} /></button>
     </section>
 
     <footer className="landing-footer"><a className="landing-brand-link" href="#top"><Brand compact /></a><span>Made for meaningful moments.</span><a href="#top" className="landing-back-top">Back to top ↑</a><small>© {new Date().getFullYear()} HallsChat. Built with care.</small></footer>
