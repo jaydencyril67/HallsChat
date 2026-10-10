@@ -1,4 +1,5 @@
 import { ArrowDownRight, ArrowRight, Check, Heart, LockKeyhole, MessageCircle, Smartphone, Users, Video } from "lucide-react";
+import AppHeader from "./AppHeader";
 
 type LandingPageProps = { onExplore: () => void };
 
@@ -19,11 +20,7 @@ export default function LandingPage({ onExplore }: LandingPageProps) {
   return <main className="landing-page">
     <div className="landing-glow landing-glow-one" aria-hidden="true" />
     <div className="landing-glow landing-glow-two" aria-hidden="true" />
-    <header className="topbar landing-app-header" aria-label="HallsChat app header">
-      <a className="header-artwork" href="#top" aria-label="HallsChat home"><span className="header-logo"><MessageCircle size={19} strokeWidth={2.4}/><i /></span></a>
-      <div className="header-brand"><strong>HALLSCHAT</strong></div>
-      <a className="header-artwork header-artwork-right" href="#top" aria-label="Back to top"><span className="header-logo"><MessageCircle size={19} strokeWidth={2.4}/><i /></span></a>
-    </header>
+    <AppHeader />
 
     <section className="landing-hero" id="top">
       <div className="landing-hero-copy">
