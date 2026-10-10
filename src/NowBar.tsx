@@ -149,7 +149,7 @@ export default function NowBar() {
                 >
                   <span className="nowbar-icon"><Icon size={18} /></span>
                   {mode !== "expanded" && <span className="nowbar-label-compact">{label}</span>}
-                  {mode === "expanded" && <span className="nowbar-label-expanded nowbar-marquee-viewport"><span className="nowbar-marquee-track">{label}&nbsp;&nbsp;•&nbsp;&nbsp;{label}</span></span>}
+                  {mode === "expanded" && <span className="nowbar-label-expanded">{label}</span>}
                 </button>
               </div>
             ))}
