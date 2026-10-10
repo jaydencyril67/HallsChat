@@ -37,7 +37,7 @@ export default function SignupPage() {
       return;
     }
 
-    const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     setSubmitting(true);
     try {
       const response = await fetch(`${apiBase}/api/auth/register`, {
@@ -61,7 +61,7 @@ export default function SignupPage() {
     setResending(true);
     setResendMessage("");
     setResendError(false);
-    const apiBase = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     try {
       const response = await fetch(`${apiBase}/api/auth/resend-confirmation`, {
         method: "POST",
