@@ -174,3 +174,13 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     border-radius:20px;
   }
 }
+
+
+/* Match CryBots expanded NowBar grid sizing without duplicated marquee labels. */
+.nowbar-dock-expanded{width:fit-content;max-width:calc(100vw - 32px);height:180px}
+.nowbar-shell-expanded{display:flex;align-items:stretch;justify-content:center;width:fit-content;max-width:100%;height:100%;min-height:0;padding:12px;border-radius:26px;gap:8px;overflow:hidden}
+.nowbar-actions-expanded{display:grid;grid-template-columns:repeat(3,minmax(112px,max-content));grid-auto-rows:minmax(54px,auto);align-items:stretch;align-self:stretch;gap:8px;padding:0;overflow-x:hidden;overflow-y:auto;white-space:normal;align-content:start;flex:none;min-width:0;max-width:100%;height:100%;overscroll-behavior:contain}
+.nowbar-actions-expanded .nowbar-slot{min-width:0;width:100%;max-width:100%;min-height:0;display:flex;justify-content:stretch}
+.nowbar-actions-expanded .nowbar-action{width:100%;min-width:112px;max-width:100%;min-height:54px;padding:9px 10px 8px;gap:4px}
+.nowbar-label-expanded{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap}
+@media(max-width:480px){.nowbar-dock-expanded{width:calc(100vw - 20px);height:180px}.nowbar-shell-expanded{width:100%;max-width:100%;}.nowbar-actions-expanded{grid-template-columns:repeat(3,minmax(0,1fr));width:100%;}.nowbar-actions-expanded .nowbar-slot{width:100%;}.nowbar-actions-expanded .nowbar-action{min-width:0;width:100%;}}
