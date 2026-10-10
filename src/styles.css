@@ -138,13 +138,14 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media(max-width:480px){.nowbar-dock{width:calc(100vw - 20px);bottom:max(12px,env(safe-area-inset-bottom))}.nowbar-shell{gap:8px;padding:9px 10px;border-radius:18px}.nowbar-actions{gap:8px}.nowbar-slot{min-width:82px}.nowbar-actions-expanded{grid-template-columns:repeat(3,minmax(92px,max-content));gap:7px}.nowbar-actions-expanded .nowbar-action{min-width:92px}}
 @media(prefers-reduced-motion:reduce){.nowbar-action,.nowbar-title>span{transition:none}.nowbar-marquee-track{animation:none}}
 
-/* NowBar adaptive sizing and CryBots-style interaction polish */
-.nowbar-shell-title{width:max-content;max-width:100%;min-width:0;flex:0 1 auto;overflow:hidden;}
-.nowbar-title{width:max-content;max-width:100%;min-width:0;flex:0 1 auto;}
-.nowbar-title .nowbar-page-label{max-width:min(62vw,340px);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.nowbar-shell-actions{width:fit-content;max-width:100%;min-width:0;}
+/* NowBar sizing: title/text mode hugs its content like CryBots; action mode keeps its own scrollable rail. */
+.nowbar-dock-title{width:fit-content;max-width:calc(100vw - 20px);}
+.nowbar-shell-title{width:fit-content!important;max-width:calc(100vw - 20px);min-width:0;flex:0 0 auto;align-self:center;overflow:hidden;}
+.nowbar-shell-title .nowbar-title{width:fit-content!important;max-width:100%;min-width:0;flex:0 1 auto;gap:10px;}
+.nowbar-title .nowbar-page-label{display:block;max-width:min(62vw,340px);min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nowbar-shell-actions{width:100%;max-width:100%;min-width:0;}
 .nowbar-shell-actions .nowbar-actions{flex:0 1 auto;max-width:100%;}
 .nowbar-shell-expanded{max-width:calc(100vw - 20px);}
 .nowbar-shell-expanded .nowbar-actions-expanded{max-height:100%;overflow-y:auto;overscroll-behavior:contain;}
 .nowbar-pressing{transform:scale(.995);}
-@media(max-width:480px){.nowbar-title .nowbar-page-label{max-width:calc(100vw - 104px)}.nowbar-shell-expanded{width:calc(100vw - 20px);}}
+@media(max-width:480px){.nowbar-title .nowbar-page-label{max-width:calc(100vw - 104px)}.nowbar-shell-title{max-width:calc(100vw - 20px)}.nowbar-shell-expanded{width:calc(100vw - 20px);}}
