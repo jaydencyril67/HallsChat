@@ -20,7 +20,7 @@ function getPageTitle() {
   if (path === "/dashboard" || path === "/home") return "HOME";
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
   if (path === "/signup") return "SIGN UP";
-  if (path === "/confirm-email") return "CONFIRM EMAIL";
+  if (path === "/confirm-email" || path === "/verify-email") return "CONFIRM EMAIL";
   if (path.startsWith("/chats")) return "CHAT";
   if (path.startsWith("/contacts")) return "PEOPLE";
   if (path.startsWith("/calls")) return "CALLS";
@@ -35,7 +35,10 @@ export default function NowBar() {
   const [view, setView] = useState<View>("title");
   const [mode, setMode] = useState<Mode>("compact");
   const [pageTitle, setPageTitle] = useState(getPageTitle);
-  const [activeAction, setActiveAction] = useState("HOME");
+  const [activeAction, setActiveAction] = useState(() => {
+    const title = getPageTitle();
+    return actions.find(action => action.label === title)?.label ?? "HOME";
+  });
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTriggered = useRef(false);
@@ -43,7 +46,9 @@ export default function NowBar() {
 
   useEffect(() => {
     const syncPath = () => {
-      setPageTitle(getPageTitle());
+      const title = getPageTitle();
+      setPageTitle(title);
+      setActiveAction(actions.find(action => action.label === title)?.label ?? "");
       setView("title");
       setMode("compact");
     };
@@ -95,6 +100,12 @@ export default function NowBar() {
   };
 
   const chooseAction = (label: string) => {
+    if (mode === "expanded" && label === pageTitle) {
+      setView("title");
+      setMode("compact");
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      return;
+    }
     setActiveAction(label);
     setPageTitle(label);
     setView("title");
@@ -142,6 +153,9 @@ export default function NowBar() {
                   onClick={event => {
                     event.stopPropagation();
                     chooseAction(label);
+                  }}
+                  onKeyDown={event => {
+                    event.stopPropagation();
                   }}
                 >
                   <span className="nowbar-icon"><Icon size={18} /></span>
