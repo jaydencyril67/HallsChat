@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, ArrowRight, Check, Eye, EyeOff, LockKeyhole, MessageCircle, ShieldCheck } from "lucide-react";
-import AppHeader from "./AppHeader";
+import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, ShieldCheck } from "lucide-react";
 
 type SignupPageProps = { onBack: () => void };
 
@@ -62,13 +61,9 @@ export default function SignupPage({ onBack }: SignupPageProps) {
   return <main className="signup-page">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
-    <AppHeader homeHref="/" />
     <div className="signup-shell">
       <section className="signup-story">
-        <button type="button" className="signup-back-link" onClick={onBack}><ArrowLeft size={15} /> Back to HallsChat</button>
         <div className="signup-story-content">
-          <div className="signup-emblem"><MessageCircle size={27} strokeWidth={2.3} /><span>♥</span></div>
-          <span className="signup-eyebrow">A SPACE FOR YOUR PEOPLE</span>
           <h1>Make room for<br /><em>closer connections.</em></h1>
           <p>Start with your own HallsChat space. The conversations that matter deserve a place of their own.</p>
           <div className="signup-benefit-list">
