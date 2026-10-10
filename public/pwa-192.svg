@@ -1,7 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
-  <rect width="192" height="192" rx="42" fill="#16060a"/>
-  <rect x="8" y="8" width="176" height="176" rx="36" fill="none" stroke="#8e3449" stroke-width="2"/>
-  <path d="M48 57c0-8 7-15 15-15h66c8 0 15 7 15 15v44c0 8-7 15-15 15H91l-25 20v-20h-3c-8 0-15-7-15-15z" fill="#f1b6c4"/>
-  <path d="M67 77h58M67 91h40" stroke="#541627" stroke-width="7" stroke-linecap="round"/>
-  <text x="96" y="157" text-anchor="middle" font-family="serif" font-size="17" font-weight="bold" fill="#fff0f3">HALLSCHAT</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4b1428"/><stop offset=".55" stop-color="#260914"/><stop offset="1" stop-color="#100409"/></linearGradient>
+    <linearGradient id="rose" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe4e8"/><stop offset=".48" stop-color="#e8a5b7"/><stop offset="1" stop-color="#b85b7c"/></linearGradient>
+    <linearGradient id="cream" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff7eb"/><stop offset="1" stop-color="#e6c9c6"/></linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".45"/></filter>
+  </defs>
+  <rect width="192" height="192" rx="43" fill="url(#bg)"/>
+  <rect x="2" y="2" width="188" height="188" rx="41" fill="none" stroke="#f1b7c6" stroke-opacity=".42" stroke-width="1.5"/>
+  <g filter="url(#shadow)" stroke-linejoin="round">
+    <path d="M43 52c0-8 6-14 14-14h38c9 0 14 10 8 17L68 95c-7 7-3 18 7 18h20c8 0 14 6 14 14s-6 14-14 14H55c-11 0-16-13-8-21l34-38c6-7 2-16-7-16H57c-8 0-14-6-14-14Z" fill="url(#cream)"/>
+    <path d="M149 58c0-8-6-14-14-14H98c-9 0-14 10-8 17l35 40c7 7 3 18-7 18H98c-8 0-14 6-14 14s6 14 14 14h40c11 0 16-13 8-21l-34-38c-6-7-2-16 7-16h16c8 0 14-6 14-14Z" fill="url(#rose)"/>
+  </g>
+  <g fill="#f4a9bd"><circle cx="133" cy="139" r="4.2"/><circle cx="147" cy="139" r="4.2"/><circle cx="161" cy="139" r="4.2"/></g>
 </svg>
