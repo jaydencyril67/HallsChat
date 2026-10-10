@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#16060a"/>
+  <rect x="22" y="22" width="468" height="468" rx="94" fill="none" stroke="#8e3449" stroke-width="5"/>
+  <path d="M128 152c0-22 18-40 40-40h176c22 0 40 18 40 40v117c0 22-18 40-40 40h-99l-67 53v-53h-10c-22 0-40-18-40-40z" fill="#f1b6c4"/>
+  <path d="M179 205h154M179 242h106" stroke="#541627" stroke-width="18" stroke-linecap="round"/>
+  <text x="256" y="419" text-anchor="middle" font-family="serif" font-size="47" font-weight="bold" fill="#fff0f3">HALLSCHAT</text>
+</svg>
