@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import type { TouchList, TouchEvent, WheelEvent, MouseEvent } from "react";
 import { RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 
 type Props = { imageUrl: string; onClose: () => void };
 
-function touchDistance(touches: React.TouchList) {
+function touchDistance(touches: TouchList) {
   if (touches.length < 2) return 0;
   return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
 }
@@ -31,7 +32,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
   }, [onClose]);
 
   const reset = () => { setZoom(1); setOffset({ x: 0, y: 0 }); };
-  const touchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+  const touchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (event.touches.length === 2) {
       pinchStart.current = { distance: touchDistance(event.touches), zoom };
       dragStart.current = null;
@@ -54,11 +55,11 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
     if (event.touches.length < 2) pinchStart.current = null;
     if (event.touches.length === 0) dragStart.current = null;
   };
-  const wheel = (event: React.WheelEvent<HTMLDivElement>) => {
+  const wheel = (event: WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
     setZoom(z => Math.max(1, Math.min(5, z + (event.deltaY < 0 ? 0.2 : -0.2))));
   };
-  const mouseDown = (event: React.MouseEvent<HTMLImageElement>) => {
+  const mouseDown = (event: MouseEvent<HTMLImageElement>) => {
     if (zoom <= 1) return;
     dragging.current = true;
     dragStart.current = { x: event.clientX, y: event.clientY, offsetX: offset.x, offsetY: offset.y };
