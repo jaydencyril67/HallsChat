@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import LandingPage from "./LandingPage";
 import SignupPage from "./SignupPage";
 import SigninPage from "./SigninPage";
-import DashboardPage from "./DashboardPage";
+import HomePage from "./HomePage";
 import EmailVerificationPage from "./EmailVerificationPage";
 
 export default function App() {
@@ -24,6 +24,6 @@ export default function App() {
   if (normalizedPath === "/verify-email") return <EmailVerificationPage />;
   if (normalizedPath === "/signup") return <SignupPage />;
   if (normalizedPath === "/signin" || normalizedPath === "/sign-in") return <SigninPage />;
-  if (normalizedPath === "/dashboard") return <DashboardPage />;
+  if (normalizedPath === "/home") return <HomePage />;
   return <LandingPage onSignup={() => navigate("/signup")} />;
 }
