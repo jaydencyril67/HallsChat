@@ -245,3 +245,34 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @keyframes nowbar-label-marquee{0%,15%{transform:translateX(0)}45%,70%{transform:translateX(calc(-100% + 145px))}100%{transform:translateX(0)}}
 @media(max-width:480px){.nowbar-dock-expanded{width:fit-content;max-width:calc(100vw - 32px);height:calc(2.5 * 72px);min-height:calc(2.5 * 72px)}.nowbar-shell-expanded{width:fit-content;max-width:calc(100vw - 32px)}.nowbar-shell-expanded .nowbar-actions-expanded{width:auto;grid-template-columns:repeat(3,minmax(112px,max-content))}.nowbar-actions-expanded .nowbar-slot{width:max-content}.nowbar-actions-expanded .nowbar-action{min-width:112px}}
 @media(prefers-reduced-motion:reduce){.nowbar-marquee-track{animation:none}}
+
+
+/* Final NowBar parity corrections: content-wrap the normal rail, preserve the 560px cap,
+   and keep expanded labels single-line without changing HallsChat's header palette. */
+.nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title){
+  width:fit-content;
+  max-width:min(560px,calc(100vw - 32px));
+}
+.nowbar-shell-actions{
+  width:fit-content;
+  max-width:100%;
+  min-width:0;
+  flex:0 1 auto;
+}
+.nowbar-shell-actions .nowbar-actions{
+  width:fit-content;
+  max-width:100%;
+  min-width:0;
+  flex:0 1 auto;
+}
+.nowbar-actions-expanded .nowbar-slot{min-width:0}
+.nowbar-actions-expanded .nowbar-action{box-sizing:border-box}
+.nowbar-label-expanded{flex:0 1 auto;max-width:100%;text-overflow:ellipsis}
+.nowbar-shell-title,.nowbar-shell-actions,.nowbar-shell-expanded{
+  transition:width 220ms ease,max-width 220ms ease,min-height 220ms ease,border-radius 220ms ease,padding 220ms ease;
+}
+@media(max-width:480px){
+  .nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title){max-width:calc(100vw - 20px)}
+  .nowbar-shell-actions{max-width:100%}
+  .nowbar-shell-actions .nowbar-actions{max-width:100%}
+}
