@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import LandingPage from "./LandingPage";
 import SignupPage from "./SignupPage";
+import EmailVerificationPage from "./EmailVerificationPage";
 
 export default function App() {
   const [path, setPath] = useState(() => window.location.pathname);
@@ -23,7 +24,8 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "auto" });
   };
 
-  return path.replace(/\/$/, "") === "/signup"
-    ? <SignupPage />
-    : <LandingPage onSignup={openSignup} />;
+  const normalizedPath = path.replace(/\/$/, "") || "/";
+  if (normalizedPath === "/verify-email") return <EmailVerificationPage />;
+  if (normalizedPath === "/signup") return <SignupPage />;
+  return <LandingPage onSignup={openSignup} />;
 }
