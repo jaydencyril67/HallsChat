@@ -1,4 +1,4 @@
-const CACHE_NAME = "hallschat-shell-v5";
+const CACHE_NAME = "hallschat-shell-v6";
 const APP_SHELL = ["/", "/manifest.webmanifest", "/crown-chat.svg", "/crown-chat-512.svg"];
 
 self.addEventListener("install", (event) => {
