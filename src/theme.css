@@ -1,0 +1,56 @@
+/* HallsChat shared design system: use these tokens across every page. */
+:root {
+  color-scheme: dark;
+  --theme-bg: #19070b;
+  --theme-surface: #21090f;
+  --theme-surface-raised: #2b0d15;
+  --theme-line: rgba(255, 229, 232, 0.09);
+  --theme-text: #f8f0f1;
+  --theme-muted: #a78b91;
+  --theme-soft: #76535b;
+  --theme-primary: #b82032;
+  --theme-primary-hover: #d23b4e;
+  --theme-primary-contrast: #ffffff;
+  --theme-focus: #d64a5b;
+  --theme-success: #42c88a;
+  --theme-radius-sm: 8px;
+  --theme-radius-md: 12px;
+  --theme-radius-lg: 16px;
+  --theme-pill: 999px;
+  --theme-shadow-primary: 0 5px 18px rgba(184, 32, 50, 0.22);
+}
+
+/* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 17px;
+  border: 1px solid transparent;
+  border-radius: var(--theme-radius-md);
+  font: 700 12px/1 'DM Sans', sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.button-primary {
+  color: var(--theme-primary-contrast);
+  background: linear-gradient(145deg, var(--theme-primary-hover), var(--theme-primary));
+  border-color: rgba(255, 255, 255, .12);
+  box-shadow: var(--theme-shadow-primary);
+}
+.button-primary:hover { filter: brightness(1.08); box-shadow: 0 7px 22px rgba(184, 32, 50, .3); }
+.button-secondary {
+  color: var(--theme-text);
+  background: var(--theme-surface);
+  border-color: var(--theme-line);
+}
+.button-secondary:hover { background: var(--theme-surface-raised); border-color: rgba(210, 59, 78, .35); }
+.button:focus-visible { outline: 2px solid var(--theme-focus); outline-offset: 3px; }
+.button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+}
