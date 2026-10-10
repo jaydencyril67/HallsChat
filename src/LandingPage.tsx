@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowRight, Check, Heart, LockKeyhole, MessageCircle, MessagesSquare, Smartphone, Users, Video } from "lucide-react";
+import { ArrowDownRight, ArrowRight, Check, Heart, LockKeyhole, MessageCircle, Smartphone, Users, Video } from "lucide-react";
 
 type LandingPageProps = { onExplore: () => void };
 
