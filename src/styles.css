@@ -79,3 +79,18 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar, *::befor
 .signup-page-footer{width:min(1120px,calc(100% - 64px));min-height:54px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:15px;border-top:1px solid rgba(255,220,226,.07);color:#806169;font-size:9px}
 @media(max-width:850px){.signup-shell{width:calc(100% - 40px);grid-template-columns:1fr;gap:20px;padding-top:38px}.signup-story{min-height:0;padding:0}.signup-story-content{max-width:620px;padding:25px 0 10px}.signup-story h1{font-size:clamp(33px,6vw,43px)}.signup-benefit-list{grid-template-columns:1fr 1fr;gap:15px;margin-top:23px}.signup-story-footer{display:none}.signup-form-panel{width:min(100%,620px);justify-self:center}.signup-page-footer{width:calc(100% - 40px)}}
 @media(max-width:520px){.signup-shell{width:calc(100% - 28px);padding-top:32px;padding-bottom:25px;gap:14px}.signup-story-content{padding:22px 0 7px}.signup-emblem{width:47px;height:47px;border-radius:15px}.signup-eyebrow{margin-top:20px;font-size:8px}.signup-story h1{margin:13px 0;font-size:33px;letter-spacing:-1.3px}.signup-story-content>p{font-size:11px;line-height:1.8}.signup-benefit-list{display:none}.signup-form-panel{padding:23px 17px;border-radius:18px}.signup-form-heading h2{font-size:25px}.signup-form{gap:13px;margin-top:22px}.signup-field-row{grid-template-columns:1fr;gap:13px}.signup-field>input,.signup-password-wrap{height:43px}.signup-page-footer{width:calc(100% - 28px);min-height:48px;font-size:8px}.signup-page-footer span:last-child{max-width:58%;text-align:right}}
+
+
+/* Email confirmation screens */
+.signup-confirmation-panel{width:min(520px,calc(100% - 32px));min-height:430px;margin:0 auto;padding:clamp(26px,5vw,48px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;border:1px solid rgba(255,220,226,.12);border-radius:24px;background:linear-gradient(150deg,rgba(45,12,21,.96),rgba(26,7,13,.98));box-shadow:0 28px 90px #0005;text-align:center}
+.signup-confirmation-icon{width:64px;height:64px;margin-bottom:4px;display:grid;place-items:center;border:1px solid #d13c5040;border-radius:20px;background:#c42b4018;color:#f16a7c}
+.signup-confirmation-icon-error{border-color:#e65a6c55;background:#a91d3019;color:#ff9aa7}
+.signup-confirmation-panel h1{margin:0;font:800 clamp(26px,5vw,34px)/1.2 Manrope,sans-serif;letter-spacing:-.9px}
+.signup-confirmation-panel>p{margin:0;color:#b99ba1;font-size:12px;line-height:1.9;overflow-wrap:anywhere}
+.signup-confirmation-panel>p strong{color:#f5e5e8}
+.signup-confirmation-tip{width:100%;padding:13px 15px;border:1px solid rgba(255,220,226,.09);border-radius:12px;background:#ffffff04;color:#b99ba1;font-size:10px;line-height:1.8;text-align:left}
+.signup-confirmation-panel .signup-feedback{width:100%}
+.signup-confirmation-back{padding:10px 14px;border:0;background:transparent;color:#c8a5ad;font-size:11px;font-weight:600}
+.signup-confirmation-back:hover{color:#fff}
+.signup-confirmation-continue{text-decoration:none;display:flex;align-items:center;gap:9px}
+@media(max-width:520px){.signup-confirmation-panel{width:calc(100% - 28px);min-height:400px;padding:27px 20px;border-radius:19px}.signup-confirmation-panel h1{font-size:27px}.signup-confirmation-icon{width:56px;height:56px;border-radius:17px}}
