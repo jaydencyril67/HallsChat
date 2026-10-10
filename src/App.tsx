@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import LandingPage from "./LandingPage";
 import { MessageCircle, Search, Plus, Users, Phone, Settings, MoreHorizontal, Paperclip, Send, CheckCheck, Bell, ChevronDown, CircleHelp, Video, ArrowLeft, Smile } from "lucide-react";
 
 type Chat = { id: number; name: string; message: string; time: string; unread: number; color: string; initials: string; online?: boolean; group?: boolean };
@@ -17,7 +18,7 @@ const starterMessages = [
   { id: 4, from: "them", text: "Closer conversations. Stronger connections.", time: "9:41 AM" }
 ];
 
-export default function App() {
+function ChatDemo() {
   const [chats, setChats] = useState(starterChats);
   const [activeId, setActiveId] = useState<number | null>(1);
   const [query, setQuery] = useState("");
@@ -70,4 +71,9 @@ export default function App() {
       <nav className={`nowbar ${nowbarExpanded ? "expanded" : "compact"}`} aria-label="HallsChat NowBar"><div className="nowbar-items">{[{label:"Chats",icon:<MessageCircle size={18}/>},{label:"Contacts",icon:<Users size={18}/>},{label:"Calls",icon:<Phone size={18}/>},{label:"Groups",icon:<Users size={18}/>},{label:"Settings",icon:<Settings size={18}/>}].map(item => <button key={item.label} onClick={() => {setTab(item.label);setMobileChat(false);}} className={`nowbar-item ${tab === item.label ? "active" : ""}`} aria-current={tab === item.label ? "page" : undefined}>{item.icon}<span>{item.label}</span></button>)}</div><button className="nowbar-toggle" onClick={() => setNowbarExpanded(v => !v)} aria-label={nowbarExpanded ? "Collapse NowBar" : "Expand NowBar"} title={nowbarExpanded ? "Collapse navigation" : "Expand navigation"}><ChevronDown size={17}/></button></nav>
     </section>
   </main>;
+}
+
+export default function App() {
+  const [showDemo, setShowDemo] = useState(false);
+  return showDemo ? <ChatDemo /> : <LandingPage onExplore={() => setShowDemo(true)} />;
 }
