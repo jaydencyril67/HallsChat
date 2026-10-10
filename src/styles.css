@@ -471,4 +471,4 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-empty-feed{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:36px 18px;border:1px dashed var(--theme-line);border-radius:15px;color:var(--theme-muted);text-align:center;font-size:11px}
 .social-empty-feed strong{color:var(--theme-text);font-size:13px}
 .social-empty-feed svg{color:var(--theme-primary-hover)}
-@media(max-width:480px){.social-image-previews{grid-template-columns:repeat(2,minmax(0,1fr))}.social-composer-tools{gap:7px}.social-add-image{padding:0 9px;font-size:10px}.social-post-image-link img{max-height:340px}}
+@media(max-width:480px){.social-image-previews{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.social-image-preview img{aspect-ratio:1/1}.social-image-preview>span{display:none}.social-image-preview>button{top:3px;right:3px;width:18px;height:18px}.social-image-preview>button svg{width:11px;height:11px}.social-composer-tools{gap:7px}.social-add-image{padding:0 9px;font-size:10px}.social-post-image-link img{max-height:340px}}
