@@ -6,12 +6,12 @@ type Mode = "compact" | "expanded";
 
 const actions = [
   { label: "HOME", icon: Home },
-  { label: "CHATS", icon: MessageCircle },
-  { label: "CONTACTS", icon: ContactRound },
+  { label: "CHAT", icon: MessageCircle },
+  { label: "PEOPLE", icon: ContactRound },
   { label: "CALLS", icon: Phone },
-  { label: "GROUPS", icon: UsersRound },
-  { label: "NOTIFICATIONS", icon: Bell },
-  { label: "SETTINGS", icon: Settings },
+  { label: "GROUP", icon: UsersRound },
+  { label: "ALERT", icon: Bell },
+  { label: "SET", icon: Settings },
   { label: "HELP", icon: CircleHelp },
 ];
 
@@ -21,12 +21,12 @@ function getPageTitle() {
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
   if (path === "/signup") return "SIGN UP";
   if (path === "/confirm-email") return "CONFIRM EMAIL";
-  if (path.startsWith("/chats")) return "CHATS";
-  if (path.startsWith("/contacts")) return "CONTACTS";
+  if (path.startsWith("/chats")) return "CHAT";
+  if (path.startsWith("/contacts")) return "PEOPLE";
   if (path.startsWith("/calls")) return "CALLS";
-  if (path.startsWith("/groups")) return "GROUPS";
-  if (path.startsWith("/notifications")) return "NOTIFICATIONS";
-  if (path.startsWith("/settings")) return "SETTINGS";
+  if (path.startsWith("/groups")) return "GROUP";
+  if (path.startsWith("/notifications")) return "ALERT";
+  if (path.startsWith("/settings")) return "SET";
   if (path.startsWith("/help")) return "HELP";
   return "HALLSCHAT";
 }
@@ -148,16 +148,7 @@ export default function NowBar() {
                   }}
                 >
                   <span className="nowbar-icon"><Icon size={18} /></span>
-                  {mode !== "expanded" && <span className="nowbar-label-compact">{label}</span>}
-                  {mode === "expanded" && (
-                    label.length > 12 ? (
-                      <span className="nowbar-label-expanded nowbar-marquee-viewport">
-                        <span className="nowbar-marquee-track">{label.toUpperCase()}&nbsp;&nbsp;•&nbsp;&nbsp;{label.toUpperCase()}</span>
-                      </span>
-                    ) : (
-                      <span className="nowbar-label-expanded">{label.toUpperCase()}</span>
-                    )
-                  )}
+                  <span className={mode === "expanded" ? "nowbar-label-expanded" : "nowbar-label-compact"}>{label}</span>
                 </button>
               </div>
             ))}
