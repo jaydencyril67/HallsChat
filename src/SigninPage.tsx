@@ -28,7 +28,7 @@ export default function SigninPage() {
       }
       if (typeof payload.token !== "string" || !payload.token) throw new Error("The server did not return a valid session. Please try again.");
       localStorage.setItem("hallschat_token", payload.token);
-      window.location.assign("/dashboard");
+      window.location.assign("/home");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to connect right now. Please try again.");
     } finally { setSubmitting(false); }
