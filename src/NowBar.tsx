@@ -16,10 +16,18 @@ const actions = [
 ];
 
 function getPageTitle() {
-  const path = window.location.pathname.replace(/\\/$/, "") || "/";
-  if (path === "/dashboard") return "DASHBOARD";
+  const path = (window.location.pathname || "/").replace(/\/$/, "") || "/";
+  if (path === "/dashboard" || path === "/home") return "HOME";
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
   if (path === "/signup") return "SIGN UP";
+  if (path === "/confirm-email") return "CONFIRM EMAIL";
+  if (path.startsWith("/chats")) return "CHATS";
+  if (path.startsWith("/contacts")) return "CONTACTS";
+  if (path.startsWith("/calls")) return "CALLS";
+  if (path.startsWith("/groups")) return "GROUPS";
+  if (path.startsWith("/notifications")) return "NOTIFICATIONS";
+  if (path.startsWith("/settings")) return "SETTINGS";
+  if (path.startsWith("/help")) return "HELP";
   return "HALLSCHAT";
 }
 
@@ -28,7 +36,9 @@ export default function NowBar() {
   const [mode, setMode] = useState<Mode>("compact");
   const [pageTitle, setPageTitle] = useState(getPageTitle);
   const [activeAction, setActiveAction] = useState("HOME");
+  const [pressing, setPressing] = useState(false);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTriggered = useRef(false);
   const barRef = useRef<HTMLDivElement | null>(null);
 
@@ -39,15 +49,30 @@ export default function NowBar() {
       setMode("compact");
     };
     window.addEventListener("popstate", syncPath);
-    return () => window.removeEventListener("popstate", syncPath);
+    window.addEventListener("hashchange", syncPath);
+    window.addEventListener("hallschat:navigation-start", syncPath);
+    return () => {
+      window.removeEventListener("popstate", syncPath);
+      window.removeEventListener("hashchange", syncPath);
+      window.removeEventListener("hallschat:navigation-start", syncPath);
+    };
   }, []);
 
   useEffect(() => () => {
     if (holdTimer.current) clearTimeout(holdTimer.current);
+    if (idleTimer.current) clearTimeout(idleTimer.current);
   }, []);
+
+  const resetIdleTimer = () => {
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => setView("title"), 10000);
+  };
 
   const startHold = () => {
     holdTriggered.current = false;
+    setPressing(true);
+    resetIdleTimer();
+    if (holdTimer.current) clearTimeout(holdTimer.current);
     holdTimer.current = setTimeout(() => {
       holdTriggered.current = true;
       setView("actions");
@@ -56,6 +81,7 @@ export default function NowBar() {
   };
 
   const stopHold = () => {
+    setPressing(false);
     if (holdTimer.current) {
       clearTimeout(holdTimer.current);
       holdTimer.current = null;
@@ -68,16 +94,25 @@ export default function NowBar() {
       return;
     }
     setView(current => current === "title" ? "actions" : "title");
+    resetIdleTimer();
+  };
+
+  const chooseAction = (label: string) => {
+    setActiveAction(label);
+    setPageTitle(label);
+    setView("title");
+    setMode("compact");
+    if (idleTimer.current) clearTimeout(idleTimer.current);
   };
 
   return (
     <div className={`nowbar-dock ${mode === "expanded" && view === "actions" ? "nowbar-dock-expanded" : ""}`}>
       <div
         ref={barRef}
-        className={`nowbar-shell ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""}`}
+        className={`nowbar-shell ${view === "title" ? "nowbar-shell-title" : "nowbar-shell-actions"} ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""} ${pressing ? "nowbar-pressing" : ""}`}
         role="button"
         tabIndex={0}
-        aria-label={view === "title" ? `${pageTitle} page. Tap to show navigation buttons.` : "Navigation buttons. Tap to show current page."}
+        aria-label={view === "title" ? `${pageTitle} page. Tap to show navigation buttons; hold to expand.` : "Navigation buttons. Tap to show current page."}
         onClick={toggleView}
         onMouseDown={startHold}
         onMouseUp={stopHold}
@@ -100,7 +135,7 @@ export default function NowBar() {
             <ChevronDown size={16} />
           </div>
         ) : (
-          <div className={`nowbar-actions ${mode === "expanded" ? "nowbar-actions-expanded" : ""}`}>
+          <div ref={barRef} className={`nowbar-actions ${mode === "expanded" ? "nowbar-actions-expanded" : ""}`}>
             {actions.map(({ label, icon: Icon }) => (
               <div className="nowbar-slot" key={label}>
                 <button
@@ -109,10 +144,7 @@ export default function NowBar() {
                   aria-label={label}
                   onClick={event => {
                     event.stopPropagation();
-                    setActiveAction(label);
-                    setPageTitle(label);
-                    setView("title");
-                    setMode("compact");
+                    chooseAction(label);
                   }}
                 >
                   <span className="nowbar-icon"><Icon size={18} /></span>
