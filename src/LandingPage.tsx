@@ -19,16 +19,10 @@ export default function LandingPage({ onExplore }: LandingPageProps) {
   return <main className="landing-page">
     <div className="landing-glow landing-glow-one" aria-hidden="true" />
     <div className="landing-glow landing-glow-two" aria-hidden="true" />
-    <header className="landing-header">
-      <a className="landing-brand-link" href="#top" aria-label="HallsChat home"><Brand /></a>
-      <nav className="landing-nav" aria-label="Main navigation">
-        <a href="#why-hallschat">Why HallsChat</a>
-        <a href="#experience">The experience</a>
-      </nav>
-      <div className="landing-header-actions">
-        <button className="landing-signin" onClick={onExplore}>Explore preview</button>
-        <button className="landing-cta landing-cta-small" onClick={onExplore}>Get started <ArrowRight size={15} /></button>
-      </div>
+    <header className="topbar landing-app-header" aria-label="HallsChat app header">
+      <a className="header-artwork" href="#top" aria-label="HallsChat home"><span className="header-logo"><MessageCircle size={19} strokeWidth={2.4}/><i /></span></a>
+      <div className="header-brand"><strong>HALLSCHAT</strong></div>
+      <a className="header-artwork header-artwork-right" href="#top" aria-label="Back to top"><span className="header-logo"><MessageCircle size={19} strokeWidth={2.4}/><i /></span></a>
     </header>
 
     <section className="landing-hero" id="top">
