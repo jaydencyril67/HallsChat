@@ -36,7 +36,6 @@ export default function NowBar() {
   const [mode, setMode] = useState<Mode>("compact");
   const [pageTitle, setPageTitle] = useState(getPageTitle);
   const [activeAction, setActiveAction] = useState("HOME");
-  const [pressing, setPressing] = useState(false);
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTriggered = useRef(false);
@@ -70,7 +69,6 @@ export default function NowBar() {
 
   const startHold = () => {
     holdTriggered.current = false;
-    setPressing(true);
     resetIdleTimer();
     if (holdTimer.current) clearTimeout(holdTimer.current);
     holdTimer.current = setTimeout(() => {
@@ -81,7 +79,6 @@ export default function NowBar() {
   };
 
   const stopHold = () => {
-    setPressing(false);
     if (holdTimer.current) {
       clearTimeout(holdTimer.current);
       holdTimer.current = null;
@@ -109,7 +106,7 @@ export default function NowBar() {
     <div className={`nowbar-dock ${view === "title" ? "nowbar-dock-title" : ""} ${mode === "expanded" && view === "actions" ? "nowbar-dock-expanded" : ""}`}>
       <div
         ref={barRef}
-        className={`nowbar-shell ${view === "title" ? "nowbar-shell-title" : "nowbar-shell-actions"} ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""} ${pressing ? "nowbar-pressing" : ""}`}
+        className={`nowbar-shell ${view === "title" ? "nowbar-shell-title" : "nowbar-shell-actions"} ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""}`}
         role="button"
         tabIndex={0}
         aria-label={view === "title" ? `${pageTitle} page. Tap to show navigation buttons; hold to expand.` : "Navigation buttons. Tap to show current page."}
