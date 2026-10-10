@@ -96,7 +96,7 @@ export default function NowBar() {
         {view === "title" ? (
           <div className="nowbar-title" aria-hidden="true">
             <span className="nowbar-orb" />
-            <span>{pageTitle}</span>
+            <span className={`nowbar-page-label ${pageTitle.length > 16 ? "nowbar-page-label-long" : pageTitle.length > 10 ? "nowbar-page-label-medium" : ""}`}>{pageTitle}</span>
             <ChevronDown size={16} />
           </div>
         ) : (
@@ -117,7 +117,7 @@ export default function NowBar() {
                 >
                   <span className="nowbar-icon"><Icon size={18} /></span>
                   {mode !== "expanded" && <span className="nowbar-label-compact">{label}</span>}
-                  {mode === "expanded" && <span className="nowbar-label-expanded">{label}</span>}
+                  {mode === "expanded" && <span className="nowbar-label-expanded nowbar-marquee-viewport"><span className="nowbar-marquee-track">{label}&nbsp;&nbsp;•&nbsp;&nbsp;{label}</span></span>}
                 </button>
               </div>
             ))}
