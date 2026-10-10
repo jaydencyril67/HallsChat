@@ -24,6 +24,6 @@ export default function App() {
   };
 
   return path.replace(/\/$/, "") === "/signup"
-    ? <SignupPage onBack={openLanding} />
+    ? <SignupPage />
     : <LandingPage onSignup={openSignup} />;
 }
