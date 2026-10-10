@@ -12,6 +12,54 @@
     <link rel="apple-touch-icon" href="/crown-chat.svg?v=7" />
     <meta name="description" content="HallsChat is a thoughtful space for everyday messages, your people, and closer connections." />
     <meta name="color-scheme" content="dark" />
+    <style>
+      /* Match CryBots global touch, text-selection and scrollbar rules. */
+      * {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      html, body, #root, * {
+        scrollbar-width: none !important;
+        scrollbar-color: transparent transparent !important;
+        -ms-overflow-style: none !important;
+      }
+
+      html::-webkit-scrollbar, body::-webkit-scrollbar, #root::-webkit-scrollbar, *::-webkit-scrollbar,
+      html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb, #root::-webkit-scrollbar-thumb, *::-webkit-scrollbar-thumb,
+      html::-webkit-scrollbar-track, body::-webkit-scrollbar-track, #root::-webkit-scrollbar-track, *::-webkit-scrollbar-track,
+      html::-webkit-scrollbar-corner, body::-webkit-scrollbar-corner, #root::-webkit-scrollbar-corner, *::-webkit-scrollbar-corner {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        color: transparent !important;
+      }
+
+      /* Keep text entry and selection working inside editable fields only. */
+      input, textarea, select, [contenteditable="true"], [contenteditable=""] {
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: default;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+    </style>
+    <script>
+      /* Prevent the mobile long-press context menu outside editable fields, as in CryBots. */
+      document.addEventListener("contextmenu", (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (target.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return;
+        event.preventDefault();
+      });
+    </script>
     <meta property="og:type" content="website" />
     <meta property="og:title" content="HallsChat — Closer conversations. Stronger connections." />
     <meta property="og:description" content="Make room for the conversations that make life matter." />
