@@ -231,3 +231,17 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .nowbar-actions-expanded .nowbar-slot{width:100%}
   .nowbar-actions-expanded .nowbar-action{min-width:0;width:100%}
 }
+
+/* NowBar parity pass: match CryBots sizing, grid proportions, marquee and expanded dock footprint. Keep HallsChat theme colors. */
+.nowbar-dock{bottom:18px}
+.nowbar-dock-expanded{width:fit-content;max-width:calc(100vw - 32px);height:calc(2.5 * 72px);min-height:calc(2.5 * 72px);align-items:stretch;box-shadow:0 0 0 1px rgba(255,255,255,.08),0 0 24px rgba(255,255,255,.08),0 18px 50px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
+.nowbar-shell-expanded{display:flex;align-items:stretch;justify-content:center;align-self:stretch;flex:0 1 auto;width:fit-content;max-width:calc(100vw - 32px);height:100%;min-height:0;padding:12px;border-radius:26px;gap:8px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.12),var(--theme-header-shadow),inset 0 1px 0 rgba(255,255,255,.12)}
+.nowbar-shell-expanded .nowbar-actions-expanded{display:grid;grid-template-columns:repeat(3,minmax(112px,max-content));grid-auto-rows:minmax(54px,auto);align-items:stretch;align-self:stretch;gap:8px;padding:0;overflow-x:hidden;overflow-y:auto;white-space:normal;align-content:start;flex:none;min-width:0;max-width:100%;height:100%;max-height:100%;overscroll-behavior:contain}
+.nowbar-actions-expanded .nowbar-slot{flex:0 0 auto;min-width:0;width:max-content;max-width:100%;min-height:0;display:flex;justify-content:center}
+.nowbar-actions-expanded .nowbar-action{width:100%;min-width:112px;max-width:100%;min-height:40px;padding:9px 10px 8px;gap:4px}
+.nowbar-label-expanded{display:block;min-width:0;max-width:100%;overflow:hidden;text-align:center;white-space:nowrap}
+.nowbar-marquee-viewport{display:block;flex:1;min-width:0;max-width:100%;overflow:hidden;text-align:center}
+.nowbar-marquee-track{display:inline-flex;white-space:nowrap;animation:nowbar-label-marquee 7s ease-in-out infinite;will-change:transform}
+@keyframes nowbar-label-marquee{0%,15%{transform:translateX(0)}45%,70%{transform:translateX(calc(-100% + 145px))}100%{transform:translateX(0)}}
+@media(max-width:480px){.nowbar-dock-expanded{width:fit-content;max-width:calc(100vw - 32px);height:calc(2.5 * 72px);min-height:calc(2.5 * 72px)}.nowbar-shell-expanded{width:fit-content;max-width:calc(100vw - 32px)}.nowbar-shell-expanded .nowbar-actions-expanded{width:auto;grid-template-columns:repeat(3,minmax(112px,max-content))}.nowbar-actions-expanded .nowbar-slot{width:max-content}.nowbar-actions-expanded .nowbar-action{min-width:112px}}
+@media(prefers-reduced-motion:reduce){.nowbar-marquee-track{animation:none}}
