@@ -4,7 +4,7 @@
     <linearGradient id="crown" x1="48" y1="47" x2="145" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF8F2"/><stop offset="1" stop-color="#EFC1CF"/></linearGradient>
   </defs>
   <rect width="192" height="192" rx="43" fill="url(#bg)"/>
-  <g transform="translate(0 0) scale(1.05)">
+  <g transform="translate(9 10) scale(0.9)">
     <g transform="translate(0 2)">
       <path d="M42 42h108c11 0 20 9 20 20v54c0 11-9 20-20 20H91l-29 22 6-22H42c-11 0-20-9-20-20V62c0-11 9-20 20-20Z" fill="#12060D" opacity=".25" transform="translate(0 4)"/>
       <path d="M42 37h108c11 0 20 9 20 20v54c0 11-9 20-20 20H91l-29 22 6-22H42c-11 0-20-9-20-20V57c0-11 9-20 20-20Z" fill="url(#crown)" stroke="#FFF9F5" stroke-width="2"/>
