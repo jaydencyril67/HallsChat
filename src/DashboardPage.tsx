@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { ArrowUpRight, Compass, Globe2, Heart, ImagePlus, LockKeyhole, MessageCircle, Send, ShieldCheck, Sparkles, UsersRound, UserRound } from "lucide-react";
+import { ArrowUpRight, Compass, Globe2, Heart, ImagePlus, LockKeyhole, MessageCircle, Send, ShieldCheck, UsersRound, UserRound } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 
@@ -138,7 +138,6 @@ export default function DashboardPage() {
       {loading ? <div className="dashboard-state" role="status">Getting your space ready…</div> : error ? <div className="dashboard-state dashboard-error"><p>{error}</p><a className="button button-primary" href="/signin">Back to sign in <ArrowUpRight size={16} /></a></div> : user && <>
         <div className="social-welcome">
           <div><span className="signup-form-kicker">YOUR PEOPLE. YOUR SPACE.</span><h1>Good to see you, {user.name.trim().split(/\s+/)[0] || "there"}.</h1><p>Share a thought, catch up with your people, and find your community.</p></div>
-          <div className="social-welcome-mark"><Sparkles size={22} /><span>HALLS<br/>SOCIAL</span></div>
         </div>
         <div className="social-layout">
           <section className="social-feed-column" aria-label="Social feed">
