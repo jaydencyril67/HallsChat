@@ -1,25 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 192 192">
   <defs>
-    <linearGradient id="bg" x1="18" y1="8" x2="176" y2="188" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#5A1734"/><stop offset=".52" stop-color="#2B1028"/><stop offset="1" stop-color="#170D20"/>
+    <linearGradient id="bg" x1="12" y1="8" x2="180" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#54152D"/>
+      <stop offset="1" stop-color="#210812"/>
     </linearGradient>
-    <linearGradient id="bubble" x1="48" y1="38" x2="143" y2="145" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#FFF4EC"/><stop offset="1" stop-color="#F2C9D4"/>
+    <linearGradient id="bubble" x1="43" y1="35" x2="145" y2="151" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF5EE"/>
+      <stop offset="1" stop-color="#EFC1CF"/>
     </linearGradient>
-    <linearGradient id="back" x1="111" y1="45" x2="164" y2="131" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#F27B9C"/><stop offset="1" stop-color="#C34470"/>
-    </linearGradient>
-    <filter id="shadow" x="20" y="20" width="158" height="158" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
-      <feGaussianBlur stdDeviation="5"/>
-    </filter>
   </defs>
   <rect width="192" height="192" rx="43" fill="url(#bg)"/>
-  <path d="M123 38c20 0 36 14 36 32v17c0 18-16 32-36 32h-9l-20 15 4-21c-7-6-11-15-11-26V70c0-18 16-32 36-32Z" fill="#0D0713" opacity=".3" filter="url(#shadow)"/>
-  <path d="M119 39c19 0 34 14 34 31v16c0 17-15 31-34 31h-8l-19 14 4-20c-7-6-11-15-11-25V70c0-17 15-31 34-31Z" fill="url(#back)" stroke="#FFB2C7" stroke-opacity=".55" stroke-width="2"/>
-  <path d="M57 48h42c22 0 39 16 39 36v15c0 20-17 36-39 36H82l-25 19 5-22c-15-6-25-18-25-33V84c0-20 9-36 20-36Z" fill="#100A18" opacity=".22" transform="translate(0 5)"/>
-  <path d="M58 43h40c22 0 39 16 39 36v15c0 20-17 36-39 36H82l-25 19 5-22c-15-6-25-18-25-33V79c0-20 9-36 21-36Z" fill="url(#bubble)" stroke="#FFF8F3" stroke-width="2"/>
-  <circle cx="69" cy="88" r="6" fill="#702342"/>
-  <circle cx="91" cy="88" r="6" fill="#702342"/>
-  <circle cx="113" cy="88" r="6" fill="#702342"/>
-  <path d="M48 65c5-8 13-13 23-15" stroke="#FFF" stroke-opacity=".7" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M58 37h76c15 0 26 12 26 27v38c0 15-11 27-26 27H93l-34 25 7-25c-19-3-31-15-31-32V64c0-15 9-27 23-27Z" fill="#12060D" opacity=".24" transform="translate(0 5)"/>
+  <path d="M58 34h76c15 0 26 12 26 27v38c0 15-11 27-26 27H93l-34 25 7-25c-19-3-31-15-31-32V61c0-15 9-27 23-27Z" fill="url(#bubble)" stroke="#FFF9F5" stroke-width="2"/>
+  <path d="M57 53c4-5 10-8 17-9" fill="none" stroke="#FFFFFF" stroke-opacity=".8" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="70" cy="81" r="6" fill="#74213F"/>
+  <circle cx="96" cy="81" r="6" fill="#74213F"/>
+  <circle cx="122" cy="81" r="6" fill="#74213F"/>
 </svg>
