@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Bell, ChevronDown, CircleHelp, ContactRound, Home, MessageCircle, Phone, Settings, UsersRound } from "lucide-react";
+import { navigate } from "./utils/navigate";
 
 type View = "title" | "actions";
 type Mode = "compact" | "expanded";
@@ -106,11 +107,23 @@ export default function NowBar() {
       if (idleTimer.current) clearTimeout(idleTimer.current);
       return;
     }
+    const routeByAction: Record<string, string> = {
+      HOME: "/home",
+      CHAT: "/chats",
+      PEOPLE: "/contacts",
+      CALLS: "/calls",
+      GROUP: "/groups",
+      ALERT: "/notifications",
+      SET: "/settings",
+      HELP: "/help",
+    };
     setActiveAction(label);
     setPageTitle(label);
     setView("title");
     setMode("compact");
     if (idleTimer.current) clearTimeout(idleTimer.current);
+    const targetPath = routeByAction[label];
+    if (targetPath) navigate(targetPath);
   };
 
   return (
