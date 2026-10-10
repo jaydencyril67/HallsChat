@@ -59,7 +59,6 @@ export default function SigninPage() {
         <span className="signup-form-kicker">WELCOME BACK</span>
         <h1>Your people.<br /><em>Your conversations.</em></h1>
         <p>Sign in to return to your HallsChat space and pick up where your conversations left off.</p>
-        <div className="auth-security-note"><LockKeyhole size={17} /><span>Only verified email accounts can sign in.</span></div>
       </section>
       <section className="auth-form-panel" aria-labelledby="signin-heading">
         <div className="signup-form-heading">
