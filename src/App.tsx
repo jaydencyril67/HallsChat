@@ -14,6 +14,13 @@ export default function App() {
     return () => window.removeEventListener("popstate", syncPath);
   }, []);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      document.getElementById("initial-splash")?.remove();
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
   const navigate = (nextPath: string) => {
     if (window.location.pathname !== nextPath) window.history.pushState({}, "", nextPath);
     setPath(nextPath);
