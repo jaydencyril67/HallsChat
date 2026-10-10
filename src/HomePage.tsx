@@ -91,10 +91,6 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, [user]);
 
-  useEffect(() => () => {
-    selectedImages.forEach(item => URL.revokeObjectURL(item.preview));
-  }, [selectedImages]);
-
   function selectImages(event: ChangeEvent<HTMLInputElement>) {
     const incoming = Array.from(event.target.files || []);
     event.target.value = "";
@@ -121,6 +117,8 @@ export default function HomePage() {
   }
 
   function removeSelectedImage(index: number) {
+    const item = selectedImages[index];
+    if (item) URL.revokeObjectURL(item.preview);
     setSelectedImages(current => current.filter((_, itemIndex) => itemIndex !== index));
   }
 
@@ -180,6 +178,7 @@ export default function HomePage() {
       if (!response.ok || !payload.post) throw new Error(payload.message || "Your post couldn't be published.");
       setPosts(current => [payload.post as SocialPost, ...current]);
       setDraft("");
+      selectedImages.forEach(item => URL.revokeObjectURL(item.preview));
       setSelectedImages([]);
       setNotice("Your post is live.");
     } catch (err) {
