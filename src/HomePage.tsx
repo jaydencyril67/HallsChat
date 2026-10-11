@@ -271,7 +271,7 @@ export default function HomePage() {
                   <button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove ${item.file.name}`} disabled={publishing}><X size={14} /></button>
                   <span>{item.file.name}</span>
                 </div>)}
-                </div>
+                </div>}
               </> : <div className="social-poll-builder">
                 <div className="social-poll-builder-heading"><ChartNoAxesColumn size={19}/><div><strong>Create a poll</strong><span>Ask a question and let everyone vote.</span></div></div>
                 <label className="social-poll-field-label" htmlFor="social-poll-question">Poll question</label>
