@@ -95,7 +95,8 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     const bounds = event.currentTarget.getBoundingClientRect();
     pointersRef.current.set(event.pointerId, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
     if (pointersRef.current.size === 1) {
-      dragRef.current = { x: event.clientX, y: event.clientY, offset: offsetRef.current };
+      const point = pointersRef.current.get(event.pointerId)!;
+      dragRef.current = { x: point.x, y: point.y, offset: offsetRef.current };
       gestureRef.current = null;
     } else if (pointersRef.current.size === 2) {
       const [a, b] = Array.from(pointersRef.current.values());
@@ -134,10 +135,13 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
       return;
     }
     if (!dragRef.current) return;
+    const point = pointersRef.current.get(event.pointerId);
+    if (!point) return;
     const nextOffset = constrainOffset({
-      x: dragRef.current.offset.x + event.clientX - dragRef.current.x,
-      y: dragRef.current.offset.y + event.clientY - dragRef.current.y,
+      x: offsetRef.current.x + point.x - dragRef.current.x,
+      y: offsetRef.current.y + point.y - dragRef.current.y,
     });
+    dragRef.current = { x: point.x, y: point.y, offset: nextOffset };
     offsetRef.current = nextOffset;
     setOffset(nextOffset);
   };
