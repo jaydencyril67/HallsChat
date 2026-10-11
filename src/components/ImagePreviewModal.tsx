@@ -86,7 +86,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
       <footer className="social-image-modal-controls" onClick={event => event.stopPropagation()}>
         <button type="button" onClick={() => setZoom(z => Math.max(1, z - 0.25))} aria-label="Zoom out" disabled={zoom <= 1} style={{ opacity: zoom <= 1 ? .4 : 1 }}><ZoomOut size={19} /></button>
         <button type="button" className="social-image-modal-reset" onClick={reset} aria-label="Reset zoom"><RotateCcw size={16} /><span>Reset</span></button>
-        <button type="button" onClick={() => setZoom(z => Math.min(10, z + 0.25))} aria-label="Zoom in" disabled={zoom >= 10} style={{ opacity: zoom >= 5 ? .4 : 1 }}><ZoomIn size={19} /></button>
+        <button type="button" onClick={() => setZoom(z => Math.min(10, z + 0.25))} aria-label="Zoom in" disabled={zoom >= 10} style={{ opacity: zoom >= 10 ? .4 : 1 }}><ZoomIn size={19} /></button>
       </footer>
     </div>
   );
