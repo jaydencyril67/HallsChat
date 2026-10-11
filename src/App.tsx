@@ -46,7 +46,9 @@ export default function App() {
       const savedToken = localStorage.getItem("hallschat_token");
       if (!savedToken || document.visibilityState !== "visible" || stopped) return;
       try {
-        await fetch(`${(import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\\/$/, "")}/api/presence/heartbeat`, {
+        const configuredApi = import.meta.env.VITE_API_URL || "https://hallschats.onrender.com";
+        const apiBase = configuredApi.endsWith("/") ? configuredApi.slice(0, -1) : configuredApi;
+        await fetch(`${apiBase}/api/presence/heartbeat`, {
           method: "POST",
           headers: { Authorization: `Bearer ${savedToken}` }
         });
