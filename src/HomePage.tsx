@@ -121,6 +121,7 @@ export default function HomePage() {
   const [storyTextSections, setStoryTextSections] = useState<StoryTextSection[]>([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
   const [activeStoryTextId, setActiveStoryTextId] = useState("story-text-1");
   const [storyTextManagerOpen, setStoryTextManagerOpen] = useState(false);
+  const [storyColorPickerOpen, setStoryColorPickerOpen] = useState(false);
   const storyTextDragRef = useRef<{ pointerId: number; sectionId: string; startX: number; startY: number; originX: number; originY: number; nextX: number; nextY: number; element: HTMLParagraphElement } | null>(null);
   const [storyBackground, setStoryBackground] = useState("#8b1e35");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
@@ -509,6 +510,7 @@ export default function HomePage() {
       setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
       setActiveStoryTextId("story-text-1");
       setStoryTextManagerOpen(false);
+      setStoryColorPickerOpen(false);
       setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
       setStoryComposerOpen(false);
       setNotice("Your story is live for 24 hours.");
@@ -524,6 +526,7 @@ export default function HomePage() {
     setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
     setActiveStoryTextId("story-text-1");
     setStoryTextManagerOpen(false);
+    setStoryColorPickerOpen(false);
     storyTextDragRef.current = null;
     cancelStoryPhotoEdit();
     setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
@@ -978,7 +981,8 @@ export default function HomePage() {
             <div className="social-story-editor-title"><strong>Text</strong><small>{Math.max(0, storyTextSections.findIndex(section => section.id === activeStoryTextId) + 1)} of {storyTextSections.length}</small></div>
             <div className="social-story-editor-tools">
               <button type="button" className="social-story-manage-trigger" onClick={() => setStoryTextManagerOpen(value => !value)} aria-expanded={storyTextManagerOpen}>Manage</button>
-              <button type="button" onClick={addStoryTextSection} disabled={storyTextSections.length >= 10}><Plus size={15}/> Add text</button>
+              {!storyPhoto && <button type="button" className="social-story-manage-trigger" onClick={() => setStoryColorPickerOpen(value => !value)} aria-expanded={storyColorPickerOpen}>Background</button>}
+              <button type="button" onClick={addStoryTextSection disabled={storyTextSections.length >= 10}><Plus size={15}/> Add text</button>
             </div>
           </div>
           <div className="social-story-section-rail" aria-label="Choose text section">
@@ -996,8 +1000,11 @@ export default function HomePage() {
           {storyTextSections.filter(section => section.id === activeStoryTextId).map((section, index) => <textarea key={section.id} className="social-story-active-text-input" value={section.text} onFocus={() => setActiveStoryTextId(section.id)} onChange={event => updateStoryTextSection(section.id, event.target.value)} maxLength={500} rows={2} placeholder="Write this text section…" aria-label={`Edit story text section ${index + 1}`} />)}
           <small className="social-story-editor-count">{storyTextSections.reduce((total, section) => total + section.text.length, 0)} characters · drag text on the preview to position it</small>
         </div>
-        {!storyPhoto && <div className="social-story-colors" aria-label="Story background color">
-          {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => setStoryBackground(color)} aria-label={`Choose ${color} background`} />)}
+        {!storyPhoto && storyColorPickerOpen && <div className="social-story-color-popout" role="dialog" aria-label="Choose story background color">
+          <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setStoryColorPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
+          <div className="social-story-colors" aria-label="Story background color">
+            {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryBackground(color); setStoryColorPickerOpen(false); }} aria-label={`Choose ${color} background`} />)}
+          </div>
         </div>}
         <div className="social-story-dialog-actions"><label className="social-story-photo-button"><Camera size={17}/> Add photo<input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label><span>{storyTextSections.filter(section => section.text.trim()).length} text section(s)</span><button type="submit" disabled={storyPublishing || (!storyTextSections.some(section => section.text.trim()) && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Publishing…</> : <><Send size={15}/> Share story</>}</button></div>
         <p className="social-story-expiry">Stories disappear automatically after 24 hours.</p>
