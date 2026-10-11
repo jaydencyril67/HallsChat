@@ -97,7 +97,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                   <div><strong style={{ color: "#fff0f3", fontSize: ".95rem" }}>{profile.followingCount}</strong><span style={{ ...muted, marginLeft: 5, fontSize: ".78rem" }}>following</span></div>
                   <div><strong style={{ color: "#fff0f3", fontSize: ".95rem" }}>{posts.length}</strong><span style={{ ...muted, marginLeft: 5, fontSize: ".78rem" }}>posts</span></div>
                 </div>
-                {profile.createdAt && <div style={{ ...muted, display: "flex", alignItems: "center", gap: 6, marginTop: 12, fontSize: ".74rem" }}><CalendarDays size={14} /> Joined {new Date(profile.createdAt).toLocaleDateString([], { month: "long", year: "numeric" })}</div>}
+
               </div>
             </section>
             {error && <div role="alert" style={{ ...panel, padding: 12, marginBottom: 12, color: "#ff9cab", fontSize: ".8rem" }}>{error}</div>}
