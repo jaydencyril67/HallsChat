@@ -1,4 +1,5 @@
-import { CSSProperties, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { Search, UsersRound, UserRoundCheck, UserPlus, RefreshCw } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
