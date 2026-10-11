@@ -1793,3 +1793,10 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-story-text-manager-list::-webkit-scrollbar-track{border-radius:99px;background:rgba(255,255,255,.04)}
 .social-story-text-manager-list::-webkit-scrollbar-thumb{border-radius:99px;background:rgba(240,120,137,.48)}
 @media(max-height:650px){.social-story-text-manager{max-height:38dvh}}
+
+
+/* Story text manager only becomes vertically scrollable when a fourth section exists. */
+.social-story-text-manager:not(.is-scrollable){max-height:none;overflow:visible}
+.social-story-text-manager:not(.is-scrollable) .social-story-text-manager-list{overflow-y:visible;min-height:0}
+.social-story-text-manager.is-scrollable{max-height:min(30dvh,260px);min-height:0;overflow:hidden}
+.social-story-text-manager.is-scrollable .social-story-text-manager-list{min-height:0;max-height:calc(min(30dvh,260px) - 48px);overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y}
