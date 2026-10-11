@@ -1654,8 +1654,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-story-progress-segment.active i{animation-name:social-story-progress-fill;animation-timing-function:linear;animation-fill-mode:forwards}
 @keyframes social-story-progress-fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 .social-story-tap-zone{position:absolute;z-index:3;top:0;bottom:0;width:32%;padding:0;border:0;border-radius:0;background:transparent;opacity:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.social-story-tap-zone.previous{left:0}
-.social-story-tap-zone.next{right:0;width:68%}
+.social-story-tap-zone.previous{left:0;width:50%}
+.social-story-tap-zone.next{right:0;width:50%}
 .social-story-viewer-content{touch-action:pan-y;user-select:none;-webkit-user-select:none}
 .social-story-viewer-content>img{pointer-events:none}
 .social-story-viewer-content>.social-story-positioned-text{pointer-events:none}
