@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { ArrowLeft, MessageCircle, Send, ShieldCheck, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowUp, MessageCircle, ShieldCheck, UsersRound } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -48,6 +48,7 @@ export default function ChatPage() {
   const [error, setError] = useState("");
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
 
   const token = () => localStorage.getItem("hallschat_token");
@@ -116,6 +117,13 @@ export default function ChatPage() {
     const timer = window.setInterval(() => { void loadMessages(activeId, false); }, 4000);
     return () => window.clearInterval(timer);
   }, [activeId, loadMessages]);
+
+  useEffect(() => {
+    const input = draftInputRef.current;
+    if (!input) return;
+    input.style.height = "auto";
+    input.style.height = `${Math.min(input.scrollHeight, 144)}px`;
+  }, [draft]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -194,9 +202,9 @@ export default function ChatPage() {
               <div ref={bottomRef} />
             </div>
             {activePerson.canMessage ? <form className="chat-composer" onSubmit={sendMessage}>
-              <textarea value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
+              <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
               <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>
-              <button type="submit" disabled={!draft.trim() || sending} aria-label="Send message">{sending ? <LoadingDots /> : <Send size={18} />}</button>
+              <button type="submit" disabled={!draft.trim() || sending} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
             </form> : <div className="chat-readonly-notice"><ShieldCheck size={16} /><span>This person no longer follows you, so you can’t send new messages.</span></div>}
           </> : <div className="chat-welcome"><span><MessageCircle size={30} /></span><h2>Your conversations, all in one place</h2><p>Select a follower to start chatting. Only people who follow you can receive messages from you.</p></div>}
         </section>
