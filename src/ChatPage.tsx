@@ -7,6 +7,8 @@ import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
 import { io } from "socket.io-client";
+import type { Socket } from "socket.io-client";
+import CallsPanel from "./components/CallsPanel";
 
 type ChatPerson = {
   id: string;
@@ -148,6 +150,7 @@ export default function ChatPage() {
   const [editMessageDraft, setEditMessageDraft] = useState("");
   const [savingMessageEdit, setSavingMessageEdit] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
+  const [liveSocket, setLiveSocket] = useState<Socket | null>(null);
   const [otherTyping, setOtherTyping] = useState(false);
   const [listLoading, setListLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -425,6 +428,7 @@ export default function ChatPage() {
       transports: ["websocket", "polling"]
     });
     socketRef.current = socket;
+    setLiveSocket(socket);
     socket.on("connect_error", () => {
       // REST history remains available while the socket reconnects.
     });
@@ -518,6 +522,7 @@ export default function ChatPage() {
       if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current);
       socket.removeAllListeners();
       socket.disconnect();
+      setLiveSocket(null);
       if (socketRef.current === socket) socketRef.current = null;
     };
   }, [currentUserId]);
@@ -909,6 +914,7 @@ export default function ChatPage() {
               <button type="button" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} aria-label={"View " + activePerson.name + " profile"} style={{ padding: 0, border: 0, background: "transparent", borderRadius: "50%", flexShrink: 0 }}><Avatar person={activePerson} size="large" /></button>
               <button type="button" className="chat-conversation-person" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} style={{ minWidth: 0, padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left", cursor: "pointer" }} aria-label={"View " + activePerson.name + " profile"}><strong>{activePerson.name}</strong><span className={otherTyping ? "chat-typing-label" : ""}>{otherTyping ? "Typing…" : "@" + activePerson.username}</span></button>
               <span className={`chat-access-pill ${activePerson.isOnline ? "chat-status-online" : "chat-status-offline"}`} aria-label={activePerson.isOnline ? "Online" : "Offline"}>{activePerson.isOnline ? "Online" : "Offline"}</span>
+              <CallsPanel socket={liveSocket} person={activePerson} />
             </header>
             <div className="chat-message-list" ref={chatMessageListRef}>
               {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : messages.length ? messages.map(message => {

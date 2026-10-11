@@ -5,6 +5,7 @@ import SigninPage from "./SigninPage";
 import HomePage from "./HomePage";
 import HallsPage from "./HallsPage";
 import ChatPage from "./ChatPage";
+import CallsPage from "./CallsPage";
 import ProfilePage from "./ProfilePage";
 import PublicProfilePage from "./PublicProfilePage";
 import EmailVerificationPage from "./EmailVerificationPage";
@@ -113,6 +114,7 @@ export default function App() {
   if (normalizedPath === "/home") return <HomePage />;
   if (normalizedPath === "/halls") return <HallsPage />;
   if (normalizedPath === "/chats") return <ChatPage />;
+  if (normalizedPath === "/calls") return <CallsPage />;
   if (normalizedPath === "/profile") return <ProfilePage />;
   const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);
   if (publicProfileMatch) return <PublicProfilePage userId={decodeURIComponent(publicProfileMatch[1])} />;
