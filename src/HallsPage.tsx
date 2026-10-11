@@ -94,8 +94,6 @@ export default function HallsPage() {
           )}
         </div>
 
-        <label style={{ ...panel, display: "flex", alignItems: "center", gap: 10, padding: "0 13px", marginBottom: 13 }}>
-
         {error && <div role="alert" style={{ ...panel, padding: 13, marginBottom: 12, color: "#ff9eaa", fontSize: ".84rem" }}>{error}<button type="button" onClick={() => void loadUsers(tab)} style={{ display: "block", marginTop: 8, padding: 0, border: 0, background: "none", color: "#ffd4db", textDecoration: "underline" }}>Try again</button></div>}
         {notice && <p role="status" style={{ margin: "0 0 12px", color: "#9de4bd", fontSize: ".82rem" }}>{notice}</p>}
 
