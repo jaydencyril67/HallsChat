@@ -23,7 +23,7 @@ type SocialPost = {
 type SocialComment = { id: string; content: string; parentId?: string | null; createdAt: string; likeCount: number; likedByMe: boolean; author: { id: string; name: string; username: string; profilePicture?: string } | null };
 type SelectedImage = { file: File; preview: string };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string; message?: string };
-type SocialStory = { id: string; text: string; mediaUrl?: string; background?: string; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean };
+type SocialStory = { id: string; text: string; mediaUrl?: string; background?: string; textPosition?: { x: number; y: number }; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const MAX_IMAGES = 4;
@@ -114,6 +114,8 @@ export default function HomePage() {
   const [storyComposerOpen, setStoryComposerOpen] = useState(false);
   const [storyViewer, setStoryViewer] = useState<SocialStory | null>(null);
   const [storyText, setStoryText] = useState("");
+  const [storyTextPosition, setStoryTextPosition] = useState({ x: 50, y: 50 });
+  const storyTextDragRef = useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number } | null>(null);
   const [storyBackground, setStoryBackground] = useState("#8b1e35");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
   const [storyEditingImageUrl, setStoryEditingImageUrl] = useState("");
@@ -351,6 +353,34 @@ export default function HomePage() {
     });
   }
 
+  function handleStoryTextPointerDown(event: React.PointerEvent<HTMLParagraphElement>) {
+    if (!storyText.trim()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const preview = event.currentTarget.closest(".social-story-preview");
+    if (!preview) return;
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Continue without capture when unavailable. */ }
+    storyTextDragRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: storyTextPosition.x, originY: storyTextPosition.y };
+  }
+
+  function handleStoryTextPointerMove(event: React.PointerEvent<HTMLParagraphElement>) {
+    const drag = storyTextDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const preview = event.currentTarget.closest(".social-story-preview");
+    if (!preview) return;
+    event.preventDefault();
+    const bounds = preview.getBoundingClientRect();
+    setStoryTextPosition({
+      x: Math.max(8, Math.min(92, drag.originX + (event.clientX - drag.startX) / Math.max(1, bounds.width) * 100)),
+      y: Math.max(8, Math.min(92, drag.originY + (event.clientY - drag.startY) / Math.max(1, bounds.height) * 100)),
+    });
+  }
+
+  function handleStoryTextPointerUp(event: React.PointerEvent<HTMLParagraphElement>) {
+    if (storyTextDragRef.current?.pointerId === event.pointerId) storyTextDragRef.current = null;
+    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Capture may already be released. */ }
+  }
+
   async function publishStory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (storyPublishing || (!storyText.trim() && !storyPhoto)) return;
@@ -380,12 +410,13 @@ export default function HomePage() {
       const response = await fetch(`${apiBase}/api/social/stories`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ text: storyText.trim(), mediaUrl, background: storyBackground })
+        body: JSON.stringify({ text: storyText.trim(), mediaUrl, background: storyBackground, textPosition: storyTextPosition })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.story) throw new Error(payload.message || "Your story couldn't be published.");
       setStories(current => [...current.filter(item => item.id !== payload.story.id), payload.story as SocialStory]);
       setStoryText("");
+      setStoryTextPosition({ x: 50, y: 50 });
       setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
       setStoryComposerOpen(false);
       setNotice("Your story is live for 24 hours.");
@@ -399,6 +430,8 @@ export default function HomePage() {
   function closeStoryComposer() {
     setStoryComposerOpen(false);
     setStoryText("");
+    setStoryTextPosition({ x: 50, y: 50 });
+    storyTextDragRef.current = null;
     cancelStoryPhotoEdit();
     setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
   }
@@ -842,7 +875,7 @@ export default function HomePage() {
         <div className="social-story-dialog-head"><div><span className="signup-form-kicker">YOUR MOMENT</span><h2>Create story</h2></div><button type="button" onClick={closeStoryComposer} aria-label="Close story creator"><X size={19}/></button></div>
         <div className="social-story-preview" style={{ background: storyPhoto ? "#16090d" : storyBackground }}>
           {storyPhoto && <img src={storyPhoto.preview} alt="Story preview" />}
-          {storyText.trim() && <p>{storyText}</p>}
+          {storyText.trim() && <p className="social-story-draggable-text" style={{ left: `${storyTextPosition.x}%`, top: `${storyTextPosition.y}%` }} onPointerDown={handleStoryTextPointerDown} onPointerMove={handleStoryTextPointerMove} onPointerUp={handleStoryTextPointerUp} onPointerCancel={handleStoryTextPointerUp} aria-label="Drag to position story text">{storyText}</p>}
           {!storyPhoto && !storyText.trim() && <span>Your story preview</span>}
           {storyPhoto && <button type="button" className="social-story-remove-photo" onClick={() => setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; })} aria-label="Remove story photo"><X size={16}/></button>}
         </div>
@@ -858,7 +891,7 @@ export default function HomePage() {
     {storyViewer && <div className="social-story-overlay" role="presentation" onClick={() => setStoryViewer(null)}>
       <div className="social-story-viewer" role="dialog" aria-modal="true" aria-label={`Story by ${storyViewer.author?.name || "user"}`} onClick={event => event.stopPropagation()}>
         <div className="social-story-progress"><span /></div><div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div><button type="button" onClick={() => setStoryViewer(null)} aria-label="Close story"><X size={19}/></button></div>
-        <div className="social-story-viewer-content" style={{background:storyViewer.background || "#8b1e35"}}>{storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}{storyViewer.text && <p>{storyViewer.text}</p>}</div>
+        <div className="social-story-viewer-content" style={{background:storyViewer.background || "#8b1e35"}}>{storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}{storyViewer.text && <p className="social-story-positioned-text" style={{ left: `${storyViewer.textPosition?.x ?? 50}%`, top: `${storyViewer.textPosition?.y ?? 50}%` }}>{storyViewer.text}</p>}</div>
         <div className="social-story-viewer-footer">HallsChat · 24-hour story</div>
       </div>
     </div>}
