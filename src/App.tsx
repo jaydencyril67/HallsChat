@@ -64,12 +64,6 @@ export default function App() {
     };
   }, []);
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      document.getElementById("initial-splash")?.remove();
-    }, 3000);
-    return () => window.clearTimeout(timer);
-  }, []);
 
   const normalizedPath = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
   if (normalizedPath === "/verify-email") return <EmailVerificationPage />;
