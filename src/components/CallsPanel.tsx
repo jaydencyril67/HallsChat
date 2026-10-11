@@ -6,7 +6,7 @@ type Person = { id: string; name: string; username: string; profilePicture?: str
 type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; createdAt: number };
 type Props = { socket: Socket | null; person: Person | null };
 
-export default function CallsPanel({ socket, currentUserId, person }: Props) {
+export default function CallsPanel({ socket, person }: Props) {
   const [incoming, setIncoming] = useState<Incoming | null>(null);
   const [callId, setCallId] = useState("");
   const [kind, setKind] = useState<"audio" | "video">("audio");
