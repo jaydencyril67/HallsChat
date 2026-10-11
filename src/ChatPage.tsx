@@ -1,4 +1,5 @@
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { FormEvent } from "react";
 import { ArrowLeft, MessageCircle, Send, ShieldCheck, UsersRound } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -45,20 +46,12 @@ export default function ChatPage() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
 
   const token = () => localStorage.getItem("hallschat_token");
-  const handleAuthError = (status: number) => {
-    if (status === 401) {
-      localStorage.removeItem("hallschat_token");
-      navigate("/signin", { replace: true });
-      return true;
-    }
-    return false;
-  };
+
 
   const loadPeople = useCallback(async (showLoader = false) => {
     const savedToken = localStorage.getItem("hallschat_token");
@@ -136,7 +129,6 @@ export default function ChatPage() {
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
     setSending(true);
     setError("");
-    setNotice("");
     try {
       const response = await fetch(`${apiBase}/api/chat/${encodeURIComponent(activePerson.id)}/messages`, {
         method: "POST",
@@ -207,7 +199,7 @@ export default function ChatPage() {
         </section>
       </div>
     </section>
-    {(error || notice) && <div className={`halls-toast ${error ? "halls-toast-error" : "halls-toast-success"}`} role={error ? "alert" : "status"}><span>{error || notice}</span><button type="button" onClick={() => { setError(""); setNotice(""); }} aria-label="Dismiss notification">×</button></div>}
+    {error && <div className="halls-toast halls-toast-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
     <NowBar />
   </main>;
 }
