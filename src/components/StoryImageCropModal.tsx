@@ -116,7 +116,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     });
   };
 
-  const localPoint = (event: PointerEvent<HTMLDivElement>): Point => {
+  const localPoint = (event: { clientX: number; clientY: number }): Point => {
     const bounds = stageRef.current?.getBoundingClientRect();
     return bounds ? { x: event.clientX - bounds.left, y: event.clientY - bounds.top } : { x: 0, y: 0 };
   };
@@ -181,7 +181,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     }
   };
 
-  const handleCropPointerDown = (event: PointerEvent<HTMLDivElement>, mode: "move" | "resize", handle?: string) => {
+  const handleCropPointerDown = (event: PointerEvent<HTMLElement>, mode: "move" | "resize", handle?: string) => {
     if (!ready || saving) return;
     event.preventDefault();
     event.stopPropagation();
@@ -190,7 +190,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     cropDragRef.current = { pointerId: event.pointerId, start: localPoint(event), crop: cropRef.current, mode, handle };
   };
 
-  const handleCropPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+  const handleCropPointerMove = (event: PointerEvent<HTMLElement>) => {
     const drag = cropDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId || saving) return;
     event.preventDefault();
@@ -228,7 +228,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     updateCrop({ x: left, y: top, width: Math.max(minSize, right - left), height: Math.max(minSize, bottom - top) });
   };
 
-  const handleCropPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+  const handleCropPointerUp = (event: PointerEvent<HTMLElement>) => {
     if (cropDragRef.current?.pointerId !== event.pointerId) return;
     cropDragRef.current = null;
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Capture may already be released. */ }
