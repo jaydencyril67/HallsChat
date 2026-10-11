@@ -5,6 +5,7 @@ import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "luc
 type Person = { id: string; name: string; username: string; profilePicture?: string; canMessage: boolean };
 type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; createdAt: number };
 type Props = { socket: Socket | null; person: Person | null };
+const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
 export default function CallsPanel({ socket, person }: Props) {
   const [incoming, setIncoming] = useState<Incoming | null>(null);
@@ -42,6 +43,17 @@ export default function CallsPanel({ socket, person }: Props) {
   }, []);
 
   const createPeer = useCallback(async (id: string, video: boolean) => {
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) throw new Error("Your HallsChat session has expired. Sign in again before calling.");
+
+    const iceResponse = await fetch(`${apiBase}/api/calls/ice-servers`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const icePayload = await iceResponse.json().catch(() => ({})) as { iceServers?: RTCIceServer[]; message?: string };
+    if (!iceResponse.ok || !Array.isArray(icePayload.iceServers) || icePayload.iceServers.length === 0) {
+      throw new Error(icePayload.message || "Could not prepare secure call connection servers. Please try again.");
+    }
+
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         echoCancellation: true,
@@ -60,10 +72,7 @@ export default function CallsPanel({ socket, person }: Props) {
     streamRef.current = stream;
     if (localVideo.current) localVideo.current.srcObject = stream;
     const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: "stun:stun.l.google.com:19302" },
-        { urls: "stun:stun1.l.google.com:19302" }
-      ]
+      iceServers: icePayload.iceServers
     });
     pcRef.current = pc;
     stream.getTracks().forEach(track => {
@@ -135,9 +144,9 @@ export default function CallsPanel({ socket, person }: Props) {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         socket.emit("call:offer", { callId: response.callId, description: pc.localDescription });
-      } catch {
+      } catch (error) {
         socket.emit("call:failed", { callId: response.callId });
-        cleanup("Microphone or camera access failed. Allow permissions and try again.");
+        cleanup(error instanceof Error ? error.message : "Could not prepare the call. Check microphone/camera permissions and try again.");
       }
     });
   }, [socket, person, createPeer, cleanup]);
@@ -162,9 +171,9 @@ export default function CallsPanel({ socket, person }: Props) {
         socket.emit("call:answer", { callId: call.callId, description: pc.localDescription });
         delete (window as Window & { __hallsQueuedOffer?: unknown }).__hallsQueuedOffer;
       }
-    } catch {
+    } catch (error) {
       socket.emit("call:decline", { callId: call.callId });
-      cleanup("Microphone or camera access failed. Allow permissions and try again.");
+      cleanup(error instanceof Error ? error.message : "Could not prepare the call. Check microphone/camera permissions and try again.");
     }
   }, [socket, incoming, createPeer, cleanup]);
 
