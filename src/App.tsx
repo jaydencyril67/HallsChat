@@ -39,6 +39,32 @@ function NavigationSectionPage({ title, description }: { title: string; descript
 export default function App() {
   const [path, setPath] = useState(() => window.location.pathname);
 
+
+  useEffect(() => {
+    let stopped = false;
+    const sendHeartbeat = async () => {
+      const savedToken = localStorage.getItem("hallschat_token");
+      if (!savedToken || document.visibilityState !== "visible" || stopped) return;
+      try {
+        await fetch(`${(import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\\/$/, "")}/api/presence/heartbeat`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${savedToken}` }
+        });
+      } catch {
+        // Presence naturally expires when heartbeats stop; do not interrupt the app.
+      }
+    };
+    void sendHeartbeat();
+    const timer = window.setInterval(() => { void sendHeartbeat(); }, 25000);
+    const onVisibility = () => { if (document.visibilityState === "visible") void sendHeartbeat(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stopped = true;
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       document.getElementById("initial-splash")?.remove();
