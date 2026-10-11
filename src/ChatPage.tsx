@@ -203,9 +203,16 @@ export default function ChatPage() {
       const response = await fetch(`${apiBase}/api/chat/messages/${encodeURIComponent(messageId)}`, { method: "DELETE", headers: { Authorization: `Bearer ${savedToken}` } });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || "That message couldn't be deleted.");
-      setMessages(current => current.map(message => message.id === messageId
-        ? { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true }
-        : message.replyTo?.id === messageId ? { ...message, replyTo: { ...message.replyTo, text: "", imageUrl: "", audioUrl: "", deleted: true } } : message));
+      setMessages(current => current.map(message => {
+        if (message.id === messageId) {
+          return { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true };
+        }
+        const replyTo = message.replyTo;
+        if (replyTo && replyTo.id === messageId) {
+          return { ...message, replyTo: { ...replyTo, text: "", imageUrl: "", audioUrl: "", deleted: true } };
+        }
+        return message;
+      }));
       setPeople(current => current.map(person => person.id === activeIdRef.current ? { ...person, lastMessage: "This message was deleted" } : person));
       setDeleteConfirmId(null); setActionMenuFor(null);
     } catch (err) { setError(err instanceof Error ? err.message : "That message couldn't be deleted."); }
@@ -303,9 +310,16 @@ export default function ChatPage() {
     });
     socket.on("chat:deleted", (payload: { id?: string }) => {
       if (!payload?.id) return;
-      setMessages(current => current.map(message => message.id === payload.id
-        ? { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true }
-        : message.replyTo?.id === payload.id ? { ...message, replyTo: { ...message.replyTo, text: "", imageUrl: "", audioUrl: "", deleted: true } } : message));
+      setMessages(current => current.map(message => {
+        if (message.id === payload.id) {
+          return { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true };
+        }
+        const replyTo = message.replyTo;
+        if (replyTo && replyTo.id === payload.id) {
+          return { ...message, replyTo: { ...replyTo, text: "", imageUrl: "", audioUrl: "", deleted: true } };
+        }
+        return message;
+      }));
     });
     socket.on("chat:message", (message: ChatMessage) => {
       const me = currentUserIdRef.current;
