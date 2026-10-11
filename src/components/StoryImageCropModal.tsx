@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Check, Minus, Plus, X } from "lucide-react";
 
 type StoryImageCropModalProps = {
@@ -83,7 +83,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     setReady(true);
   };
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (!ready || saving) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
