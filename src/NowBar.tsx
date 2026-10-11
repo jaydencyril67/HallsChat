@@ -9,6 +9,7 @@ const actions = [
   { label: "HOME", icon: Home },
   { label: "CHAT", icon: MessageCircle },
   { label: "PEOPLE", icon: ContactRound },
+  { label: "HALLS", icon: UsersRound },
   { label: "CALLS", icon: Phone },
   { label: "GROUP", icon: UsersRound },
   { label: "ALERT", icon: Bell },
@@ -24,6 +25,7 @@ function getPageTitle() {
   if (path === "/confirm-email" || path === "/verify-email") return "CONFIRM EMAIL";
   if (path.startsWith("/chats")) return "CHAT";
   if (path.startsWith("/contacts")) return "PEOPLE";
+  if (path.startsWith("/halls")) return "HALLS";
   if (path.startsWith("/calls")) return "CALLS";
   if (path.startsWith("/groups")) return "GROUP";
   if (path.startsWith("/notifications")) return "ALERT";
@@ -111,6 +113,7 @@ export default function NowBar() {
       HOME: "/home",
       CHAT: "/chats",
       PEOPLE: "/contacts",
+      HALLS: "/halls",
       CALLS: "/calls",
       GROUP: "/groups",
       ALERT: "/notifications",
