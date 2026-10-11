@@ -161,7 +161,7 @@ export default function ChatPage() {
     }
   }
 
-  return <main className="home-page social-home chat-page">
+  return <main className={`home-page social-home chat-page ${activePerson && mobileConversationOpen ? "chat-page-conversation-open" : ""}`}>
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell chat-shell">
       <div className="chat-heading">
