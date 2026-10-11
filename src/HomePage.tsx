@@ -107,6 +107,7 @@ export default function HomePage() {
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState("");
   const [draft, setDraft] = useState("");
+  const [composerExpanded, setComposerExpanded] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState(["", ""]);
@@ -320,6 +321,7 @@ export default function HomePage() {
       if (!response.ok || !payload.post) throw new Error(payload.message || "Your post couldn't be published.");
       setPosts(current => [payload.post as SocialPost, ...current]);
       setDraft("");
+      setComposerExpanded(false);
       setComposerMode("post");
       setPollQuestion("");
       setPollOptions(["", ""]);
@@ -606,7 +608,14 @@ export default function HomePage() {
         </div>
         <div className="social-layout">
           <section className="social-feed-column" aria-label="Social feed">
-            <form className={`social-composer ${composerMode === "poll" ? "social-composer-poll-mode" : ""}`} onSubmit={publishPost}>
+            <form className={`social-composer ${composerMode === "poll" ? "social-composer-poll-mode" : ""} ${!composerExpanded && composerMode === "post" && !draft.trim() && selectedImages.length === 0 ? "social-composer-collapsed" : ""}`} onSubmit={publishPost}>
+              {composerMode === "post" && !composerExpanded && !draft.trim() && selectedImages.length === 0 ? <div className="social-composer-quick">
+                <div className="social-composer-quick-top"><span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span><button type="button" className="social-composer-open" onClick={() => setComposerExpanded(true)}>What's on your mind?</button></div>
+                <div className="social-composer-quick-tools">
+                  <button type="button" onClick={() => { setComposerExpanded(true); window.setTimeout(() => document.getElementById("social-post-content")?.focus(), 0); }}><ImagePlus size={17}/> Photo post</button>
+                  <button type="button" onClick={() => { setComposerExpanded(true); setComposerMode("poll"); }}><ChartNoAxesColumn size={17}/> Poll</button>
+                </div>
+              </div> : <>
               {composerMode === "post" ? <>
                 <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind? Share something with your HallsChat community…" rows={4} />
                 {selectedImages.length > 0 && <div className="social-image-previews" aria-label="Images attached to your post">
@@ -638,6 +647,7 @@ export default function HomePage() {
                 <button className="social-publish" type="submit" disabled={publishing || compressingImages || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{compressingImages ? <><LoadingDots /> Preparing images…</> : publishing ? <><LoadingDots /> Publishing…</> : composerMode === "poll" ? "Post poll" : "Publish"} {!publishing && !compressingImages && <Send size={15}/>}</button>
               </div>
               {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /> {uploadStatus}</p>}
+              </>}
             </form>
 
             <div className="social-feed-heading"><div><span className="signup-form-kicker">THE LATEST</span><h2>Your feed</h2></div><span className="social-feed-count">{posts.length} {posts.length === 1 ? "post" : "posts"}</span></div>
