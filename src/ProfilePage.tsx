@@ -11,7 +11,7 @@ const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.co
 
 export default function ProfilePage() {
   const [user, setUser] = useState<Account | null>(null);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [allPosts, setAllPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -39,7 +39,7 @@ export default function ProfilePage() {
         if (!response.ok) throw new Error(payload.message || "Your posts couldn't be loaded.");
         return Array.isArray(payload.posts) ? payload.posts as Post[] : [];
       })
-      .then(items => { if (!cancelled) setPosts(items.filter(post => post.author?.id === (JSON.parse(atob(token.split(".")[1] || "e30=")).id || ""))); })
+      .then(items => { if (!cancelled) setAllPosts(items); })
       .catch(() => { if (!cancelled) setPosts([]); })
       .finally(() => { if (!cancelled) setPostsLoading(false); });
     return () => { cancelled = true; };
