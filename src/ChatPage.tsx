@@ -18,7 +18,7 @@ type ChatPerson = {
   lastMessage?: string;
   lastMessageAt?: string | null;
 };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; createdAt: string };
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; createdAt: string; pending?: boolean };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -172,7 +172,25 @@ export default function ChatPage() {
         (message.senderId === me && message.recipientId === openId) ||
         (message.senderId === openId && message.recipientId === me);
       if (belongsToOpenConversation) {
-        setMessages(current => current.some(item => item.id === message.id) ? current : [...current, message]);
+        setMessages(current => {
+          if (current.some(item => item.id === message.id)) return current;
+          // Reconcile the server echo with the optimistic message already shown in the chat.
+          if (message.senderId === me) {
+            const incomingHasImage = Boolean(message.images?.length || message.imageUrl);
+            const pendingIndex = current.findIndex(item =>
+              item.pending &&
+              (incomingHasImage
+                ? Boolean(item.images?.length || item.imageUrl) && !item.text
+                : Boolean(message.text) && item.text === message.text)
+            );
+            if (pendingIndex >= 0) {
+              const next = [...current];
+              next[pendingIndex] = message;
+              return next;
+            }
+          }
+          return [...current, message].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        });
       }
       const otherId = message.senderId === me ? message.recipientId : message.senderId;
       const preview = message.text || ((message.images?.length || message.imageUrl) ? "📷 Photo" : "");
@@ -297,18 +315,50 @@ export default function ChatPage() {
     if (!activePerson || !activePerson.canMessage || (!text && imageFiles.length === 0) || sending || compressingImages) return;
     const savedToken = token();
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
+
+    const recipientId = activePerson.id;
+    const now = new Date().toISOString();
+    const pendingItems: ChatMessage[] = [
+      ...(text ? [{
+        id: `pending-text-${Date.now()}`,
+        senderId: currentUserId,
+        recipientId,
+        text,
+        createdAt: now,
+        pending: true
+      } as ChatMessage] : []),
+      ...imagePreviews.map((url, index) => ({
+        id: `pending-image-${Date.now()}-${index}`,
+        senderId: currentUserId,
+        recipientId,
+        text: "",
+        imageUrl: url,
+        createdAt: new Date(Date.now() + index).toISOString(),
+        pending: true
+      } as ChatMessage))
+    ];
+    const pendingIds = pendingItems.map(item => item.id);
+    const filesToSend = [...imageFiles];
+    const previewsToRelease = [...imagePreviews];
+
+    // Show the messages in the conversation immediately, before image upload/network sending.
+    setMessages(current => [...current, ...pendingItems]);
+    setDraft("");
+    setImageFiles([]);
+    setImagePreviews([]);
     setSending(true);
     setError("");
+
     try {
       const images: string[] = [];
-      for (const file of imageFiles) images.push(await uploadChatImage(file, savedToken));
+      for (const file of filesToSend) images.push(await uploadChatImage(file, savedToken));
       const socket = socketRef.current;
       if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending again in a moment.");
 
       const sendOne = (messageText: string, imageUrl?: string) => new Promise<ChatMessage>((resolve, reject) => {
         socket.timeout(15000).emit(
           "chat:send",
-          { recipientId: activePerson.id, text: messageText, images: imageUrl ? [imageUrl] : [] },
+          { recipientId, text: messageText, images: imageUrl ? [imageUrl] : [] },
           (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
             if (timeoutError) return reject(new Error("The live connection timed out. Some items may already have been sent."));
             if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your message couldn't be sent."));
@@ -319,27 +369,36 @@ export default function ChatPage() {
         );
       });
 
+      let pendingIndex = 0;
       const sentMessages: ChatMessage[] = [];
-      // Send text as its own message, then send each image as a separate message/bubble.
-      if (text) sentMessages.push(await sendOne(text));
-      for (const imageUrl of images) sentMessages.push(await sendOne("", imageUrl));
-
-      setMessages(current => {
-        const byId = new Map(current.map(message => [message.id, message]));
-        sentMessages.forEach(message => byId.set(message.id, message));
-        return Array.from(byId.values()).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      });
-      setDraft("");
-      imagePreviews.forEach(url => URL.revokeObjectURL(url));
-      setImageFiles([]);
-      setImagePreviews([]);
+      if (text) {
+        const sent = await sendOne(text);
+        sentMessages.push(sent);
+        const pendingId = pendingIds[pendingIndex++];
+        setMessages(current => {
+          const withoutPending = current.filter(message => message.id !== pendingId && message.id !== sent.id);
+          return [...withoutPending, sent].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        });
+      }
+      for (const imageUrl of images) {
+        const sent = await sendOne("", imageUrl);
+        sentMessages.push(sent);
+        const pendingId = pendingIds[pendingIndex++];
+        setMessages(current => {
+          const withoutPending = current.filter(message => message.id !== pendingId && message.id !== sent.id);
+          return [...withoutPending, sent].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        });
+      }
+      previewsToRelease.forEach(url => URL.revokeObjectURL(url));
       const lastSent = sentMessages[sentMessages.length - 1];
-      if (lastSent) setPeople(current => current.map(person => person.id === activePerson.id ? { ...person, lastMessage: lastSent.text || ((lastSent.images?.length || lastSent.imageUrl) ? "📷 Photo" : ""), lastMessageAt: lastSent.createdAt } : person).sort((a, b) => {
+      if (lastSent) setPeople(current => current.map(person => person.id === recipientId ? { ...person, lastMessage: lastSent.text || ((lastSent.images?.length || lastSent.imageUrl) ? "📷 Photo" : ""), lastMessageAt: lastSent.createdAt } : person).sort((a, b) => {
         const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
         const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
         return bTime - aTime || a.name.localeCompare(b.name);
       }));
     } catch (err) {
+      setMessages(current => current.filter(message => !pendingIds.includes(message.id)));
+      previewsToRelease.forEach(url => URL.revokeObjectURL(url));
       setError(err instanceof Error ? err.message : "Your message couldn't be sent.");
     } finally {
       setSending(false);
@@ -378,10 +437,10 @@ export default function ChatPage() {
                 return <div key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}>
                   <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"}`}>
                     <div className="chat-message-body">
-                    {(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).length > 0 && <div className={`chat-image-grid ${(message.images?.length || (message.imageUrl ? 1 : 0)) === 1 ? "chat-image-grid-single" : ""}`}>{(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
+                    {(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).length > 0 && <div className={`chat-image-grid ${(message.images?.length || (message.imageUrl ? 1 : 0)) === 1 ? "chat-image-grid-single" : ""}`}>{(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}{message.pending && <span className="chat-message-sending">Sending…</span>}
                     {message.text && <p className="chat-message-text">{message.text}</p>}
                     </div>
-                    <time>{new Date(message.createdAt).toLocaleString()}</time>
+                    <time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}</time>
                   </div>
                 </div>;
               }) : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
