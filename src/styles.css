@@ -790,3 +790,11 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 .chat-page-conversation-open .chat-heading{display:none}
 .chat-page-conversation-open .chat-shell{padding-top:78px}
+
+
+/* Password recovery */
+.auth-forgot-link{display:flex;justify-content:flex-end;margin:-5px 0 14px;font-size:11px}
+.auth-forgot-link a,.signup-bottom-note a{display:inline-flex;align-items:center;justify-content:center;gap:6px;color:#f07889;text-decoration:none}
+.auth-forgot-link a:hover,.signup-bottom-note a:hover{color:#ffd4da;text-decoration:underline}
+.auth-form-panel .signup-password-wrap>svg{flex-shrink:0;margin-left:10px;color:#a98a91}
+.auth-form-panel .signup-password-wrap input{font-size:12px}
