@@ -160,15 +160,18 @@ export default function ChatPage() {
         <div className="chat-heading-icon"><MessageCircle size={22} /></div>
         <div><h1>Chats</h1><p>Private conversations with people who follow you.</p></div>
       </div>
-      <div className={`chat-layout ${mobileConversationOpen ? "chat-layout-conversation-open" : ""}`}>
+      <div className={`chat-layout ${activePerson && mobileConversationOpen ? "chat-layout-conversation-open" : ""}`}>
         <aside className="chat-sidebar" aria-label="Your conversations">
           <div className="chat-sidebar-heading"><strong>Messages</strong><span>{people.filter(person => person.canMessage).length} followers</span></div>
           {listLoading ? <div className="chat-list-state"><LoadingDots /></div> : people.length ? <div className="chat-people-list">
-            {people.map(person => <button type="button" key={person.id} onClick={() => { setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""}`}>
+            {people.map(person => <article key={person.id} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""}`}>
               <Avatar person={person} />
-              <span className="chat-person-copy"><strong>{person.name}</strong><small>@{person.username}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span></span>
+              <button type="button" className="chat-person-copy chat-person-select" onClick={() => { setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open chat with ${person.name}`}>
+                <strong>{person.name}</strong><small>@{person.username}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
+              </button>
               <span className="chat-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="chat-lock-dot" title="Messaging unavailable">•</span>}</span>
-            </button>)}
+              <button type="button" className="chat-open-button" onClick={() => { setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
+            </article>)}
           </div> : <div className="chat-list-empty"><UsersRound size={24} /><strong>No followers yet</strong><p>When someone follows you, you can start chatting with them here.</p></div>}
           <div className="chat-rule-note"><ShieldCheck size={15} /><span>You can message your followers only. Following someone doesn't grant messaging access.</span></div>
         </aside>
@@ -176,7 +179,7 @@ export default function ChatPage() {
         <section className="chat-conversation" aria-label="Conversation">
           {activePerson ? <>
             <header className="chat-conversation-header">
-              <button className="chat-back-button" type="button" onClick={() => setMobileConversationOpen(false)} aria-label="Back to conversations"><ArrowLeft size={19} /></button>
+              <button className="chat-back-button" type="button" onClick={() => { setMobileConversationOpen(false); setActiveId(""); }} aria-label="Back to messages"><ArrowLeft size={19} /></button>
               <Avatar person={activePerson} size="large" />
               <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span>@{activePerson.username}</span></div>
               <span className={`chat-access-pill ${activePerson.canMessage ? "chat-access-allowed" : "chat-access-blocked"}`}>{activePerson.canMessage ? "Follower" : "Read only"}</span>
