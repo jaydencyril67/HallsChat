@@ -1402,3 +1402,37 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-voice-draft-preview .chat-voice-track{flex:1 1 auto;min-width:0}
 .chat-voice-draft-preview .chat-voice-waveform{display:flex;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 .chat-voice-draft-preview .chat-voice-waveform:active{cursor:grabbing}
+
+/* WhatsApp-style message reply, actions and delete confirmation. */
+.chat-message-line{position:relative}
+.chat-message-content{position:relative}
+.chat-message-footer{display:flex;align-items:center;justify-content:space-between;gap:7px;min-width:0}
+.chat-message-footer time{min-width:0;overflow-wrap:anywhere}
+.chat-message-more{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;padding:0;border:0;border-radius:50%;background:transparent;color:inherit;opacity:.7;cursor:pointer}
+.chat-message-more:hover,.chat-message-more:focus-visible{opacity:1;background:rgba(255,255,255,.1)}
+.chat-message-actions{position:absolute;z-index:40;right:5px;bottom:calc(100% - 4px);display:flex;flex-direction:column;gap:3px;min-width:190px;padding:6px;border:1px solid rgba(255,210,219,.15);border-radius:13px;background:rgba(35,12,19,.98);box-shadow:0 12px 34px rgba(0,0,0,.38);backdrop-filter:blur(16px)}
+.chat-message-line-mine .chat-message-actions{right:4px}
+.chat-message-actions button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 11px;border:0;border-radius:8px;background:transparent;color:#f8e9ec;text-align:left;font-size:.8rem;cursor:pointer}
+.chat-message-actions button:hover{background:rgba(222,68,89,.16)}
+.chat-message-actions button svg{flex-shrink:0;color:#f07889}
+.chat-message-actions .chat-message-action-delete{color:#ff9eaa}
+.chat-reply-quote{display:flex;flex-direction:column;gap:3px;width:100%;margin:0 0 7px;padding:7px 9px;border:0;border-left:3px solid #f07889;border-radius:4px 8px 8px 4px;background:rgba(255,255,255,.07);color:inherit;text-align:left;cursor:pointer;min-width:0}
+.chat-reply-quote strong{font-size:.72rem;color:#ff9eaa}
+.chat-reply-quote span{font-size:.76rem;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}
+.chat-reply-composer{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px 10px;border-left:3px solid #f07889;border-radius:8px 10px 0 0;background:rgba(240,120,137,.1);color:#ffe5e9}
+.chat-reply-composer-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.chat-reply-composer-copy strong{font-size:.75rem;color:#ff9eaa}
+.chat-reply-composer-copy span{font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.82}
+.chat-reply-composer>button{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(255,255,255,.07);color:inherit}
+.chat-message-deleted{opacity:.82}
+.chat-message-deleted-text{display:flex;align-items:center;gap:6px;margin:0!important;color:inherit;opacity:.7;font-size:.82rem;font-style:italic}
+.chat-delete-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(8,4,8,.68);backdrop-filter:blur(5px)}
+.chat-delete-dialog{width:min(100%,340px);padding:22px;border:1px solid rgba(255,210,219,.16);border-radius:20px;background:#241117;color:#fff0f2;box-shadow:0 22px 65px rgba(0,0,0,.5)}
+.chat-delete-icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:13px;border-radius:14px;background:rgba(240,120,137,.14);color:#ff8798}
+.chat-delete-dialog h2{margin:0 0 7px;font-size:1.05rem}
+.chat-delete-dialog p{margin:0;color:rgba(255,232,236,.72);font-size:.86rem;line-height:1.5}
+.chat-delete-dialog>div{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.chat-delete-dialog>div button{display:flex;align-items:center;justify-content:center;min-height:38px;padding:8px 12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.06);color:#ffe9ec;font-size:.78rem}
+.chat-delete-dialog>div .chat-delete-confirm{border-color:transparent;background:#d94d66;color:white}
+.chat-delete-dialog button:disabled{opacity:.55}
+@media(hover:hover){.chat-message-more{opacity:0}.chat-message-line:hover .chat-message-more,.chat-message-more:focus-visible{opacity:.75}}
