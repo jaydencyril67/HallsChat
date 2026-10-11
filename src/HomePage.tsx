@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { ReactNode } from "react";
 import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal } from "lucide-react";
 import AppHeader from "./AppHeader";
@@ -265,15 +265,15 @@ export default function HomePage() {
     setStoryPlaybackPaused(false);
   }
 
-  function closeStoryViewer() {
+  const closeStoryViewer = useCallback(() => {
     setStoryViewer(null);
     setStoryPlaybackQueue([]);
     setStoryPlaybackIndex(0);
     setStoryPlaybackPaused(false);
     storySwipeRef.current = null;
-  }
+  }, []);
 
-  function moveStoryPlayback(direction: -1 | 1) {
+  const moveStoryPlayback = useCallback((direction: -1 | 1) => {
     if (!storyPlaybackQueue.length) { closeStoryViewer(); return; }
     const nextIndex = storyPlaybackIndex + direction;
     if (nextIndex < 0) return;
@@ -281,7 +281,7 @@ export default function HomePage() {
     setStoryPlaybackIndex(nextIndex);
     setStoryViewer(storyPlaybackQueue[nextIndex]);
     setStoryPlaybackPaused(false);
-  }
+  }, [storyPlaybackQueue, storyPlaybackIndex, closeStoryViewer]);
 
   const currentStoryDuration = storyViewer?.mediaUrl ? 5000 : 7000;
 
@@ -289,7 +289,7 @@ export default function HomePage() {
     if (!storyViewer || storyPlaybackPaused) return;
     const timer = window.setTimeout(() => moveStoryPlayback(1), currentStoryDuration);
     return () => window.clearTimeout(timer);
-  }, [storyViewer?.id, storyPlaybackIndex, storyPlaybackPaused, currentStoryDuration]);
+  }, [storyViewer?.id, storyPlaybackIndex, storyPlaybackPaused, currentStoryDuration, moveStoryPlayback]);
 
   useEffect(() => {
     if (!storyViewer) return;
@@ -300,7 +300,7 @@ export default function HomePage() {
     };
     window.addEventListener("keydown", handleStoryKeys);
     return () => window.removeEventListener("keydown", handleStoryKeys);
-  }, [storyViewer?.id, storyPlaybackIndex, storyPlaybackQueue]);
+  }, [storyViewer?.id, moveStoryPlayback, closeStoryViewer]);
 
   async function selectImages(event: ChangeEvent<HTMLInputElement>) {
     const incoming = Array.from(event.target.files || []);
