@@ -97,11 +97,6 @@ export default function HallsPage() {
         </div>
 
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, margin: "18px 2px 10px" }}>
-          <h2 style={{ margin: 0, fontSize: ".93rem", fontWeight: 800 }}>{tab === "discover" ? "People on HallsChat" : "People following you"}</h2>
-          <span style={{ ...muted, fontSize: ".75rem", whiteSpace: "nowrap" }}>{loading ? "Loading…" : `${filteredUsers.length} ${filteredUsers.length === 1 ? "person" : "people"}`}</span>
-        </div>
-
         {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 36 }}><LoadingDots /></div> :
           filteredUsers.length ? <div style={{ ...panel, overflow: "hidden" }}>
             {filteredUsers.map((person, index) => <div key={person.id} style={{ display: "flex", alignItems: "center", gap: 11, padding: "13px 12px", borderBottom: index === filteredUsers.length - 1 ? 0 : "1px solid rgba(255,210,219,.075)" }}>
