@@ -1772,3 +1772,12 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
  .social-story-photo-button{padding:0 7px;font-size:10px}
  .social-story-dialog-actions>button{gap:4px;padding:0 8px;font-size:10px}
 }
+
+
+/* Story background colors stay tucked away until the user opens the picker. */
+.social-story-color-popout{display:flex;flex-direction:column;gap:5px;margin:4px 0 9px;padding:9px 10px;border:1px solid rgba(240,120,137,.28);border-radius:12px;background:linear-gradient(155deg,rgba(53,16,29,.98),rgba(24,8,14,.98));box-shadow:0 8px 22px rgba(0,0,0,.2);animation:social-story-color-pop-in .14s ease-out}
+.social-story-color-popout-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#f8e9ec;font-size:11px}
+.social-story-color-popout-head button{display:grid;place-items:center;flex:0 0 25px;width:25px;height:25px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.05);color:#fff}
+.social-story-color-popout .social-story-colors{margin:3px 0 1px;padding:3px 2px 5px}
+@keyframes social-story-color-pop-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.social-story-color-popout{animation:none}}
