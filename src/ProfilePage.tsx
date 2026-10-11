@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { CalendarDays, FileText, Mail, UserRound, AtSign, ArrowLeft, UsersRound, Camera, Trash2 } from "lucide-react";
+import { CalendarDays, FileText, Mail, UserRound, AtSign, UsersRound, Camera, Trash2 } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -134,7 +134,6 @@ export default function ProfilePage() {
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell" style={{ paddingBottom: 112 }}>
       <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "12px 0 24px", boxSizing: "border-box" }}>
-        <button type="button" onClick={() => navigate("/home")} style={{ display: "inline-flex", alignItems: "center", gap: 7, margin: "0 0 17px", padding: "8px 11px", border: "1px solid rgba(255,210,219,.12)", borderRadius: 10, background: "rgba(255,255,255,.025)", color: "#e9cbd1", fontSize: ".78rem" }}><ArrowLeft size={15} /> Back to home</button>
         {error ? <div role="alert" style={{ ...panel, padding: 18, color: "#ff9cab" }}>{error}<button type="button" onClick={() => navigate("/signin")} style={{ display: "block", marginTop: 12, padding: 0, border: 0, background: "none", color: "#ffd4db", textDecoration: "underline" }}>Sign in again</button></div> : <>
           <div style={{ ...panel, overflow: "hidden", marginBottom: 17 }}>
             <div style={{ height: 112, background: "radial-gradient(ellipse at 78% 15%,rgba(231,82,104,.32),transparent 48%),linear-gradient(125deg,#48121f,#21090f 78%)", borderBottom: "1px solid rgba(255,255,255,.06)" }} />
