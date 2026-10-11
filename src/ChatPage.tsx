@@ -96,7 +96,6 @@ export default function ChatPage() {
   const [currentUserId, setCurrentUserId] = useState("");
   const [listLoading, setListLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
-  const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -312,7 +311,7 @@ export default function ChatPage() {
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
     const text = draft.trim();
-    if (!activePerson || !activePerson.canMessage || (!text && imageFiles.length === 0) || sending || compressingImages) return;
+    if (!activePerson || !activePerson.canMessage || (!text && imageFiles.length === 0) || compressingImages) return;
     const savedToken = token();
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
 
@@ -346,7 +345,6 @@ export default function ChatPage() {
     setDraft("");
     setImageFiles([]);
     setImagePreviews([]);
-    setSending(true);
     setError("");
 
     try {
@@ -401,7 +399,6 @@ export default function ChatPage() {
       previewsToRelease.forEach(url => URL.revokeObjectURL(url));
       setError(err instanceof Error ? err.message : "Your message couldn't be sent.");
     } finally {
-      setSending(false);
     }
   }
 
@@ -447,10 +444,10 @@ export default function ChatPage() {
               <div ref={bottomRef} />
             </div>
             {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelection} />{(imagePreviews.length > 0 || compressingImages) && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">{compressingImages ? "Compressing images…" : `${imageFiles.length} ${imageFiles.length === 1 ? "image" : "images"} ready`}</span></div>}<form className="chat-composer" onSubmit={sendMessage}>
-              <button type="button" className="chat-attach-button" onClick={() => imageInputRef.current?.click()} disabled={sending || compressingImages || imageFiles.length >= MAX_CHAT_IMAGES} aria-label="Attach image" title="Send image"><ImagePlus size={20} /></button>
+              <button type="button" className="chat-attach-button" onClick={() => imageInputRef.current?.click()} disabled={compressingImages || imageFiles.length >= MAX_CHAT_IMAGES} aria-label="Attach image" title="Send image"><ImagePlus size={20} /></button>
               <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
               <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>
-              <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || sending || compressingImages} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
+              <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || compressingImages} aria-label="Send message"><ArrowUp size={20} strokeWidth={2.5} /></button>
             </form></> : <div className="chat-readonly-notice"><ShieldCheck size={16} /><span>This person no longer follows you, so you can’t send new messages.</span></div>}
           </> : <div className="chat-welcome"><span><MessageCircle size={30} /></span><h2>Your conversations, all in one place</h2><p>Select a follower to start chatting. Only people who follow you can receive messages from you.</p></div>}
         </section>
