@@ -293,7 +293,7 @@ export default function HomePage() {
                   </> : <button type="button" className="social-composer-mode-button" onClick={() => setComposerMode("post")} title="Back to post" aria-label="Back to post" disabled={publishing}><ImagePlus size={19}/></button>}
                 </div>
                 {composerMode === "post" && <span className="social-char-count">{draft.length}/2000</span>}
-                <button className="social-publish" type="submit" disabled={publishing || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{publishing ? "Publishing…" : composerMode === "poll" ? "Post poll" : "Publish"} <Send size={15}/></button>
+                <button className="social-publish" type="submit" disabled={publishing || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{publishing ? <><LoadingDots /> Publishing…</> : composerMode === "poll" ? "Post poll" : "Publish"} {!publishing && <Send size={15}/>}</button>
               </div>
               {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /> {uploadStatus}</p>}
             </form>
@@ -309,13 +309,13 @@ export default function HomePage() {
                   const totalVotes = post.poll!.options.reduce((sum, item) => sum + item.voteCount, 0);
                   const percent = totalVotes ? Math.round(option.voteCount / totalVotes * 100) : 0;
                   return <button type="button" key={option.id} className={`social-poll-result ${option.votedByMe ? "is-voted" : ""}`} onClick={() => votePoll(post, index)} disabled={votingIds.includes(post.id)} aria-pressed={option.votedByMe}>
-                    <span className="social-poll-result-top"><span>{option.text}</span><strong>{percent}%</strong></span><span className="social-poll-result-track"><span style={{ width: `${percent}%` }}/></span><small>{option.voteCount} {option.voteCount === 1 ? "vote" : "votes"}{option.votedByMe ? " · Your vote" : ""}</small>
+                    <span className="social-poll-result-top"><span>{option.text}</span>{votingIds.includes(post.id) ? <LoadingDots /> : <strong>{percent}%</strong>}</span><span className="social-poll-result-track"><span style={{ width: `${percent}%` }}/></span><small>{option.voteCount} {option.voteCount === 1 ? "vote" : "votes"}{option.votedByMe ? " · Your vote" : ""}</small>
                   </button>;
                 })}</div><p className="social-poll-total">{post.poll.options.reduce((sum, item) => sum + item.voteCount, 0)} votes · Tap an option to vote or change your vote</p></div>}
                 {Array.isArray(post.images) && post.images.length > 0 && <div className={`social-post-images social-post-images-${Math.min(post.images.length, 4)}`} style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
                   {post.images.map((url, index) => <button type="button" className="social-post-image-link" onClick={() => setPreviewImage(url)} aria-label={`Preview image ${index + 1} in post`} key={url}><img src={url} alt={`Image ${index + 1} in post by ${post.author?.name || "HallsChat member"}`} loading="lazy" /></button>)}
                 </div>}
-                <div className="social-post-actions"><button type="button" className={post.likedByMe ? "social-like is-liked" : "social-like"} onClick={() => toggleLike(post)} disabled={likingIds.includes(post.id)} aria-pressed={post.likedByMe}><Heart size={17} fill={post.likedByMe ? "currentColor" : "none"}/><span>{post.likeCount > 0 ? post.likeCount : "Like"}</span></button><span className="social-post-action-muted"><MessageCircle size={16}/> Comments coming next</span></div>
+                <div className="social-post-actions"><button type="button" className={post.likedByMe ? "social-like is-liked" : "social-like"} onClick={() => toggleLike(post)} disabled={likingIds.includes(post.id)} aria-pressed={post.likedByMe}>{likingIds.includes(post.id) ? <LoadingDots /> : <Heart size={17} fill={post.likedByMe ? "currentColor" : "none"}/>}<span>{post.likeCount > 0 ? post.likeCount : "Like"}</span></button><span className="social-post-action-muted"><MessageCircle size={16}/> Comments coming next</span></div>
               </article>)}
             </div>}
             {!feedLoading && posts.length === 0 && !feedError && <div className="social-empty-feed"><ImagePlus size={22}/><strong>Your feed starts here</strong><span>Share a thought or photo with your community.</span></div>}
