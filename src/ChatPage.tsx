@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUp, ImagePlus, MessageCircle, ShieldCheck, UsersRound, 
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
+import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
 import { io } from "socket.io-client";
 
@@ -52,7 +53,7 @@ export default function ChatPage() {
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [viewingImageUrl, setViewingImageUrl] = useState("");
+  const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const scrollOnOpenRef = useRef(false);
@@ -324,7 +325,7 @@ export default function ChatPage() {
         </section>
       </div>
     </section>
-    {viewingImageUrl && <div className="chat-image-viewer" role="dialog" aria-modal="true" aria-label="Image preview" onClick={() => setViewingImageUrl("")}><button type="button" aria-label="Close image" onClick={() => setViewingImageUrl("")}><X size={22} /></button><img src={viewingImageUrl} alt="Shared image full size" onClick={event => event.stopPropagation()} /></div>}
+    {viewingImageUrl && <ImagePreviewModal imageUrl={viewingImageUrl} onClose={() => setViewingImageUrl(null)} />}
     {error && <div className="halls-toast halls-toast-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
     {!(activePerson && mobileConversationOpen) && <NowBar />}
   </main>;
