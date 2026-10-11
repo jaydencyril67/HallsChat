@@ -18,6 +18,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
   const dragRef = useRef<{ x: number; y: number; offset: { x: number; y: number } } | null>(null);
   const zoomRef = useRef(1);
   const offsetRef = useRef({ x: 0, y: 0 });
+  const paintFrameRef = useRef<number | null>(null);
   const [frame, setFrame] = useState({ width: 320, height: 320 });
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -30,7 +31,16 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     pointersRef.current.clear();
     gestureRef.current = null;
     dragRef.current = null;
+    if (paintFrameRef.current !== null) cancelAnimationFrame(paintFrameRef.current);
+    paintFrameRef.current = null;
     setErrorMessage("");
+    return () => {
+      if (paintFrameRef.current !== null) cancelAnimationFrame(paintFrameRef.current);
+      paintFrameRef.current = null;
+      pointersRef.current.clear();
+      gestureRef.current = null;
+      dragRef.current = null;
+    };
   }, [imageUrl]);
 
   const baseScale = () => {
@@ -88,13 +98,20 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     setReady(true);
   };
 
-  const syncImageStyles = (activeZoom = zoomRef.current) => {
-    const image = imageRef.current;
-    const drawn = geometry(activeZoom);
-    if (!image || !drawn) return;
-    image.style.width = `${drawn.width}px`;
-    image.style.height = `${drawn.height}px`;
-    image.style.transform = `translate3d(${offsetRef.current.x}px, ${offsetRef.current.y}px, 0)`;
+  // Batch visual writes to one paint per frame. Keep the image at its base size
+  // and use a GPU-composited transform for zoom instead of relaying out width/height
+  // on every finger movement.
+  const syncImageStyles = () => {
+    if (paintFrameRef.current !== null) return;
+    paintFrameRef.current = requestAnimationFrame(() => {
+      paintFrameRef.current = null;
+      const image = imageRef.current;
+      if (!image?.naturalWidth || !image.naturalHeight) return;
+      const scale = baseScale();
+      image.style.width = `${image.naturalWidth * scale}px`;
+      image.style.height = `${image.naturalHeight * scale}px`;
+      image.style.transform = `translate3d(${offsetRef.current.x}px, ${offsetRef.current.y}px, 0) scale(${zoomRef.current})`;
+    });
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -215,9 +232,9 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
             onLoad={handleImageLoad}
             draggable={false}
             style={{
-              width: ready ? geometry()?.width : "100%",
-              height: ready ? geometry()?.height : "100%",
-              transform: `translate3d(${offsetRef.current.x}px, ${offsetRef.current.y}px, 0)`,
+              width: ready && imageRef.current?.naturalWidth ? imageRef.current.naturalWidth * baseScale() : "100%",
+              height: ready && imageRef.current?.naturalHeight ? imageRef.current.naturalHeight * baseScale() : "100%",
+              transform: `translate3d(${offsetRef.current.x}px, ${offsetRef.current.y}px, 0) scale(${zoomRef.current})`,
             }}
           />
           <div className="social-story-crop-grid" aria-hidden="true" />
