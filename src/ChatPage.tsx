@@ -217,6 +217,16 @@ export default function ChatPage() {
     if (replyHighlightTimerRef.current !== null) window.clearTimeout(replyHighlightTimerRef.current);
   }, []);
 
+  useEffect(() => {
+    const closeReactionPickerOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".chat-reaction-picker")) return;
+      setReactionPickerFor(null);
+    };
+    document.addEventListener("pointerdown", closeReactionPickerOutside);
+    return () => document.removeEventListener("pointerdown", closeReactionPickerOutside);
+  }, []);
+
   function beginReply(message: ChatMessage) {
     setReplyingTo(message); setActionMenuFor(null);
     window.setTimeout(() => draftInputRef.current?.focus(), 0);
