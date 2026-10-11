@@ -779,6 +779,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .chat-person-meta{font-size:.58rem}
   .chat-open-button{width:34px;height:34px;flex-basis:34px}
   .chat-composer{gap:6px;margin:8px 8px calc(8px + env(safe-area-inset-bottom));padding:7px 7px 7px 12px}
+  .chat-reply-composer{margin-left:8px;margin-right:8px}
   .chat-composer textarea{min-height:38px;padding:9px 0}
 }
 @media(max-width:390px){
@@ -1420,6 +1421,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-reply-quote strong{font-size:.72rem;color:#ff9eaa}
 .chat-reply-quote span{font-size:.76rem;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85}
 .chat-reply-composer{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px 10px;border-left:3px solid #f07889;border-radius:8px 10px 0 0;background:rgba(240,120,137,.1);color:#ffe5e9}
+.chat-reply-composer{width:auto;margin:8px 12px -8px;padding:8px 10px;border:1px solid var(--chat-line);border-bottom:0;border-left:3px solid #f07889;position:relative;z-index:1}
 .chat-reply-composer-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
 .chat-reply-composer-copy strong{font-size:.75rem;color:#ff9eaa}
 .chat-reply-composer-copy span{font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.82}
