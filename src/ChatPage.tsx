@@ -482,7 +482,10 @@ export default function ChatPage() {
     if (!scrollOnOpenRef.current || !activeId || messagesLoading || historyLoadedFor !== activeId) return;
     // Wait until the fetched history has rendered before moving to the latest message.
     const frame = window.requestAnimationFrame(() => {
-      bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+      // Keep initial positioning inside the chat viewport. scrollIntoView() can
+      // also scroll ancestor containers, including the full app page.
+      const list = chatMessageListRef.current;
+      if (list) list.scrollTop = list.scrollHeight;
       scrollOnOpenRef.current = false;
     });
     return () => window.cancelAnimationFrame(frame);
