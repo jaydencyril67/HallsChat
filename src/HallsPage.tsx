@@ -22,6 +22,12 @@ export default function HallsPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
+  useEffect(() => {
+    if (!notice && !error) return;
+    const timer = window.setTimeout(() => { setNotice(""); setError(""); }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [notice, error]);
+
   const loadUsers = useCallback(async (activeTab: HallTab) => {
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
@@ -94,8 +100,6 @@ export default function HallsPage() {
           )}
         </div>
 
-        {error && <div role="alert" style={{ ...panel, padding: 13, marginBottom: 12, color: "#ff9eaa", fontSize: ".84rem" }}>{error}<button type="button" onClick={() => void loadUsers(tab)} style={{ display: "block", marginTop: 8, padding: 0, border: 0, background: "none", color: "#ffd4db", textDecoration: "underline" }}>Try again</button></div>}
-        {notice && <p role="status" style={{ margin: "0 0 12px", color: "#9de4bd", fontSize: ".82rem" }}>{notice}</p>}
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, margin: "18px 2px 10px" }}>
           <h2 style={{ margin: 0, fontSize: ".93rem", fontWeight: 800 }}>{tab === "discover" ? "People on HallsChat" : "People following you"}</h2>
@@ -122,6 +126,7 @@ export default function HallsPage() {
         }
       </div>
     </section>
+    {(error || notice) && <div className={`halls-toast ${error ? "halls-toast-error" : "halls-toast-success"}`} role={error ? "alert" : "status"}><span>{error || notice}</span>{error && <button type="button" onClick={() => { setError(""); void loadUsers(tab); }} aria-label="Retry loading people" title="Retry">↻</button>}<button type="button" onClick={() => { setError(""); setNotice(""); }} aria-label="Dismiss notification">×</button></div>}
     <NowBar />
   </main>;
 }
