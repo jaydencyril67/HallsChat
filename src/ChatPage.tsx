@@ -164,10 +164,6 @@ export default function ChatPage() {
   return <main className={`home-page social-home chat-page ${activePerson && mobileConversationOpen ? "chat-page-conversation-open" : ""}`}>
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell chat-shell">
-      <div className="chat-heading">
-        <div className="chat-heading-icon"><MessageCircle size={22} /></div>
-        <div><h1>Chats</h1><p>Private conversations with people who follow you.</p></div>
-      </div>
       <div className={`chat-layout ${activePerson && mobileConversationOpen ? "chat-layout-conversation-open" : ""}`}>
         <aside className="chat-sidebar" aria-label="Your conversations">
           <div className="chat-sidebar-heading"><strong>Messages</strong><span>{people.filter(person => person.canMessage).length} followers</span></div>
@@ -181,7 +177,6 @@ export default function ChatPage() {
               <button type="button" className="chat-open-button" onClick={() => { setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
             </article>)}
           </div> : <div className="chat-list-empty"><UsersRound size={24} /><strong>No followers yet</strong><p>When someone follows you, you can start chatting with them here.</p></div>}
-          <div className="chat-rule-note"><ShieldCheck size={15} /><span>You can message your followers only. Following someone doesn't grant messaging access.</span></div>
         </aside>
 
         <section className="chat-conversation" aria-label="Conversation">
