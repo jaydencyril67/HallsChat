@@ -102,7 +102,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
         <button type="button" className="social-image-modal-close" onClick={onClose} aria-label="Close image preview" title="Close preview">Close</button>
       </header>
       <div ref={stageRef} className="social-image-modal-stage" onClick={event => event.stopPropagation()} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onWheel={wheel}>
-        <img src={imageUrl} alt="Full-size post image" draggable={false} onMouseDown={mouseDown} onMouseMove={mouseMove} onMouseUp={mouseUp} onMouseLeave={mouseUp} style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${zoom})`, transformOrigin: "center center", willChange: "transform", transition: "none", cursor: zoom > 1 ? (dragging.current ? "grabbing" : "grab") : "zoom-in", transition: pinchStart.current ? "none" : "transform 80ms ease-out" }} />
+        <img src={imageUrl} alt="Full-size post image" draggable={false} onMouseDown={mouseDown} onMouseMove={mouseMove} onMouseUp={mouseUp} onMouseLeave={mouseUp} style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${zoom})`, transformOrigin: "center center", willChange: "transform", transition: "none", cursor: zoom > 1 ? (dragging.current ? "grabbing" : "grab") : "zoom-in" }} />
       </div>
       <footer className="social-image-modal-controls" onClick={event => event.stopPropagation()}>
         <button type="button" onClick={() => setZoom(z => Math.max(1, z - 0.25))} aria-label="Zoom out" disabled={zoom <= 1} style={{ opacity: zoom <= 1 ? .4 : 1 }}><ZoomOut size={19} /></button>
