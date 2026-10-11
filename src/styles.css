@@ -532,7 +532,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media(max-width:480px){.social-add-image-icon-only,.social-composer-mode-button{width:36px;min-width:36px;height:36px;min-height:36px}.social-poll-card{padding:11px}.social-poll-card h3{font-size:14px}}
 
 
-/* Home feed post text grows naturally, then becomes vertically scrollable at its cap. */
+/* Home feed post text is prominent and grows naturally before scrolling at its cap. */
 .social-post-content{
   height:auto;
   max-height:320px;
@@ -541,9 +541,13 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   overscroll-behavior:contain;
   white-space:pre-wrap;
   overflow-wrap:anywhere;
+  font-size:16px;
+  font-weight:650;
+  line-height:1.75;
+  letter-spacing:.005em;
 }
 @media(max-width:640px){
-  .social-post-content{height:auto;max-height:260px}
+  .social-post-content{height:auto;max-height:260px;font-size:15px;font-weight:650;line-height:1.7}
 }
 
 .social-comments{padding:12px 13px 13px;border-top:1px solid rgba(255,210,219,.08);background:rgba(12,4,7,.2)}
