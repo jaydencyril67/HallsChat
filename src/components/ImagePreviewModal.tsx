@@ -21,7 +21,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
     document.body.style.overflow = "hidden";
     const keyHandler = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
-      if (event.key === "+" || event.key === "=") setZoom(z => Math.min(5, z + 0.25));
+      if (event.key === "+" || event.key === "=") setZoom(z => Math.min(10, z + 0.25));
       if (event.key === "-") setZoom(z => Math.max(1, z - 0.25));
     };
     window.addEventListener("keydown", keyHandler);
@@ -44,7 +44,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
     if (event.touches.length === 2 && pinchStart.current) {
       event.preventDefault();
       const start = pinchStart.current;
-      setZoom(Math.max(1, Math.min(5, start.zoom * touchDistance(event.touches) / Math.max(1, start.distance))));
+      setZoom(Math.max(1, Math.min(10, start.zoom * touchDistance(event.touches) / Math.max(1, start.distance))));
     } else if (event.touches.length === 1 && dragStart.current && zoom > 1) {
       event.preventDefault();
       const start = dragStart.current;
@@ -57,7 +57,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
   };
   const wheel = (event: WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setZoom(z => Math.max(1, Math.min(5, z + (event.deltaY < 0 ? 0.2 : -0.2))));
+    setZoom(z => Math.max(1, Math.min(10, z + (event.deltaY < 0 ? 0.2 : -0.2))));
   };
   const mouseDown = (event: MouseEvent<HTMLImageElement>) => {
     if (zoom <= 1) return;
@@ -86,7 +86,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
       <footer className="social-image-modal-controls" onClick={event => event.stopPropagation()}>
         <button type="button" onClick={() => setZoom(z => Math.max(1, z - 0.25))} aria-label="Zoom out" disabled={zoom <= 1} style={{ opacity: zoom <= 1 ? .4 : 1 }}><ZoomOut size={19} /></button>
         <button type="button" className="social-image-modal-reset" onClick={reset} aria-label="Reset zoom"><RotateCcw size={16} /><span>Reset</span></button>
-        <button type="button" onClick={() => setZoom(z => Math.min(5, z + 0.25))} aria-label="Zoom in" disabled={zoom >= 5} style={{ opacity: zoom >= 5 ? .4 : 1 }}><ZoomIn size={19} /></button>
+        <button type="button" onClick={() => setZoom(z => Math.min(10, z + 0.25))} aria-label="Zoom in" disabled={zoom >= 10} style={{ opacity: zoom >= 5 ? .4 : 1 }}><ZoomIn size={19} /></button>
       </footer>
     </div>
   );
