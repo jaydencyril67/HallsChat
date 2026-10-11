@@ -16,6 +16,7 @@ const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024;
 export default function ProfilePage() {
   const [user, setUser] = useState<Account | null>(null);
   const [allPosts, setAllPosts] = useState<Post[]>([]);
+  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "about">("posts");
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -277,17 +278,22 @@ export default function ProfilePage() {
           </div>
 
           <section style={{ marginBottom: 18 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 34, borderBottom: "1px solid rgba(255,255,255,.1)", marginBottom: 2 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", borderBottom: "2px solid #f08b9b", color: "#fff0f3", fontSize: ".84rem", fontWeight: 800 }}><FileText size={17} /> Posts</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", color: "rgba(246,220,225,.45)", fontSize: ".84rem", fontWeight: 700 }}><Mail size={16} /> About</div>
+            <div role="tablist" aria-label="Profile sections" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 34, borderBottom: "1px solid rgba(255,255,255,.1)", marginBottom: 2 }}>
+              <button type="button" role="tab" aria-selected={activeProfileTab === "posts"} onClick={() => setActiveProfileTab("posts")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", border: 0, borderBottom: activeProfileTab === "posts" ? "2px solid #f08b9b" : "2px solid transparent", marginBottom: -1, background: "transparent", color: activeProfileTab === "posts" ? "#fff0f3" : "rgba(246,220,225,.45)", fontSize: ".84rem", fontWeight: activeProfileTab === "posts" ? 800 : 700, cursor: "pointer" }}><FileText size={17} /> Posts</button>
+              <button type="button" role="tab" aria-selected={activeProfileTab === "about"} onClick={() => setActiveProfileTab("about")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", border: 0, borderBottom: activeProfileTab === "about" ? "2px solid #f08b9b" : "2px solid transparent", marginBottom: -1, background: "transparent", color: activeProfileTab === "about" ? "#fff0f3" : "rgba(246,220,225,.45)", fontSize: ".84rem", fontWeight: activeProfileTab === "about" ? 800 : 700, cursor: "pointer" }}><Mail size={16} /> About</button>
             </div>
-            {postsLoading ? <div style={{ display: "grid", placeItems: "center", padding: 35 }}><LoadingDots /></div> : posts.length === 0 ? <div style={{ ...panel, padding: "38px 18px", textAlign: "center", marginTop: 12 }}><FileText size={28} color="#e77b8d" /><p style={{ margin: "12px 0 5px", color: "#fff0f3", fontWeight: 800 }}>No posts yet</p><p style={{ margin: 0, ...muted, fontSize: ".82rem" }}>Your posts will show up here.</p></div> : <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 3, marginTop: 3 }}>
+            {activeProfileTab === "posts" ? (postsLoading ? <div style={{ display: "grid", placeItems: "center", padding: 35 }}><LoadingDots /></div> : posts.length === 0 ? <div style={{ ...panel, padding: "38px 18px", textAlign: "center", marginTop: 12 }}><FileText size={28} color="#e77b8d" /><p style={{ margin: "12px 0 5px", color: "#fff0f3", fontWeight: 800 }}>No posts yet</p><p style={{ margin: 0, ...muted, fontSize: ".82rem" }}>Your posts will show up here.</p></div> : <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 3, marginTop: 3 }}>
               {posts.map(post => <article key={post.id} style={{ minWidth: 0, aspectRatio: "3 / 4", overflow: "hidden", position: "relative", background: "linear-gradient(145deg,rgba(95,29,44,.9),rgba(28,9,15,.95))", border: "1px solid rgba(255,255,255,.06)", borderRadius: 4, padding: 9, boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
                 {post.images?.[0] ? <img src={post.images[0]} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} /> : null}
                 {post.poll ? <div style={{ position: "absolute", inset: 0, background: "linear-gradient(145deg,#5b1b2c,#200910)", padding: 10, boxSizing: "border-box", color: "#fff0f3", fontSize: ".8rem", fontWeight: 800, overflow: "hidden" }}>{post.poll.question}</div> : null}
                 {(!post.images?.[0] && !post.poll) ? <p style={{ position: "relative", zIndex: 1, margin: 0, color: "#fff0f3", fontSize: ".78rem", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 7, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{post.content}</p> : null}
                 <div style={{ position: "absolute", inset: "auto 0 0", display: "flex", alignItems: "center", gap: 5, padding: "22px 7px 6px", color: "#fff", fontSize: ".7rem", fontWeight: 750, background: "linear-gradient(transparent,rgba(0,0,0,.78))" }}><Eye size={13} /> {post.likeCount || 0}</div>
               </article>)}
+            </div>) : <div style={{ ...panel, padding: 18, marginTop: 12, display: "grid", gap: 15 }}>
+              <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Full name</div><div style={{ color: "#fff0f3", fontSize: ".92rem", fontWeight: 700, overflowWrap: "anywhere" }}>{user?.name || "—"}</div></div>
+              <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Username</div><div style={{ color: "#f09aa7", fontSize: ".92rem", fontWeight: 700, overflowWrap: "anywhere" }}>{user?.username ? `@${user.username}` : "—"}</div></div>
+              <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Email</div><div style={{ color: "#fff0f3", fontSize: ".92rem", fontWeight: 600, overflowWrap: "anywhere" }}>{user?.email || "—"}</div></div>
+              <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Joined HallsChat</div><div style={{ color: "#fff0f3", fontSize: ".92rem", fontWeight: 600 }}>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "—"}</div></div>
             </div>}
           </section>
 
