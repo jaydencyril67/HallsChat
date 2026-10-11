@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, CircleHelp, ContactRound, Home, MessageCircle, Phone, Settings, UsersRound, UserRound } from "lucide-react";
+import { ChevronDown, CircleHelp, ContactRound, Home, MessageCircle, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
 
 type View = "title" | "actions";
@@ -13,7 +13,6 @@ const actions = [
   { label: "PROFILE", icon: UserRound },
   { label: "CALLS", icon: Phone },
   { label: "GROUP", icon: UsersRound },
-  { label: "ALERT", icon: Bell },
   { label: "SET", icon: Settings },
   { label: "HELP", icon: CircleHelp },
 ];
@@ -119,7 +118,6 @@ export default function NowBar() {
       PROFILE: "/profile",
       CALLS: "/calls",
       GROUP: "/groups",
-      ALERT: "/notifications",
       SET: "/settings",
       HELP: "/help",
     };
