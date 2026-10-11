@@ -1389,3 +1389,9 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-voice-draft-preview .chat-voice-note{flex:1 1 100%;width:100%;max-width:100%;padding:0}
 .chat-voice-draft-preview>span{opacity:.7;padding-left:3px}
 @media(max-width:380px){.chat-recording-control,.chat-discard-recording{flex-basis:34px;width:34px;height:34px}.chat-voice-draft-preview .chat-voice-note{gap:5px}}
+
+
+/* Live WhatsApp-style typing status in the conversation header. */
+.chat-typing-label{color:#f07889!important;font-style:italic;animation:chat-typing-pulse 1.15s ease-in-out infinite}
+@keyframes chat-typing-pulse{0%,100%{opacity:1}50%{opacity:.58}}
+@media(prefers-reduced-motion:reduce){.chat-typing-label{animation:none}}
