@@ -2065,3 +2065,16 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px));
   }
 }
+
+
+/* WhatsApp-style call history entries inside the conversation timeline. */
+.chat-call-row{display:flex;justify-content:center;width:100%;padding:3px 0}
+.chat-call-card{display:flex;align-items:center;gap:11px;width:min(330px,92%);box-sizing:border-box;padding:12px 13px;border:1px solid rgba(255,210,219,.12);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.025));box-shadow:0 5px 18px rgba(0,0,0,.12)}
+.chat-call-icon{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border-radius:50%;background:rgba(255,255,255,.07);color:var(--chat-text,#f8e9ec)}
+.chat-call-card-alert .chat-call-icon{background:rgba(210,56,80,.15);color:#ff7185}
+.chat-call-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
+.chat-call-copy strong{font-size:.83rem;font-weight:750;color:var(--chat-text,#fff)}
+.chat-call-copy span{font-size:.72rem;color:var(--chat-muted,#c6adb3);line-height:1.4;overflow-wrap:anywhere}
+.chat-call-copy .chat-call-status-alert{color:#ff8293}
+.chat-call-copy time{font-size:.66rem;color:var(--chat-muted,#bba4aa)}
+.chat-call-direction{display:grid;place-items:center;color:var(--chat-muted,#c6adb3);flex:0 0 20px}
