@@ -4,7 +4,7 @@ import AppHeader from "./AppHeader";
 import LoadingDots from "./components/LoadingDots";
 
 function formatNameInput(value: string) {
-  return value.toLocaleLowerCase().replace(/(^|\\s)(\\S)/g, (_match, space: string, character: string) => space + character.toLocaleUpperCase());
+  return value.toLocaleLowerCase().replace(/(^|\s)(\S)/g, (_match, space: string, character: string) => space + character.toLocaleUpperCase());
 }
 
 export default function SignupPage() {
