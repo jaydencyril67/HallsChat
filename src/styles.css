@@ -803,12 +803,12 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 /* CryBots-style live chat bubbles: incoming neutral, outgoing accent, with chat-tail corners. */
 .chat-message-line{display:flex;justify-content:flex-start;width:100%;padding:2px 6px;box-sizing:border-box}
 .chat-message-line-mine{justify-content:flex-end}
-.chat-message-content{display:flex;flex-direction:column;gap:4px;max-width:min(78%,440px);min-width:0;padding:10px 13px;border:1px solid var(--chat-line,rgba(255,210,219,.11));border-radius:14px;overflow-wrap:anywhere;box-sizing:border-box}
+.chat-message-content{display:flex;flex-direction:column;gap:4px;max-width:78%;min-width:0;padding:10px 13px;border:1px solid var(--chat-line,rgba(255,210,219,.11));border-radius:14px;overflow-wrap:anywhere;box-sizing:border-box}
 .chat-message-content-theirs{background:rgba(255,255,255,.045);color:#f8e9ec}
 .chat-message-content-mine{border-color:rgba(226,76,99,.27);border-radius:14px;background:linear-gradient(145deg,rgba(155,30,51,.58),rgba(92,18,33,.55));color:#fff1f4}
 .chat-message-text{margin:0;color:inherit;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.6}
 .chat-message-content time{display:block;margin-top:1px;color:rgba(255,231,235,.5);font-size:.59rem;text-align:right}
-.chat-message-content:has(.chat-image-grid){max-width:min(78%,440px);padding:10px 13px}
+.chat-message-content:has(.chat-image-grid){max-width:78%;padding:10px 13px}
 .chat-message-content:has(.chat-image-grid) .chat-message-text{padding:0}
 /* Keep the conversation itself flush with the page instead of inside a large card. */
 .chat-layout{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
@@ -933,7 +933,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   border-radius: 10px;
 }
 .chat-message-content:has(.chat-image-bubble) {
-  max-width: min(78%, 440px);
+  max-width: 78%;
   padding: 10px 13px !important;
 }
 .chat-message-content:has(.chat-image-bubble) .chat-message-text {
@@ -1162,7 +1162,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-message-line:last-of-type { margin-bottom: 0; }
 .chat-message-line-mine { justify-content: flex-end; }
 .chat-message-content {
-  max-width: min(78%, 440px);
+  max-width: 78%;
   min-width: 0;
   padding: 10px 13px;
   border: 1px solid rgba(255,210,219,.11);
@@ -1184,7 +1184,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 .chat-message-content time { margin-top: 3px; }
 .chat-message-content:has(.chat-image-grid) {
-  max-width: min(78%, 440px);
+  max-width: 78%;
   padding: 10px 13px !important;
 }
 @media(max-width:680px) {
