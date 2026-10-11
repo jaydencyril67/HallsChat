@@ -28,6 +28,17 @@ export default function CallsPanel({ socket, person }: Props) {
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
+  useEffect(() => {
+    if (!pendingCallKind) return;
+    const closeCallConfirmOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".halls-call-trigger-wrap")) return;
+      setPendingCallKind(null);
+    };
+    document.addEventListener("pointerdown", closeCallConfirmOutside);
+    return () => document.removeEventListener("pointerdown", closeCallConfirmOutside);
+  }, [pendingCallKind]);
+
   const cleanup = useCallback((reason?: string) => {
     const pc = pcRef.current;
     if (pc) { pc.onicecandidate = null; pc.ontrack = null; pc.close(); }
@@ -262,19 +273,21 @@ export default function CallsPanel({ socket, person }: Props) {
 
   return <>
     {person && <div className="halls-call-triggers">
-      <button className="halls-call-trigger-audio" type="button" title={"Audio call " + person.name} aria-label={"Audio call " + person.name} onClick={() => setPendingCallKind("audio")} disabled={phase !== "idle"}><Phone size={18} /><span>Audio call</span></button>
-      <button className="halls-call-trigger-video" type="button" title={"Video call " + person.name} aria-label={"Video call " + person.name} onClick={() => setPendingCallKind("video")} disabled={phase !== "idle"}><Video size={18} /><span>Video call</span></button>
-    </div>}
-    {pendingCallKind && phase === "idle" && <div className="halls-call-backdrop halls-call-confirm-backdrop" role="dialog" aria-modal="true" aria-label="Confirm call" onClick={() => setPendingCallKind(null)}>
-      <div className="halls-call-confirm-card" onClick={event => event.stopPropagation()}>
-        <div className="halls-call-confirm-icon">{pendingCallKind === "video" ? <Video size={25} /> : <Phone size={25} />}</div>
-        <span className="halls-call-eyebrow">START A CALL</span>
-        <h2>{pendingCallKind === "video" ? "Start video call?" : "Start audio call?"}</h2>
-        <p>Call <strong>{person?.name || "this contact"}</strong> now?</p>
-        <div className="halls-call-confirm-actions">
-          <button type="button" className="halls-call-confirm-cancel" onClick={() => setPendingCallKind(null)}>Cancel</button>
-          <button type="button" className="halls-call-confirm-start" onClick={() => { const selectedKind = pendingCallKind; setPendingCallKind(null); startCall(selectedKind); }}>{pendingCallKind === "video" ? <Video size={17} /> : <Phone size={17} />} Start call</button>
-        </div>
+      <div className="halls-call-trigger-wrap">
+        <button className="halls-call-trigger-audio" type="button" title={"Audio call " + person.name} aria-label={"Audio call " + person.name} onClick={() => setPendingCallKind(current => current === "audio" ? null : "audio")} disabled={phase !== "idle"}><Phone size={18} /><span>Audio call</span></button>
+        {pendingCallKind === "audio" && phase === "idle" && <div className="halls-call-confirm-popout" role="dialog" aria-label="Confirm audio call">
+          <strong>Start audio call?</strong>
+          <span>Call <b>{person.name}</b> now?</span>
+          <div><button type="button" className="halls-call-confirm-cancel" onClick={() => setPendingCallKind(null)}>Cancel</button><button type="button" className="halls-call-confirm-start" onClick={() => { setPendingCallKind(null); startCall("audio"); }}><Phone size={14} /> Start call</button></div>
+        </div>}
+      </div>
+      <div className="halls-call-trigger-wrap">
+        <button className="halls-call-trigger-video" type="button" title={"Video call " + person.name} aria-label={"Video call " + person.name} onClick={() => setPendingCallKind(current => current === "video" ? null : "video")} disabled={phase !== "idle"}><Video size={18} /><span>Video call</span></button>
+        {pendingCallKind === "video" && phase === "idle" && <div className="halls-call-confirm-popout" role="dialog" aria-label="Confirm video call">
+          <strong>Start video call?</strong>
+          <span>Call <b>{person.name}</b> now?</span>
+          <div><button type="button" className="halls-call-confirm-cancel" onClick={() => setPendingCallKind(null)}>Cancel</button><button type="button" className="halls-call-confirm-start" onClick={() => { setPendingCallKind(null); startCall("video"); }}><Video size={14} /> Start call</button></div>
+        </div>}
       </div>
     </div>}
     {incoming && phase === "incoming" && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label="Incoming call">
