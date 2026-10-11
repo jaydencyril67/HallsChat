@@ -28,6 +28,12 @@ export default function ProfilePage() {
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    if (!pictureError) return;
+    const timer = window.setTimeout(() => setPictureError(""), 5000);
+    return () => window.clearTimeout(timer);
+  }, [pictureError]);
+
+  useEffect(() => {
     let cancelled = false;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
@@ -165,7 +171,6 @@ export default function ProfilePage() {
               <h1 style={{ margin: "13px 0 4px", color: "#fff0f3", fontSize: "clamp(1.4rem,5vw,1.9rem)", letterSpacing: "-.04em", overflowWrap: "anywhere" }}>{loading ? "Loading profile…" : user?.name || "HallsChat member"}</h1>
               <p style={{ margin: 0, color: "#e69aa7", fontSize: ".88rem" }}>{user?.username ? `@${user.username}` : "Your HallsChat account"}</p>
               {pictureBusy && <p role="status" style={{ margin: "12px 0 0", color: "#f09aa7", fontSize: ".8rem" }}><LoadingDots /> Saving profile picture…</p>}
-              {pictureError && <p role="alert" style={{ margin: "12px 0 0", color: "#ff9cab", fontSize: ".8rem", lineHeight: 1.5 }}>{pictureError}</p>}
               <p style={{ margin: "12px 0 0", ...muted, fontSize: ".84rem", lineHeight: 1.7 }}>Your space on HallsChat. Keep up with your posts and the details connected to your account.</p>
             </div>
           </div>
@@ -196,6 +201,7 @@ export default function ProfilePage() {
     </section>
     {cropSource && <ProfileImageCropModal imageUrl={cropSource} onCancel={cancelCrop} onDone={confirmCroppedPicture} />}
     {previewPicture && <ImagePreviewModal imageUrl={previewPicture} onClose={() => setPreviewPicture(null)} />}
+    {pictureError && <div className="halls-toast halls-toast-error" role="alert"><span>{pictureError}</span><button type="button" onClick={() => setPictureError("")} aria-label="Dismiss notification">×</button></div>}
     <NowBar />
   </main>;
 }
