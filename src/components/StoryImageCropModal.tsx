@@ -12,7 +12,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: StoryImageCropModalProps) {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
-  const gestureRef = useRef<{ distance: number; zoom: number; offset: { x: number; y: number } } | null>(null);
+  const gestureRef = useRef<{ distance: number; midpoint: { x: number; y: number }; zoom: number; offset: { x: number; y: number } } | null>(null);
   const dragRef = useRef<{ x: number; y: number; offset: { x: number; y: number } } | null>(null);
   const zoomRef = useRef(1);
   const offsetRef = useRef({ x: 0, y: 0 });
@@ -63,7 +63,6 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     setFrame({ width, height });
     zoomRef.current = 1;
     offsetRef.current = { x: 0, y: 0 };
-    setZoom(1);
     setOffset({ x: 0, y: 0 });
     setReady(true);
   };
