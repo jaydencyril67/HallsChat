@@ -815,3 +815,17 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-conversation-header{background:transparent}
 .chat-message-list{padding:18px 10px 12px}
 @media(max-width:680px){.chat-message-list{padding:14px 8px 10px}}
+
+
+/* Keep Chats within the available app viewport; only the message list scrolls when needed. */
+.chat-page{height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.chat-shell{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;height:auto;padding:78px 0 92px;overflow:hidden}
+.chat-layout{flex:1 1 auto;height:auto;min-height:0;max-height:none;overflow:hidden}
+.chat-sidebar,.chat-conversation{min-height:0;overflow:hidden}
+.chat-people-list,.chat-message-list{min-height:0;overscroll-behavior:contain}
+.chat-message-list{flex:1 1 auto;overflow-y:auto;overflow-x:hidden}
+@media(max-width:680px){
+  .chat-shell{width:calc(100% - 22px);padding:76px 0 88px}
+  .chat-layout{height:auto;min-height:0;max-height:none}
+  .chat-page-conversation-open .chat-shell{padding-top:76px}
+}
