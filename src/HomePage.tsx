@@ -947,7 +947,7 @@ export default function HomePage() {
         </div>
         <textarea value={storyText} onChange={event => setStoryText(event.target.value)} maxLength={500} rows={3} placeholder="Add text to your story…" aria-label="Story text" />
         {!storyPhoto && <div className="social-story-colors" aria-label="Story background color">
-          {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => setStoryBackground(color)} aria-label={`Choose ${color} background`} />)}
+          {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => setStoryBackground(color)} aria-label={`Choose ${color} background`} />)}
         </div>}
         <div className="social-story-dialog-actions"><label className="social-story-photo-button"><Camera size={17}/> Add photo<input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label><span>{storyText.length}/500</span><button type="submit" disabled={storyPublishing || (!storyText.trim() && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Publishing…</> : <><Send size={15}/> Share story</>}</button></div>
         <p className="social-story-expiry">Stories disappear automatically after 24 hours.</p>
