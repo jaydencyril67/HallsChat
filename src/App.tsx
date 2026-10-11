@@ -4,6 +4,7 @@ import SignupPage from "./SignupPage";
 import SigninPage from "./SigninPage";
 import HomePage from "./HomePage";
 import HallsPage from "./HallsPage";
+import ChatPage from "./ChatPage";
 import ProfilePage from "./ProfilePage";
 import EmailVerificationPage from "./EmailVerificationPage";
 import AppHeader from "./AppHeader";
@@ -80,6 +81,7 @@ export default function App() {
   if (normalizedPath === "/signin" || normalizedPath === "/sign-in") return <SigninPage />;
   if (normalizedPath === "/home") return <HomePage />;
   if (normalizedPath === "/halls") return <HallsPage />;
+  if (normalizedPath === "/chats") return <ChatPage />;
   if (normalizedPath === "/profile") return <ProfilePage />;
   if (navigationSections[normalizedPath]) {
     const section = navigationSections[normalizedPath];
