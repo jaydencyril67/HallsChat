@@ -51,6 +51,78 @@
         user-select: text;
       }
 
+
+      /* HallsChat refresh splash, shown before React mounts. */
+      .initial-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        width: 100vw;
+        height: 100dvh;
+        min-height: 100vh;
+        overflow: hidden;
+        background: #19070b;
+        color: #fff8f7;
+      }
+      .initial-splash-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+        text-align: center;
+      }
+      .initial-splash-logo {
+        width: 72px;
+        height: 72px;
+        display: block;
+        object-fit: contain;
+      }
+      .initial-splash-title {
+        margin: 0;
+        color: inherit;
+        font: inherit;
+        font-size: 13px;
+        line-height: 1.4;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+      .initial-splash-powered {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(env(safe-area-inset-bottom) + 28px);
+        z-index: 10001;
+        display: block;
+        margin: 0;
+        padding: 0 16px;
+        box-sizing: border-box;
+        color: inherit;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.4;
+        letter-spacing: 0.08em;
+        opacity: 0.72;
+        text-align: center;
+        pointer-events: none;
+      }
+      .initial-splash-shimmer {
+        width: 180px;
+        height: 3px;
+        margin-top: -8px;
+        border-radius: 999px;
+        background: currentColor;
+        animation: initial-splash-shimmer 1.4s ease-in-out infinite;
+      }
+      @keyframes initial-splash-shimmer {
+        0%, 100% { transform: scaleX(0.72); opacity: 0.45; }
+        50% { transform: scaleX(1); opacity: 1; }
+      }
     </style>
     <script>
       /* Prevent the mobile long-press context menu outside editable fields, as in CryBots. */
@@ -68,6 +140,14 @@
     <title>HallsChat — Closer conversations. Stronger connections.</title>
   </head>
   <body>
+    <div id="initial-splash" class="initial-splash" aria-label="Loading HallsChat">
+      <div class="initial-splash-card">
+        <img class="initial-splash-logo" src="/crown-chat.svg?v=7" alt="HallsChat" />
+        <p class="initial-splash-title">HallsChat</p>
+        <div class="initial-splash-shimmer" aria-hidden="true"></div>
+      </div>
+      <p class="initial-splash-powered">Powered by KingsHall</p>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
