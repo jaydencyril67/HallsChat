@@ -1957,3 +1957,43 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* Keep the Calls history content aligned with the shared top gap used by other app pages. */
 .home-page.halls-calls-page .halls-call-history-shell{padding-top:var(--app-top-gap)!important}
+
+
+/* All incoming, outgoing, and active call dialogs use the full viewport. */
+.halls-call-backdrop{
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  height:100dvh!important;
+  padding:0!important;
+  place-items:stretch!important;
+  border-radius:0!important;
+}
+.halls-call-card,
+.halls-call-stage,
+.halls-call-stage-video{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  border-radius:0!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.halls-call-card{
+  padding:calc(28px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px))!important;
+}
+.halls-call-stage{
+  padding:calc(28px + env(safe-area-inset-top, 0px)) 24px calc(28px + env(safe-area-inset-bottom, 0px))!important;
+}
+.halls-call-stage-video{
+  padding:0!important;
+}
+.halls-call-stage-video>.halls-call-controls{
+  bottom:calc(26px + env(safe-area-inset-bottom, 0px))!important;
+}
+.halls-call-close{
+  top:calc(15px + env(safe-area-inset-top, 0px))!important;
+}
