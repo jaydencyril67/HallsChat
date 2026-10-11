@@ -2244,3 +2244,14 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-story-snap-canvas .social-story-colors{flex-wrap:wrap;gap:12px;margin:13px 0 3px}
 .social-story-snap-canvas .social-story-colors button{flex:0 0 28px;width:28px;height:28px}
 @media(max-width:520px){.social-story-snap-close{left:10px;width:40px;height:40px}.social-story-snap-tools{right:10px;gap:9px}.social-story-snap-tools>button,.social-story-snap-tool{flex-basis:40px;width:40px;height:40px}.social-story-snap-bottom{padding-right:12px;padding-left:12px}.social-story-snap-bottom-row>button{min-width:130px}.social-story-snap-canvas .social-story-remove-photo{right:60px}}
+
+/* Story text controls: adjustable font size and independent text color */
+.social-story-text-size-control{display:grid;grid-template-columns:auto minmax(70px,1fr) auto;align-items:center;gap:10px;padding:9px 11px;border:1px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(14,8,10,.58);color:#fff;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.social-story-text-size-control label{font-size:11px;font-weight:700;white-space:nowrap}
+.social-story-text-size-control input[type=range]{width:100%;min-width:0;accent-color:#fff;cursor:pointer}
+.social-story-text-size-control output{min-width:34px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;color:rgba(255,255,255,.8)}
+.social-story-draggable-text{max-width:78%;overflow-wrap:anywhere;line-height:1.18;text-shadow:0 2px 7px rgba(0,0,0,.55);-webkit-text-stroke:.15px currentColor}
+.social-story-positioned-text{max-width:82%;overflow-wrap:anywhere;line-height:1.18;text-shadow:0 2px 7px rgba(0,0,0,.55);-webkit-text-stroke:.15px currentColor}
+.social-story-text-color-popout .social-story-colors button{border:1px solid rgba(255,255,255,.32)}
+.social-story-text-color-popout .social-story-colors button.is-selected{outline:2px solid #fff;outline-offset:3px}
+
