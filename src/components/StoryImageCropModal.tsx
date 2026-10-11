@@ -21,11 +21,16 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
   const [frame, setFrame] = useState({ width: 320, height: 320 });
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     zoomRef.current = 1;
     offsetRef.current = { x: 0, y: 0 };
     setReady(false);
+    pointersRef.current.clear();
+    gestureRef.current = null;
+    dragRef.current = null;
+    setErrorMessage("");
   }, [imageUrl]);
 
   const baseScale = () => {
@@ -94,7 +99,8 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (!ready || saving) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
+    setErrorMessage("");
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Continue with pointer events if capture is unavailable. */ }
     const bounds = event.currentTarget.getBoundingClientRect();
     pointersRef.current.set(event.pointerId, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
     if (pointersRef.current.size === 1) {
@@ -164,6 +170,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     const drawn = geometry();
     if (!image || !drawn || !ready || saving) return;
     setSaving(true);
+    setErrorMessage("");
     try {
       const outputWidth = Math.min(1600, Math.max(800, Math.round(frame.width * 2)));
       const outputHeight = Math.max(1, Math.round(outputWidth * frame.height / frame.width));
@@ -179,6 +186,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
       await onDone(new File([blob], "story-photo.jpg", { type: "image/jpeg" }));
     } catch (error) {
       console.error("[story-crop] failed to create cropped image", error);
+      setErrorMessage(error instanceof Error ? error.message : "Couldn’t crop this photo. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -215,6 +223,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
           <div className="social-story-crop-grid" aria-hidden="true" />
         </div>
       </div>
+      {errorMessage && <div className="social-story-crop-error" role="alert">{errorMessage}</div>}
       <footer className="social-story-crop-bottom" aria-hidden="true"><span /></footer>
     </div>
   );
