@@ -92,7 +92,8 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (!ready || saving) return;
     event.currentTarget.setPointerCapture(event.pointerId);
-    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const bounds = event.currentTarget.getBoundingClientRect();
+    pointersRef.current.set(event.pointerId, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
     if (pointersRef.current.size === 1) {
       dragRef.current = { x: event.clientX, y: event.clientY, offset: offsetRef.current };
       gestureRef.current = null;
@@ -111,7 +112,8 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (!pointersRef.current.has(event.pointerId) || !ready || saving) return;
     event.preventDefault();
-    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    const bounds = event.currentTarget.getBoundingClientRect();
+    pointersRef.current.set(event.pointerId, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
     if (pointersRef.current.size >= 2 && gestureRef.current) {
       const [a, b] = Array.from(pointersRef.current.values());
       const distance = Math.max(1, Math.hypot(b.x - a.x, b.y - a.y));
