@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CSSProperties } from "react";
-import { Search, UsersRound, UserRoundCheck, UserPlus } from "lucide-react";
+import { UsersRound, UserRoundCheck, UserPlus } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -17,7 +17,6 @@ function initials(name: string) {
 export default function HallsPage() {
   const [tab, setTab] = useState<HallTab>("discover");
   const [users, setUsers] = useState<HallUser[]>([]);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
   const [error, setError] = useState("");
@@ -70,9 +69,7 @@ export default function HallsPage() {
     }
   }
 
-  const filteredUsers = users.filter(person =>
-    `${person.name} ${person.username}`.toLowerCase().includes(search.trim().toLowerCase())
-  );
+  const filteredUsers = users;
 
   const panel: CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
   const muted: React.CSSProperties = { color: "rgba(246,220,225,.58)" };
@@ -91,17 +88,13 @@ export default function HallsPage() {
 
         <div style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
           {([{ id: "discover", label: "Discover people", icon: UserPlus }, { id: "followers", label: "Your followers", icon: UserRoundCheck }] as const).map(({ id, label, icon: Icon }) =>
-            <button key={id} type="button" onClick={() => { setTab(id); setSearch(""); setNotice(""); }} aria-pressed={tab === id} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "8px 10px", borderRadius: 9, border: tab === id ? "1px solid rgba(229,70,92,.7)" : "1px solid rgba(255,210,219,.11)", background: "rgba(255,255,255,.035)", color: tab === id ? "#ff9cab" : "rgba(246,220,225,.66)", fontSize: ".8rem", fontWeight: 750 }}>
+            <button key={id} type="button" onClick={() => { setTab(id); setNotice(""); }} aria-pressed={tab === id} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "8px 10px", borderRadius: 9, border: tab === id ? "1px solid rgba(229,70,92,.7)" : "1px solid rgba(255,210,219,.11)", background: "rgba(255,255,255,.035)", color: tab === id ? "#ff9cab" : "rgba(246,220,225,.66)", fontSize: ".8rem", fontWeight: 750 }}>
               <Icon size={16} /><span>{label}</span>
             </button>
           )}
         </div>
 
         <label style={{ ...panel, display: "flex", alignItems: "center", gap: 10, padding: "0 13px", marginBottom: 13 }}>
-          <Search size={17} style={muted} />
-          <input value={search} onChange={event => setSearch(event.target.value)} placeholder={tab === "discover" ? "Search all people…" : "Search your followers…"} aria-label="Search people" style={{ width: "100%", minWidth: 0, padding: "13px 0", border: 0, outline: 0, background: "transparent", color: "#fff0f3", font: "inherit", fontSize: ".88rem" }} />
-          {search && <button type="button" onClick={() => setSearch("")} style={{ border: 0, background: "transparent", color: "#ff9cab", fontSize: ".8rem" }}>Clear</button>}
-        </label>
 
         {error && <div role="alert" style={{ ...panel, padding: 13, marginBottom: 12, color: "#ff9eaa", fontSize: ".84rem" }}>{error}<button type="button" onClick={() => void loadUsers(tab)} style={{ display: "block", marginTop: 8, padding: 0, border: 0, background: "none", color: "#ffd4db", textDecoration: "underline" }}>Try again</button></div>}
         {notice && <p role="status" style={{ margin: "0 0 12px", color: "#9de4bd", fontSize: ".82rem" }}>{notice}</p>}
@@ -125,8 +118,8 @@ export default function HallsPage() {
             </div>)}
           </div> : <div style={{ ...panel, padding: "30px 18px", textAlign: "center" }}>
             <div style={{ width: 48, height: 48, margin: "0 auto 12px", borderRadius: 16, display: "grid", placeItems: "center", background: "rgba(184,32,50,.14)", color: "#ff9cab" }}>{tab === "discover" ? <UsersRound size={22} /> : <UserRoundCheck size={22} />}</div>
-            <strong style={{ display: "block", fontSize: ".92rem" }}>{search ? "No matches found" : tab === "discover" ? "You're all caught up" : "Your circle is just getting started"}</strong>
-            <p style={{ ...muted, margin: "7px auto 0", maxWidth: 300, fontSize: ".82rem", lineHeight: 1.6 }}>{search ? "Try another name or username." : tab === "discover" ? "There aren't any other discoverable accounts yet." : "When people follow you, they'll show up here."}</p>
+            <strong style={{ display: "block", fontSize: ".92rem" }}>{tab === "discover" ? "You're all caught up" : "Your circle is just getting started"}</strong>
+            <p style={{ ...muted, margin: "7px auto 0", maxWidth: 300, fontSize: ".82rem", lineHeight: 1.6 }}>{tab === "discover" ? "There aren't any other discoverable accounts yet." : "When people follow you, they'll show up here."}</p>
           </div>
         }
       </div>
