@@ -185,7 +185,7 @@ const ProfileImageCropModal = ({ imageUrl, onCancel, onDone, preserveAspectRatio
       context.clearRect(0, 0, canvas.width, canvas.height);
       const currentOffset = offsetRef.current;
       context.drawImage(image, currentOffset.x * ratio, currentOffset.y * ratio, geometry.width * ratio, geometry.height * ratio);
-      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.82));
       if (!blob) throw new Error('Unable to create the cropped image.');
       await onDone(new File([blob], 'profile-picture.jpg', { type: 'image/jpeg' }));
     } catch (error) {
