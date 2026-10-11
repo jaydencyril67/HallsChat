@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, Plus, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send } from "lucide-react";
+import { ArrowLeft, ArrowUp, Plus, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -18,7 +18,8 @@ type ChatPerson = {
   lastMessage?: string;
   lastMessageAt?: string | null;
 };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; createdAt: string; pending?: boolean };
+type ChatReply = { id: string; senderId: string; text?: string; imageUrl?: string; audioUrl?: string; deleted?: boolean };
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: ChatReply | null; deletedForEveryone?: boolean; createdAt: string; pending?: boolean };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -135,6 +136,10 @@ export default function ChatPage() {
   const [activeId, setActiveId] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deletingMessage, setDeletingMessage] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [otherTyping, setOtherTyping] = useState(false);
   const [listLoading, setListLoading] = useState(true);
@@ -168,11 +173,44 @@ export default function ChatPage() {
   const typingRecipientRef = useRef("");
   const typingStopTimerRef = useRef<number | null>(null);
   const otherTypingTimerRef = useRef<number | null>(null);
+  const messagePressTimerRef = useRef<number | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
   activeIdRef.current = activeId;
   currentUserIdRef.current = currentUserId;
 
   const token = () => localStorage.getItem("hallschat_token");
+  function messagePreview(message: Pick<ChatMessage, "text" | "images" | "imageUrl" | "audioUrl" | "deletedForEveryone">) {
+    if (message.deletedForEveryone) return "This message was deleted";
+    if (message.text?.trim()) return message.text;
+    if (message.audioUrl) return "🎤 Voice note";
+    if (message.images?.length || message.imageUrl) return "📷 Photo";
+    return "Message";
+  }
+  function beginReply(message: ChatMessage) {
+    setReplyingTo(message); setActionMenuFor(null);
+    window.setTimeout(() => draftInputRef.current?.focus(), 0);
+  }
+  function cancelMessagePress() {
+    if (messagePressTimerRef.current !== null) window.clearTimeout(messagePressTimerRef.current);
+    messagePressTimerRef.current = null;
+  }
+  async function deleteMessageForEveryone() {
+    if (!deleteConfirmId || deletingMessage) return;
+    const messageId = deleteConfirmId, savedToken = token();
+    if (!savedToken) { navigate("/signin", { replace: true }); return; }
+    setDeletingMessage(true);
+    try {
+      const response = await fetch(`${apiBase}/api/chat/messages/${encodeURIComponent(messageId)}`, { method: "DELETE", headers: { Authorization: `Bearer ${savedToken}` } });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "That message couldn't be deleted.");
+      setMessages(current => current.map(message => message.id === messageId
+        ? { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true }
+        : message.replyTo?.id === messageId ? { ...message, replyTo: { ...message.replyTo, text: "", imageUrl: "", audioUrl: "", deleted: true } } : message));
+      setPeople(current => current.map(person => person.id === activeIdRef.current ? { ...person, lastMessage: "This message was deleted" } : person));
+      setDeleteConfirmId(null); setActionMenuFor(null);
+    } catch (err) { setError(err instanceof Error ? err.message : "That message couldn't be deleted."); }
+    finally { setDeletingMessage(false); }
+  }
 
   function stopTyping(recipientId = typingRecipientRef.current) {
     if (typingStopTimerRef.current !== null) window.clearTimeout(typingStopTimerRef.current);
@@ -262,6 +300,12 @@ export default function ChatPage() {
       } else {
         otherTypingTimerRef.current = null;
       }
+    });
+    socket.on("chat:deleted", (payload: { id?: string }) => {
+      if (!payload?.id) return;
+      setMessages(current => current.map(message => message.id === payload.id
+        ? { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true }
+        : message.replyTo?.id === payload.id ? { ...message, replyTo: { ...message.replyTo, text: "", imageUrl: "", audioUrl: "", deleted: true } } : message));
     });
     socket.on("chat:message", (message: ChatMessage) => {
       const me = currentUserIdRef.current;
@@ -524,7 +568,8 @@ export default function ChatPage() {
       const audioUrl = await uploadChatImage(file, savedToken);
       const socket = socketRef.current;
       if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending the voice note again.");
-      const sent = await new Promise<ChatMessage>((resolve, reject) => socket.timeout(20000).emit("chat:send", { recipientId: person.id, text: "", images: [], audioUrl }, (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
+      const replyTarget = replyingTo;
+      const sent = await new Promise<ChatMessage>((resolve, reject) => socket.timeout(20000).emit("chat:send", { recipientId: person.id, text: "", images: [], audioUrl, ...(replyTarget ? { replyToId: replyTarget.id } : {}) }, (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
         if (timeoutError) return reject(new Error("The live connection timed out while sending your voice note."));
         if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your voice note couldn't be sent."));
         const result = response.message as ChatMessage;
@@ -533,6 +578,7 @@ export default function ChatPage() {
       }));
       setMessages(current => [...current.filter(item => item.id !== pendingId && item.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
       setPeople(current => current.map(item => item.id === person.id ? { ...item, lastMessage: "🎤 Voice note", lastMessageAt: sent.createdAt } : item));
+      setReplyingTo(null);
       URL.revokeObjectURL(previewUrl);
       setVoiceDraft(null);
       setVoiceDraftUrl("");
@@ -567,6 +613,8 @@ export default function ChatPage() {
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
 
     const recipientId = activePerson.id;
+    const replyTarget = replyingTo;
+    const replySnapshot: ChatReply | null = replyTarget ? { id: replyTarget.id, senderId: replyTarget.senderId, text: replyTarget.text, imageUrl: replyTarget.images?.[0] || replyTarget.imageUrl, audioUrl: replyTarget.audioUrl, deleted: Boolean(replyTarget.deletedForEveryone) } : null;
     const now = new Date().toISOString();
     const pendingItems: ChatMessage[] = [
       ...(text ? [{
@@ -574,6 +622,7 @@ export default function ChatPage() {
         senderId: currentUserId,
         recipientId,
         text,
+        replyTo: replySnapshot,
         createdAt: now,
         pending: true
       } as ChatMessage] : []),
@@ -583,6 +632,7 @@ export default function ChatPage() {
         recipientId,
         text: "",
         imageUrl: url,
+        replyTo: !text && index === 0 ? replySnapshot : null,
         createdAt: new Date(Date.now() + index).toISOString(),
         pending: true
       } as ChatMessage))
@@ -594,6 +644,7 @@ export default function ChatPage() {
     // Show the messages in the conversation immediately, before image upload/network sending.
     setMessages(current => [...current, ...pendingItems]);
     setDraft("");
+    setReplyingTo(null);
     setImageFiles([]);
     setImagePreviews([]);
     setError("");
@@ -604,10 +655,10 @@ export default function ChatPage() {
       const socket = socketRef.current;
       if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending again in a moment.");
 
-      const sendOne = (messageText: string, imageUrl?: string) => new Promise<ChatMessage>((resolve, reject) => {
+      const sendOne = (messageText: string, imageUrl?: string, includeReply = false) => new Promise<ChatMessage>((resolve, reject) => {
         socket.timeout(15000).emit(
           "chat:send",
-          { recipientId, text: messageText, images: imageUrl ? [imageUrl] : [] },
+          { recipientId, text: messageText, images: imageUrl ? [imageUrl] : [], ...(includeReply && replyTarget ? { replyToId: replyTarget.id } : {}) },
           (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
             if (timeoutError) return reject(new Error("The live connection timed out. Some items may already have been sent."));
             if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your message couldn't be sent."));
@@ -621,7 +672,7 @@ export default function ChatPage() {
       let pendingIndex = 0;
       const sentMessages: ChatMessage[] = [];
       if (text) {
-        const sent = await sendOne(text);
+        const sent = await sendOne(text, undefined, true);
         sentMessages.push(sent);
         const pendingId = pendingIds[pendingIndex++];
         setMessages(current => {
@@ -629,8 +680,8 @@ export default function ChatPage() {
           return [...withoutPending, sent].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         });
       }
-      for (const imageUrl of images) {
-        const sent = await sendOne("", imageUrl);
+      for (const [imageIndex, imageUrl] of images.entries()) {
+        const sent = await sendOne("", imageUrl, !text && imageIndex === 0);
         sentMessages.push(sent);
         const pendingId = pendingIds[pendingIndex++];
         setMessages(current => {
@@ -682,14 +733,29 @@ export default function ChatPage() {
             <div className="chat-message-list">
               {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : messages.length ? messages.map(message => {
                 const mine = message.senderId === currentUserId;
-                return <div key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}>
-                  <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"}`}>
-                    <div className="chat-message-body">
-                    {(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).length > 0 && <div className={`chat-image-grid ${(message.images?.length || (message.imageUrl ? 1 : 0)) === 1 ? "chat-image-grid-single" : ""}`}>{(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
-                    {message.audioUrl && <VoiceNotePlayer src={message.audioUrl} pending={Boolean(message.pending)} />}
-                    {message.text && <p className="chat-message-text">{message.text}</p>}
+                const quotedMessage = message.replyTo;
+                const messageImages = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
+                return <div id={`chat-message-${message.id}`} key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}
+                  onContextMenu={event => { if (!message.pending) { event.preventDefault(); setActionMenuFor(message.id); } }}
+                  onPointerDown={event => { if (event.pointerType === "touch" && !message.pending) { cancelMessagePress(); messagePressTimerRef.current = window.setTimeout(() => setActionMenuFor(message.id), 520); } }}
+                  onPointerUp={cancelMessagePress} onPointerLeave={cancelMessagePress} onPointerCancel={cancelMessagePress}>
+                  <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"} ${message.deletedForEveryone ? "chat-message-deleted" : ""}`}>
+                    {quotedMessage && <button type="button" className="chat-reply-quote" onClick={() => document.getElementById(`chat-message-${quotedMessage.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" })} aria-label="Jump to replied message">
+                      <strong>{quotedMessage.senderId === currentUserId ? "You" : activePerson.username}</strong>
+                      <span>{quotedMessage.deleted ? "This message was deleted" : quotedMessage.text || (quotedMessage.audioUrl ? "🎤 Voice note" : quotedMessage.imageUrl ? "📷 Photo" : "Message")}</span>
+                    </button>}
+                    {message.deletedForEveryone ? <p className="chat-message-deleted-text"><Trash2 size={14} /> This message was deleted</p> : <div className="chat-message-body">
+                      {messageImages.length > 0 && <div className={`chat-image-grid ${messageImages.length === 1 ? "chat-image-grid-single" : ""}`}>{messageImages.map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
+                      {message.audioUrl && <VoiceNotePlayer src={message.audioUrl} pending={Boolean(message.pending)} />}
+                      {message.text && <p className="chat-message-text">{message.text}</p>}
+                    </div>}
+                    <div className="chat-message-footer"><time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}</time>
+                      {!message.pending && !message.deletedForEveryone && <button type="button" className="chat-message-more" aria-label="Message actions" title="Message actions" onClick={event => { event.stopPropagation(); setActionMenuFor(current => current === message.id ? null : message.id); }}><MoreVertical size={15} /></button>}
                     </div>
-                    <time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}</time>
+                    {actionMenuFor === message.id && <div className="chat-message-actions" role="menu">
+                      <button type="button" role="menuitem" onClick={() => beginReply(message)}><Reply size={16} /><span>Reply</span></button>
+                      {mine && !message.deletedForEveryone && <button type="button" role="menuitem" className="chat-message-action-delete" onClick={() => { setActionMenuFor(null); setDeleteConfirmId(message.id); }}><Trash2 size={16} /><span>Delete for everyone</span></button>}
+                    </div>}
                   </div>
                 </div>;
               }) : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
@@ -705,6 +771,7 @@ export default function ChatPage() {
                   <button type="button" onClick={() => { setAttachmentMenuOpen(false); void recordVoiceNote(); }} disabled={voiceBusy}><Mic size={19} /><span>Voice Note</span></button>
                 </div>}
               </div>
+              {replyingTo && <div className="chat-reply-composer"><div className="chat-reply-composer-copy"><strong>Replying to {replyingTo.senderId === currentUserId ? "yourself" : activePerson.username}</strong><span>{messagePreview(replyingTo)}</span></div><button type="button" onClick={() => setReplyingTo(null)} aria-label="Cancel reply"><X size={17} /></button></div>}
               {(recording || recordingPaused) ? <div className={"chat-recording-status" + (recordingPaused ? " is-paused" : "")}><span className={"chat-recording-dot" + (recordingPaused ? " is-paused" : "")} />{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceDraft && voiceDraftUrl ? <div className="chat-voice-draft-preview"><VoiceNotePlayer src={voiceDraftUrl} /></div> : <textarea ref={draftInputRef} value={draft} onChange={event => handleDraftChange(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />}
               {!recording && !recordingPaused && !voiceDraft && <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>}
               {(recording || recordingPaused) ? <><button type="button" className="chat-recording-control" onClick={() => void recordVoiceNote()} aria-label={recordingPaused ? "Resume recording" : "Pause recording"} title={recordingPaused ? "Resume recording" : "Pause recording"}>{recordingPaused ? <Play size={17} fill="currentColor" /> : <Pause size={17} fill="currentColor" />}</button><button type="button" className="chat-stop-recording" onClick={finishVoiceRecording} aria-label="Finish recording and review" title="Finish recording and review"><Square size={17} fill="currentColor" /></button><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} aria-label="Delete recording" title="Delete recording"><Trash2 size={17} /></button></> : voiceDraft ? <><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} disabled={voiceBusy} aria-label="Delete voice note" title="Delete voice note"><Trash2 size={17} /></button><button type="button" className="chat-stop-recording" onClick={() => void sendVoiceDraft()} disabled={voiceBusy} aria-label="Send voice note" title="Send voice note">{voiceBusy ? <LoadingDots /> : <Send size={18} />}</button></> : <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || compressingImages} aria-label="Send message"><ArrowUp size={20} strokeWidth={2.5} /></button>}
@@ -713,6 +780,7 @@ export default function ChatPage() {
         </section>
       </div>
     </section>
+    {deleteConfirmId && <div className="chat-delete-overlay" role="presentation" onClick={() => !deletingMessage && setDeleteConfirmId(null)}><section className="chat-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="chat-delete-title" onClick={event => event.stopPropagation()}><span className="chat-delete-icon"><Trash2 size={21} /></span><h2 id="chat-delete-title">Delete message?</h2><p>This message will be removed for everyone in this conversation.</p><div><button type="button" onClick={() => setDeleteConfirmId(null)} disabled={deletingMessage}>Cancel</button><button type="button" className="chat-delete-confirm" onClick={() => void deleteMessageForEveryone()} disabled={deletingMessage}>{deletingMessage ? <LoadingDots /> : "Delete for everyone"}</button></div></section></div>}
     {viewingImageUrl && <ImagePreviewModal imageUrl={viewingImageUrl} onClose={() => setViewingImageUrl(null)} />}
     {error && <div className="halls-toast halls-toast-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
     {!(activePerson && mobileConversationOpen) && <NowBar />}
