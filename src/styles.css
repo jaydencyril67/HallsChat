@@ -1056,3 +1056,39 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   font-size: 12px;
   opacity: .8;
 }
+
+
+/* Match the Halls page's shared card treatment across the messages area. */
+.chat-people-list {
+  margin: 8px 10px 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid rgba(255,210,219,.11);
+  border-radius: 17px;
+  background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
+}
+.chat-person-row {
+  padding: 13px 12px;
+  border-bottom: 1px solid rgba(255,210,219,.075);
+  background: transparent;
+}
+.chat-person-row:last-child { border-bottom: 0; }
+.chat-person-row:hover,
+.chat-person-row-active { background: rgba(197,45,68,.10); }
+.chat-message-list {
+  margin: 8px 10px 10px;
+  padding: 13px 12px 12px;
+  border: 1px solid rgba(255,210,219,.11);
+  border-radius: 17px;
+  background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
+  scrollbar-width: thin;
+  scrollbar-color: rgba(222,68,89,.45) transparent;
+}
+.chat-message-loading,
+.chat-empty-conversation { flex: 1 1 auto; }
+.chat-list-state,
+.chat-list-empty { margin: 8px 10px 10px; border: 1px solid rgba(255,210,219,.11); border-radius: 17px; background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8)); }
+@media(max-width:680px) {
+  .chat-people-list { margin: 8px 9px 10px; }
+  .chat-message-list { margin: 7px 8px 8px; padding: 11px 9px 10px; }
+}
