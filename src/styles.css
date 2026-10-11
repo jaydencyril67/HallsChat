@@ -681,8 +681,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-conversation-person strong{overflow:hidden;color:var(--chat-text);font-size:.85rem;text-overflow:ellipsis;white-space:nowrap}
 .chat-conversation-person span{overflow:hidden;color:#d78a99;font-size:.7rem;text-overflow:ellipsis;white-space:nowrap}
 .chat-access-pill{padding:5px 8px;border:1px solid rgba(255,210,219,.13);border-radius:99px;font-size:.62rem;font-weight:750;white-space:nowrap}
-.chat-access-allowed{border-color:rgba(90,214,151,.22);background:rgba(45,157,101,.1);color:#a8e8c6}
-.chat-access-blocked{border-color:rgba(255,139,157,.24);background:rgba(197,45,68,.1);color:#ffabb8}
+.chat-status-online{border-color:rgba(90,214,151,.22);background:rgba(45,157,101,.1);color:#a8e8c6}
+.chat-status-offline{border-color:rgba(255,210,219,.13);background:rgba(255,255,255,.035);color:var(--chat-muted)}
 .chat-message-list{display:flex;flex:1;flex-direction:column;gap:10px;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:18px 15px 12px}
 .chat-message-line{display:flex;justify-content:flex-start;width:100%}
 .chat-message-line-mine{justify-content:flex-end}
