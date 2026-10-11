@@ -530,3 +530,18 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-poll-result small{color:var(--theme-muted);font-size:9px}
 .social-poll-total{margin:11px 0 0;color:var(--theme-muted);font-size:10px;line-height:1.6}
 @media(max-width:480px){.social-add-image-icon-only,.social-composer-mode-button{width:36px;min-width:36px;height:36px;min-height:36px}.social-poll-card{padding:11px}.social-poll-card h3{font-size:14px}}
+
+
+/* Home feed post text grows naturally, then becomes vertically scrollable at its cap. */
+.social-post-content{
+  height:auto;
+  max-height:320px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+@media(max-width:640px){
+  .social-post-content{height:auto;max-height:260px}
+}
