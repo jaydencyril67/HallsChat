@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2 } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -37,6 +38,31 @@ function timeAgo(value: string) {
 
 function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
+}
+
+function renderTextWithLinks(value: string): ReactNode {
+  const pattern = /(?:https?:\/\/|www\.)[^\s<>]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+  const parts: ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(value)) !== null) {
+    let visible = match[0];
+    let trailing = "";
+    while (/[.,!?;:)]$/.test(visible)) {
+      trailing = visible.slice(-1) + trailing;
+      visible = visible.slice(0, -1);
+    }
+    if (!visible) continue;
+    if (match.index > lastIndex) parts.push(value.slice(lastIndex, match.index));
+    const href = visible.includes("@") && !/^https?:\/\//i.test(visible)
+      ? `mailto:${visible}`
+      : /^www\./i.test(visible) ? `https://${visible}` : visible;
+    parts.push(<a className="social-text-link" href={href} target="_blank" rel="noopener noreferrer" key={`${match.index}-${visible}`}>{visible}</a>);
+    if (trailing) parts.push(trailing);
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < value.length) parts.push(value.slice(lastIndex));
+  return parts;
 }
 
 export default function HomePage() {
@@ -412,7 +438,7 @@ export default function HomePage() {
             {!feedLoading && posts.length > 0 && <div className="social-post-list">
               {posts.map(post => <article className="social-post" key={post.id}>
                 <div className="social-post-head"><div className="social-avatar">{initials(post.author?.name || "HallsChat member")}</div><div className="social-post-author"><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div>{post.author?.id === user?.id && <button type="button" className="social-post-action-muted" onClick={() => void deletePost(post)} disabled={deletingIds.includes(post.id)} aria-label="Delete your post" title="Delete post" style={{ marginLeft: "auto", color: "#ff8c9c", opacity: deletingIds.includes(post.id) ? .6 : 1 }}>{deletingIds.includes(post.id) ? <LoadingDots /> : <Trash2 size={16} />}{deletingIds.includes(post.id) ? "Deleting…" : "Delete"}</button>}</div>
-                {post.content && <p className="social-post-content">{post.content}</p>}
+                {post.content && <p className="social-post-content">{renderTextWithLinks(post.content)}</p>}
                 {post.poll && <div className="social-poll-card"><h3>{post.poll.question}</h3><div className="social-poll-results">{post.poll.options.map((option, index) => {
                   const totalVotes = post.poll!.options.reduce((sum, item) => sum + item.voteCount, 0);
                   const percent = totalVotes ? Math.round(option.voteCount / totalVotes * 100) : 0;
@@ -436,14 +462,14 @@ export default function HomePage() {
                         <article className="social-comment">
                           {comment.author?.profilePicture ? <img className="social-comment-avatar" src={comment.author.profilePicture} alt="" loading="lazy" /> : <div className="social-comment-avatar">{initials(comment.author?.name || "HallsChat member")}</div>}
                           <div className="social-comment-body">
-                            <div className="social-comment-bubble"><strong>{comment.author?.name || "HallsChat member"}</strong><span>{comment.content}</span></div>
+                            <div className="social-comment-bubble"><strong>{comment.author?.name || "HallsChat member"}</strong><span>{renderTextWithLinks(comment.content)}</span></div>
                             <div className="social-comment-meta"><small>{timeAgo(comment.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div>
                           </div>
                           <button type="button" className={comment.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, comment)} disabled={commentLikingIds.includes(comment.id)} aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"} aria-pressed={comment.likedByMe}>{commentLikingIds.includes(comment.id) ? <LoadingDots/> : <Heart size={16} fill={comment.likedByMe ? "currentColor" : "none"}/>}<small>{comment.likeCount || ""}</small></button>
                         </article>
                         {(commentsByPost[post.id] || []).filter(reply => reply.parentId === comment.id).map(reply => <article className="social-comment social-comment-reply" key={reply.id}>
                           {reply.author?.profilePicture ? <img className="social-comment-avatar" src={reply.author.profilePicture} alt="" loading="lazy" /> : <div className="social-comment-avatar">{initials(reply.author?.name || "HallsChat member")}</div>}
-                          <div className="social-comment-body"><div className="social-comment-bubble"><strong>{reply.author?.name || "HallsChat member"}</strong><span>{reply.content}</span></div><div className="social-comment-meta"><small>{timeAgo(reply.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div></div>
+                          <div className="social-comment-body"><div className="social-comment-bubble"><strong>{reply.author?.name || "HallsChat member"}</strong><span>{renderTextWithLinks(reply.content)}</span></div><div className="social-comment-meta"><small>{timeAgo(reply.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div></div>
                           <button type="button" className={reply.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, reply)} disabled={commentLikingIds.includes(reply.id)} aria-label={reply.likedByMe ? "Unlike reply" : "Like reply"} aria-pressed={reply.likedByMe}>{commentLikingIds.includes(reply.id) ? <LoadingDots/> : <Heart size={16} fill={reply.likedByMe ? "currentColor" : "none"}/>}<small>{reply.likeCount || ""}</small></button>
                         </article>)}
                       </div>) : !commentErrors[post.id] && !commentsLoading.includes(post.id) ? <p className="social-comments-empty">No comments yet. Start the conversation.</p> : null}
