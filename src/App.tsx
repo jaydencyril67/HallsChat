@@ -7,6 +7,7 @@ import HallsPage from "./HallsPage";
 import ChatPage from "./ChatPage";
 import ProfilePage from "./ProfilePage";
 import EmailVerificationPage from "./EmailVerificationPage";
+import ForgotPasswordPage from "./ForgotPasswordPage";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import { navigate } from "./utils/navigate";
@@ -76,6 +77,7 @@ export default function App() {
 
 
   const normalizedPath = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
+  if (normalizedPath === "/forgot-password") return <ForgotPasswordPage />;
   if (normalizedPath === "/verify-email") return <EmailVerificationPage />;
   if (normalizedPath === "/signup") return <SignupPage />;
   if (normalizedPath === "/signin" || normalizedPath === "/sign-in") return <SigninPage />;
