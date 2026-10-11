@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, Plus, Pencil, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical } from "lucide-react";
+import { ArrowLeft, ArrowUp, Plus, Pencil, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical, Phone, Video } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -22,6 +22,7 @@ type ChatPerson = {
 };
 type ChatReply = { id: string; senderId: string; text?: string; imageUrl?: string; audioUrl?: string; deleted?: boolean };
 type ChatReaction = { userId: string; emoji: string };
+type ChatCall = { id: string; person: { id: string; name: string; username: string; profilePicture?: string }; direction: "incoming" | "outgoing"; kind: "audio" | "video"; status: "ringing" | "missed" | "declined" | "cancelled" | "completed" | "failed"; durationSeconds: number; createdAt: string };
 type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: ChatReply | null; reactions?: ChatReaction[]; deletedForEveryone?: boolean; editedAt?: string | null; createdAt: string; pending?: boolean };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
@@ -138,6 +139,7 @@ export default function ChatPage() {
   const [people, setPeople] = useState<ChatPerson[]>([]);
   const [activeId, setActiveId] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversationCalls, setConversationCalls] = useState<ChatCall[]>([]);
   const [draft, setDraft] = useState("");
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
@@ -375,6 +377,28 @@ export default function ChatPage() {
     typingStopTimerRef.current = window.setTimeout(() => stopTyping(recipientId), 1800);
   }
 
+
+  useEffect(() => {
+    if (!activeId) { setConversationCalls([]); return; }
+    let cancelled = false;
+    const loadConversationCalls = async () => {
+      const savedToken = localStorage.getItem("hallschat_token");
+      if (!savedToken) return;
+      try {
+        const response = await fetch(`${apiBase}/api/calls/history`, { headers: { Authorization: `Bearer ${savedToken}` } });
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => ({}));
+        if (cancelled) return;
+        const calls = Array.isArray(payload.calls) ? payload.calls as ChatCall[] : [];
+        setConversationCalls(calls.filter(call => call.person?.id === activeId).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+      } catch {
+        // Keep chat usable if call history temporarily cannot be fetched.
+      }
+    };
+    void loadConversationCalls();
+    const refresh = window.setInterval(() => { void loadConversationCalls(); }, 5000);
+    return () => { cancelled = true; window.clearInterval(refresh); };
+  }, [activeId]);
 
   const loadPeople = useCallback(async (showLoader = false) => {
     const savedToken = localStorage.getItem("hallschat_token");
@@ -917,7 +941,7 @@ export default function ChatPage() {
               <CallsPanel socket={liveSocket} person={activePerson} />
             </header>
             <div className="chat-message-list" ref={chatMessageListRef}>
-              {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : messages.length ? messages.map(message => {
+              {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : (messages.length || conversationCalls.length) ? <>{messages.map(message => {
                 const mine = message.senderId === currentUserId;
                 const quotedMessage = message.replyTo;
                 const messageImages = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
@@ -998,7 +1022,27 @@ export default function ChatPage() {
 
                   </div>
                 </div>;
-              }) : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
+              })}
+                {conversationCalls.map(call => {
+                  const missed = call.status === "missed";
+                  const declined = call.status === "declined";
+                  const failed = call.status === "failed";
+                  const outgoing = call.direction === "outgoing";
+                  const statusText = missed ? (outgoing ? "No answer" : "Missed call") : declined ? (outgoing ? "Call declined" : "Declined call") : failed ? "Call failed" : call.status === "cancelled" ? "Call cancelled" : call.status === "completed" ? "Call ended" : "Call";
+                  const duration = call.durationSeconds > 0 ? ` · ${Math.floor(call.durationSeconds / 60)}:${String(call.durationSeconds % 60).padStart(2, "0")}` : "";
+                  return <div className="chat-call-row" key={`call-${call.id}`}>
+                    <div className={`chat-call-card${missed || failed ? " chat-call-card-alert" : ""}`}>
+                      <span className="chat-call-icon">{call.kind === "video" ? <Video size={19} /> : <Phone size={19} />}</span>
+                      <div className="chat-call-copy">
+                        <strong>{call.kind === "video" ? "Video call" : "Audio call"}</strong>
+                        <span className={missed || failed ? "chat-call-status-alert" : ""}>{outgoing ? "Outgoing" : "Incoming"} · {statusText}{duration}</span>
+                        <time>{new Date(call.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time>
+                      </div>
+                      <span className="chat-call-direction" aria-label={outgoing ? "Outgoing call" : "Incoming call"}>{outgoing ? <Phone size={15} /> : <Phone size={15} />}</span>
+                    </div>
+                  </div>;
+                })}
+              </> : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
               <div ref={bottomRef} />
             </div>
             {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelection} />{(imagePreviews.length > 0 || compressingImages) && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">{compressingImages ? "Compressing images…" : `${imageFiles.length} ${imageFiles.length === 1 ? "image" : "images"} ready`}</span></div>}{replyingTo && <div className="chat-reply-composer"><div className="chat-reply-composer-copy"><strong>Replying to {replyingTo.senderId === currentUserId ? "yourself" : activePerson.username}</strong><span>{messagePreview(replyingTo)}</span></div><button type="button" onClick={() => setReplyingTo(null)} aria-label="Cancel reply"><X size={17} /></button></div>}<form className="chat-composer" onSubmit={sendMessage}>
