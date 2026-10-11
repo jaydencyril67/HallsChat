@@ -7,7 +7,7 @@ import ImagePreviewModal from "./components/ImagePreviewModal";
 import ProfileImageCropModal from "./components/ProfileImageCropModal";
 import { navigate } from "./utils/navigate";
 
-type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string; followersCount?: number };
+type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string; coverPhoto?: string; followersCount?: number };
 type Post = { id: string; content: string; createdAt: string; author: { id: string; name: string; username: string } | null; likeCount?: number; images?: string[]; poll?: { question: string } | null };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -25,6 +25,8 @@ export default function ProfilePage() {
   const [previewPicture, setPreviewPicture] = useState<string | null>(null);
   const [pictureActionsOpen, setPictureActionsOpen] = useState(false);
   const [pictureDeleteConfirm, setPictureDeleteConfirm] = useState(false);
+  const [coverBusy, setCoverBusy] = useState(false);
+  const coverInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -63,6 +65,48 @@ export default function ProfilePage() {
   const initials = user?.name?.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
   const panel: React.CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
   const muted: React.CSSProperties = { color: "rgba(246,220,225,.58)" };
+
+  async function selectCoverPhoto(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setPictureError("");
+    if (!file.type.startsWith("image/")) { setPictureError("Choose an image file for your cover photo."); return; }
+    if (file.size > MAX_PROFILE_IMAGE_SIZE) { setPictureError("Choose a cover photo smaller than 10 MB."); return; }
+    if (coverBusy || pictureBusy) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setCoverBusy(true);
+    try {
+      const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${token}` } });
+      const authPayload = await authResponse.json().catch(() => ({}));
+      if (!authResponse.ok) throw new Error(authPayload.message || "Cover photo upload couldn't be prepared.");
+      const auth = authPayload as ImageKitAuth;
+      if (!auth.token || !auth.signature || !auth.publicKey || !auth.expire) throw new Error("Image upload authentication is incomplete.");
+      const formData = new FormData();
+      formData.append("file", file, file.name || "cover-photo");
+      formData.append("fileName", `hallschat-cover-${user?.id || "member"}-${Date.now()}`);
+      formData.append("publicKey", auth.publicKey);
+      formData.append("token", auth.token);
+      formData.append("signature", auth.signature);
+      formData.append("expire", String(auth.expire));
+      formData.append("useUniqueFileName", "true");
+      const uploadResponse = await fetch("https://upload.imagekit.io/api/v1/files/upload", { method: "POST", body: formData });
+      const uploadPayload = await uploadResponse.json().catch(() => ({}));
+      if (!uploadResponse.ok || typeof uploadPayload.url !== "string") throw new Error(uploadPayload.message || "Your cover photo couldn't upload.");
+      const saveResponse = await fetch(`${apiBase}/api/auth/cover-photo`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ coverPhoto: uploadPayload.url })
+      });
+      const savePayload = await saveResponse.json().catch(() => ({}));
+      if (!saveResponse.ok) throw new Error(savePayload.message || "Your cover photo couldn't be saved.");
+      setUser(current => current ? { ...current, coverPhoto: savePayload.coverPhoto } : current);
+      setPictureError("");
+    } catch (err) {
+      setPictureError(err instanceof Error ? err.message : "Your cover photo couldn't be saved.");
+    } finally { setCoverBusy(false); }
+  }
 
   function selectPicture(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -152,7 +196,10 @@ export default function ProfilePage() {
       <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "12px 0 24px", boxSizing: "border-box" }}>
         {error ? <div role="alert" style={{ ...panel, padding: 18, color: "#ff9cab" }}>{error}<button type="button" onClick={() => navigate("/signin")} style={{ display: "block", marginTop: 12, padding: 0, border: 0, background: "none", color: "#ffd4db", textDecoration: "underline" }}>Sign in again</button></div> : <>
           <div style={{ ...panel, overflow: "hidden", marginBottom: 17 }}>
-            <div style={{ height: 112, background: "radial-gradient(ellipse at 78% 15%,rgba(231,82,104,.32),transparent 48%),linear-gradient(125deg,#48121f,#21090f 78%)", borderBottom: "1px solid rgba(255,255,255,.06)" }} />
+            <div style={{ position: "relative", height: 150, background: user?.coverPhoto ? `linear-gradient(0deg,rgba(24,6,11,.3),rgba(24,6,11,.08)),url("${user.coverPhoto}") center/cover no-repeat` : "radial-gradient(ellipse at 78% 15%,rgba(231,82,104,.32),transparent 48%),linear-gradient(125deg,#48121f,#21090f 78%)", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
+              <button type="button" onClick={() => coverInput.current?.click()} disabled={coverBusy || pictureBusy} aria-label="Upload or change cover photo" title="Upload or change cover photo" style={{ position: "absolute", right: 12, bottom: 12, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, minHeight: 36, padding: "8px 11px", border: "1px solid rgba(255,255,255,.2)", borderRadius: 11, background: "rgba(25,7,12,.82)", color: "#fff0f3", fontSize: ".74rem", fontWeight: 750, cursor: coverBusy || pictureBusy ? "wait" : "pointer", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>{coverBusy ? <LoadingDots /> : <Camera size={16} />}{coverBusy ? "Uploading…" : user?.coverPhoto ? "Change cover" : "Add cover photo"}</button>
+              <input ref={coverInput} type="file" accept="image/*" onChange={selectCoverPhoto} hidden />
+            </div>
             <div style={{ padding: "0 18px 20px" }}>
               <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginTop: -40 }}>
                 <div style={{ position: "relative", width: 88, height: 88, flexShrink: 0 }}>
@@ -171,6 +218,7 @@ export default function ProfilePage() {
               <h1 style={{ margin: "13px 0 4px", color: "#fff0f3", fontSize: "clamp(1.4rem,5vw,1.9rem)", letterSpacing: "-.04em", overflowWrap: "anywhere" }}>{loading ? "Loading profile…" : user?.name || "HallsChat member"}</h1>
               <p style={{ margin: 0, color: "#e69aa7", fontSize: ".88rem" }}>{user?.username ? `@${user.username}` : "Your HallsChat account"}</p>
               {pictureBusy && <p role="status" style={{ margin: "12px 0 0", color: "#f09aa7", fontSize: ".8rem" }}><LoadingDots /> Saving profile picture…</p>}
+              {coverBusy && <p role="status" style={{ margin: "8px 0 0", color: "#f09aa7", fontSize: ".8rem" }}><LoadingDots /> Saving cover photo…</p>}
               <p style={{ margin: "12px 0 0", ...muted, fontSize: ".84rem", lineHeight: 1.7 }}>Your space on HallsChat. Keep up with your posts and the details connected to your account.</p>
             </div>
           </div>
