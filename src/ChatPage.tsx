@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, ImagePlus, MessageCircle, ShieldCheck, UsersRound, X } from "lucide-react";
+import { ArrowLeft, ArrowUp, Plus, Camera, Mic, Square, MessageCircle, ShieldCheck, UsersRound, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -18,7 +18,7 @@ type ChatPerson = {
   lastMessage?: string;
   lastMessageAt?: string | null;
 };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; createdAt: string; pending?: boolean };
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; createdAt: string; pending?: boolean };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -103,6 +103,15 @@ export default function ChatPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [compressingImages, setCompressingImages] = useState(false);
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
+  const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingChunksRef = useRef<Blob[]>([]);
+  const recordingStreamRef = useRef<MediaStream | null>(null);
+  const recordingStartedAtRef = useRef(0);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const scrollOnOpenRef = useRef(false);
@@ -193,7 +202,7 @@ export default function ChatPage() {
         });
       }
       const otherId = message.senderId === me ? message.recipientId : message.senderId;
-      const preview = message.text || ((message.images?.length || message.imageUrl) ? "📷 Photo" : "");
+      const preview = message.text || (message.audioUrl ? "🎤 Voice note" : (message.images?.length || message.imageUrl) ? "📷 Photo" : "");
       setPeople(current => {
         const next = current.map(person => person.id === otherId
           ? { ...person, lastMessage: preview, lastMessageAt: message.createdAt }
@@ -314,6 +323,81 @@ export default function ChatPage() {
     setImageFiles(current => current.filter((_, i) => i !== index));
     setImagePreviews(current => current.filter((_, i) => i !== index));
   }
+
+  async function recordVoiceNote() {
+    if (recording) { mediaRecorderRef.current?.stop(); return; }
+    if (voiceBusy) return;
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") { setError("Voice recording is not supported by this browser or app."); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordingStreamRef.current = stream;
+      recordingChunksRef.current = [];
+      const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"].find(type => MediaRecorder.isTypeSupported(type));
+      const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      recordingStartedAtRef.current = Date.now();
+      setRecordingSeconds(0);
+      setRecording(true);
+      setAttachmentMenuOpen(false);
+      recorder.ondataavailable = event => { if (event.data.size) recordingChunksRef.current.push(event.data); };
+      recorder.onerror = () => { setError("Recording failed. Please try again."); setRecording(false); stream.getTracks().forEach(track => track.stop()); };
+      recorder.onstop = async () => {
+        setRecording(false);
+        stream.getTracks().forEach(track => track.stop());
+        recordingStreamRef.current = null;
+        const chunks = recordingChunksRef.current;
+        recordingChunksRef.current = [];
+        if (!chunks.length) return;
+        const type = recorder.mimeType || "audio/webm";
+        const blob = new Blob(chunks, { type });
+        if (blob.size > 12 * 1024 * 1024) { setError("That voice note is too large. Please record a shorter one."); return; }
+        const ext = type.includes("ogg") ? "ogg" : type.includes("mp4") ? "m4a" : "webm";
+        const file = new File([blob], "voice-note-" + Date.now() + "." + ext, { type });
+        const savedToken = token();
+        const person = people.find(item => item.id === activeIdRef.current);
+        if (!savedToken || !person?.canMessage) return;
+        setVoiceBusy(true);
+        const pendingId = "pending-audio-" + Date.now();
+        const previewUrl = URL.createObjectURL(blob);
+        const pending: ChatMessage = { id: pendingId, senderId: currentUserIdRef.current, recipientId: person.id, text: "", audioUrl: previewUrl, createdAt: new Date().toISOString(), pending: true };
+        setMessages(current => [...current, pending]);
+        try {
+          const audioUrl = await uploadChatImage(file, savedToken);
+          const socket = socketRef.current;
+          if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending the voice note again.");
+          const sent = await new Promise<ChatMessage>((resolve, reject) => socket.timeout(20000).emit("chat:send", { recipientId: person.id, text: "", images: [], audioUrl }, (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
+            if (timeoutError) return reject(new Error("The live connection timed out while sending your voice note."));
+            if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your voice note couldn't be sent."));
+            const result = response.message as ChatMessage;
+            if (!result || typeof result !== "object" || !result.id) return reject(new Error("The server didn't confirm your voice note."));
+            resolve(result);
+          }));
+          URL.revokeObjectURL(previewUrl);
+          setMessages(current => [...current.filter(item => item.id !== pendingId && item.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+          setPeople(current => current.map(item => item.id === person.id ? { ...item, lastMessage: "🎤 Voice note", lastMessageAt: sent.createdAt } : item));
+        } catch (err) {
+          URL.revokeObjectURL(previewUrl);
+          setMessages(current => current.filter(item => item.id !== pendingId));
+          setError(err instanceof Error ? err.message : "Your voice note couldn't be sent.");
+        } finally { setVoiceBusy(false); }
+      };
+      recorder.start();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Microphone access was denied.");
+      setRecording(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!recording) return;
+    const interval = window.setInterval(() => setRecordingSeconds(Math.floor((Date.now() - recordingStartedAtRef.current) / 1000)), 500);
+    return () => window.clearInterval(interval);
+  }, [recording]);
+
+  useEffect(() => () => {
+    if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    recordingStreamRef.current?.getTracks().forEach(track => track.stop());
+  }, []);
 
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
@@ -442,6 +526,7 @@ export default function ChatPage() {
                   <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"}`}>
                     <div className="chat-message-body">
                     {(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).length > 0 && <div className={`chat-image-grid ${(message.images?.length || (message.imageUrl ? 1 : 0)) === 1 ? "chat-image-grid-single" : ""}`}>{(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
+                    {message.audioUrl && <div className="chat-voice-note"><span className="chat-voice-icon"><Mic size={17} /></span><audio controls preload="metadata" src={message.audioUrl}>Your browser does not support audio playback.</audio></div>}
                     {message.text && <p className="chat-message-text">{message.text}</p>}
                     </div>
                     <time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}</time>
@@ -451,10 +536,17 @@ export default function ChatPage() {
               <div ref={bottomRef} />
             </div>
             {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelection} />{(imagePreviews.length > 0 || compressingImages) && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">{compressingImages ? "Compressing images…" : `${imageFiles.length} ${imageFiles.length === 1 ? "image" : "images"} ready`}</span></div>}<form className="chat-composer" onSubmit={sendMessage}>
-              <button type="button" className="chat-attach-button" onClick={() => imageInputRef.current?.click()} disabled={compressingImages || imageFiles.length >= MAX_CHAT_IMAGES} aria-label="Attach image" title="Send image"><ImagePlus size={20} /></button>
-              <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
+              <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" hidden onChange={handleImageSelection} />
+              <div className="chat-attachment-wrap">
+                <button type="button" className="chat-attach-button" onClick={() => setAttachmentMenuOpen(value => !value)} aria-label="Open attachments" title="Attach"><Plus size={22} /></button>
+                {attachmentMenuOpen && <div className="chat-attachment-menu">
+                  <button type="button" onClick={() => { setAttachmentMenuOpen(false); cameraInputRef.current?.click(); }}><Camera size={19} /><span>Camera / photo</span></button>
+                  <button type="button" onClick={() => void recordVoiceNote()} disabled={voiceBusy}><Mic size={19} /><span>Voice note</span></button>
+                </div>}
+              </div>
+              {recording ? <div className="chat-recording-status"><span className="chat-recording-dot" />Recording voice note · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceBusy ? <div className="chat-recording-status">Sending voice note…</div> : <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />}
               <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>
-              <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || compressingImages} aria-label="Send message"><ArrowUp size={20} strokeWidth={2.5} /></button>
+              {recording ? <button type="button" className="chat-stop-recording" onClick={() => mediaRecorderRef.current?.stop()} aria-label="Stop and send voice note" title="Stop and send voice note"><Square size={17} fill="currentColor" /></button> : <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || compressingImages || voiceBusy} aria-label="Send message"><ArrowUp size={20} strokeWidth={2.5} /></button>}
             </form></> : <div className="chat-readonly-notice"><ShieldCheck size={16} /><span>This person no longer follows you, so you can’t send new messages.</span></div>}
           </> : <div className="chat-welcome"><span><MessageCircle size={30} /></span><h2>Your conversations, all in one place</h2><p>Select a follower to start chatting. Only people who follow you can receive messages from you.</p></div>}
         </section>
