@@ -1716,3 +1716,59 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-story-preview>.social-story-draggable-text:active{cursor:grabbing}
 .social-story-viewer-content{position:relative;overflow:hidden}
 .social-story-viewer-content>.social-story-positioned-text{position:absolute;z-index:2;left:50%;top:50%;width:max-content;max-width:86%;max-height:75%;overflow:auto;margin:0;padding:8px 12px;border-radius:9px;background:rgba(0,0,0,.36);color:#fff;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:700;line-height:1.35;text-shadow:0 1px 4px rgba(0,0,0,.65);transform:translate(-50%,-50%);pointer-events:none}
+
+
+/* Story creator layout: fixed preview area, compact editor controls, and scrollable bottom pavement. */
+.social-story-dialog{overflow:hidden;gap:0}
+.social-story-preview{flex:1 1 0;min-height:170px;height:auto;max-height:none;min-width:0}
+.social-story-bottom-panel{position:relative;z-index:4;flex:0 1 auto;min-height:0;max-height:43dvh;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(240,120,137,.35) transparent;padding:2px 0 max(8px,env(safe-area-inset-bottom))}
+.social-story-text-editor{position:relative;gap:7px;margin:9px 0 7px;overflow:visible}
+.social-story-text-editor-head{min-height:28px}
+.social-story-editor-title{display:flex;align-items:center;gap:8px}
+.social-story-editor-title>strong{font-size:12px}
+.social-story-editor-title>small,.social-story-editor-count{color:#a88790;font-size:10px}
+.social-story-editor-tools{display:flex;align-items:center;gap:7px}
+.social-story-editor-tools button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:30px;padding:0 10px;border:1px solid rgba(240,120,137,.3);border-radius:9px;background:rgba(240,120,137,.1);color:#ffdce2;font-size:10px;font-weight:700;white-space:nowrap}
+.social-story-editor-tools button:disabled{opacity:.4}
+.social-story-editor-tools .social-story-manage-trigger{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.13);color:#f8e9ec}
+.social-story-section-rail{display:flex;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:2px 1px 5px}
+.social-story-section-rail::-webkit-scrollbar{display:none}
+.social-story-section-rail>button{display:flex;align-items:center;gap:6px;flex:0 0 auto;max-width:145px;min-height:30px;padding:0 9px;border:1px solid rgba(255,255,255,.12);border-radius:9px;background:rgba(0,0,0,.17);color:#cbb1b7;font-size:10px;white-space:nowrap}
+.social-story-section-rail>button>span,.social-story-manager-select>span:first-child{display:grid;place-items:center;flex:0 0 18px;width:18px;height:18px;border-radius:6px;background:rgba(255,255,255,.09);font-size:9px}
+.social-story-section-rail>button.is-active{border-color:#f07889;background:rgba(240,120,137,.16);color:#fff}
+.social-story-active-text-input{display:block;width:100%;min-height:54px;max-height:12dvh;resize:vertical;padding:9px 11px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(10,3,6,.45);color:#fff0f3;font:12px/1.45 'DM Sans',sans-serif;outline:none}
+.social-story-active-text-input:focus{border-color:rgba(240,120,137,.72)}
+.social-story-text-editor-count{display:block;text-align:right}
+.social-story-text-manager{position:absolute;z-index:20;top:35px;right:0;width:min(310px,100%);max-height:30dvh;display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(240,120,137,.35);border-radius:13px;background:linear-gradient(155deg,#35101d,#18080e);box-shadow:0 14px 40px #0009}
+.social-story-text-manager-head{display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;padding:10px 11px;border-bottom:1px solid rgba(255,255,255,.1);font-size:11px}
+.social-story-text-manager-head button{display:grid;place-items:center;width:27px;height:27px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.05);color:#fff}
+.social-story-text-manager-list{overflow-y:auto;padding:5px}
+.social-story-text-manager-list>div{display:flex;align-items:center;gap:5px;padding:4px;border-radius:9px}
+.social-story-text-manager-list>div.is-active{background:rgba(240,120,137,.13)}
+.social-story-manager-select{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:5px;border:0;background:transparent;color:#fff;text-align:left}
+.social-story-manager-select>span:last-child{display:flex;flex-direction:column;gap:2px;min-width:0}
+.social-story-manager-select strong{font-size:10px}
+.social-story-manager-select small{max-width:205px;overflow:hidden;color:#bda1a8;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.social-story-manager-delete{display:grid;place-items:center;flex:0 0 30px;width:30px;height:30px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(0,0,0,.15);color:#f2a0ad}
+.social-story-manager-delete:disabled{opacity:.35}
+.social-story-colors{display:flex;align-items:center;gap:8px;overflow-x:auto;flex:0 0 auto;margin:7px 0 10px;padding:3px 2px 5px;scrollbar-width:none}
+.social-story-colors::-webkit-scrollbar{display:none}
+.social-story-colors button{flex:0 0 25px;width:25px;height:25px}
+.social-story-dialog-actions{flex:0 0 auto;flex-wrap:nowrap;gap:8px;padding-top:9px}
+.social-story-photo-button{flex:0 0 auto;min-height:36px;padding:0 10px;white-space:nowrap}
+.social-story-dialog-actions>span{flex:1;min-width:0;margin-left:0;text-align:center;white-space:nowrap}
+.social-story-dialog-actions>button{flex:0 0 auto;min-height:36px;padding:0 11px;white-space:nowrap}
+.social-story-expiry{margin:7px 0 2px;font-size:9px}
+@media(max-height:650px){
+ .social-story-bottom-panel{max-height:46dvh}
+ .social-story-preview{min-height:135px}
+ .social-story-active-text-input{min-height:44px;max-height:10dvh}
+ .social-story-dialog-head{margin-bottom:7px;padding-bottom:9px}
+}
+@media(max-width:380px){
+ .social-story-dialog{padding-right:11px;padding-left:11px}
+ .social-story-dialog-head{margin-right:-11px;margin-left:-11px;padding-right:11px;padding-left:11px}
+ .social-story-dialog-actions{gap:5px}
+ .social-story-photo-button{padding:0 7px;font-size:10px}
+ .social-story-dialog-actions>button{gap:4px;padding:0 8px;font-size:10px}
+}
