@@ -19,7 +19,7 @@ type AlertItem = {
 };
 type AlertFilter = "all" | "unread";
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
-const apiHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("hallschat_token") || ""}", "Content-Type": "application/json" });
+const apiHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("hallschat_token") || ""}`, "Content-Type": "application/json" });
 
 function timeLabel(value: string) {
   const date = new Date(value);
