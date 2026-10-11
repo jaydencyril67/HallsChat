@@ -1457,3 +1457,14 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 /* WhatsApp-like right-swipe reply gesture: follow the finger, then snap back. */
 .chat-message-content{transition:transform .18s ease-out}
 .chat-message-content.chat-message-swiping{transition:none;will-change:transform}
+
+
+/* WhatsApp-style hold-to-react picker and compact reaction counters. */
+.chat-reaction-picker{position:absolute;z-index:60;right:0;bottom:calc(100% + 8px);display:flex;align-items:center;gap:3px;padding:5px 7px;border:1px solid rgba(255,210,219,.17);border-radius:999px;background:rgba(35,12,19,.98);box-shadow:0 9px 28px rgba(0,0,0,.42);backdrop-filter:blur(16px);white-space:nowrap}
+.chat-reaction-picker button{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:transparent;font-size:21px;line-height:1;cursor:pointer;transition:transform .12s ease,background .12s ease}
+.chat-reaction-picker button:hover,.chat-reaction-picker button:focus-visible{background:rgba(240,120,137,.17);transform:scale(1.12);outline:none}
+.chat-reaction-pill{position:relative;z-index:2;display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:31px;height:25px;margin:5px 3px 0 0;padding:2px 7px;border:1px solid rgba(255,210,219,.17);border-radius:999px;background:rgba(40,15,23,.96);color:#ffe9ec;font-size:14px;line-height:1;cursor:pointer}
+.chat-reaction-pill span{font-size:11px;opacity:.85}
+.chat-reaction-pill-mine{border-color:rgba(240,120,137,.72);background:rgba(240,120,137,.2)}
+.chat-message-content{isolation:isolate}
+@media(max-width:380px){.chat-reaction-picker{gap:1px;padding:4px 5px}.chat-reaction-picker button{flex-basis:31px;width:31px;height:31px;font-size:19px}}
