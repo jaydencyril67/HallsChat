@@ -5,11 +5,13 @@ type StoryImageCropModalProps = {
   imageUrl: string;
   onCancel: () => void;
   onDone: (file: File) => void | Promise<void>;
+  title?: string;
+  aspectRatio?: number;
 };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: StoryImageCropModalProps) {
+export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title = "Edit story photo", aspectRatio }: StoryImageCropModalProps) {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
   const gestureRef = useRef<{ distance: number; midpoint: { x: number; y: number }; zoom: number; offset: { x: number; y: number } } | null>(null);
@@ -57,13 +59,30 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     if (!image?.naturalWidth || !image.naturalHeight) return;
     const maxWidth = Math.max(200, Math.min(window.innerWidth * 0.92, 900));
     const maxHeight = Math.max(180, Math.min(window.innerHeight * 0.76, 900));
-    const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
-    const width = Math.max(1, image.naturalWidth * scale);
-    const height = Math.max(1, image.naturalHeight * scale);
-    setFrame({ width, height });
+    let width: number;
+    let height: number;
+    if (typeof aspectRatio === "number" && aspectRatio > 0) {
+      width = maxWidth;
+      height = width / aspectRatio;
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height * aspectRatio;
+      }
+    } else {
+      const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+      width = image.naturalWidth * scale;
+      height = image.naturalHeight * scale;
+    }
+    const nextFrame = { width: Math.max(1, width), height: Math.max(1, height) };
+    const scale = Math.max(nextFrame.width / image.naturalWidth, nextFrame.height / image.naturalHeight);
+    const initialOffset = {
+      x: (nextFrame.width - image.naturalWidth * scale) / 2,
+      y: (nextFrame.height - image.naturalHeight * scale) / 2,
+    };
+    setFrame(nextFrame);
     zoomRef.current = 1;
-    offsetRef.current = { x: 0, y: 0 };
-    setOffset({ x: 0, y: 0 });
+    offsetRef.current = initialOffset;
+    setOffset(initialOffset);
     setReady(true);
   };
 
@@ -163,13 +182,13 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     <div role="dialog" aria-modal="true" aria-label="Edit story photo" className="social-story-crop-overlay">
       <header className="social-story-crop-header">
         <button type="button" onClick={onCancel} disabled={saving} aria-label="Cancel photo edit"><X size={23} /></button>
-        <div><strong>Edit story photo</strong></div>
+        <div><strong>{title}</strong></div>
         <button type="button" onClick={() => void saveCrop()} disabled={!ready || saving} aria-label="Apply crop">{saving ? "…" : <Check size={25} />}</button>
       </header>
       <div className="social-story-crop-stage">
         <div
           className="social-story-crop-frame"
-          style={{ width: frame.width, height: frame.height, maxWidth: "92vw", maxHeight: "76dvh" }}
+          style={{ width: frame.width, height: frame.height, maxWidth: "92vw", maxHeight: "76dvh", aspectRatio: typeof aspectRatio === "number" && aspectRatio > 0 ? aspectRatio : undefined }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
