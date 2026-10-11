@@ -9,7 +9,7 @@ type CallRecord = {
   person: { id: string; name: string; username: string; profilePicture?: string };
   direction: "incoming" | "outgoing";
   kind: "audio" | "video";
-  status: "ringing" | "missed" | "declined" | "cancelled" | "completed";
+  status: "ringing" | "missed" | "declined" | "cancelled" | "completed" | "failed";
   durationSeconds: number;
   createdAt: string;
 };
@@ -41,9 +41,9 @@ function formatDuration(value: number) {
 
 function callSummary(call: CallRecord) {
   if (call.status === "missed") return call.direction === "incoming" ? "Missed" : "No answer";
-  if (call.status === "declined" && call.direction === "incoming") return "Missed";
-  if (call.status === "declined") return "Declined";
-  if (call.status === "cancelled") return "Cancelled";
+  if (call.status === "declined") return "Rejected";
+  if (call.status === "failed") return "Failed";
+  if (call.status === "cancelled") return call.direction === "outgoing" ? "Dialed" : "Cancelled";
   if (call.status === "completed") return formatDuration(call.durationSeconds);
   if (call.status === "ringing") return "Ringing";
   return "No answer";
@@ -51,7 +51,7 @@ function callSummary(call: CallRecord) {
 
 export default function CallsPage() {
   const [calls, setCalls] = useState<CallRecord[]>([]);
-  const [filter, setFilter] = useState<"all" | "missed">("all");
+  const [filter, setFilter] = useState<"all" | "dialed" | "missed" | "rejected" | "failed">("all");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -85,14 +85,19 @@ export default function CallsPage() {
   const visibleCalls = useMemo(() => {
     const term = query.trim().toLowerCase();
     return calls.filter(call => {
-      const missed = call.direction === "incoming" && (call.status === "missed" || call.status === "declined");
-      const matchesFilter = filter === "all" || missed;
+      const isMissed = call.direction === "incoming" && call.status === "missed";
+      const isRejected = call.status === "declined";
+      const isFailed = call.status === "failed";
+      const matchesFilter = filter === "all" || (filter === "dialed" && call.direction === "outgoing") || (filter === "missed" && isMissed) || (filter === "rejected" && isRejected) || (filter === "failed" && isFailed);
       const matchesQuery = !term || call.person.name.toLowerCase().includes(term) || call.person.username.toLowerCase().includes(term);
       return matchesFilter && matchesQuery;
     });
   }, [calls, filter, query]);
 
-  const missedCount = calls.filter(call => call.direction === "incoming" && (call.status === "missed" || call.status === "declined")).length;
+  const missedCount = calls.filter(call => call.direction === "incoming" && call.status === "missed").length;
+  const rejectedCount = calls.filter(call => call.status === "declined").length;
+  const failedCount = calls.filter(call => call.status === "failed").length;
+  const dialedCount = calls.filter(call => call.direction === "outgoing").length;
 
   return <main className="home-page social-home halls-calls-page">
     <AppHeader homeHref="/home" />
@@ -100,7 +105,10 @@ export default function CallsPage() {
       <div className="halls-call-history-toolbar">
         <div className="halls-call-history-tabs" role="tablist" aria-label="Filter call history">
           <button type="button" role="tab" aria-selected={filter === "all"} className={filter === "all" ? "is-active" : ""} onClick={() => setFilter("all")}>All</button>
+          <button type="button" role="tab" aria-selected={filter === "dialed"} className={filter === "dialed" ? "is-active" : ""} onClick={() => setFilter("dialed")}>Dialed{dialedCount > 0 && <span>{dialedCount}</span>}</button>
           <button type="button" role="tab" aria-selected={filter === "missed"} className={filter === "missed" ? "is-active" : ""} onClick={() => setFilter("missed")}>Missed{missedCount > 0 && <span>{missedCount}</span>}</button>
+          <button type="button" role="tab" aria-selected={filter === "rejected"} className={filter === "rejected" ? "is-active" : ""} onClick={() => setFilter("rejected")}>Rejected{rejectedCount > 0 && <span>{rejectedCount}</span>}</button>
+          <button type="button" role="tab" aria-selected={filter === "failed"} className={filter === "failed" ? "is-active" : ""} onClick={() => setFilter("failed")}>Failed{failedCount > 0 && <span>{failedCount}</span>}</button>
         </div>
         <label className="halls-call-history-search"><Search size={16} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search call history" aria-label="Search call history" /></label>
       </div>
@@ -109,23 +117,25 @@ export default function CallsPage() {
         error ? <div className="halls-call-history-state halls-call-history-error"><Phone size={23} /><strong>Call history unavailable</strong><span>{error}</span><button type="button" onClick={() => window.location.reload()}>Try again</button></div> :
         visibleCalls.length ? <div className="halls-call-history-list">
           {visibleCalls.map(call => {
-            const missed = call.status === "missed" || (call.status === "declined" && call.direction === "incoming");
+            const missed = call.direction === "incoming" && call.status === "missed";
+            const rejected = call.status === "declined";
+            const failed = call.status === "failed";
             const DirectionIcon = call.direction === "incoming" ? ArrowDownLeft : ArrowUpRight;
             const TypeIcon = call.kind === "video" ? Video : Phone;
             return <button type="button" className="halls-call-history-row" key={call.id} onClick={() => call.person.id && navigate("/chats?user=" + encodeURIComponent(call.person.id))} disabled={!call.person.id}>
               <span className="halls-call-history-avatar">{call.person.profilePicture ? <img src={call.person.profilePicture} alt="" /> : initials(call.person.name)}</span>
               <span className="halls-call-history-copy">
-                <strong className={missed ? "is-missed" : ""}>{call.person.name}</strong>
-                <span className="halls-call-history-meta"><DirectionIcon size={15} className={missed ? "is-missed" : call.direction === "incoming" ? "is-incoming" : "is-outgoing"} /><span>{call.direction === "incoming" ? "Incoming" : "Outgoing"} {call.kind} call</span><i>·</i><span className={missed ? "is-missed" : ""}>{callSummary(call)}</span></span>
+                <strong className={missed || rejected || failed ? "is-missed" : ""}>{call.person.name}</strong>
+                <span className="halls-call-history-meta"><DirectionIcon size={15} className={missed || rejected || failed ? "is-missed" : call.direction === "incoming" ? "is-incoming" : "is-outgoing"} /><span>{call.direction === "incoming" ? "Incoming" : "Outgoing"} {call.kind} call</span><i>·</i><span className={missed || rejected || failed ? "is-missed" : ""}>{callSummary(call)}</span></span>
               </span>
               <span className="halls-call-history-time"><small>{formatTime(call.createdAt)}</small><TypeIcon size={17} /></span>
             </button>;
           })}
         </div> :
         <div className="halls-call-history-state">
-          {filter === "missed" ? <Phone size={24} /> : <CalendarDays size={24} />}
-          <strong>{query ? "No matching calls" : filter === "missed" ? "No missed calls" : "No calls yet"}</strong>
-          <span>{query ? "Try another name or username." : filter === "missed" ? "You're all caught up. Missed calls will appear here." : "Your call history will appear here when you make or receive calls."}</span>
+          {filter === "missed" || filter === "rejected" || filter === "failed" ? <Phone size={24} /> : <CalendarDays size={24} />}
+          <strong>{query ? "No matching calls" : filter === "dialed" ? "No dialed calls" : filter === "missed" ? "No missed calls" : filter === "rejected" ? "No rejected calls" : filter === "failed" ? "No failed calls" : "No calls yet"}</strong>
+          <span>{query ? "Try another name or username." : filter === "missed" ? "You're all caught up. Missed calls will appear here." : filter === "dialed" ? "Outgoing calls you place will appear here." : filter === "rejected" ? "Calls that are declined will appear here." : filter === "failed" ? "Calls that fail to connect will appear here." : "Your call history will appear here when you make or receive calls."}</span>
           {query && <button type="button" onClick={() => setQuery("")}>Clear search</button>}
         </div>}
       <p className="halls-call-history-note"><Clock3 size={13} /> Your call history is saved to your HallsChat account.</p>
