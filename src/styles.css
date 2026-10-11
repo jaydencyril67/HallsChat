@@ -726,3 +726,20 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-character-count{display:none}
 }
 @media(prefers-reduced-motion:reduce){.chat-person-row{transition:none}}
+
+
+.signup-username-wrap{position:relative;display:flex;align-items:center;width:100%;min-width:0}
+.signup-username-wrap>input{padding-right:38px!important}
+.signup-username-status{display:flex;align-items:center;min-height:13px;line-height:1.45}
+.signup-username-status-checking{color:#c5a3ac!important}
+.signup-username-status-available{color:#83ddb0!important}
+.signup-username-status-taken,.signup-username-status-invalid,.signup-username-status-error{color:#ff929f!important}
+.signup-username-ok{position:absolute;right:12px;color:#83ddb0;pointer-events:none}
+.signup-username-spinner{position:absolute;right:12px;width:14px;height:14px;border:2px solid #ffffff26;border-top-color:#f07889;border-radius:50%;animation:signup-username-spin .7s linear infinite}
+@keyframes signup-username-spin{to{transform:rotate(360deg)}}
+.signup-password-rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px;margin:-3px 0 1px;padding:11px 12px;list-style:none;border:1px solid rgba(255,220,226,.08);border-radius:10px;background:rgba(0,0,0,.12)}
+.signup-password-rules li{display:flex;align-items:center;gap:6px;min-width:0;color:#94757c;font-size:9px;font-weight:500;line-height:1.5}
+.signup-password-rules li svg{flex-shrink:0;opacity:.48}
+.signup-password-rules li.signup-password-rule-met{color:#83ddb0}
+.signup-password-rules li.signup-password-rule-met svg{opacity:1}
+@media(max-width:520px){.signup-password-rules{gap:8px 6px;padding:10px}.signup-password-rules li{font-size:8.5px}}
