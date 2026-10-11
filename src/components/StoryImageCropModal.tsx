@@ -179,7 +179,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
   };
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Edit story photo" className="social-story-crop-overlay">
+    <div role="dialog" aria-modal="true" aria-label={title} className="social-story-crop-overlay">
       <header className="social-story-crop-header">
         <button type="button" onClick={onCancel} disabled={saving} aria-label="Cancel photo edit"><X size={23} /></button>
         <div><strong>{title}</strong></div>
