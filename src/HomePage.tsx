@@ -90,6 +90,8 @@ export default function HomePage() {
   const [commentSending, setCommentSending] = useState<string[]>([]);
   const [replyTargets, setReplyTargets] = useState<Record<string, SocialComment | null>>({});
   const [commentLikingIds, setCommentLikingIds] = useState<string[]>([]);
+  const [commentDeletingIds, setCommentDeletingIds] = useState<string[]>([]);
+  const [commentDeleteConfirmId, setCommentDeleteConfirmId] = useState<string | null>(null);
   const [commentErrors, setCommentErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -345,6 +347,44 @@ export default function HomePage() {
     }
   }
 
+  async function deleteComment(post: SocialPost, comment: SocialComment) {
+    if (commentDeletingIds.includes(comment.id) || comment.author?.id !== user?.id) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setCommentDeletingIds(current => [...current, comment.id]);
+    setCommentErrors(current => ({ ...current, [post.id]: "" }));
+    try {
+      const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(post.id)}/comments/${encodeURIComponent(comment.id)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Your comment couldn't be deleted.");
+      const deletedIds = new Set<string>(
+        Array.isArray(payload.deletedCommentIds)
+          ? payload.deletedCommentIds.map((id: unknown) => String(id))
+          : [comment.id]
+      );
+      setCommentsByPost(current => ({
+        ...current,
+        [post.id]: (current[post.id] || []).filter(item => !deletedIds.has(item.id))
+      }));
+      setReplyTargets(current => ({
+        ...current,
+        [post.id]: current[post.id] && deletedIds.has(current[post.id]!.id) ? null : current[post.id]
+      }));
+      setPosts(current => current.map(item => item.id === post.id
+        ? { ...item, commentCount: Number(payload.commentCount) || Math.max(0, (item.commentCount || 0) - deletedIds.size) }
+        : item));
+      setCommentDeleteConfirmId(null);
+      setNotice("Your comment was deleted.");
+    } catch (err) {
+      setCommentErrors(current => ({ ...current, [post.id]: err instanceof Error ? err.message : "Your comment couldn't be deleted." }));
+    } finally {
+      setCommentDeletingIds(current => current.filter(id => id !== comment.id));
+    }
+  }
+
   async function deletePost(post: SocialPost) {
     if (deletingIds.includes(post.id) || post.author?.id !== user?.id) return;
     const token = localStorage.getItem("hallschat_token");
@@ -465,12 +505,12 @@ export default function HomePage() {
                             <div className="social-comment-bubble"><strong>{comment.author?.name || "HallsChat member"}</strong><span>{renderTextWithLinks(comment.content)}</span></div>
                             <div className="social-comment-meta"><small>{timeAgo(comment.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div>
                           </div>
-                          <button type="button" className={comment.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, comment)} disabled={commentLikingIds.includes(comment.id)} aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"} aria-pressed={comment.likedByMe}>{commentLikingIds.includes(comment.id) ? <LoadingDots/> : <Heart size={16} fill={comment.likedByMe ? "currentColor" : "none"}/>}<small>{comment.likeCount || ""}</small></button>
+                          <button type="button" className={comment.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, comment)} disabled={commentLikingIds.includes(comment.id)} aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"} aria-pressed={comment.likedByMe}>{commentLikingIds.includes(comment.id) ? <LoadingDots/> : <Heart size={16} fill={comment.likedByMe ? "currentColor" : "none"}/>}<small>{comment.likeCount || ""}</small></button>{comment.author?.id === user?.id && <div className="social-comment-delete-wrap"><button type="button" className="social-comment-delete" onClick={() => setCommentDeleteConfirmId(current => current === comment.id ? null : comment.id)} disabled={commentDeletingIds.includes(comment.id)} aria-label="Delete your comment" title="Delete comment">{commentDeletingIds.includes(comment.id) ? <LoadingDots /> : <Trash2 size={14} />}</button>{commentDeleteConfirmId === comment.id && <div className="social-comment-delete-confirm" role="alertdialog" aria-label="Confirm comment deletion"><strong>Delete comment?</strong><span>{(commentsByPost[post.id] || []).some(item => item.parentId === comment.id) ? "Its replies will also be removed." : "This action cannot be undone."}</span><div><button type="button" onClick={() => setCommentDeleteConfirmId(null)}>Cancel</button><button type="button" onClick={() => void deleteComment(post, comment)}>Delete</button></div></div>}</div>}
                         </article>
                         {(commentsByPost[post.id] || []).filter(reply => reply.parentId === comment.id).map(reply => <article className="social-comment social-comment-reply" key={reply.id}>
                           {reply.author?.profilePicture ? <img className="social-comment-avatar" src={reply.author.profilePicture} alt="" loading="lazy" /> : <div className="social-comment-avatar">{initials(reply.author?.name || "HallsChat member")}</div>}
                           <div className="social-comment-body"><div className="social-comment-bubble"><strong>{reply.author?.name || "HallsChat member"}</strong><span>{renderTextWithLinks(reply.content)}</span></div><div className="social-comment-meta"><small>{timeAgo(reply.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div></div>
-                          <button type="button" className={reply.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, reply)} disabled={commentLikingIds.includes(reply.id)} aria-label={reply.likedByMe ? "Unlike reply" : "Like reply"} aria-pressed={reply.likedByMe}>{commentLikingIds.includes(reply.id) ? <LoadingDots/> : <Heart size={16} fill={reply.likedByMe ? "currentColor" : "none"}/>}<small>{reply.likeCount || ""}</small></button>
+                          <button type="button" className={reply.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, reply)} disabled={commentLikingIds.includes(reply.id)} aria-label={reply.likedByMe ? "Unlike reply" : "Like reply"} aria-pressed={reply.likedByMe}>{commentLikingIds.includes(reply.id) ? <LoadingDots/> : <Heart size={16} fill={reply.likedByMe ? "currentColor" : "none"}/>}<small>{reply.likeCount || ""}</small></button>{reply.author?.id === user?.id && <div className="social-comment-delete-wrap"><button type="button" className="social-comment-delete" onClick={() => setCommentDeleteConfirmId(current => current === reply.id ? null : reply.id)} disabled={commentDeletingIds.includes(reply.id)} aria-label="Delete your reply" title="Delete reply">{commentDeletingIds.includes(reply.id) ? <LoadingDots /> : <Trash2 size={14} />}</button>{commentDeleteConfirmId === reply.id && <div className="social-comment-delete-confirm" role="alertdialog" aria-label="Confirm reply deletion"><strong>Delete reply?</strong><span>This action cannot be undone.</span><div><button type="button" onClick={() => setCommentDeleteConfirmId(null)}>Cancel</button><button type="button" onClick={() => void deleteComment(post, reply)}>Delete</button></div></div>}</div>}
                         </article>)}
                       </div>) : !commentErrors[post.id] && !commentsLoading.includes(post.id) ? <p className="social-comments-empty">No comments yet. Start the conversation.</p> : null}
                     </div>
