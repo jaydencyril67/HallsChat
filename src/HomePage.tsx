@@ -898,9 +898,6 @@ export default function HomePage() {
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell">
       {error ? <div className="home-state home-error"><p>{error}</p><a className="button button-primary" href="/signin">Back to sign in <ArrowUpRight size={16} /></a></div> : <>
-        <div className="social-welcome">
-          <div><h1>{loading ? <>Good to see you, <LoadingDots /></> : `Good to see you, ${user?.name.trim().split(/\s+/)[0] || "there"}.`}</h1><p>Share a thought, catch up with your people, and find your community.</p></div>
-        </div>
         <div className="social-layout">
           <section className="social-feed-column" aria-label="Social feed">
             <section className="social-stories" aria-label="Stories">
