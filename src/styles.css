@@ -1303,3 +1303,42 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   display: block !important;
   margin: 5px 7px 4px !important;
 }
+
+
+/* CryBots text-only message bubble parity: keep HallsChat's own colors, match the geometry and typography. */
+.chat-message-line {
+  margin-bottom: 12px !important;
+}
+.chat-message-content:not(:has(.chat-image-bubble)) {
+  max-width: 78% !important;
+  min-width: 0;
+  padding: 10px 13px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  box-sizing: border-box !important;
+  overflow-wrap: anywhere;
+}
+.chat-message-content:not(:has(.chat-image-bubble)) .chat-message-body {
+  gap: 0 !important;
+  white-space: pre-wrap;
+  line-height: 1.45;
+}
+.chat-message-content:not(:has(.chat-image-bubble)) .chat-message-text {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: inherit !important;
+  line-height: 1.45 !important;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.chat-message-content:not(:has(.chat-image-bubble)) time {
+  display: block;
+  margin-top: 5px !important;
+  color: inherit !important;
+  opacity: .65;
+  font-size: smaller !important;
+  text-align: start !important;
+}
+@media(max-width:680px) {
+  .chat-message-line { margin-bottom: 12px !important; }
+}
