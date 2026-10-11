@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
-import { Check, Minus, Plus, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 type StoryImageCropModalProps = {
   imageUrl: string;
@@ -17,7 +17,6 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
   const zoomRef = useRef(1);
   const offsetRef = useRef({ x: 0, y: 0 });
   const [frame, setFrame] = useState({ width: 320, height: 320 });
-  const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -25,7 +24,6 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
   useEffect(() => {
     zoomRef.current = 1;
     offsetRef.current = { x: 0, y: 0 };
-    setZoom(1);
     setOffset({ x: 0, y: 0 });
     setReady(false);
   }, [imageUrl]);
@@ -53,25 +51,6 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     };
   };
 
-  const changeZoom = (next: number) => {
-    const image = imageRef.current;
-    if (!image?.naturalWidth || !image.naturalHeight) return;
-    const nextZoom = clamp(next, 1, 5);
-    const currentScale = baseScale() * zoomRef.current;
-    const nextScale = baseScale() * nextZoom;
-    const centerX = frame.width / 2;
-    const centerY = frame.height / 2;
-    const imagePointX = (centerX - offsetRef.current.x) / currentScale;
-    const imagePointY = (centerY - offsetRef.current.y) / currentScale;
-    const nextOffset = constrainOffset({
-      x: centerX - imagePointX * nextScale,
-      y: centerY - imagePointY * nextScale,
-    }, nextZoom);
-    zoomRef.current = nextZoom;
-    offsetRef.current = nextOffset;
-    setZoom(nextZoom);
-    setOffset(nextOffset);
-  };
 
   const handleImageLoad = () => {
     const image = imageRef.current;
@@ -130,7 +109,6 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
       }, nextZoom);
       zoomRef.current = nextZoom;
       offsetRef.current = nextOffset;
-      setZoom(nextZoom);
       setOffset(nextOffset);
       return;
     }
@@ -213,12 +191,6 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
           <div className="social-story-crop-grid" aria-hidden="true" />
         </div>
       </div>
-      <footer className="social-story-crop-footer">
-        <button type="button" onClick={() => changeZoom(zoom - 0.25)} disabled={!ready || zoom <= 1} aria-label="Zoom out"><Minus size={18} /></button>
-        <input type="range" min="1" max="12" step="0.05" value={zoom} onChange={event => changeZoom(Number(event.target.value))} disabled={!ready || saving} aria-label="Crop zoom" />
-        <button type="button" onClick={() => changeZoom(zoom + 0.25)} disabled={!ready || zoom >= 12} aria-label="Zoom in"><Plus size={18} /></button>
-        <span>{Math.round(zoom * 100)}%</span>
-      </footer>
     </div>
   );
 }
