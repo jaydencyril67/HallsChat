@@ -2067,18 +2067,18 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 
 
-/* WhatsApp-style call history entries inside the conversation timeline. */
-.chat-call-row{display:flex;justify-content:center;width:100%;padding:3px 0}
-.chat-call-card{display:flex;align-items:center;gap:11px;width:min(330px,92%);box-sizing:border-box;padding:12px 13px;border:1px solid rgba(255,210,219,.12);border-radius:15px;background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.025));box-shadow:0 5px 18px rgba(0,0,0,.12)}
-.chat-call-icon{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border-radius:50%;background:rgba(255,255,255,.07);color:var(--chat-text,#f8e9ec)}
-.chat-call-card-alert .chat-call-icon{background:rgba(210,56,80,.15);color:#ff7185}
+/* Call history entries use the same row, bubble, and footer structure as chat messages. */
+.chat-call-bubble{max-width:min(78%,360px);min-width:190px;gap:7px}
+.chat-call-body{display:flex;align-items:center;gap:10px;min-width:0}
+.chat-call-icon{display:grid;place-items:center;flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.075);color:inherit}
+.chat-call-bubble-alert .chat-call-icon{background:rgba(210,56,80,.17);color:#ff8293}
 .chat-call-copy{display:flex;flex:1;min-width:0;flex-direction:column;gap:3px}
-.chat-call-copy strong{font-size:.83rem;font-weight:750;color:var(--chat-text,#fff)}
-.chat-call-copy span{font-size:.72rem;color:var(--chat-muted,#c6adb3);line-height:1.4;overflow-wrap:anywhere}
+.chat-call-copy strong{font-size:.82rem;font-weight:750;color:inherit}
+.chat-call-copy span{font-size:.73rem;color:var(--chat-muted,#c6adb3);line-height:1.4;overflow-wrap:anywhere}
 .chat-call-copy .chat-call-status-alert{color:#ff8293}
-.chat-call-copy time{font-size:.66rem;color:var(--chat-muted,#bba4aa)}
-.chat-call-direction{display:grid;place-items:center;color:var(--chat-muted,#c6adb3);flex:0 0 20px}
-
+.chat-call-bubble .chat-message-footer{justify-content:flex-end}
+.chat-call-bubble .chat-message-footer time{font-size:.62rem;color:rgba(255,231,235,.58)}
+@media(max-width:680px){.chat-call-bubble{max-width:88%;min-width:0}}
 
 .social-story-delete-trigger{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid rgba(255,210,219,.14);border-radius:50%;background:rgba(255,255,255,.07);color:#ffd6df;cursor:pointer}
 .social-story-delete-trigger:disabled{opacity:.55;cursor:wait}
