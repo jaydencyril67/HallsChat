@@ -25,7 +25,6 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
 
   return <header
     className="topbar hallschat-clickable-header"
-    aria-label="HallsChat app header"
     role="button"
     tabIndex={0}
     aria-label={localStorage.getItem("hallschat_token") ? "Open alerts" : "HallsChat home"}
