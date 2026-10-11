@@ -1892,3 +1892,64 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media(max-width:380px){.halls-calls-methods{gap:5px}.halls-calls-method{gap:6px;padding:8px}.halls-calls-method>span{flex-basis:30px;width:30px;height:30px}.halls-calls-detail h2{font-size:20px}}
 
 .chat-conversation-header .halls-call-triggers button span{display:none}
+
+
+/* WhatsApp-style call history */
+.halls-call-history-shell{width:min(100% - 28px,900px);padding-bottom:104px}
+.halls-call-history-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:4px 0 24px}
+.halls-call-history-title{display:flex;align-items:center;gap:14px;min-width:0}
+.halls-call-history-title h1{margin:0;color:var(--theme-text,#fff);font-size:clamp(25px,4vw,32px);font-weight:800;letter-spacing:-.035em}
+.halls-call-history-title p:last-child{margin:5px 0 0;color:var(--theme-muted,#b9a6ac);font-size:12px;line-height:1.5}
+.halls-call-history-count{display:flex;align-items:center;gap:7px;flex-shrink:0;padding:8px 11px;border:1px solid rgba(255,255,255,.09);border-radius:999px;background:rgba(255,255,255,.035);color:var(--theme-muted,#c4b6bb);font-size:11px;font-weight:700}
+.halls-call-history-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.halls-call-history-tabs{display:flex;align-items:center;gap:5px;padding:4px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(0,0,0,.16)}
+.halls-call-history-tabs button{display:flex;align-items:center;gap:7px;min-height:34px;padding:0 15px;border:0;border-radius:10px;background:transparent;color:var(--theme-muted,#b9a6ac);font-size:12px;font-weight:700}
+.halls-call-history-tabs button.is-active{background:rgba(202,49,73,.18);color:#ffe7eb;box-shadow:inset 0 0 0 1px rgba(226,75,99,.18)}
+.halls-call-history-tabs button span{display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:#c92f49;color:#fff;font-size:10px}
+.halls-call-history-search{display:flex;align-items:center;gap:9px;width:min(100%,280px);min-height:40px;padding:0 12px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.035);color:#bcaeb4}
+.halls-call-history-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--theme-text,#fff);font-size:12px}
+.halls-call-history-search input::placeholder{color:#8f8187}
+.halls-call-history-list{overflow:hidden;border:1px solid rgba(255,255,255,.075);border-radius:17px;background:rgba(255,255,255,.018)}
+.halls-call-history-row{display:flex;align-items:center;gap:13px;width:100%;min-height:79px;padding:13px 15px;border:0;border-bottom:1px solid rgba(255,255,255,.055);background:transparent;text-align:left;transition:background .16s ease}
+.halls-call-history-row:last-child{border-bottom:0}
+.halls-call-history-row:hover:not(:disabled){background:rgba(255,255,255,.035)}
+.halls-call-history-row:disabled{cursor:default}
+.halls-call-history-avatar{display:grid;place-items:center;flex:0 0 47px;width:47px;height:47px;overflow:hidden;border:1px solid rgba(255,255,255,.11);border-radius:50%;background:linear-gradient(145deg,rgba(196,43,70,.28),rgba(88,44,112,.35));color:#fff;font-size:13px;font-weight:800}
+.halls-call-history-avatar img{width:100%;height:100%;object-fit:cover}
+.halls-call-history-copy{display:flex;flex:1;flex-direction:column;gap:7px;min-width:0}
+.halls-call-history-copy>strong{overflow:hidden;color:var(--theme-text,#fff);font-size:13px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
+.halls-call-history-copy>strong.is-missed{color:#ff7789}
+.halls-call-history-meta{display:flex;align-items:center;gap:6px;min-width:0;color:var(--theme-muted,#b9a6ac);font-size:11px}
+.halls-call-history-meta>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.halls-call-history-meta svg{flex-shrink:0}
+.halls-call-history-meta .is-incoming{color:#4ed39b}
+.halls-call-history-meta .is-outgoing{color:#c4b4ff}
+.halls-call-history-meta .is-missed{color:#ff7789}
+.halls-call-history-meta i{color:#74656b;font-style:normal}
+.halls-call-history-time{display:flex;align-items:flex-end;gap:8px;flex-direction:column;flex-shrink:0;color:#b7a8ae}
+.halls-call-history-time small{font-size:10px;white-space:nowrap}
+.halls-call-history-time svg{color:#c6b7bd}
+.halls-call-history-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:245px;padding:28px 20px;border:1px solid rgba(255,255,255,.075);border-radius:17px;background:rgba(255,255,255,.018);text-align:center;color:#b9a6ac}
+.halls-call-history-state>svg{color:#d9576d}
+.halls-call-history-state strong{color:var(--theme-text,#fff);font-size:14px}
+.halls-call-history-state span{max-width:290px;color:var(--theme-muted,#b9a6ac);font-size:12px;line-height:1.55}
+.halls-call-history-state button{margin-top:3px;padding:9px 14px;border:1px solid rgba(229,82,105,.3);border-radius:10px;background:rgba(174,29,51,.15);color:#ffdfe4;font-size:12px}
+.halls-call-history-error{color:#ff9aaa}
+.halls-call-history-note{display:flex;align-items:center;justify-content:center;gap:6px;margin:15px 0 0;color:var(--theme-muted,#988991);font-size:10px;text-align:center}
+@media(max-width:560px){
+ .halls-call-history-shell{width:calc(100% - 20px);padding-top:14px}
+ .halls-call-history-heading{align-items:flex-start;margin-bottom:18px}
+ .halls-call-history-title{gap:10px}
+ .halls-call-history-title .halls-calls-heading-icon{width:42px;height:42px;flex:0 0 42px}
+ .halls-call-history-title h1{font-size:26px}
+ .halls-call-history-title p:last-child{max-width:225px;font-size:11px}
+ .halls-call-history-count{padding:7px 9px;font-size:10px}
+ .halls-call-history-toolbar{align-items:stretch;flex-direction:column}
+ .halls-call-history-search{width:100%;min-height:42px}
+ .halls-call-history-row{gap:11px;min-height:75px;padding:12px 10px}
+ .halls-call-history-avatar{flex-basis:43px;width:43px;height:43px}
+ .halls-call-history-copy>strong{font-size:12px}
+ .halls-call-history-meta{gap:4px;font-size:10px}
+ .halls-call-history-time{gap:7px}
+ .halls-call-history-time small{font-size:9px}
+}
