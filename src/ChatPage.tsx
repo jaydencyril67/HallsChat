@@ -218,13 +218,20 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    const closeReactionPickerOutside = (event: PointerEvent) => {
+    const closePopoutsOutside = (event: PointerEvent) => {
       const target = event.target;
-      if (target instanceof Element && target.closest(".chat-reaction-picker")) return;
-      setReactionPickerFor(null);
+      if (!(target instanceof Element)) {
+        setReactionPickerFor(null);
+        setActionMenuFor(null);
+        setAttachmentMenuOpen(false);
+        return;
+      }
+      if (!target.closest(".chat-reaction-picker")) setReactionPickerFor(null);
+      if (!target.closest(".chat-message-actions, .chat-message-more")) setActionMenuFor(null);
+      if (!target.closest(".chat-attachment-menu, .chat-attachment-wrap")) setAttachmentMenuOpen(false);
     };
-    document.addEventListener("pointerdown", closeReactionPickerOutside);
-    return () => document.removeEventListener("pointerdown", closeReactionPickerOutside);
+    document.addEventListener("pointerdown", closePopoutsOutside);
+    return () => document.removeEventListener("pointerdown", closePopoutsOutside);
   }, []);
 
   function beginReply(message: ChatMessage) {
