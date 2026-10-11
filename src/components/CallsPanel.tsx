@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
-import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, SwitchCamera, X } from "lucide-react";
+import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
 
-type Person = { id: string; name: string; username: string; profilePicture?: string };
+type Person = { id: string; name: string; username: string; profilePicture?: string; canMessage: boolean };
 type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; createdAt: number };
-type Props = { socket: Socket | null; currentUserId: string; person: Person | null };
+type Props = { socket: Socket | null; person: Person | null };
 
 export default function CallsPanel({ socket, currentUserId, person }: Props) {
   const [incoming, setIncoming] = useState<Incoming | null>(null);
@@ -14,7 +14,6 @@ export default function CallsPanel({ socket, currentUserId, person }: Props) {
   const [peerName, setPeerName] = useState("");
   const [muted, setMuted] = useState(false);
   const [cameraOff, setCameraOff] = useState(false);
-  const [speaker, setSpeaker] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [callError, setCallError] = useState("");
   const localVideo = useRef<HTMLVideoElement | null>(null);
