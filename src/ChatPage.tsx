@@ -227,7 +227,7 @@ export default function ChatPage() {
                 <strong>{person.name}</strong><small>@{person.username}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </button>
               <span className="chat-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="chat-lock-dot" title="Messaging unavailable">•</span>}</span>
-              <button type="button" className="chat-open-button" onClick={() => { setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
+              <button type="button" className="chat-open-button" onClick={() => { scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
             </article>)}
           </div> : <div className="chat-list-empty"><UsersRound size={24} /><strong>No followers yet</strong><p>When someone follows you, you can start chatting with them here.</p></div>}
         </aside>
