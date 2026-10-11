@@ -23,8 +23,11 @@ export default function ProfilePage() {
   const [pictureBusy, setPictureBusy] = useState(false);
   const [cropSource, setCropSource] = useState<string | null>(null);
   const [previewPicture, setPreviewPicture] = useState<string | null>(null);
+  const [previewCover, setPreviewCover] = useState<string | null>(null);
   const [pictureActionsOpen, setPictureActionsOpen] = useState(false);
   const [pictureDeleteConfirm, setPictureDeleteConfirm] = useState(false);
+  const [coverActionsOpen, setCoverActionsOpen] = useState(false);
+  const [coverDeleteConfirm, setCoverDeleteConfirm] = useState(false);
   const [coverBusy, setCoverBusy] = useState(false);
   const [coverCropSource, setCoverCropSource] = useState<string | null>(null);
   const coverInput = useRef<HTMLInputElement>(null);
@@ -128,6 +131,26 @@ export default function ProfilePage() {
     } finally { setCoverBusy(false); }
   }
 
+  async function removeCoverPhoto() {
+    if (!user?.coverPhoto || coverBusy || pictureBusy) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setCoverBusy(true);
+    setPictureError("");
+    try {
+      const response = await fetch(`${apiBase}/api/auth/cover-photo`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ coverPhoto: "" })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Your cover photo couldn't be removed.");
+      setUser(current => current ? { ...current, coverPhoto: "" } : current);
+    } catch (err) {
+      setPictureError(err instanceof Error ? err.message : "Your cover photo couldn't be removed.");
+    } finally { setCoverBusy(false); }
+  }
+
   function selectPicture(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -217,7 +240,12 @@ export default function ProfilePage() {
         {error ? <div role="alert" style={{ ...panel, padding: 18, color: "#ff9cab" }}>{error}<button type="button" onClick={() => navigate("/signin")} style={{ display: "block", marginTop: 12, padding: 0, border: 0, background: "none", color: "#ffd4db", textDecoration: "underline" }}>Sign in again</button></div> : <>
           <div style={{ ...panel, overflow: "hidden", marginBottom: 17 }}>
             <div style={{ position: "relative", height: 150, background: user?.coverPhoto ? `linear-gradient(0deg,rgba(24,6,11,.3),rgba(24,6,11,.08)),url("${user.coverPhoto}") center/cover no-repeat` : "radial-gradient(ellipse at 78% 15%,rgba(231,82,104,.32),transparent 48%),linear-gradient(125deg,#48121f,#21090f 78%)", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-              <button type="button" onClick={() => coverInput.current?.click()} disabled={coverBusy || pictureBusy} aria-label="Upload or change cover photo" title="Upload or change cover photo" style={{ position: "absolute", right: 12, bottom: 12, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, minHeight: 36, padding: "8px 11px", border: "1px solid rgba(255,255,255,.2)", borderRadius: 11, background: "rgba(25,7,12,.82)", color: "#fff0f3", fontSize: ".74rem", fontWeight: 750, cursor: coverBusy || pictureBusy ? "wait" : "pointer", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>{coverBusy ? <LoadingDots /> : <Camera size={16} />}{coverBusy ? "Uploading…" : user?.coverPhoto ? "Change cover" : "Add cover photo"}</button>
+              <button type="button" aria-label="Cover photo actions" aria-expanded={coverActionsOpen} onClick={() => { setCoverActionsOpen(open => !open); setCoverDeleteConfirm(false); }} disabled={coverBusy || pictureBusy} title="Cover photo options" style={{ position: "absolute", right: 12, bottom: 12, width: 40, height: 40, display: "grid", placeItems: "center", border: "1px solid rgba(255,255,255,.2)", borderRadius: 12, background: "rgba(25,7,12,.82)", color: "#fff0f3", cursor: coverBusy || pictureBusy ? "wait" : "pointer", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>{coverBusy ? <LoadingDots /> : <Camera size={17} />}</button>
+              {coverActionsOpen && (coverDeleteConfirm ? <div role="alertdialog" aria-label="Confirm cover photo deletion" style={{ position: "absolute", right: 12, bottom: 60, zIndex: 6, width: 188, boxSizing: "border-box", padding: 11, border: "1px solid rgba(255,210,219,.2)", borderRadius: 13, background: "#21090f", boxShadow: "0 10px 28px #0009", color: "#fff0f3", textAlign: "left" }}><div style={{ fontSize: ".76rem", fontWeight: 750, lineHeight: 1.4 }}>Delete cover photo?</div><div style={{ display: "flex", gap: 6, marginTop: 9 }}><button type="button" onClick={() => { setCoverDeleteConfirm(false); setCoverActionsOpen(false); }} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: "1px solid rgba(255,210,219,.15)", borderRadius: 8, background: "rgba(255,255,255,.06)", color: "#f5dce1", fontSize: ".7rem" }}>Cancel</button><button type="button" onClick={() => { setCoverDeleteConfirm(false); setCoverActionsOpen(false); void removeCoverPhoto(); }} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: 0, borderRadius: 8, background: "#b92d45", color: "#fff", fontSize: ".7rem", fontWeight: 750 }}>Delete</button></div></div> : <div role="group" aria-label="Cover photo actions" style={{ position: "absolute", right: 12, bottom: 60, zIndex: 5, display: "flex", alignItems: "center", gap: 7, padding: 7, border: "1px solid rgba(255,210,219,.18)", borderRadius: 15, background: "#21090f", boxShadow: "0 10px 28px #0008" }}>
+                <button type="button" onClick={() => setCoverDeleteConfirm(true)} aria-label="Delete cover photo" title="Delete cover photo" disabled={coverBusy || !user?.coverPhoto} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: 0, borderRadius: 10, background: "rgba(220,55,78,.15)", color: !user?.coverPhoto || coverBusy ? "#82525b" : "#ff8192", opacity: !user?.coverPhoto ? .55 : 1 }}><Trash2 size={17}/></button>
+                <button type="button" onClick={() => { setCoverActionsOpen(false); coverInput.current?.click(); }} aria-label="Upload cover photo" title="Upload or change cover photo" disabled={coverBusy || pictureBusy} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: 0, borderRadius: 10, background: "rgba(197,46,73,.22)", color: "#ffb3bf" }}><Camera size={17}/></button>
+                <button type="button" onClick={() => { setCoverActionsOpen(false); if (user?.coverPhoto) setPreviewCover(user.coverPhoto); }} aria-label="View cover photo" title="View cover photo" disabled={!user?.coverPhoto} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: 0, borderRadius: 10, background: "rgba(255,255,255,.07)", color: "#fff0f3", opacity: !user?.coverPhoto ? .55 : 1 }}><Eye size={17}/></button>
+              </div>)}
               <input ref={coverInput} type="file" accept="image/*" onChange={selectCoverPhoto} hidden />
             </div>
             <div style={{ padding: "0 18px 20px" }}>
@@ -275,6 +303,7 @@ export default function ProfilePage() {
     {coverCropSource && <ProfileImageCropModal imageUrl={coverCropSource} onCancel={cancelCoverCrop} onDone={confirmCroppedCover} title="Edit cover photo" aspectRatio={3} />}
     {cropSource && <ProfileImageCropModal imageUrl={cropSource} onCancel={cancelCrop} onDone={confirmCroppedPicture} title="Edit profile picture" />}
     {previewPicture && <ImagePreviewModal imageUrl={previewPicture} onClose={() => setPreviewPicture(null)} />}
+    {previewCover && <ImagePreviewModal imageUrl={previewCover} onClose={() => setPreviewCover(null)} />}
     {pictureError && <div className="halls-toast halls-toast-error" role="alert"><span>{pictureError}</span><button type="button" onClick={() => setPictureError("")} aria-label="Dismiss notification">×</button></div>}
     <NowBar />
   </main>;
