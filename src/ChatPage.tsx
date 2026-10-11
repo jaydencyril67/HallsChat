@@ -820,7 +820,7 @@ export default function ChatPage() {
                   }}
                   onPointerMove={event => {
                     const swipe = messageSwipeRef.current;
-                    if (event.pointerType !== "touch" || !swipe || swipe.id !== message.id || swipe.triggered) return;
+                    if (event.pointerType !== "touch" || !swipe || swipe.id !== message.id) return;
                     const deltaX = event.clientX - swipe.startX;
                     const deltaY = event.clientY - swipe.startY;
                     if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) cancelMessagePress();
@@ -829,7 +829,7 @@ export default function ChatPage() {
                       setSwipingMessageId(message.id);
                       setMessageSwipeOffset(Math.min(76, Math.max(0, deltaX)));
                     }
-                    if (deltaX > 58 && deltaX > Math.abs(deltaY) * 1.25 && !message.deletedForEveryone) {
+                    if (!swipe.triggered && deltaX > 58 && deltaX > Math.abs(deltaY) * 1.25 && !message.deletedForEveryone) {
                       swipe.triggered = true;
                       beginReply(message);
                     }
