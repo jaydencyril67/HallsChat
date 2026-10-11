@@ -76,7 +76,7 @@ async function compressChatImage(file: File): Promise<File> {
       });
     }
     const extension = type === "image/webp" ? "webp" : "jpg";
-    const baseName = file.name.replace(/\\.[^.]+$/, "") || "chat-image";
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "chat-image";
     return new File([blob], `${baseName}.${extension}`, { type, lastModified: Date.now() });
   } finally {
     URL.revokeObjectURL(sourceUrl);
