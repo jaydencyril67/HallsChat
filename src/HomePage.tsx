@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { ReactNode } from "react";
-import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal } from "lucide-react";
+import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -24,7 +24,7 @@ type SocialComment = { id: string; content: string; parentId?: string | null; cr
 type SelectedImage = { file: File; preview: string };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string; message?: string };
 type StoryTextSection = { id: string; text: string; x: number; y: number };
-type SocialStory = { id: string; text: string; textSections?: StoryTextSection[]; mediaUrl?: string; background?: string; textPosition?: { x: number; y: number }; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean };
+type SocialStory = { id: string; text: string; textSections?: StoryTextSection[]; mediaUrl?: string; background?: string; textPosition?: { x: number; y: number }; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean; viewCount?: number };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const MAX_IMAGES = 4;
@@ -117,6 +117,8 @@ export default function HomePage() {
   const [storyPlaybackQueue, setStoryPlaybackQueue] = useState<SocialStory[]>([]);
   const [storyPlaybackIndex, setStoryPlaybackIndex] = useState(0);
   const [storyPlaybackPaused, setStoryPlaybackPaused] = useState(false);
+  const [storyDeleteConfirm, setStoryDeleteConfirm] = useState<string | null>(null);
+  const [storyDeleting, setStoryDeleting] = useState(false);
   const storySwipeRef = useRef<{ x: number; y: number } | null>(null);
   const [storyTextSections, setStoryTextSections] = useState<StoryTextSection[]>([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
   const [activeStoryTextId, setActiveStoryTextId] = useState("story-text-1");
@@ -285,6 +287,40 @@ export default function HomePage() {
     setStoryViewer(storyPlaybackQueue[nextIndex]);
     setStoryPlaybackPaused(false);
   }, [storyPlaybackQueue, storyPlaybackIndex, closeStoryViewer]);
+
+  useEffect(() => {
+    if (!storyViewer || storyViewer.isMine) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    fetch(`${apiBase}/api/social/stories/${encodeURIComponent(storyViewer.id)}/view`, {
+      method: "POST", headers: { Authorization: `Bearer ${token}` }
+    }).then(async response => {
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.story) return;
+      setStories(current => current.map(item => item.id === storyViewer.id ? { ...item, viewCount: payload.story.viewCount } : item));
+      setStoryPlaybackQueue(current => current.map(item => item.id === storyViewer.id ? { ...item, viewCount: payload.story.viewCount } : item));
+      setStoryViewer(current => current?.id === storyViewer.id ? { ...current, viewCount: payload.story.viewCount } : current);
+    }).catch(() => {});
+  }, [storyViewer?.id, storyViewer?.isMine]);
+
+  async function deleteStory(storyId: string) {
+    if (storyDeleting) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { setFeedError("Please sign in again to delete your story."); return; }
+    setStoryDeleting(true);
+    try {
+      const response = await fetch(`${apiBase}/api/social/stories/${encodeURIComponent(storyId)}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Your story could not be deleted.");
+      setStories(current => current.filter(item => item.id !== storyId));
+      setStoryPlaybackQueue(current => current.filter(item => item.id !== storyId));
+      setStoryDeleteConfirm(null);
+      if (storyViewer?.id === storyId) closeStoryViewer();
+      setNotice("Story deleted.");
+    } catch (error) {
+      setFeedError(error instanceof Error ? error.message : "Your story could not be deleted.");
+    } finally { setStoryDeleting(false); }
+  }
 
   const currentStoryDuration = storyViewer?.mediaUrl ? 5000 : 7000;
 
@@ -1019,14 +1055,22 @@ export default function HomePage() {
           const status = queueIndex < storyPlaybackIndex ? "complete" : queueIndex === storyPlaybackIndex ? "active" : "upcoming";
           return <span className={`social-story-progress-segment ${status}`} key={item.id}><i key={item.id + (status === "active" ? "-" + storyPlaybackIndex : "")} style={status === "active" ? { animationDuration: `${currentStoryDuration}ms`, animationPlayState: storyPlaybackPaused ? "paused" : "running" } : undefined} /></span>;
         })}</div>
-        <div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div><button type="button" onClick={closeStoryViewer} aria-label="Close story"><X size={19}/></button></div>
+        <div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div>{storyViewer.isMine && <button type="button" className="social-story-delete-trigger" onClick={() => setStoryDeleteConfirm(storyViewer.id)} aria-label="Delete your story" title="Delete story" disabled={storyDeleting}><Trash2 size={17}/></button>}<button type="button" onClick={closeStoryViewer} aria-label="Close story"><X size={19}/></button></div>
         <div className="social-story-viewer-content" style={{background:storyViewer.background || "#8b1e35"}} onPointerDown={event => { storySwipeRef.current = { x: event.clientX, y: event.clientY }; setStoryPlaybackPaused(true); }} onPointerUp={event => { const start = storySwipeRef.current; storySwipeRef.current = null; setStoryPlaybackPaused(false); if (!start) return; const dx = event.clientX - start.x; const dy = event.clientY - start.y; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.25) moveStoryPlayback(dx < 0 ? 1 : -1); }} onPointerCancel={() => { storySwipeRef.current = null; setStoryPlaybackPaused(false); }}>
           {storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}
           {(storyViewer.textSections?.length ? storyViewer.textSections.filter(section => section.text?.trim()) : (storyViewer.text ? [{ id: "legacy-story-text", text: storyViewer.text, x: storyViewer.textPosition?.x ?? 50, y: storyViewer.textPosition?.y ?? 50 }] : [])).map(section => <p key={section.id} className="social-story-positioned-text" style={{ left: `${section.x}%`, top: `${section.y}%` }}>{section.text}</p>)}
           <button type="button" className="social-story-tap-zone previous" aria-label="Previous story" onClick={() => moveStoryPlayback(-1)} />
           <button type="button" className="social-story-tap-zone next" aria-label="Next story" onClick={() => moveStoryPlayback(1)} />
         </div>
-        <div className="social-story-viewer-footer">HallsChat · 24-hour story</div>
+        <div className="social-story-viewer-footer">{storyViewer.isMine ? <span className="social-story-view-count"><Eye size={17}/> {storyViewer.viewCount || 0} {storyViewer.viewCount === 1 ? "view" : "views"}</span> : <span>HallsChat · 24-hour story</span>}</div>
+      </div>
+    </div>}
+    {storyDeleteConfirm && <div className="social-story-delete-overlay" role="presentation" onClick={() => !storyDeleting && setStoryDeleteConfirm(null)}>
+      <div className="social-story-delete-dialog" role="dialog" aria-modal="true" aria-labelledby="social-story-delete-title" onClick={event => event.stopPropagation()}>
+        <span className="social-story-delete-icon"><Trash2 size={21}/></span>
+        <strong id="social-story-delete-title">Delete this story?</strong>
+        <p>This story will be removed for everyone and cannot be restored.</p>
+        <div><button type="button" onClick={() => setStoryDeleteConfirm(null)} disabled={storyDeleting}>Cancel</button><button type="button" className="danger" onClick={() => deleteStory(storyDeleteConfirm)} disabled={storyDeleting}>{storyDeleting ? <><LoadingDots/> Deleting…</> : "Delete story"}</button></div>
       </div>
     </div>}
     {previewImage && <ImagePreviewModal imageUrl={previewImage} onClose={() => setPreviewImage(null)} />}
