@@ -337,6 +337,10 @@ export default function ChatPage() {
         otherTypingTimerRef.current = null;
       }
     });
+    socket.on("chat:reaction", (payload: { id?: string; reactions?: ChatReaction[] }) => {
+      if (!payload?.id || !Array.isArray(payload.reactions)) return;
+      setMessages(current => current.map(message => message.id === payload.id ? { ...message, reactions: payload.reactions } : message));
+    });
     socket.on("chat:deleted", (payload: { id?: string }) => {
       if (!payload?.id) return;
       setMessages(current => current.map(message => {
