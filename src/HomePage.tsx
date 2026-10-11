@@ -972,6 +972,7 @@ export default function HomePage() {
           {!storyPhoto && !storyTextSections.some(section => section.text.trim()) && <span>Your story preview</span>}
           {storyPhoto && <button type="button" className="social-story-remove-photo" onClick={() => setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; })} aria-label="Remove story photo"><X size={16}/></button>}
         </div>
+        <div className="social-story-bottom-panel">
         <div className="social-story-text-editor">
           <div className="social-story-text-editor-head">
             <div className="social-story-editor-title"><strong>Text</strong><small>{Math.max(0, storyTextSections.findIndex(section => section.id === activeStoryTextId) + 1)} of {storyTextSections.length}</small></div>
@@ -1000,6 +1001,7 @@ export default function HomePage() {
         </div>}
         <div className="social-story-dialog-actions"><label className="social-story-photo-button"><Camera size={17}/> Add photo<input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label><span>{storyTextSections.filter(section => section.text.trim()).length} text section(s)</span><button type="submit" disabled={storyPublishing || (!storyTextSections.some(section => section.text.trim()) && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Publishing…</> : <><Send size={15}/> Share story</>}</button></div>
         <p className="social-story-expiry">Stories disappear automatically after 24 hours.</p>
+        </div>
       </form>
     </div>}
     {storyEditingImageUrl && <StoryImageCropModal imageUrl={storyEditingImageUrl} onCancel={cancelStoryPhotoEdit} onDone={finishStoryPhotoEdit} />}
