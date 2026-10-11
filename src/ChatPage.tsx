@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEvent, FormEvent, MouseEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { ArrowLeft, ArrowUp, Plus, Camera, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
