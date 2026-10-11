@@ -11,6 +11,7 @@ type ChatPerson = {
   name: string;
   username: string;
   profilePicture?: string;
+  isOnline?: boolean;
   canMessage: boolean;
   lastMessage?: string;
   lastMessageAt?: string | null;
@@ -31,9 +32,10 @@ function formatTime(value?: string | null) {
     ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     : date.toLocaleDateString([], { month: "short", day: "numeric" });
 }
-function Avatar({ person, size = "normal" }: { person: Pick<ChatPerson, "name" | "profilePicture">; size?: "normal" | "large" }) {
+function Avatar({ person, size = "normal" }: { person: Pick<ChatPerson, "name" | "profilePicture" | "isOnline">; size?: "normal" | "large" }) {
   return <span className={`chat-avatar ${size === "large" ? "chat-avatar-large" : ""}`}>
     {person.profilePicture ? <img src={person.profilePicture} alt="" /> : initials(person.name)}
+    <span className={`chat-avatar-presence ${person.isOnline ? "is-online" : "is-offline"}`} aria-label={person.isOnline ? "Online" : "Offline"} title={person.isOnline ? "Online" : "Offline"} />
   </span>;
 }
 
@@ -224,7 +226,7 @@ export default function ChatPage() {
             {people.map(person => <article key={person.id} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""}`}>
               <Avatar person={person} />
               <button type="button" className="chat-person-copy chat-person-select" onClick={() => { scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open chat with ${person.name}`}>
-                <strong>{person.name}</strong><small>@{person.username}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
+                <strong>{person.name}</strong><small>@{person.username} · {person.isOnline ? "Online" : "Offline"}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </button>
               <span className="chat-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="chat-lock-dot" title="Messaging unavailable">•</span>}</span>
               <button type="button" className="chat-open-button" onClick={() => { scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
@@ -237,7 +239,7 @@ export default function ChatPage() {
             <header className="chat-conversation-header">
               <button className="chat-back-button" type="button" onClick={() => { setMobileConversationOpen(false); setActiveId(""); }} aria-label="Back to messages"><ArrowLeft size={19} /></button>
               <Avatar person={activePerson} size="large" />
-              <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span>@{activePerson.username}</span></div>
+              <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span>@{activePerson.username} · {activePerson.isOnline ? "Online" : "Offline"}</span></div>
               <span className={`chat-access-pill ${activePerson.canMessage ? "chat-access-allowed" : "chat-access-blocked"}`}>{activePerson.canMessage ? "Follower" : "Read only"}</span>
             </header>
             <div className="chat-message-list">
