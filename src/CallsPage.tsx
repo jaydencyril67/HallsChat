@@ -113,32 +113,34 @@ export default function CallsPage() {
         <label className="halls-call-history-search"><Search size={16} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search call history" aria-label="Search call history" /></label>
       </div>
 
-      {loading ? <div className="halls-call-history-state"><span className="halls-calls-spinner" /><strong>Loading call history…</strong></div> :
-        error ? <div className="halls-call-history-state halls-call-history-error"><Phone size={23} /><strong>Call history unavailable</strong><span>{error}</span><button type="button" onClick={() => window.location.reload()}>Try again</button></div> :
-        visibleCalls.length ? <div className="halls-call-history-list">
-          {visibleCalls.map(call => {
-            const missed = call.direction === "incoming" && call.status === "missed";
-            const rejected = call.status === "declined";
-            const failed = call.status === "failed";
-            const DirectionIcon = call.direction === "incoming" ? ArrowDownLeft : ArrowUpRight;
-            const TypeIcon = call.kind === "video" ? Video : Phone;
-            return <button type="button" className="halls-call-history-row" key={call.id} onClick={() => call.person.id && navigate("/chats?user=" + encodeURIComponent(call.person.id))} disabled={!call.person.id}>
-              <span className="halls-call-history-avatar">{call.person.profilePicture ? <img src={call.person.profilePicture} alt="" /> : initials(call.person.name)}</span>
-              <span className="halls-call-history-copy">
-                <strong className={missed || rejected || failed ? "is-missed" : ""}>{call.person.name}</strong>
-                <span className="halls-call-history-meta"><DirectionIcon size={15} className={missed || rejected || failed ? "is-missed" : call.direction === "incoming" ? "is-incoming" : "is-outgoing"} /><span>{call.direction === "incoming" ? "Incoming" : "Outgoing"} {call.kind} call</span><i>·</i><span className={missed || rejected || failed ? "is-missed" : ""}>{callSummary(call)}</span></span>
-              </span>
-              <span className="halls-call-history-time"><small>{formatTime(call.createdAt)}</small><TypeIcon size={17} /></span>
-            </button>;
-          })}
-        </div> :
-        <div className="halls-call-history-state">
-          {filter === "missed" || filter === "rejected" || filter === "failed" ? <Phone size={24} /> : <CalendarDays size={24} />}
-          <strong>{query ? "No matching calls" : filter === "dialed" ? "No dialed calls" : filter === "missed" ? "No missed calls" : filter === "rejected" ? "No rejected calls" : filter === "failed" ? "No failed calls" : "No calls yet"}</strong>
-          <span>{query ? "Try another name or username." : filter === "missed" ? "You're all caught up. Missed calls will appear here." : filter === "dialed" ? "Outgoing calls you place will appear here." : filter === "rejected" ? "Calls that are declined will appear here." : filter === "failed" ? "Calls that fail to connect will appear here." : "Your call history will appear here when you make or receive calls."}</span>
-          {query && <button type="button" onClick={() => setQuery("")}>Clear search</button>}
-        </div>}
-      <p className="halls-call-history-note"><Clock3 size={13} /> Your call history is saved to your HallsChat account.</p>
+      <div className="halls-call-history-scroll">
+        {loading ? <div className="halls-call-history-state"><span className="halls-calls-spinner" /><strong>Loading call history…</strong></div> :
+          error ? <div className="halls-call-history-state halls-call-history-error"><Phone size={23} /><strong>Call history unavailable</strong><span>{error}</span><button type="button" onClick={() => window.location.reload()}>Try again</button></div> :
+          visibleCalls.length ? <div className="halls-call-history-list">
+            {visibleCalls.map(call => {
+              const missed = call.direction === "incoming" && call.status === "missed";
+              const rejected = call.status === "declined";
+              const failed = call.status === "failed";
+              const DirectionIcon = call.direction === "incoming" ? ArrowDownLeft : ArrowUpRight;
+              const TypeIcon = call.kind === "video" ? Video : Phone;
+              return <button type="button" className="halls-call-history-row" key={call.id} onClick={() => call.person.id && navigate("/chats?user=" + encodeURIComponent(call.person.id))} disabled={!call.person.id}>
+                <span className="halls-call-history-avatar">{call.person.profilePicture ? <img src={call.person.profilePicture} alt="" /> : initials(call.person.name)}</span>
+                <span className="halls-call-history-copy">
+                  <strong className={missed || rejected || failed ? "is-missed" : ""}>{call.person.name}</strong>
+                  <span className="halls-call-history-meta"><DirectionIcon size={15} className={missed || rejected || failed ? "is-missed" : call.direction === "incoming" ? "is-incoming" : "is-outgoing"} /><span>{call.direction === "incoming" ? "Incoming" : "Outgoing"} {call.kind} call</span><i>·</i><span className={missed || rejected || failed ? "is-missed" : ""}>{callSummary(call)}</span></span>
+                </span>
+                <span className="halls-call-history-time"><small>{formatTime(call.createdAt)}</small><TypeIcon size={17} /></span>
+              </button>;
+            })}
+          </div> :
+          <div className="halls-call-history-state">
+            {filter === "missed" || filter === "rejected" || filter === "failed" ? <Phone size={24} /> : <CalendarDays size={24} />}
+            <strong>{query ? "No matching calls" : filter === "dialed" ? "No dialed calls" : filter === "missed" ? "No missed calls" : filter === "rejected" ? "No rejected calls" : filter === "failed" ? "No failed calls" : "No calls yet"}</strong>
+            <span>{query ? "Try another name or username." : filter === "missed" ? "You're all caught up. Missed calls will appear here." : filter === "dialed" ? "Outgoing calls you place will appear here." : filter === "rejected" ? "Calls that are declined will appear here." : filter === "failed" ? "Calls that fail to connect will appear here." : "Your call history will appear here when you make or receive calls."}</span>
+            {query && <button type="button" onClick={() => setQuery("")}>Clear search</button>}
+          </div>}
+        <p className="halls-call-history-note"><Clock3 size={13} /> Your call history is saved to your HallsChat account.</p>
+      </div>
     </section>
     <NowBar />
   </main>;
