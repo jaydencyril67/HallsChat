@@ -3,6 +3,10 @@ import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, MailCheck, ShieldCheck } f
 import AppHeader from "./AppHeader";
 import LoadingDots from "./components/LoadingDots";
 
+function formatNameInput(value: string) {
+  return value.toLocaleLowerCase().replace(/(^|\\s)(\\S)/g, (_match, space: string, character: string) => space + character.toLocaleUpperCase());
+}
+
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
@@ -202,7 +206,7 @@ export default function SignupPage() {
           <p>Enter your details to get started with HallsChat.</p>
         </div>
         <form className="signup-form" onSubmit={handleSubmit} noValidate>
-          <label className="signup-field"><span>Full name</span><input autoComplete="name" name="name" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" required maxLength={80} /></label>
+          <label className="signup-field"><span>Full name</span><input autoComplete="name" name="name" value={name} onChange={e => setName(formatNameInput(e.target.value))} placeholder="Your name" required maxLength={80} /></label>
           <label className="signup-field"><span>Username</span><span className="signup-username-wrap"><input autoComplete="username" name="username" value={username} onChange={e => { setUsername(e.target.value.replace(/\s/g, "")); setError(""); }} placeholder="Choose a username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_.]+" title="Use 3–24 letters, numbers, underscores or periods." aria-describedby="username-availability" aria-invalid={usernameStatus === "taken" || usernameStatus === "invalid"} />{usernameStatus === "checking" ? <span className="signup-username-spinner" aria-label="Checking username" /> : usernameStatus === "available" ? <Check size={16} className="signup-username-ok" aria-label="Username available" /> : null}</span><small id="username-availability" className={"signup-username-status signup-username-status-" + usernameStatus} aria-live="polite">{usernameMessage || "3–24 letters, numbers, underscores or periods."}</small></label>
           <label className="signup-field"><span>Email address</span><span className="signup-email-wrap"><input autoComplete="email" name="email" type="email" inputMode="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }} placeholder="you@example.com" required maxLength={254} aria-describedby="email-allowance-status" aria-invalid={emailStatus === "rejected" || emailStatus === "invalid"} />{emailStatus === "checking" ? <span className="signup-username-spinner" aria-label="Checking email provider" /> : emailStatus === "accepted" ? <Check size={16} className="signup-username-ok" aria-label="Email provider accepted" /> : null}</span><small id="email-allowance-status" className={"signup-email-status signup-email-status-" + emailStatus} aria-live="polite">{emailMessage || "Use an email address from an accepted provider."}</small></label>
           <div className="signup-field-row">
