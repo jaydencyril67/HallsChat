@@ -177,7 +177,9 @@ export default function ChatPage() {
   const typingStopTimerRef = useRef<number | null>(null);
   const otherTypingTimerRef = useRef<number | null>(null);
   const messagePressTimerRef = useRef<number | null>(null);
-  const messageSwipeRef = useRef<{ id: string; startX: number; startY: number; triggered: boolean } | null>(null);
+  const messageSwipeRef = useRef<{ id: string; startX: number; startY: number; startLeft: number; triggered: boolean } | null>(null);
+  const [swipingMessageId, setSwipingMessageId] = useState<string | null>(null);
+  const [messageSwipeOffset, setMessageSwipeOffset] = useState(0);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
   activeIdRef.current = activeId;
   currentUserIdRef.current = currentUserId;
@@ -791,7 +793,7 @@ export default function ChatPage() {
                   onPointerDown={event => {
                     if (event.pointerType !== "touch" || message.pending) return;
                     cancelMessagePress();
-                    messageSwipeRef.current = { id: message.id, startX: event.clientX, startY: event.clientY, triggered: false };
+                    messageSwipeRef.current = { id: message.id, startX: event.clientX, startY: event.clientY, startLeft: 0, triggered: false };
                     messagePressTimerRef.current = window.setTimeout(() => setActionMenuFor(message.id), 520);
                   }}
                   onPointerMove={event => {
@@ -800,15 +802,35 @@ export default function ChatPage() {
                     const deltaX = event.clientX - swipe.startX;
                     const deltaY = event.clientY - swipe.startY;
                     if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) cancelMessagePress();
+                    // Only claim a clear horizontal right-swipe; vertical movement remains native scrolling.
+                    if (deltaX > 6 && deltaX > Math.abs(deltaY) * 1.15 && !message.deletedForEveryone) {
+                      setSwipingMessageId(message.id);
+                      setMessageSwipeOffset(Math.min(76, Math.max(0, deltaX)));
+                    }
                     if (deltaX > 58 && deltaX > Math.abs(deltaY) * 1.25 && !message.deletedForEveryone) {
                       swipe.triggered = true;
                       beginReply(message);
                     }
                   }}
-                  onPointerUp={() => { cancelMessagePress(); messageSwipeRef.current = null; }}
-                  onPointerLeave={() => { cancelMessagePress(); messageSwipeRef.current = null; }}
-                  onPointerCancel={() => { cancelMessagePress(); messageSwipeRef.current = null; }}>
-                  <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"} ${message.deletedForEveryone ? "chat-message-deleted" : ""}`}>
+                  onPointerUp={() => {
+                    cancelMessagePress();
+                    messageSwipeRef.current = null;
+                    setSwipingMessageId(null);
+                    setMessageSwipeOffset(0);
+                  }}
+                  onPointerLeave={() => {
+                    cancelMessagePress();
+                    messageSwipeRef.current = null;
+                    setSwipingMessageId(null);
+                    setMessageSwipeOffset(0);
+                  }}
+                  onPointerCancel={() => {
+                    cancelMessagePress();
+                    messageSwipeRef.current = null;
+                    setSwipingMessageId(null);
+                    setMessageSwipeOffset(0);
+                  }}>
+                  <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"} ${message.deletedForEveryone ? "chat-message-deleted" : ""} ${swipingMessageId === message.id ? "chat-message-swiping" : ""}`} style={swipingMessageId === message.id ? { transform: `translateX(${messageSwipeOffset}px)` } : undefined}>
                     {quotedMessage && <button type="button" className="chat-reply-quote" onClick={() => jumpToRepliedMessage(quotedMessage.id)} aria-label="Jump to replied message">
                       <strong>{quotedMessage.senderId === currentUserId ? "You" : activePerson.username}</strong>
                       <span>{quotedMessage.deleted ? "This message was deleted" : quotedMessage.text || (quotedMessage.audioUrl ? "🎤 Voice note" : quotedMessage.imageUrl ? "📷 Photo" : "Message")}</span>
