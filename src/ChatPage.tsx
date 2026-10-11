@@ -811,7 +811,7 @@ export default function ChatPage() {
                 const quotedMessage = message.replyTo;
                 const messageImages = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
                 return <div id={`chat-message-${message.id}`} key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""} ${highlightedMessageId === message.id ? "chat-message-highlighted" : ""}`}
-                  onContextMenu={event => { if (!message.pending) { event.preventDefault(); setActionMenuFor(message.id); } }}
+                  onContextMenu={event => { event.preventDefault(); if (!message.pending && !message.deletedForEveryone) { setReactionPickerFor(message.id); setActionMenuFor(null); } }}
                   onPointerDown={event => {
                     if (event.pointerType !== "touch" || message.pending) return;
                     cancelMessagePress();
