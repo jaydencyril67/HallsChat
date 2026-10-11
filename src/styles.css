@@ -611,3 +611,9 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-comment-error{flex-shrink:0;margin:7px 15px;color:#ff9cab;font-size:11px;line-height:1.5}
 @media(max-width:520px){.social-comments-sheet{width:100%;height:min(82dvh,820px);border-radius:20px 20px 0 0}.social-comments-list{padding:14px 12px 18px}.social-comments-composer-wrap{padding-left:10px;padding-right:10px}}
 @media(min-width:700px){.social-comments-overlay{align-items:center;padding:18px}.social-comments-sheet{height:min(78dvh,760px);border-bottom:1px solid rgba(255,183,196,.16);border-radius:22px}.social-comments-grabber{margin-top:11px}}
+
+
+/* Clickable URLs and email addresses in feed posts and comments. */
+.social-text-link{color:#ff9cac;text-decoration:underline;text-decoration-color:rgba(255,156,172,.55);text-underline-offset:2px;overflow-wrap:anywhere;cursor:pointer}
+.social-text-link:hover{color:#ffd4dc;text-decoration-color:currentColor}
+.social-text-link:focus-visible{outline:2px solid #ff9cac;outline-offset:2px;border-radius:2px}
