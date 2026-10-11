@@ -74,6 +74,14 @@ export default function ProfilePage() {
     setCropSource(null);
   }
 
+  async function confirmCroppedPicture(croppedFile: File) {
+    if (cropSource) URL.revokeObjectURL(cropSource);
+    setCropSource(null);
+    // Let React close the crop modal before starting the upload request.
+    await new Promise<void>(resolve => window.setTimeout(resolve, 0));
+    await savePicture(croppedFile);
+  }
+
   async function savePicture(croppedFile: File) {
     if (pictureBusy) return;
     const token = localStorage.getItem("hallschat_token");
@@ -186,7 +194,7 @@ export default function ProfilePage() {
         </>}
       </div>
     </section>
-    {cropSource && <ProfileImageCropModal imageUrl={cropSource} onCancel={cancelCrop} onDone={savePicture} />}
+    {cropSource && <ProfileImageCropModal imageUrl={cropSource} onCancel={cancelCrop} onDone={confirmCroppedPicture} />}
     {previewPicture && <ImagePreviewModal imageUrl={previewPicture} onClose={() => setPreviewPicture(null)} />}
     <NowBar />
   </main>;
