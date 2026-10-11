@@ -56,11 +56,11 @@ export default function CallsPanel({ socket, person }: Props) {
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        echoCancellation: { ideal: true },
-        noiseSuppression: { ideal: true },
-        autoGainControl: { ideal: true },
-        channelCount: { ideal: 1 },
-        sampleRate: { ideal: 48000 }
+        // Request the browser's built-in acoustic echo canceller explicitly.
+        echoCancellation: true,
+        noiseSuppression: true,
+        // Automatic gain control can pump/oscillate on some Android devices and WebViews.
+        autoGainControl: false
       },
       video: video ? {
         width: { ideal: 1280, max: 1280 },
