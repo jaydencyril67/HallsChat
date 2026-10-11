@@ -2078,3 +2078,18 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-call-copy .chat-call-status-alert{color:#ff8293}
 .chat-call-copy time{font-size:.66rem;color:var(--chat-muted,#bba4aa)}
 .chat-call-direction{display:grid;place-items:center;color:var(--chat-muted,#c6adb3);flex:0 0 20px}
+
+
+.social-story-delete-trigger{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid rgba(255,210,219,.14);border-radius:50%;background:rgba(255,255,255,.07);color:#ffd6df;cursor:pointer}
+.social-story-delete-trigger:disabled{opacity:.55;cursor:wait}
+.social-story-view-count{display:inline-flex;align-items:center;justify-content:center;gap:7px;color:#fff0f3;font-size:12px;font-weight:700}
+.social-story-view-count svg{color:#f4b6c5}
+.social-story-delete-overlay{position:fixed;inset:0;z-index:10020;display:flex;align-items:center;justify-content:center;padding:22px;background:rgba(8,3,6,.76);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.social-story-delete-dialog{display:flex;flex-direction:column;align-items:center;gap:11px;width:min(100%,340px);box-sizing:border-box;padding:24px 20px 18px;border:1px solid rgba(255,210,219,.15);border-radius:20px;background:linear-gradient(155deg,#32101c,#190910);color:#fff0f3;text-align:center;box-shadow:0 22px 70px #0009}
+.social-story-delete-icon{display:grid;place-items:center;width:48px;height:48px;border:1px solid rgba(255,120,150,.25);border-radius:50%;background:rgba(225,54,94,.12);color:#ff8aa5}
+.social-story-delete-dialog>strong{font-size:16px;font-weight:750}
+.social-story-delete-dialog>p{margin:0;color:#cbaeb6;font-size:12px;line-height:1.55}
+.social-story-delete-dialog>div{display:flex;gap:9px;width:100%;margin-top:8px}
+.social-story-delete-dialog>div>button{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-height:42px;padding:9px 12px;border:1px solid rgba(255,210,219,.13);border-radius:12px;background:rgba(255,255,255,.06);color:#f9e9ed;font-size:12px;font-weight:700}
+.social-story-delete-dialog>div>button.danger{border-color:#d93e60;background:#d93e60;color:#fff}
+.social-story-delete-dialog>div>button:disabled{opacity:.6}
