@@ -21,7 +21,7 @@ type SocialPost = {
 };
 type SocialComment = { id: string; content: string; parentId?: string | null; createdAt: string; likeCount: number; likedByMe: boolean; author: { id: string; name: string; username: string; profilePicture?: string } | null };
 type SelectedImage = { file: File; preview: string };
-type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string };
+type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string; message?: string };
 type SocialStory = { id: string; text: string; mediaUrl?: string; background?: string; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -703,7 +703,7 @@ export default function HomePage() {
                 <span className="social-story-add-media">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}<i><Plus size={16}/></i></span>
                 <strong>Create story</strong><small>Share a moment</small>
               </button>
-              {Array.from(new Map(stories.filter(story => story.author).map(story => [story.author!.id, story])).values()).map(story => <button type="button" key={story.id} className="social-story-item" onClick={() => setStoryViewer(story)} aria-label={`View story by ${story.author?.name || "user"}`}>
+              {Array.from(new Map(stories.filter(story => story.author).map(story => [story.author!.id, story] as const)).values()).map(story => <button type="button" key={story.id} className="social-story-item" onClick={() => setStoryViewer(story)} aria-label={`View story by ${story.author?.name || "user"}`}>
                 <span className="social-story-ring"><span>{story.author?.profilePicture ? <img src={story.author.profilePicture} alt="" /> : initials(story.author?.name || "H")}</span></span>
                 <strong>{story.isMine ? "Your story" : story.author?.name}</strong><small>{timeAgo(story.createdAt)}</small>
               </button>)}
