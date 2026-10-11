@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { CalendarDays, FileText, Mail, UserRound, AtSign, UsersRound, Camera, Trash2, LogOut, Eye } from "lucide-react";
+import { FileText, Camera, Trash2, LogOut, Eye } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -222,19 +222,25 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 10, marginBottom: 18 }}>
-            <div style={{ ...panel, padding: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 8, color: "#f08b9b", fontSize: ".75rem", fontWeight: 750 }}><FileText size={16} /> Your posts</div><strong style={{ display: "block", marginTop: 10, fontSize: "1.45rem", color: "#fff0f3" }}>{postsLoading ? "—" : posts.length}</strong><span style={{ display: "block", marginTop: 3, ...muted, fontSize: ".72rem" }}>Posts in your recent feed</span></div>
-            <div style={{ ...panel, padding: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 8, color: "#f08b9b", fontSize: ".75rem", fontWeight: 750 }}><UsersRound size={16} /> Followers</div><strong style={{ display: "block", marginTop: 10, fontSize: "1.45rem", color: "#fff0f3" }}>{loading ? "—" : (user?.followersCount ?? 0).toLocaleString()}</strong><span style={{ display: "block", marginTop: 3, ...muted, fontSize: ".72rem" }}>People following you</span></div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, padding: "8px 0 20px", color: "#fff0f3" }}>
+            <div style={{ flex: 1, textAlign: "center", borderRight: "1px solid rgba(255,255,255,.1)" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{postsLoading ? "—" : posts.length.toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Posts</span></div>
+            <div style={{ flex: 1, textAlign: "center", borderRight: "1px solid rgba(255,255,255,.1)" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{loading ? "—" : (user?.followersCount ?? 0).toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Followers</span></div>
+            <div style={{ flex: 1, textAlign: "center" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{postsLoading ? "—" : posts.reduce((sum, post) => sum + (post.likeCount || 0), 0).toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Likes</span></div>
           </div>
 
-          <section style={{ ...panel, padding: 16, marginBottom: 18 }}>
-            <h2 style={{ margin: "0 0 14px", color: "#fff0f3", fontSize: ".98rem" }}>Account details</h2>
-            <div style={{ display: "grid", gap: 15 }}>
-              <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}><UserRound size={17} color="#e77b8d" /><div style={{ minWidth: 0 }}><span style={{ display: "block", ...muted, fontSize: ".72rem" }}>Full name</span><strong style={{ display: "block", marginTop: 4, color: "#f3dfe3", fontSize: ".84rem", overflowWrap: "anywhere" }}>{loading ? "Loading…" : user?.name || "Not available"}</strong></div></div>
-              <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}><AtSign size={17} color="#e77b8d" /><div style={{ minWidth: 0 }}><span style={{ display: "block", ...muted, fontSize: ".72rem" }}>Username</span><strong style={{ display: "block", marginTop: 4, color: "#f3dfe3", fontSize: ".84rem", overflowWrap: "anywhere" }}>{user?.username ? `@${user.username}` : "Not available"}</strong></div></div>
-              <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}><Mail size={17} color="#e77b8d" /><div style={{ minWidth: 0, flex: 1 }}><span style={{ display: "block", ...muted, fontSize: ".72rem" }}>Email address</span><strong style={{ display: "block", marginTop: 4, color: "#f3dfe3", fontSize: ".84rem", overflowWrap: "anywhere" }}>{user?.email || "Not available"}</strong></div></div>
-              {user?.createdAt && <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}><CalendarDays size={17} color="#e77b8d" /><div><span style={{ display: "block", ...muted, fontSize: ".72rem" }}>Member since</span><strong style={{ display: "block", marginTop: 4, color: "#f3dfe3", fontSize: ".84rem" }}>{new Date(user.createdAt).toLocaleDateString(undefined, { month: "long", year: "numeric" })}</strong></div></div>}
+          <section style={{ marginBottom: 18 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 34, borderBottom: "1px solid rgba(255,255,255,.1)", marginBottom: 2 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", borderBottom: "2px solid #f08b9b", color: "#fff0f3", fontSize: ".84rem", fontWeight: 800 }}><FileText size={17} /> Posts</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", color: "rgba(246,220,225,.45)", fontSize: ".84rem", fontWeight: 700 }}><Mail size={16} /> About</div>
             </div>
+            {postsLoading ? <div style={{ display: "grid", placeItems: "center", padding: 35 }}><LoadingDots /></div> : posts.length === 0 ? <div style={{ ...panel, padding: "38px 18px", textAlign: "center", marginTop: 12 }}><FileText size={28} color="#e77b8d" /><p style={{ margin: "12px 0 5px", color: "#fff0f3", fontWeight: 800 }}>No posts yet</p><p style={{ margin: 0, ...muted, fontSize: ".82rem" }}>Your posts will show up here.</p></div> : <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 3, marginTop: 3 }}>
+              {posts.map(post => <article key={post.id} style={{ minWidth: 0, aspectRatio: "3 / 4", overflow: "hidden", position: "relative", background: "linear-gradient(145deg,rgba(95,29,44,.9),rgba(28,9,15,.95))", border: "1px solid rgba(255,255,255,.06)", borderRadius: 4, padding: 9, boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                {post.images?.[0] ? <img src={post.images[0]} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} /> : null}
+                {post.poll ? <div style={{ position: "absolute", inset: 0, background: "linear-gradient(145deg,#5b1b2c,#200910)", padding: 10, boxSizing: "border-box", color: "#fff0f3", fontSize: ".8rem", fontWeight: 800, overflow: "hidden" }}>{post.poll.question}</div> : null}
+                {(!post.images?.[0] && !post.poll) ? <p style={{ position: "relative", zIndex: 1, margin: 0, color: "#fff0f3", fontSize: ".78rem", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 7, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{post.content}</p> : null}
+                <div style={{ position: "absolute", inset: "auto 0 0", display: "flex", alignItems: "center", gap: 5, padding: "22px 7px 6px", color: "#fff", fontSize: ".7rem", fontWeight: 750, background: "linear-gradient(transparent,rgba(0,0,0,.78))" }}><Eye size={13} /> {post.likeCount || 0}</div>
+              </article>)}
+            </div>}
           </section>
 
           <div style={{ marginTop: 4 }}>
