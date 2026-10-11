@@ -23,7 +23,8 @@ type SocialPost = {
 type SocialComment = { id: string; content: string; parentId?: string | null; createdAt: string; likeCount: number; likedByMe: boolean; author: { id: string; name: string; username: string; profilePicture?: string } | null };
 type SelectedImage = { file: File; preview: string };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string; message?: string };
-type SocialStory = { id: string; text: string; mediaUrl?: string; background?: string; textPosition?: { x: number; y: number }; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean };
+type StoryTextSection = { id: string; text: string; x: number; y: number };
+type SocialStory = { id: string; text: string; textSections?: StoryTextSection[]; mediaUrl?: string; background?: string; textPosition?: { x: number; y: number }; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const MAX_IMAGES = 4;
@@ -117,9 +118,9 @@ export default function HomePage() {
   const [storyPlaybackIndex, setStoryPlaybackIndex] = useState(0);
   const [storyPlaybackPaused, setStoryPlaybackPaused] = useState(false);
   const storySwipeRef = useRef<{ x: number; y: number } | null>(null);
-  const [storyText, setStoryText] = useState("");
-  const [storyTextPosition, setStoryTextPosition] = useState({ x: 50, y: 50 });
-  const storyTextDragRef = useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number } | null>(null);
+  const [storyTextSections, setStoryTextSections] = useState<StoryTextSection[]>([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
+  const [activeStoryTextId, setActiveStoryTextId] = useState("story-text-1");
+  const storyTextDragRef = useRef<{ pointerId: number; sectionId: string; startX: number; startY: number; originX: number; originY: number; nextX: number; nextY: number; element: HTMLParagraphElement } | null>(null);
   const [storyBackground, setStoryBackground] = useState("#8b1e35");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
   const [storyEditingImageUrl, setStoryEditingImageUrl] = useState("");
@@ -419,37 +420,60 @@ export default function HomePage() {
     });
   }
 
-  function handleStoryTextPointerDown(event: ReactPointerEvent<HTMLParagraphElement>) {
-    if (!storyText.trim()) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const preview = event.currentTarget.closest(".social-story-preview");
-    if (!preview) return;
+  function addStoryTextSection() {
+    const id = `story-text-${Date.now()}-${storyTextSections.length}`;
+    setStoryTextSections(current => [...current, { id, text: "", x: 50, y: Math.min(85, 50 + current.length * 8) }]);
+    setActiveStoryTextId(id);
+  }
+
+  function updateStoryTextSection(id: string, text: string) {
+    setStoryTextSections(current => current.map(section => section.id === id ? { ...section, text } : section));
+  }
+
+  function removeStoryTextSection(id: string) {
+    const remaining = storyTextSections.filter(section => section.id !== id);
+    setStoryTextSections(remaining.length ? remaining : [{ id: `story-text-${Date.now()}`, text: "", x: 50, y: 50 }]);
+    if (activeStoryTextId === id) setActiveStoryTextId(remaining[0]?.id || "");
+    storyTextDragRef.current = null;
+  }
+
+  function handleStoryTextPointerDown(event: ReactPointerEvent<HTMLParagraphElement>, section: StoryTextSection) {
+    if (!section.text.trim()) return;
+    event.preventDefault(); event.stopPropagation();
+    if (!event.currentTarget.closest(".social-story-preview")) return;
+    setActiveStoryTextId(section.id);
     try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Continue without capture when unavailable. */ }
-    storyTextDragRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: storyTextPosition.x, originY: storyTextPosition.y };
+    storyTextDragRef.current = { pointerId: event.pointerId, sectionId: section.id, startX: event.clientX, startY: event.clientY, originX: section.x, originY: section.y, nextX: section.x, nextY: section.y, element: event.currentTarget };
   }
 
   function handleStoryTextPointerMove(event: ReactPointerEvent<HTMLParagraphElement>) {
     const drag = storyTextDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    const preview = event.currentTarget.closest(".social-story-preview");
+    const preview = drag.element.closest(".social-story-preview");
     if (!preview) return;
     event.preventDefault();
     const bounds = preview.getBoundingClientRect();
-    setStoryTextPosition({
-      x: Math.max(8, Math.min(92, drag.originX + (event.clientX - drag.startX) / Math.max(1, bounds.width) * 100)),
-      y: Math.max(8, Math.min(92, drag.originY + (event.clientY - drag.startY) / Math.max(1, bounds.height) * 100)),
-    });
+    const x = Math.max(6, Math.min(94, drag.originX + (event.clientX - drag.startX) / Math.max(1, bounds.width) * 100));
+    const y = Math.max(6, Math.min(94, drag.originY + (event.clientY - drag.startY) / Math.max(1, bounds.height) * 100));
+    drag.nextX = x; drag.nextY = y;
+    // Move the dragged element directly, avoiding a whole-page React render per touch sample.
+    drag.element.style.left = `${x}%`; drag.element.style.top = `${y}%`;
   }
 
   function handleStoryTextPointerUp(event: ReactPointerEvent<HTMLParagraphElement>) {
-    if (storyTextDragRef.current?.pointerId === event.pointerId) storyTextDragRef.current = null;
+    const drag = storyTextDragRef.current;
+    if (drag?.pointerId === event.pointerId) {
+      setStoryTextSections(current => current.map(section => section.id === drag.sectionId ? { ...section, x: drag.nextX, y: drag.nextY } : section));
+      storyTextDragRef.current = null;
+    }
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Capture may already be released. */ }
   }
 
   async function publishStory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (storyPublishing || (!storyText.trim() && !storyPhoto)) return;
+    const validSections = storyTextSections.filter(section => section.text.trim()).map(section => ({ ...section, text: section.text.trim() }));
+    const combinedText = validSections.map(section => section.text).join("\n");
+    if (storyPublishing || (!combinedText && !storyPhoto)) return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
     setStoryPublishing(true);
@@ -476,13 +500,13 @@ export default function HomePage() {
       const response = await fetch(`${apiBase}/api/social/stories`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ text: storyText.trim(), mediaUrl, background: storyBackground, textPosition: storyTextPosition })
+        body: JSON.stringify({ text: combinedText, textSections: validSections, mediaUrl, background: storyBackground, textPosition: validSections[0] ? { x: validSections[0].x, y: validSections[0].y } : { x: 50, y: 50 } })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.story) throw new Error(payload.message || "Your story couldn't be published.");
       setStories(current => [...current.filter(item => item.id !== payload.story.id), payload.story as SocialStory]);
-      setStoryText("");
-      setStoryTextPosition({ x: 50, y: 50 });
+      setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
+      setActiveStoryTextId("story-text-1");
       setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
       setStoryComposerOpen(false);
       setNotice("Your story is live for 24 hours.");
@@ -495,8 +519,8 @@ export default function HomePage() {
 
   function closeStoryComposer() {
     setStoryComposerOpen(false);
-    setStoryText("");
-    setStoryTextPosition({ x: 50, y: 50 });
+    setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
+    setActiveStoryTextId("story-text-1");
     storyTextDragRef.current = null;
     cancelStoryPhotoEdit();
     setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
@@ -941,15 +965,22 @@ export default function HomePage() {
         <div className="social-story-dialog-head"><div><span className="signup-form-kicker">YOUR MOMENT</span><h2>Create story</h2></div><button type="button" onClick={closeStoryComposer} aria-label="Close story creator"><X size={19}/></button></div>
         <div className="social-story-preview" style={{ background: storyPhoto ? "#16090d" : storyBackground }}>
           {storyPhoto && <img src={storyPhoto.preview} alt="Story preview" />}
-          {storyText.trim() && <p className="social-story-draggable-text" style={{ left: `${storyTextPosition.x}%`, top: `${storyTextPosition.y}%` }} onPointerDown={handleStoryTextPointerDown} onPointerMove={handleStoryTextPointerMove} onPointerUp={handleStoryTextPointerUp} onPointerCancel={handleStoryTextPointerUp} aria-label="Drag to position story text">{storyText}</p>}
-          {!storyPhoto && !storyText.trim() && <span>Your story preview</span>}
+          {storyTextSections.filter(section => section.text.trim()).map(section => <p key={section.id} className={`social-story-draggable-text ${activeStoryTextId === section.id ? "is-active" : ""}`} style={{ left: `${section.x}%`, top: `${section.y}%` }} onPointerDown={event => handleStoryTextPointerDown(event, section)} onPointerMove={handleStoryTextPointerMove} onPointerUp={handleStoryTextPointerUp} onPointerCancel={handleStoryTextPointerUp} onClick={() => setActiveStoryTextId(section.id)} aria-label="Drag to position story text">{section.text}</p>)}
+          {!storyPhoto && !storyTextSections.some(section => section.text.trim()) && <span>Your story preview</span>}
           {storyPhoto && <button type="button" className="social-story-remove-photo" onClick={() => setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; })} aria-label="Remove story photo"><X size={16}/></button>}
         </div>
-        <textarea value={storyText} onChange={event => setStoryText(event.target.value)} maxLength={500} rows={3} placeholder="Add text to your story…" aria-label="Story text" />
+        <div className="social-story-text-editor">
+          <div className="social-story-text-editor-head"><strong>Text sections</strong><button type="button" onClick={addStoryTextSection}><Plus size={15}/> Add text</button></div>
+          {storyTextSections.map((section, index) => <div className={`social-story-text-section ${activeStoryTextId === section.id ? "is-active" : ""}`} key={section.id}>
+            <label><span>Section {index + 1}</span><button type="button" onClick={() => removeStoryTextSection(section.id)} disabled={storyTextSections.length === 1} aria-label={`Remove text section ${index + 1}`}><Trash2 size={14}/></button></label>
+            <textarea value={section.text} onFocus={() => setActiveStoryTextId(section.id)} onChange={event => updateStoryTextSection(section.id, event.target.value)} maxLength={500} rows={2} placeholder={index === 0 ? "Good morning…" : "Write another text section…"} aria-label={`Story text section ${index + 1}`} />
+          </div>)}
+          <small>{storyTextSections.reduce((total, section) => total + section.text.length, 0)} characters total</small>
+        </div>
         {!storyPhoto && <div className="social-story-colors" aria-label="Story background color">
           {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => setStoryBackground(color)} aria-label={`Choose ${color} background`} />)}
         </div>}
-        <div className="social-story-dialog-actions"><label className="social-story-photo-button"><Camera size={17}/> Add photo<input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label><span>{storyText.length}/500</span><button type="submit" disabled={storyPublishing || (!storyText.trim() && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Publishing…</> : <><Send size={15}/> Share story</>}</button></div>
+        <div className="social-story-dialog-actions"><label className="social-story-photo-button"><Camera size={17}/> Add photo<input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label><span>{storyTextSections.filter(section => section.text.trim()).length} text section(s)</span><button type="submit" disabled={storyPublishing || (!storyTextSections.some(section => section.text.trim()) && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Publishing…</> : <><Send size={15}/> Share story</>}</button></div>
         <p className="social-story-expiry">Stories disappear automatically after 24 hours.</p>
       </form>
     </div>}
@@ -964,7 +995,7 @@ export default function HomePage() {
         <div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div><button type="button" onClick={closeStoryViewer} aria-label="Close story"><X size={19}/></button></div>
         <div className="social-story-viewer-content" style={{background:storyViewer.background || "#8b1e35"}} onPointerDown={event => { storySwipeRef.current = { x: event.clientX, y: event.clientY }; setStoryPlaybackPaused(true); }} onPointerUp={event => { const start = storySwipeRef.current; storySwipeRef.current = null; setStoryPlaybackPaused(false); if (!start) return; const dx = event.clientX - start.x; const dy = event.clientY - start.y; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.25) moveStoryPlayback(dx < 0 ? 1 : -1); }} onPointerCancel={() => { storySwipeRef.current = null; setStoryPlaybackPaused(false); }}>
           {storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}
-          {storyViewer.text && <p className="social-story-positioned-text" style={{ left: `${storyViewer.textPosition?.x ?? 50}%`, top: `${storyViewer.textPosition?.y ?? 50}%` }}>{storyViewer.text}</p>}
+          {(storyViewer.textSections?.length ? storyViewer.textSections.filter(section => section.text?.trim()) : (storyViewer.text ? [{ id: "legacy-story-text", text: storyViewer.text, x: storyViewer.textPosition?.x ?? 50, y: storyViewer.textPosition?.y ?? 50 }] : [])).map(section => <p key={section.id} className="social-story-positioned-text" style={{ left: `${section.x}%`, top: `${section.y}%` }}>{section.text}</p>)}
           <button type="button" className="social-story-tap-zone previous" aria-label="Previous story" onClick={() => moveStoryPlayback(-1)} />
           <button type="button" className="social-story-tap-zone next" aria-label="Next story" onClick={() => moveStoryPlayback(1)} />
         </div>
