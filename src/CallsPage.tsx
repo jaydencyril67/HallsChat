@@ -97,14 +97,6 @@ export default function CallsPage() {
   return <main className="home-page social-home halls-calls-page">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell halls-calls-shell halls-call-history-shell">
-      <div className="halls-call-history-heading">
-        <div className="halls-call-history-title">
-          <div className="halls-calls-heading-icon"><PhoneCall size={21} /></div>
-          <div><p className="halls-calls-kicker">YOUR RECENT ACTIVITY</p><h1>Calls</h1><p>Review your incoming, outgoing and missed calls.</p></div>
-        </div>
-        <div className="halls-call-history-count"><Phone size={15} /> {calls.length} {calls.length === 1 ? "call" : "calls"}</div>
-      </div>
-
       <div className="halls-call-history-toolbar">
         <div className="halls-call-history-tabs" role="tablist" aria-label="Filter call history">
           <button type="button" role="tab" aria-selected={filter === "all"} className={filter === "all" ? "is-active" : ""} onClick={() => setFilter("all")}>All</button>
