@@ -24,7 +24,7 @@ type SocialComment = { id: string; content: string; parentId?: string | null; cr
 type SelectedImage = { file: File; preview: string };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string; message?: string };
 type StoryTextSection = { id: string; text: string; x: number; y: number };
-type SocialStory = { id: string; text: string; textSections?: StoryTextSection[]; mediaUrl?: string; background?: string; textPosition?: { x: number; y: number }; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean; viewCount?: number };
+type SocialStory = { id: string; text: string; textSections?: StoryTextSection[]; mediaUrl?: string; background?: string; textPosition?: { x: number; y: number }; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean; viewCount?: number; uploadState?: "uploading" };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const MAX_IMAGES = 4;
@@ -540,17 +540,51 @@ export default function HomePage() {
     if (storyPublishing || (!combinedText && !storyPhoto)) return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
+
+    // Snapshot the draft before closing the composer. The upload continues in the background.
+    const photoToUpload = storyPhoto;
+    const background = storyBackground;
+    const textPosition = validSections[0] ? { x: validSections[0].x, y: validSections[0].y } : { x: 50, y: 50 };
+    const temporaryId = `story-upload-${Date.now()}`;
+    const now = new Date().toISOString();
+    const pendingStory: SocialStory = {
+      id: temporaryId,
+      text: combinedText,
+      textSections: validSections,
+      mediaUrl: photoToUpload?.preview,
+      background,
+      textPosition,
+      createdAt: now,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      author: user ? { id: user.id, name: user.name, username: user.username, profilePicture: user.profilePicture } : null,
+      isMine: true,
+      uploadState: "uploading"
+    };
+
     setStoryPublishing(true);
     setFeedError("");
+    setNotice("");
+    setStories(current => [...current.filter(item => item.id !== temporaryId), pendingStory]);
+    setStoryComposerOpen(false);
+    setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
+    setActiveStoryTextId("story-text-1");
+    setStoryTextManagerOpen(false);
+    setStoryColorPickerOpen(false);
+    setStoryPhoto(null);
+    setStoryEditingImageUrl(current => {
+      if (current) URL.revokeObjectURL(current);
+      return "";
+    });
+
     try {
       let mediaUrl = "";
-      if (storyPhoto) {
+      if (photoToUpload) {
         const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${token}` } });
         const auth = await authResponse.json().catch(() => ({})) as ImageKitAuth;
         if (!authResponse.ok || !auth.token || !auth.signature || !auth.publicKey || !auth.expire) throw new Error(auth.message || "Photo upload couldn't be prepared.");
         const formData = new FormData();
-        formData.append("file", storyPhoto.file);
-        formData.append("fileName", storyPhoto.file.name);
+        formData.append("file", photoToUpload.file);
+        formData.append("fileName", photoToUpload.file.name);
         formData.append("publicKey", auth.publicKey);
         formData.append("token", auth.token);
         formData.append("signature", auth.signature);
@@ -564,21 +598,17 @@ export default function HomePage() {
       const response = await fetch(`${apiBase}/api/social/stories`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ text: combinedText, textSections: validSections, mediaUrl, background: storyBackground, textPosition: validSections[0] ? { x: validSections[0].x, y: validSections[0].y } : { x: 50, y: 50 } })
+        body: JSON.stringify({ text: combinedText, textSections: validSections, mediaUrl, background, textPosition })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.story) throw new Error(payload.message || "Your story couldn't be published.");
-      setStories(current => [...current.filter(item => item.id !== payload.story.id), payload.story as SocialStory]);
-      setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
-      setActiveStoryTextId("story-text-1");
-      setStoryTextManagerOpen(false);
-      setStoryColorPickerOpen(false);
-      setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
-      setStoryComposerOpen(false);
+      setStories(current => [...current.filter(item => item.id !== temporaryId && item.id !== payload.story.id), payload.story as SocialStory]);
       setNotice("Your story is live for 24 hours.");
     } catch (err) {
+      setStories(current => current.filter(item => item.id !== temporaryId));
       setFeedError(err instanceof Error ? err.message : "Your story couldn't be published.");
     } finally {
+      if (photoToUpload) URL.revokeObjectURL(photoToUpload.preview);
       setStoryPublishing(false);
     }
   }
@@ -938,9 +968,9 @@ export default function HomePage() {
                 <span className="social-story-add-media">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}<i><Plus size={16}/></i></span>
                 <strong>Create story</strong><small>Share a moment</small>
               </button>
-              {Array.from(new Map(stories.filter(story => story.author).map(story => [story.author!.id, story] as const)).values()).map(story => <button type="button" key={story.id} className="social-story-item" onClick={() => openStoryViewer(story)} aria-label={`View story by ${story.author?.name || "user"}`}>
-                <span className="social-story-ring"><span>{story.author?.profilePicture ? <img src={story.author.profilePicture} alt="" /> : initials(story.author?.name || "H")}</span></span>
-                <strong>{story.isMine ? "Your story" : story.author?.name}</strong><small>{timeAgo(story.createdAt)}</small>
+              {Array.from(new Map(stories.filter(story => story.author).map(story => [story.author!.id, story] as const)).values()).map(story => <button type="button" key={story.id} className={`social-story-item ${story.uploadState === "uploading" ? "social-story-item-uploading" : ""}`} onClick={() => { if (story.uploadState !== "uploading") openStoryViewer(story); }} disabled={story.uploadState === "uploading"} aria-label={story.uploadState === "uploading" ? "Your story is uploading" : `View story by ${story.author?.name || "user"}`}>
+                <span className="social-story-ring"><span>{story.uploadState === "uploading" ? <span className="social-story-upload-indicator"><LoadingDots /></span> : story.author?.profilePicture ? <img src={story.author.profilePicture} alt="" /> : initials(story.author?.name || "H")}</span></span>
+                <strong>{story.isMine ? "Your story" : story.author?.name}</strong><small>{story.uploadState === "uploading" ? "Uploading…" : timeAgo(story.createdAt)}</small>
               </button>)}
             </section>
             <form className={`social-composer ${composerMode === "poll" ? "social-composer-poll-mode" : ""} ${!composerExpanded && composerMode === "post" && !draft.trim() && selectedImages.length === 0 ? "social-composer-collapsed" : ""}`} onSubmit={publishPost}>
