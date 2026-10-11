@@ -265,7 +265,7 @@ export default function HomePage() {
           <section className="social-feed-column" aria-label="Social feed">
             <form className={`social-composer ${composerMode === "poll" ? "social-composer-poll-mode" : ""}`} onSubmit={publishPost}>
               {composerMode === "post" ? <>
-                <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} placeholder="What's on your mind? Share something with your HallsChat community…" rows={4} />
+                <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind? Share something with your HallsChat community…" rows={4} />
                 {selectedImages.length > 0 && <div className="social-image-previews" aria-label="Images attached to your post">
                 {selectedImages.map((item, index) => <div className="social-image-preview" key={item.preview}>
                   <button type="button" className="social-image-preview-open" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview ${item.file.name}`}><img src={item.preview} alt={item.file.name} /></button>
@@ -292,7 +292,6 @@ export default function HomePage() {
                     <button type="button" className="social-composer-mode-button" onClick={() => { setComposerMode("poll"); setSelectedImages(current => { current.forEach(item => URL.revokeObjectURL(item.preview)); return []; }); }} title="Create a poll" aria-label="Create a poll" disabled={publishing}><ChartNoAxesColumn size={19}/></button>
                   </> : <button type="button" className="social-composer-mode-button" onClick={() => setComposerMode("post")} title="Back to post" aria-label="Back to post" disabled={publishing}><ImagePlus size={19}/></button>}
                 </div>
-                {composerMode === "post" && <span className="social-char-count">{draft.length}/2000</span>}
                 <button className="social-publish" type="submit" disabled={publishing || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{publishing ? <><LoadingDots /> Publishing…</> : composerMode === "poll" ? "Post poll" : "Publish"} {!publishing && <Send size={15}/>}</button>
               </div>
               {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /> {uploadStatus}</p>}
