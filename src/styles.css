@@ -2199,3 +2199,20 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-story-upload-indicator .loading-dots{color:#fff}
 .social-story-item-uploading small{color:#f08ca0}
 @keyframes social-story-upload-pulse{0%,100%{box-shadow:0 0 0 0 rgba(238,91,119,.05)}50%{box-shadow:0 0 0 5px rgba(238,91,119,.15)}}
+
+
+/* Movable and resizable crop selection for story photos. */
+.social-story-crop-frame{overflow:hidden;touch-action:none;background:#10050a}
+.social-story-crop-selection{position:absolute;z-index:2;box-sizing:border-box;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(8,2,5,.56),0 0 0 1px rgba(220,68,91,.9);cursor:move;touch-action:none;user-select:none;-webkit-user-select:none}
+.social-story-crop-grid{position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,transparent 33.15%,rgba(255,226,231,.6) 33.33%,transparent 33.5%,transparent 66.5%,rgba(255,226,231,.6) 66.67%,transparent 66.85%),linear-gradient(to bottom,transparent 33.15%,rgba(255,226,231,.6) 33.33%,transparent 33.5%,transparent 66.5%,rgba(255,226,231,.6) 66.67%,transparent 66.85%)}
+.social-story-crop-handle{position:absolute;z-index:3;display:block;width:16px;height:16px;border:2px solid #fff;border-radius:5px;background:#d9435b;box-shadow:0 2px 9px rgba(0,0,0,.45);touch-action:none}
+.social-story-crop-handle.nw{top:-8px;left:-8px;cursor:nwse-resize}
+.social-story-crop-handle.n{top:-8px;left:calc(50% - 8px);cursor:ns-resize}
+.social-story-crop-handle.ne{top:-8px;right:-8px;cursor:nesw-resize}
+.social-story-crop-handle.w{top:calc(50% - 8px);left:-8px;cursor:ew-resize}
+.social-story-crop-handle.e{top:calc(50% - 8px);right:-8px;cursor:ew-resize}
+.social-story-crop-handle.sw{bottom:-8px;left:-8px;cursor:nesw-resize}
+.social-story-crop-handle.s{bottom:-8px;left:calc(50% - 8px);cursor:ns-resize}
+.social-story-crop-handle.se{right:-8px;bottom:-8px;cursor:nwse-resize}
+.social-story-crop-header>div>span{color:#caa7af;font-size:.68rem;line-height:1.35}
+@media(max-width:520px){.social-story-crop-handle{width:18px;height:18px}.social-story-crop-handle.nw{top:-9px;left:-9px}.social-story-crop-handle.n{top:-9px}.social-story-crop-handle.ne{top:-9px;right:-9px}.social-story-crop-handle.w{left:-9px}.social-story-crop-handle.e{right:-9px}.social-story-crop-handle.sw{bottom:-9px;left:-9px}.social-story-crop-handle.s{bottom:-9px}.social-story-crop-handle.se{right:-9px;bottom:-9px}}
