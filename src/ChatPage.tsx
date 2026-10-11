@@ -132,9 +132,6 @@ export default function ChatPage() {
     input.style.height = `${Math.min(input.scrollHeight, 144)}px`;
   }, [draft]);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, activeId]);
 
   async function uploadChatImage(file: File, savedToken: string): Promise<string> {
     const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${savedToken}` } });
