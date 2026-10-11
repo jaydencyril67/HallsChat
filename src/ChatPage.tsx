@@ -174,6 +174,7 @@ export default function ChatPage() {
   const typingStopTimerRef = useRef<number | null>(null);
   const otherTypingTimerRef = useRef<number | null>(null);
   const messagePressTimerRef = useRef<number | null>(null);
+  const messageSwipeRef = useRef<{ id: string; startX: number; startY: number; triggered: boolean } | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
   activeIdRef.current = activeId;
   currentUserIdRef.current = currentUserId;
@@ -761,8 +762,26 @@ export default function ChatPage() {
                 const messageImages = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
                 return <div id={`chat-message-${message.id}`} key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}
                   onContextMenu={event => { if (!message.pending) { event.preventDefault(); setActionMenuFor(message.id); } }}
-                  onPointerDown={event => { if (event.pointerType === "touch" && !message.pending) { cancelMessagePress(); messagePressTimerRef.current = window.setTimeout(() => setActionMenuFor(message.id), 520); } }}
-                  onPointerUp={cancelMessagePress} onPointerLeave={cancelMessagePress} onPointerCancel={cancelMessagePress}>
+                  onPointerDown={event => {
+                    if (event.pointerType !== "touch" || message.pending) return;
+                    cancelMessagePress();
+                    messageSwipeRef.current = { id: message.id, startX: event.clientX, startY: event.clientY, triggered: false };
+                    messagePressTimerRef.current = window.setTimeout(() => setActionMenuFor(message.id), 520);
+                  }}
+                  onPointerMove={event => {
+                    const swipe = messageSwipeRef.current;
+                    if (event.pointerType !== "touch" || !swipe || swipe.id !== message.id || swipe.triggered) return;
+                    const deltaX = event.clientX - swipe.startX;
+                    const deltaY = event.clientY - swipe.startY;
+                    if (Math.abs(deltaX) > 10 || Math.abs(deltaY) > 10) cancelMessagePress();
+                    if (deltaX > 58 && deltaX > Math.abs(deltaY) * 1.25 && !message.deletedForEveryone) {
+                      swipe.triggered = true;
+                      beginReply(message);
+                    }
+                  }}
+                  onPointerUp={() => { cancelMessagePress(); messageSwipeRef.current = null; }}
+                  onPointerLeave={() => { cancelMessagePress(); messageSwipeRef.current = null; }}
+                  onPointerCancel={() => { cancelMessagePress(); messageSwipeRef.current = null; }}>
                   <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"} ${message.deletedForEveryone ? "chat-message-deleted" : ""}`}>
                     {quotedMessage && <button type="button" className="chat-reply-quote" onClick={() => document.getElementById(`chat-message-${quotedMessage.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" })} aria-label="Jump to replied message">
                       <strong>{quotedMessage.senderId === currentUserId ? "You" : activePerson.username}</strong>
