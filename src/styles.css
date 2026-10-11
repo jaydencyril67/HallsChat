@@ -800,14 +800,16 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .auth-form-panel .signup-password-wrap input{font-size:12px}
 
 
-/* Conversation messages are plain page content, not individual bubble cards. */
+/* CryBots-style live chat bubbles: incoming neutral, outgoing accent, with chat-tail corners. */
 .chat-message-line{display:flex;justify-content:flex-start;width:100%;padding:2px 0}
 .chat-message-line-mine{justify-content:flex-end}
-.chat-message-content{display:flex;flex-direction:column;gap:4px;max-width:min(88%,560px);min-width:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow-wrap:anywhere}
-.chat-message-text{margin:0;color:#f8e9ec;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.86rem;line-height:1.7}
-.chat-message-line-mine .chat-message-text{color:#fff1f4;text-align:right}
-.chat-message-content time{display:block;margin:0;color:rgba(255,231,235,.48);font-size:.6rem;text-align:inherit}
-.chat-message-line-mine .chat-message-content time{text-align:right}
+.chat-message-content{display:flex;flex-direction:column;gap:4px;max-width:min(82%,440px);min-width:0;padding:10px 12px 7px;border:1px solid var(--chat-line,rgba(255,210,219,.11));border-radius:15px 15px 15px 4px;overflow-wrap:anywhere;box-sizing:border-box}
+.chat-message-content-theirs{background:rgba(255,255,255,.045);color:#f8e9ec}
+.chat-message-content-mine{border-color:rgba(226,76,99,.27);border-radius:15px 15px 4px 15px;background:linear-gradient(145deg,rgba(155,30,51,.58),rgba(92,18,33,.55));color:#fff1f4}
+.chat-message-text{margin:0;color:inherit;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.6}
+.chat-message-content time{display:block;margin-top:1px;color:rgba(255,231,235,.5);font-size:.59rem;text-align:right}
+.chat-message-content:has(.chat-image-grid){max-width:min(260px,78vw);padding:5px}
+.chat-message-content:has(.chat-image-grid) .chat-message-text{padding:4px 6px 2px}
 /* Keep the conversation itself flush with the page instead of inside a large card. */
 .chat-layout{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
 .chat-conversation{background:transparent}
