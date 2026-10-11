@@ -64,7 +64,7 @@ export default function CallsPage() {
         if (cancelled) return;
         setPeople(nextPeople);
         const requested = new URLSearchParams(window.location.search).get("user");
-        const requestedPerson = requested && nextPeople.find(person => person.id === requested && person.canMessage);
+        const requestedPerson = requested ? nextPeople.find(person => person.id === requested && person.canMessage) : undefined;
         const firstAvailable = nextPeople.find(person => person.canMessage);
         setSelectedId(requestedPerson?.id || firstAvailable?.id || "");
       })
