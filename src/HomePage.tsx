@@ -127,6 +127,17 @@ export default function HomePage() {
   const [commentLikingIds, setCommentLikingIds] = useState<string[]>([]);
   const [commentDeletingIds, setCommentDeletingIds] = useState<string[]>([]);
   const [commentDeleteConfirmId, setCommentDeleteConfirmId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!commentDeleteConfirmId) return;
+    const closeCommentDeleteOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".social-comment-delete-wrap")) return;
+      setCommentDeleteConfirmId(null);
+    };
+    document.addEventListener("pointerdown", closeCommentDeleteOutside);
+    return () => document.removeEventListener("pointerdown", closeCommentDeleteOutside);
+  }, [commentDeleteConfirmId]);
   const [commentErrors, setCommentErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
