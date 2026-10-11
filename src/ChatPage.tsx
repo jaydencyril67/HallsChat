@@ -1030,15 +1030,16 @@ export default function ChatPage() {
                   const outgoing = call.direction === "outgoing";
                   const statusText = missed ? (outgoing ? "No answer" : "Missed call") : declined ? (outgoing ? "Call declined" : "Declined call") : failed ? "Call failed" : call.status === "cancelled" ? "Call cancelled" : call.status === "completed" ? "Call ended" : "Call";
                   const duration = call.durationSeconds > 0 ? ` · ${Math.floor(call.durationSeconds / 60)}:${String(call.durationSeconds % 60).padStart(2, "0")}` : "";
-                  return <div className="chat-call-row" key={`call-${call.id}`}>
-                    <div className={`chat-call-card${missed || failed ? " chat-call-card-alert" : ""}`}>
-                      <span className="chat-call-icon">{call.kind === "video" ? <Video size={19} /> : <Phone size={19} />}</span>
-                      <div className="chat-call-copy">
-                        <strong>{call.kind === "video" ? "Video call" : "Audio call"}</strong>
-                        <span className={missed || failed ? "chat-call-status-alert" : ""}>{outgoing ? "Outgoing" : "Incoming"} · {statusText}{duration}</span>
-                        <time>{new Date(call.createdAt).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time>
+                  return <div className={`chat-message-line ${outgoing ? "chat-message-line-mine" : ""}`} key={`call-${call.id}`}>
+                    <div className={`chat-message-content ${outgoing ? "chat-message-content-mine" : "chat-message-content-theirs"} chat-call-bubble${missed || failed ? " chat-call-bubble-alert" : ""}`}>
+                      <div className="chat-call-body">
+                        <span className="chat-call-icon">{call.kind === "video" ? <Video size={19} /> : <Phone size={19} />}</span>
+                        <div className="chat-call-copy">
+                          <strong>{call.kind === "video" ? "Video call" : "Audio call"}</strong>
+                          <span className={missed || failed ? "chat-call-status-alert" : ""}>{statusText}{duration}</span>
+                        </div>
                       </div>
-                      <span className="chat-call-direction" aria-label={outgoing ? "Outgoing call" : "Incoming call"}>{outgoing ? <Phone size={15} /> : <Phone size={15} />}</span>
+                      <div className="chat-message-footer"><time>{new Date(call.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</time></div>
                     </div>
                   </div>;
                 })}
