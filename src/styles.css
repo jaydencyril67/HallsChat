@@ -658,7 +658,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-person-row{display:flex;align-items:center;gap:10px;width:100%;min-width:0;padding:12px;border:0;border-bottom:1px solid rgba(255,210,219,.055);background:transparent;color:inherit;text-align:left}
 .chat-person-row:hover,.chat-person-row-active{background:rgba(197,45,68,.105)}
 .chat-person-row-active{box-shadow:inset 3px 0 #d84960}
-.chat-avatar{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;overflow:hidden;border:1px solid rgba(236,102,121,.27);border-radius:50%;background:linear-gradient(145deg,#713040,#35121d);color:#ffe4e9;font-size:.76rem;font-weight:800}
+.chat-person-avatar-link{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:transparent;cursor:pointer}.chat-person-avatar-link:focus-visible{outline:2px solid #d64a5b;outline-offset:3px}.chat-person-avatar-link .chat-avatar{flex:0 0 42px;width:42px;height:42px}.chat-avatar{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;overflow:hidden;border:1px solid rgba(236,102,121,.27);border-radius:50%;background:linear-gradient(145deg,#713040,#35121d);color:#ffe4e9;font-size:.76rem;font-weight:800}
 .chat-avatar img{display:block;width:100%;height:100%;object-fit:cover}
 .chat-avatar-large{width:43px;height:43px;flex-basis:43px}
 .chat-person-copy{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
@@ -784,7 +784,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 @media(max-width:390px){
   .chat-person-row{grid-template-columns:38px minmax(0,1fr) 32px;gap:8px}
-  .chat-person-row>.chat-avatar{width:38px;height:38px;flex-basis:38px}
+  .chat-person-row>.chat-person-avatar-link,.chat-person-row>.chat-person-avatar-link .chat-avatar{width:38px;height:38px;flex-basis:38px}
   .chat-person-meta{display:none}
   .chat-open-button{width:32px;height:32px;flex-basis:32px}
 }
