@@ -563,3 +563,6 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-comment-form button:disabled{opacity:.45;cursor:not-allowed}
 .social-comment-error{color:#ff9cab;font-size:11px;line-height:1.5}
 .social-comment-error button{margin-left:5px;padding:0;border:0;background:none;color:#ffd4db;text-decoration:underline}
+
+.social-post-actions .social-post-action-muted{padding:5px 2px;border:0;background:transparent;text-align:left;cursor:pointer}
+.social-post-actions .social-post-action-muted:hover,.social-post-actions .social-post-action-muted[aria-expanded="true"]{color:#f08b9b}
