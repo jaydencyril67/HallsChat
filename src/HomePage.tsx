@@ -22,6 +22,7 @@ type SocialPost = {
 type SocialComment = { id: string; content: string; parentId?: string | null; createdAt: string; likeCount: number; likedByMe: boolean; author: { id: string; name: string; username: string; profilePicture?: string } | null };
 type SelectedImage = { file: File; preview: string };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string };
+type SocialStory = { id: string; text: string; mediaUrl?: string; background?: string; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const MAX_IMAGES = 4;
@@ -108,6 +109,13 @@ export default function HomePage() {
   const [feedError, setFeedError] = useState("");
   const [draft, setDraft] = useState("");
   const [composerExpanded, setComposerExpanded] = useState(false);
+  const [stories, setStories] = useState<SocialStory[]>([]);
+  const [storyComposerOpen, setStoryComposerOpen] = useState(false);
+  const [storyViewer, setStoryViewer] = useState<SocialStory | null>(null);
+  const [storyText, setStoryText] = useState("");
+  const [storyBackground, setStoryBackground] = useState("#8b1e35");
+  const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
+  const [storyPublishing, setStoryPublishing] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState(["", ""]);
@@ -208,6 +216,22 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    fetch(`${apiBase}/api/social/stories`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(async response => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || "Stories couldn't load.");
+        return Array.isArray(payload.stories) ? payload.stories as SocialStory[] : [];
+      })
+      .then(items => { if (!cancelled) setStories(items); })
+      .catch(() => { /* Keep the feed usable if stories are temporarily unavailable. */ });
+    return () => { cancelled = true; };
+  }, [user]);
+
   async function selectImages(event: ChangeEvent<HTMLInputElement>) {
     const incoming = Array.from(event.target.files || []);
     event.target.value = "";
@@ -293,6 +317,72 @@ export default function HomePage() {
       urls.push(payload.url as string);
     }
     return urls;
+  }
+
+  async function selectStoryPhoto(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || storyPublishing) return;
+    if (!file.type.startsWith("image/")) { setFeedError("Choose an image for your story."); return; }
+    if (file.size > MAX_IMAGE_SIZE) { setFeedError("Story photos must be 10 MB or smaller."); return; }
+    try {
+      const compressed = await compressPostImage(file);
+      setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return { file: compressed, preview: URL.createObjectURL(compressed) }; });
+      setFeedError("");
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "That photo couldn't be prepared.");
+    }
+  }
+
+  async function publishStory(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (storyPublishing || (!storyText.trim() && !storyPhoto)) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setStoryPublishing(true);
+    setFeedError("");
+    try {
+      let mediaUrl = "";
+      if (storyPhoto) {
+        const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${token}` } });
+        const auth = await authResponse.json().catch(() => ({})) as ImageKitAuth;
+        if (!authResponse.ok || !auth.token || !auth.signature || !auth.publicKey || !auth.expire) throw new Error(auth.message || "Photo upload couldn't be prepared.");
+        const formData = new FormData();
+        formData.append("file", storyPhoto.file);
+        formData.append("fileName", storyPhoto.file.name);
+        formData.append("publicKey", auth.publicKey);
+        formData.append("token", auth.token);
+        formData.append("signature", auth.signature);
+        formData.append("expire", String(auth.expire));
+        formData.append("useUniqueFileName", "true");
+        const upload = await fetch("https://upload.imagekit.io/api/v1/files/upload", { method: "POST", body: formData });
+        const uploaded = await upload.json().catch(() => ({}));
+        if (!upload.ok || typeof uploaded.url !== "string") throw new Error(uploaded.message || "The story photo couldn't upload.");
+        mediaUrl = uploaded.url;
+      }
+      const response = await fetch(`${apiBase}/api/social/stories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text: storyText.trim(), mediaUrl, background: storyBackground })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.story) throw new Error(payload.message || "Your story couldn't be published.");
+      setStories(current => [...current.filter(item => item.id !== payload.story.id), payload.story as SocialStory]);
+      setStoryText("");
+      setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
+      setStoryComposerOpen(false);
+      setNotice("Your story is live for 24 hours.");
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "Your story couldn't be published.");
+    } finally {
+      setStoryPublishing(false);
+    }
+  }
+
+  function closeStoryComposer() {
+    setStoryComposerOpen(false);
+    setStoryText("");
+    setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
   }
 
   async function publishPost(event: FormEvent<HTMLFormElement>) {
