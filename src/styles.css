@@ -1452,3 +1452,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media(prefers-reduced-motion:reduce){
   .chat-message-line.chat-message-highlighted .chat-message-content{animation:none;box-shadow:0 0 0 2px rgba(240,120,137,.9)}
 }
+
+
+/* WhatsApp-like right-swipe reply gesture: follow the finger, then snap back. */
+.chat-message-content{transition:transform .18s ease-out}
+.chat-message-content.chat-message-swiping{transition:none;will-change:transform}
