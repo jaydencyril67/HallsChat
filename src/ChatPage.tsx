@@ -414,7 +414,7 @@ export default function ChatPage() {
     <section className="home-shell social-shell chat-shell">
       <div className={`chat-layout ${activePerson && mobileConversationOpen ? "chat-layout-conversation-open" : ""}`}>
         <aside className="chat-sidebar" aria-label="Your conversations">
-          <div className="chat-sidebar-heading"><strong>Messages</strong><span>{people.filter(person => person.canMessage).length} followers</span></div>
+          <div className="chat-sidebar-heading"><strong>Messages</strong></div>
           {listLoading ? <div className="chat-list-state"><LoadingDots /></div> : people.length ? <div className="chat-people-list">
             {people.map(person => <article key={person.id} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""}`}>
               <Avatar person={person} />
