@@ -209,6 +209,6 @@ export default function ChatPage() {
       </div>
     </section>
     {error && <div className="halls-toast halls-toast-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
-    <NowBar />
+    {!(activePerson && mobileConversationOpen) && <NowBar />}
   </main>;
 }
