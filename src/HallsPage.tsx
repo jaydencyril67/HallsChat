@@ -6,7 +6,7 @@ import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 
-type HallUser = { id: string; name: string; username: string; profilePicture?: string; following: boolean };
+type HallUser = { id: string; name: string; username: string; profilePicture?: string; following: boolean; isOnline?: boolean };
 type HallTab = "discover" | "followers";
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
@@ -28,10 +28,10 @@ export default function HallsPage() {
     return () => window.clearTimeout(timer);
   }, [notice, error]);
 
-  const loadUsers = useCallback(async (activeTab: HallTab) => {
+  const loadUsers = useCallback(async (activeTab: HallTab, showLoader = true) => {
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
-    setLoading(true);
+    if (showLoader) setLoading(true);
     setError("");
     try {
       const response = await fetch(`${apiBase}/api/social/halls?view=${activeTab}`, {
@@ -43,11 +43,15 @@ export default function HallsPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to load people right now.");
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   }, []);
 
-  useEffect(() => { void loadUsers(tab); }, [tab, loadUsers]);
+  useEffect(() => {
+    void loadUsers(tab);
+    const timer = window.setInterval(() => { void loadUsers(tab, false); }, 20000);
+    return () => window.clearInterval(timer);
+  }, [tab, loadUsers]);
 
   async function toggleFollow(person: HallUser) {
     const token = localStorage.getItem("hallschat_token");
@@ -104,7 +108,7 @@ export default function HallsPage() {
               <div aria-hidden="true" style={{ width: 44, height: 44, flexShrink: 0, display: "grid", placeItems: "center", overflow: "hidden", borderRadius: "50%", border: "1px solid rgba(236,102,121,.3)", background: "linear-gradient(145deg,#713040,#35121d)", color: "#ffe4e9", fontSize: ".82rem", fontWeight: 800 }}>{person.profilePicture ? <img src={person.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : initials(person.name)}</div>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <div style={{ color: "#fff0f3", fontSize: ".88rem", fontWeight: 750, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</div>
-                <div style={{ ...muted, marginTop: 4, fontSize: ".78rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>@{person.username}</div>
+                <div style={{ ...muted, marginTop: 4, fontSize: ".78rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>@{person.username}</div><div className={`presence-label ${person.isOnline ? "presence-online" : "presence-offline"}`}><span className="presence-dot" />{person.isOnline ? "Online" : "Offline"}</div>
               </div>
               <button type="button" disabled={busyId === person.id} onClick={() => void toggleFollow(person)} style={{ minWidth: 94, minHeight: 36, padding: "8px 11px", borderRadius: 999, border: person.following ? "1px solid rgba(255,210,219,.2)" : "1px solid rgba(222,68,89,.65)", background: person.following ? "rgba(255,255,255,.045)" : "linear-gradient(135deg,#c52d44,#8f172c)", color: "#fff6f7", fontSize: ".75rem", fontWeight: 800, opacity: busyId === person.id ? .7 : 1 }}>
                 {busyId === person.id ? <LoadingDots /> : person.following ? "Following" : "Follow"}
