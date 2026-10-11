@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { navigate } from "./utils/navigate";
 
 export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) {
   const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
@@ -14,16 +15,37 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
     };
   }, []);
 
-  return <header className="topbar" aria-label="HallsChat app header">
-    <a className="header-artwork" href={homeHref} aria-label="HallsChat home">
+  const openAlerts = () => {
+    if (localStorage.getItem("hallschat_token")) {
+      navigate("/notifications");
+    } else if (homeHref !== "#top") {
+      navigate(homeHref);
+    }
+  };
+
+  return <header
+    className="topbar hallschat-clickable-header"
+    aria-label="HallsChat app header"
+    role="button"
+    tabIndex={0}
+    aria-label={localStorage.getItem("hallschat_token") ? "Open alerts" : "HallsChat home"}
+    onClick={openAlerts}
+    onKeyDown={event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openAlerts();
+      }
+    }}
+  >
+    <span className="header-artwork" aria-hidden="true">
       <span className="header-logo"><img src="/crown-chat.svg?v=7" alt="" /></span>
-    </a>
+    </span>
     <div className="header-brand">
       <strong>{isOnline ? "HALLSCHAT" : "NO INTERNET"}</strong>
       {!isOnline && <small>Check your connection</small>}
     </div>
-    <a className="header-artwork header-artwork-right" href={homeHref} aria-label="Back to top">
+    <span className="header-artwork header-artwork-right" aria-hidden="true">
       <span className="header-logo"><img src="/crown-chat.svg?v=7" alt="" /></span>
-    </a>
+    </span>
   </header>;
 }
