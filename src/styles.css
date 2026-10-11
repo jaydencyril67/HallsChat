@@ -804,6 +804,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-message-line{display:flex;justify-content:flex-start;width:100%;padding:2px 6px;box-sizing:border-box}
 .chat-message-line-mine{justify-content:flex-end}
 .chat-message-content{display:flex;flex-direction:column;gap:4px;max-width:78%;min-width:0;padding:10px 13px;border:1px solid var(--chat-line,rgba(255,210,219,.11));border-radius:14px;overflow-wrap:anywhere;box-sizing:border-box}
+.chat-message-body{display:flex;flex-direction:column;gap:4px;min-width:0;white-space:pre-wrap;line-height:1.45}
 .chat-message-content-theirs{background:rgba(255,255,255,.045);color:#f8e9ec}
 .chat-message-content-mine{border-color:rgba(226,76,99,.27);border-radius:14px;background:linear-gradient(145deg,rgba(155,30,51,.58),rgba(92,18,33,.55));color:#fff1f4}
 .chat-message-text{margin:0;color:inherit;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.6}
