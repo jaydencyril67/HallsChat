@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, Plus, Camera, Mic, Square, MessageCircle, ShieldCheck, UsersRound, X } from "lucide-react";
+import type { ChangeEvent, FormEvent, MouseEvent } from "react";
+import { ArrowLeft, ArrowUp, Plus, Camera, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -108,7 +108,7 @@ function VoiceNotePlayer({ src, pending = false }: { src: string; pending?: bool
       try { await audio.play(); setPlaying(true); } catch { setPlaying(false); }
     } else { audio.pause(); setPlaying(false); }
   }
-  function seek(event: React.MouseEvent<HTMLDivElement>) {
+  function seek(event: MouseEvent<HTMLDivElement>) {
     const audio = audioRef.current;
     if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
     const rect = event.currentTarget.getBoundingClientRect();
@@ -117,7 +117,7 @@ function VoiceNotePlayer({ src, pending = false }: { src: string; pending?: bool
   }
   return <div className={"chat-voice-note" + (pending ? " chat-voice-note-pending" : "")}>
     <audio ref={audioRef} src={src} preload="metadata" onLoadedMetadata={event => setDuration(event.currentTarget.duration || 0)} onDurationChange={event => setDuration(event.currentTarget.duration || 0)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setCurrentTime(0); }} />
-    <button type="button" className="chat-voice-play" onClick={() => void togglePlayback()} aria-label={playing ? "Pause voice note" : "Play voice note"}>{playing ? <Square size={17} fill="currentColor" /> : <ArrowUp className="chat-voice-play-symbol" size={18} />}</button>
+    <button type="button" className="chat-voice-play" onClick={() => void togglePlayback()} aria-label={playing ? "Pause voice note" : "Play voice note"}>{playing ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}</button>
     <div className="chat-voice-track">
       <div className="chat-voice-waveform" role="slider" aria-label="Voice note playback position" aria-valuemin={0} aria-valuemax={Math.floor(duration || 0)} aria-valuenow={Math.floor(currentTime)} tabIndex={0} onClick={seek} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const audio = audioRef.current; if (audio && Number.isFinite(audio.duration)) { audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5))); setCurrentTime(audio.currentTime); } } }}>
         {bars.map((height, index) => <span key={index} className={index / bars.length <= progress ? "is-played" : ""} style={{ height: height + "px" }} />)}
