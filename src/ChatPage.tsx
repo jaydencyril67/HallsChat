@@ -215,7 +215,7 @@ export default function ChatPage() {
     const picked = Array.from(event.target.files || []);
     event.target.value = "";
     if (!picked.length) return;
-    if (imageFiles.length + picked.length > 4) { setError("You can send up to 4 images in one message."); return; }
+    if (picked.length > 1 || imageFiles.length + picked.length > 1) { setError("You can send one image per message."); return; }
     if (picked.some(file => !file.type.startsWith("image/"))) { setError("Choose image files only."); return; }
     if (picked.some(file => file.size > MAX_CHAT_IMAGE_SIZE)) { setError("Each chat image must be 10 MB or smaller."); return; }
     setError("");
@@ -314,7 +314,7 @@ export default function ChatPage() {
               }) : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
               <div ref={bottomRef} />
             </div>
-            {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelection} />{imagePreviews.length > 0 && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">{imageFiles.length}/4 images</span></div>}<form className="chat-composer" onSubmit={sendMessage}>
+            {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" hidden onChange={handleImageSelection} />{imagePreviews.length > 0 && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">1 image ready</span></div>}<form className="chat-composer" onSubmit={sendMessage}>
               <button type="button" className="chat-attach-button" onClick={() => imageInputRef.current?.click()} disabled={sending} aria-label="Attach image" title="Send image"><ImagePlus size={20} /></button>
               <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
               <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>
