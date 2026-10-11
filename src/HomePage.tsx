@@ -113,16 +113,22 @@ export default function HomePage() {
     fetch(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then(async response => {
         const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.message || "Please sign in again.");
+        if (response.status === 401 || response.status === 403) {
+          localStorage.removeItem("hallschat_token");
+          navigate("/signin", { replace: true });
+          return null;
+        }
+        if (!response.ok) throw new Error(payload.message || "Account information is temporarily unavailable.");
         if (!payload.user || typeof payload.user.name !== "string" || typeof payload.user.email !== "string") {
-          throw new Error("We couldn't read your account details. Please sign in again.");
+          throw new Error("We couldn't read your account details.");
         }
         return payload.user as Account;
       })
-      .then(account => { if (!cancelled) setUser(account); })
+      .then(account => { if (!cancelled && account) setUser(account); })
       .catch(err => {
         if (cancelled) return;
-        localStorage.removeItem("hallschat_token");
+        // Keep the saved token for transient network/server failures. It is
+        // removed only when the backend definitively rejects the session.
         setError(err instanceof Error ? err.message : "Unable to load your account.");
       })
       .finally(() => { if (!cancelled) setLoading(false); });
