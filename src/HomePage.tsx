@@ -120,6 +120,7 @@ export default function HomePage() {
   const storySwipeRef = useRef<{ x: number; y: number } | null>(null);
   const [storyTextSections, setStoryTextSections] = useState<StoryTextSection[]>([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
   const [activeStoryTextId, setActiveStoryTextId] = useState("story-text-1");
+  const [storyTextManagerOpen, setStoryTextManagerOpen] = useState(false);
   const storyTextDragRef = useRef<{ pointerId: number; sectionId: string; startX: number; startY: number; originX: number; originY: number; nextX: number; nextY: number; element: HTMLParagraphElement } | null>(null);
   const [storyBackground, setStoryBackground] = useState("#8b1e35");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
@@ -507,6 +508,7 @@ export default function HomePage() {
       setStories(current => [...current.filter(item => item.id !== payload.story.id), payload.story as SocialStory]);
       setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
       setActiveStoryTextId("story-text-1");
+      setStoryTextManagerOpen(false);
       setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
       setStoryComposerOpen(false);
       setNotice("Your story is live for 24 hours.");
@@ -521,6 +523,7 @@ export default function HomePage() {
     setStoryComposerOpen(false);
     setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
     setActiveStoryTextId("story-text-1");
+    setStoryTextManagerOpen(false);
     storyTextDragRef.current = null;
     cancelStoryPhotoEdit();
     setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
@@ -963,19 +966,34 @@ export default function HomePage() {
     {storyComposerOpen && <div className="social-story-overlay" role="presentation" onClick={closeStoryComposer}>
       <form className="social-story-dialog" role="dialog" aria-modal="true" aria-label="Create story" onClick={event => event.stopPropagation()} onSubmit={publishStory}>
         <div className="social-story-dialog-head"><div><span className="signup-form-kicker">YOUR MOMENT</span><h2>Create story</h2></div><button type="button" onClick={closeStoryComposer} aria-label="Close story creator"><X size={19}/></button></div>
-        <div className="social-story-preview" style={{ background: storyPhoto ? "#16090d" : storyBackground }}>
+        <div className={`social-story-preview ${storyPhoto ? "has-photo" : ""}`} style={{ background: storyPhoto ? "#16090d" : storyBackground }}>
           {storyPhoto && <img src={storyPhoto.preview} alt="Story preview" />}
           {storyTextSections.filter(section => section.text.trim()).map(section => <p key={section.id} className={`social-story-draggable-text ${activeStoryTextId === section.id ? "is-active" : ""}`} style={{ left: `${section.x}%`, top: `${section.y}%` }} onPointerDown={event => handleStoryTextPointerDown(event, section)} onPointerMove={handleStoryTextPointerMove} onPointerUp={handleStoryTextPointerUp} onPointerCancel={handleStoryTextPointerUp} onClick={() => setActiveStoryTextId(section.id)} aria-label="Drag to position story text">{section.text}</p>)}
           {!storyPhoto && !storyTextSections.some(section => section.text.trim()) && <span>Your story preview</span>}
           {storyPhoto && <button type="button" className="social-story-remove-photo" onClick={() => setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; })} aria-label="Remove story photo"><X size={16}/></button>}
         </div>
         <div className="social-story-text-editor">
-          <div className="social-story-text-editor-head"><strong>Text sections</strong><button type="button" onClick={addStoryTextSection} disabled={storyTextSections.length >= 10}><Plus size={15}/> Add text</button></div>
-          {storyTextSections.map((section, index) => <div className={`social-story-text-section ${activeStoryTextId === section.id ? "is-active" : ""}`} key={section.id}>
-            <label><span>Section {index + 1}</span><button type="button" onClick={() => removeStoryTextSection(section.id)} disabled={storyTextSections.length === 1} aria-label={`Remove text section ${index + 1}`}><Trash2 size={14}/></button></label>
-            <textarea value={section.text} onFocus={() => setActiveStoryTextId(section.id)} onChange={event => updateStoryTextSection(section.id, event.target.value)} maxLength={500} rows={2} placeholder={index === 0 ? "Good morning…" : "Write another text section…"} aria-label={`Story text section ${index + 1}`} />
-          </div>)}
-          <small>{storyTextSections.reduce((total, section) => total + section.text.length, 0)} characters total</small>
+          <div className="social-story-text-editor-head">
+            <div className="social-story-editor-title"><strong>Text</strong><small>{Math.max(0, storyTextSections.findIndex(section => section.id === activeStoryTextId) + 1)} of {storyTextSections.length}</small></div>
+            <div className="social-story-editor-tools">
+              <button type="button" className="social-story-manage-trigger" onClick={() => setStoryTextManagerOpen(value => !value)} aria-expanded={storyTextManagerOpen}>Manage</button>
+              <button type="button" onClick={addStoryTextSection} disabled={storyTextSections.length >= 10}><Plus size={15}/> Add text</button>
+            </div>
+          </div>
+          <div className="social-story-section-rail" aria-label="Choose text section">
+            {storyTextSections.map((section, index) => <button type="button" key={section.id} className={activeStoryTextId === section.id ? "is-active" : ""} onClick={() => setActiveStoryTextId(section.id)}><span>{index + 1}</span>{section.text.trim() ? section.text.trim().slice(0, 18) : "Empty text"}</button>)}
+          </div>
+          {storyTextManagerOpen && <div className="social-story-text-manager" role="dialog" aria-label="Manage story text sections">
+            <div className="social-story-text-manager-head"><strong>Text sections</strong><button type="button" onClick={() => setStoryTextManagerOpen(false)} aria-label="Close text section manager"><X size={15}/></button></div>
+            <div className="social-story-text-manager-list">
+              {storyTextSections.map((section, index) => <div key={section.id} className={activeStoryTextId === section.id ? "is-active" : ""}>
+                <button type="button" className="social-story-manager-select" onClick={() => { setActiveStoryTextId(section.id); setStoryTextManagerOpen(false); }}><span>{index + 1}</span><span><strong>Section {index + 1}</strong><small>{section.text.trim() || "No text yet"}</small></span></button>
+                <button type="button" className="social-story-manager-delete" disabled={storyTextSections.length === 1} onClick={() => removeStoryTextSection(section.id)} aria-label={`Remove section ${index + 1}`}><Trash2 size={14}/></button>
+              </div>)}
+            </div>
+          </div>}
+          {storyTextSections.filter(section => section.id === activeStoryTextId).map((section, index) => <textarea key={section.id} className="social-story-active-text-input" value={section.text} onFocus={() => setActiveStoryTextId(section.id)} onChange={event => updateStoryTextSection(section.id, event.target.value)} maxLength={500} rows={2} placeholder="Write this text section…" aria-label={`Edit story text section ${index + 1}`} />)}
+          <small className="social-story-editor-count">{storyTextSections.reduce((total, section) => total + section.text.length, 0)} characters · drag text on the preview to position it</small>
         </div>
         {!storyPhoto && <div className="social-story-colors" aria-label="Story background color">
           {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => setStoryBackground(color)} aria-label={`Choose ${color} background`} />)}
