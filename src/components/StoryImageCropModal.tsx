@@ -19,14 +19,12 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
   const zoomRef = useRef(1);
   const offsetRef = useRef({ x: 0, y: 0 });
   const [frame, setFrame] = useState({ width: 320, height: 320 });
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     zoomRef.current = 1;
     offsetRef.current = { x: 0, y: 0 };
-    setOffset({ x: 0, y: 0 });
     setReady(false);
   }, [imageUrl]);
 
@@ -82,8 +80,16 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     setFrame(nextFrame);
     zoomRef.current = 1;
     offsetRef.current = initialOffset;
-    setOffset(initialOffset);
     setReady(true);
+  };
+
+  const syncImageStyles = (activeZoom = zoomRef.current) => {
+    const image = imageRef.current;
+    const drawn = geometry(activeZoom);
+    if (!image || !drawn) return;
+    image.style.width = `${drawn.width}px`;
+    image.style.height = `${drawn.height}px`;
+    image.style.transform = `translate3d(${offsetRef.current.x}px, ${offsetRef.current.y}px, 0)`;
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
@@ -127,7 +133,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
       }, nextZoom);
       zoomRef.current = nextZoom;
       offsetRef.current = nextOffset;
-      setOffset(nextOffset);
+      syncImageStyles(nextZoom);
       return;
     }
     if (!dragRef.current) return;
@@ -139,7 +145,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     });
     dragRef.current = { x: point.x, y: point.y, offset: nextOffset };
     offsetRef.current = nextOffset;
-    setOffset(nextOffset);
+    syncImageStyles();
   };
 
   const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
@@ -203,7 +209,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
             style={{
               width: ready ? geometry()?.width : "100%",
               height: ready ? geometry()?.height : "100%",
-              transform: `translate(${offset.x}px, ${offset.y}px)`,
+              transform: `translate3d(${offsetRef.current.x}px, ${offsetRef.current.y}px, 0)`,
             }}
           />
           <div className="social-story-crop-grid" aria-hidden="true" />
