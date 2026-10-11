@@ -53,6 +53,7 @@ export default function ChatPage() {
   const [viewingImageUrl, setViewingImageUrl] = useState("");
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const scrollOnOpenRef = useRef(false);
   const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
 
@@ -124,6 +125,12 @@ export default function ChatPage() {
   }, [activeId, loadMessages]);
 
 
+
+  useEffect(() => {
+    if (!scrollOnOpenRef.current || !activeId || messagesLoading) return;
+    bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+    scrollOnOpenRef.current = false;
+  }, [activeId, messages, messagesLoading]);
 
   useEffect(() => {
     const input = draftInputRef.current;
@@ -216,7 +223,7 @@ export default function ChatPage() {
           {listLoading ? <div className="chat-list-state"><LoadingDots /></div> : people.length ? <div className="chat-people-list">
             {people.map(person => <article key={person.id} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""}`}>
               <Avatar person={person} />
-              <button type="button" className="chat-person-copy chat-person-select" onClick={() => { setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open chat with ${person.name}`}>
+              <button type="button" className="chat-person-copy chat-person-select" onClick={() => { scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open chat with ${person.name}`}>
                 <strong>{person.name}</strong><small>@{person.username}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </button>
               <span className="chat-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="chat-lock-dot" title="Messaging unavailable">•</span>}</span>
