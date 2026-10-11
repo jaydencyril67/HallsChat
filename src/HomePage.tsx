@@ -59,7 +59,9 @@ export default function HomePage() {
   const [commentsByPost, setCommentsByPost] = useState<Record<string, SocialComment[]>>({});
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [commentsLoading, setCommentsLoading] = useState<string[]>([]);
-  const [commentSending, setCommentSending] = useState<string[]>([]);\n  const [replyTargets, setReplyTargets] = useState<Record<string, SocialComment | null>>({});\n  const [commentLikingIds, setCommentLikingIds] = useState<string[]>([]);
+  const [commentSending, setCommentSending] = useState<string[]>([]);
+  const [replyTargets, setReplyTargets] = useState<Record<string, SocialComment | null>>({});
+  const [commentLikingIds, setCommentLikingIds] = useState<string[]>([]);
   const [commentErrors, setCommentErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
