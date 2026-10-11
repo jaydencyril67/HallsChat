@@ -16,7 +16,9 @@ type SocialPost = {
   author: { id: string; name: string; username: string } | null;
   likeCount: number;
   likedByMe: boolean;
+  commentCount?: number;
 };
+type SocialComment = { id: string; content: string; createdAt: string; author: { id: string; name: string; username: string } | null };
 type SelectedImage = { file: File; preview: string };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string };
 
@@ -53,6 +55,12 @@ export default function HomePage() {
   const [publishing, setPublishing] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [likingIds, setLikingIds] = useState<string[]>([]);
+  const [openComments, setOpenComments] = useState<string[]>([]);
+  const [commentsByPost, setCommentsByPost] = useState<Record<string, SocialComment[]>>({});
+  const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
+  const [commentsLoading, setCommentsLoading] = useState<string[]>([]);
+  const [commentSending, setCommentSending] = useState<string[]>([]);
+  const [commentErrors, setCommentErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
