@@ -1342,3 +1342,20 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media(max-width:680px) {
   .chat-message-line { margin-bottom: 12px !important; }
 }
+
+
+/* Chat attachment menu and voice-note player. */
+.chat-attachment-wrap{position:relative;display:flex;align-items:center;flex:0 0 38px}
+.chat-attachment-menu{position:absolute;z-index:30;left:0;bottom:calc(100% + 12px);display:flex;flex-direction:column;gap:4px;min-width:174px;padding:7px;border:1px solid rgba(255,210,219,.14);border-radius:16px;background:rgba(35,12,19,.98);box-shadow:0 12px 36px rgba(0,0,0,.4);backdrop-filter:blur(16px)}
+.chat-attachment-menu button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:0;border-radius:10px;background:transparent;color:#f8e9ec;text-align:left;font-size:.8rem}
+.chat-attachment-menu button:hover{background:rgba(222,68,89,.16)}
+.chat-attachment-menu button svg{color:#f07889;flex-shrink:0}
+.chat-attachment-menu button:disabled{opacity:.5}
+.chat-recording-status{display:flex;align-items:center;gap:8px;flex:1;min-width:0;min-height:38px;padding:9px 0;color:#ffd6dc;font-size:.78rem}
+.chat-recording-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#ff536b;box-shadow:0 0 0 4px rgba(255,83,107,.12);animation:chat-recording-pulse 1s infinite}
+@keyframes chat-recording-pulse{50%{opacity:.35}}
+.chat-composer .chat-stop-recording{background:linear-gradient(145deg,#e04c60,#9b1e34);color:#fff}
+.chat-voice-note{display:flex;align-items:center;gap:8px;min-width:0;width:min(270px,100%);padding:4px 0}
+.chat-voice-icon{display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;border-radius:50%;background:rgba(222,68,89,.18);color:#ff9cab}
+.chat-voice-note audio{display:block;width:100%;min-width:0;height:38px;max-width:230px}
+.chat-message-content:has(.chat-voice-note){max-width:86%}
