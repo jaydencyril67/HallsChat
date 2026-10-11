@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, CircleHelp, ContactRound, Home, MessageCircle, Phone, Settings, UsersRound } from "lucide-react";
+import { Bell, ChevronDown, CircleHelp, ContactRound, Home, MessageCircle, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
 
 type View = "title" | "actions";
@@ -10,6 +10,7 @@ const actions = [
   { label: "CHAT", icon: MessageCircle },
   { label: "PEOPLE", icon: ContactRound },
   { label: "HALLS", icon: UsersRound },
+  { label: "PROFILE", icon: UserRound },
   { label: "CALLS", icon: Phone },
   { label: "GROUP", icon: UsersRound },
   { label: "ALERT", icon: Bell },
@@ -20,6 +21,7 @@ const actions = [
 function getPageTitle() {
   const path = (window.location.pathname || "/").replace(/\/$/, "") || "/";
   if (path === "/home") return "HOME";
+  if (path.startsWith("/profile")) return "PROFILE";
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
   if (path === "/signup") return "SIGN UP";
   if (path === "/confirm-email" || path === "/verify-email") return "CONFIRM EMAIL";
@@ -114,6 +116,7 @@ export default function NowBar() {
       CHAT: "/chats",
       PEOPLE: "/contacts",
       HALLS: "/halls",
+      PROFILE: "/profile",
       CALLS: "/calls",
       GROUP: "/groups",
       ALERT: "/notifications",
