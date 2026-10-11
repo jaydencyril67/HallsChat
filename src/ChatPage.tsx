@@ -142,6 +142,7 @@ export default function ChatPage() {
   const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmScope, setDeleteConfirmScope] = useState<"me" | "everyone">("everyone");
   const [deletingMessage, setDeletingMessage] = useState(false);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editMessageDraft, setEditMessageDraft] = useState("");
@@ -231,6 +232,7 @@ export default function ChatPage() {
       }
       if (!target.closest(".chat-reaction-picker")) setReactionPickerFor(null);
       if (!target.closest(".chat-message-actions, .chat-message-more")) setActionMenuFor(null);
+      if (!target.closest(".chat-message-delete-wrap")) setDeleteConfirmId(null);
       if (!target.closest(".chat-attachment-menu, .chat-attachment-wrap")) setAttachmentMenuOpen(false);
     };
     document.addEventListener("pointerdown", closePopoutsOutside);
@@ -304,29 +306,43 @@ export default function ChatPage() {
     }
   }
 
-  async function deleteMessageForEveryone() {
+  async function deleteMessage(scope: "me" | "everyone") {
     if (!deleteConfirmId || deletingMessage) return;
     const messageId = deleteConfirmId, savedToken = token();
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
     setDeletingMessage(true);
     try {
-      const response = await fetch(`${apiBase}/api/chat/messages/${encodeURIComponent(messageId)}`, { method: "DELETE", headers: { Authorization: `Bearer ${savedToken}` } });
+      const response = await fetch(`${apiBase}/api/chat/messages/${encodeURIComponent(messageId)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${savedToken}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ scope })
+      });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || "That message couldn't be deleted.");
-      setMessages(current => current.map(message => {
-        if (message.id === messageId) {
-          return { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true };
-        }
-        const replyTo = message.replyTo;
-        if (replyTo && replyTo.id === messageId) {
-          return { ...message, replyTo: { ...replyTo, text: "", imageUrl: "", audioUrl: "", deleted: true } };
-        }
-        return message;
-      }));
-      setPeople(current => current.map(person => person.id === activeIdRef.current ? { ...person, lastMessage: "This message was deleted" } : person));
-      setDeleteConfirmId(null); setActionMenuFor(null);
-    } catch (err) { setError(err instanceof Error ? err.message : "That message couldn't be deleted."); }
-    finally { setDeletingMessage(false); }
+      if (scope === "me") {
+        setMessages(current => current.filter(message => message.id !== messageId));
+        setReplyingTo(current => current?.id === messageId ? null : current);
+        setError("");
+      } else {
+        setMessages(current => current.map(message => {
+          if (message.id === messageId) {
+            return { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true };
+          }
+          const replyTo = message.replyTo;
+          if (replyTo && replyTo.id === messageId) {
+            return { ...message, replyTo: { ...replyTo, text: "", imageUrl: "", audioUrl: "", deleted: true } };
+          }
+          return message;
+        }));
+        setPeople(current => current.map(person => person.id === activeIdRef.current ? { ...person, lastMessage: "This message was deleted" } : person));
+      }
+      setDeleteConfirmId(null);
+      setActionMenuFor(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "That message couldn't be deleted.");
+    } finally {
+      setDeletingMessage(false);
+    }
   }
 
   function stopTyping(recipientId = typingRecipientRef.current) {
@@ -437,6 +453,12 @@ export default function ChatPage() {
         return message;
       }));
       setReplyingTo(current => current && current.id === payload.id ? { ...current, text: payload.text!, editedAt: payload.editedAt || new Date().toISOString() } : current);
+    });
+    socket.on("chat:deleted-for-me", (payload: { id?: string; userId?: string }) => {
+      if (!payload?.id || (payload.userId && payload.userId !== currentUserIdRef.current)) return;
+      setMessages(current => current.filter(message => message.id !== payload.id));
+      setReplyingTo(current => current?.id === payload.id ? null : current);
+      setDeleteConfirmId(current => current === payload.id ? null : current);
     });
     socket.on("chat:deleted", (payload: { id?: string }) => {
       if (!payload?.id) return;
@@ -946,14 +968,18 @@ export default function ChatPage() {
                       {message.text && (editingMessageId === message.id ? <form onSubmit={event => { event.preventDefault(); void saveMessageEdit(message); }} onClick={event => event.stopPropagation()} style={{ display: "grid", gap: 8, minWidth: 0, margin: "3px 0" }}><textarea value={editMessageDraft} onChange={event => setEditMessageDraft(event.target.value)} maxLength={4000} rows={Math.max(2, Math.min(6, editMessageDraft.split("\n").length + 1))} aria-label="Edit message" autoFocus style={{ width: "100%", minWidth: 0, boxSizing: "border-box", resize: "vertical", padding: "9px 10px", border: "1px solid rgba(255,255,255,.2)", borderRadius: 10, background: "rgba(0,0,0,.2)", color: "inherit", font: "inherit", lineHeight: 1.45 }} /><div style={{ display: "flex", justifyContent: "flex-end", gap: 7 }}><button type="button" onClick={() => { setEditingMessageId(null); setEditMessageDraft(""); }} disabled={savingMessageEdit} style={{ minHeight: 30, padding: "5px 10px", border: "1px solid rgba(255,255,255,.16)", borderRadius: 8, background: "transparent", color: "inherit", fontSize: ".75rem" }}>Cancel</button><button type="submit" disabled={savingMessageEdit || !editMessageDraft.trim() || editMessageDraft.trim() === message.text.trim()} style={{ minHeight: 30, padding: "5px 10px", border: 0, borderRadius: 8, background: "var(--accent, #a855f7)", color: "#fff", fontSize: ".75rem", fontWeight: 700 }}>{savingMessageEdit ? <LoadingDots /> : "Save"}</button></div></form> : <p className="chat-message-text">{message.text}</p>)}
                     </div>}
                     <div className="chat-message-footer"><time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}{message.editedAt && !message.pending ? " · Edited" : ""}</time>
-                      {!message.pending && !message.deletedForEveryone && <button type="button" className="chat-message-more" aria-label="Message actions" title="Message actions" onClick={event => { event.stopPropagation(); setActionMenuFor(current => current === message.id ? null : message.id); }}><MoreVertical size={15} /></button>}
+                      {!message.pending && !message.deletedForEveryone && <div className="chat-message-delete-wrap" style={{ position: "relative", display: "inline-flex", flexShrink: 0 }}>
+                        <button type="button" className="chat-message-more" aria-label="Message actions" title="Message actions" onClick={event => { event.stopPropagation(); setDeleteConfirmId(null); setActionMenuFor(current => current === message.id ? null : message.id); }}><MoreVertical size={15} /></button>
+    
+                      </div>}
                     </div>
                     {reactionPickerFor === message.id && !message.pending && !message.deletedForEveryone && <div className="chat-reaction-picker" role="group" aria-label="React to message">{["❤️","😂","😮","😢","🙏","👍"].map(emoji => <button key={emoji} type="button" aria-label={`React ${emoji}`} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); reactToMessage(message, emoji); }}>{emoji}</button>)}</div>}
                     {Array.from((message.reactions || []).reduce((groups, reaction) => groups.set(reaction.emoji, [...(groups.get(reaction.emoji) || []), reaction]), new Map<string, ChatReaction[]>()).entries()).map(([emoji, reactions]) => <button key={emoji} type="button" className={`chat-reaction-pill ${(reactions as ChatReaction[]).some(reaction => reaction.userId === currentUserId) ? "chat-reaction-pill-mine" : ""}`} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); reactToMessage(message, (reactions as ChatReaction[]).some(reaction => reaction.userId === currentUserId) ? "" : emoji); }} aria-label={`${emoji}, ${(reactions as ChatReaction[]).length} reactions`}>{emoji}<span>{(reactions as ChatReaction[]).length}</span></button>)}
                     {actionMenuFor === message.id && <div className="chat-message-actions" role="menu">
                       <button type="button" role="menuitem" onClick={() => beginReply(message)}><Reply size={16} /><span>Reply</span></button>
                       {mine && !message.deletedForEveryone && !message.pending && message.text.trim() && !message.images?.length && !message.imageUrl && !message.audioUrl && Date.now() - new Date(message.createdAt).getTime() <= 24 * 60 * 60 * 1000 && <button type="button" role="menuitem" onClick={() => beginEditMessage(message)}><Pencil size={16} /><span>Edit message</span></button>}
-                      {mine && !message.deletedForEveryone && <button type="button" role="menuitem" className="chat-message-action-delete" onClick={() => { setActionMenuFor(null); setDeleteConfirmId(message.id); }}><Trash2 size={16} /><span>Delete for everyone</span></button>}
+                      <button type="button" role="menuitem" className="chat-message-action-delete" onClick={() => { setActionMenuFor(null); setDeleteConfirmScope("me"); setDeleteConfirmId(message.id); }}><Trash2 size={16} /><span>Delete for me</span></button>
+                      {mine && !message.deletedForEveryone && <button type="button" role="menuitem" className="chat-message-action-delete" onClick={() => { setActionMenuFor(null); setDeleteConfirmScope("everyone"); setDeleteConfirmId(message.id); }}><Trash2 size={16} /><span>Delete for everyone</span></button>}
                     </div>}
                     {deleteConfirmId === message.id && <div className="chat-delete-popout" role="alertdialog" aria-label="Confirm delete message" onClick={event => event.stopPropagation()} style={{ position: "absolute", right: "calc(100% + 8px)", top: "50%", transform: "translateY(-50%)", zIndex: 40, width: 188, boxSizing: "border-box", padding: 11, border: "1px solid rgba(255,210,219,.2)", borderRadius: 13, background: "#21090f", boxShadow: "0 10px 28px #0009", color: "#fff0f3", textAlign: "left" }}><div style={{ fontSize: ".76rem", fontWeight: 750, lineHeight: 1.4 }}>Delete message?</div><div style={{ fontSize: ".7rem", lineHeight: 1.4, marginTop: 3, color: "#f5dce1" }}>This message will be removed for everyone in this conversation.</div><div style={{ display: "flex", gap: 6, marginTop: 9 }}><button type="button" onClick={() => { setDeleteConfirmId(null); }} disabled={deletingMessage} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: "1px solid rgba(255,210,219,.15)", borderRadius: 8, background: "rgba(255,255,255,.06)", color: "#f5dce1", fontSize: ".7rem" }}>Cancel</button><button type="button" onClick={() => void deleteMessageForEveryone()} disabled={deletingMessage} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: 0, borderRadius: 8, background: "#b92d45", color: "#fff", fontSize: ".7rem", fontWeight: 750 }}>{deletingMessage ? <LoadingDots /> : "Delete"}</button></div></div>}
                   </div>
