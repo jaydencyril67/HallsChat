@@ -42,7 +42,21 @@ export default function CallsPanel({ socket, person }: Props) {
   }, []);
 
   const createPeer = useCallback(async (id: string, video: boolean) => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video });
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true,
+        channelCount: 1,
+        sampleRate: 48000
+      },
+      video: video ? {
+        width: { ideal: 1280, max: 1280 },
+        height: { ideal: 720, max: 720 },
+        frameRate: { ideal: 24, max: 30 },
+        facingMode: "user"
+      } : false
+    });
     streamRef.current = stream;
     if (localVideo.current) localVideo.current.srcObject = stream;
     const pc = new RTCPeerConnection({
@@ -52,14 +66,43 @@ export default function CallsPanel({ socket, person }: Props) {
       ]
     });
     pcRef.current = pc;
-    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+    stream.getTracks().forEach(track => {
+      const sender = pc.addTrack(track, stream);
+      // Keep speech clear and prioritize it over video when bandwidth is limited.
+      if (track.kind === "audio") {
+        const parameters = sender.getParameters();
+        parameters.encodings = parameters.encodings?.length ? parameters.encodings : [{}];
+        parameters.encodings[0].maxBitrate = 48000;
+        void sender.setParameters(parameters).catch(() => {
+          // Some Android WebViews do not support changing sender parameters.
+        });
+      } else if (track.kind === "video") {
+        const parameters = sender.getParameters();
+        parameters.encodings = parameters.encodings?.length ? parameters.encodings : [{}];
+        parameters.encodings[0].maxBitrate = 1200000;
+        parameters.encodings[0].maxFramerate = 24;
+        void sender.setParameters(parameters).catch(() => {
+          // Keep the call working if the WebView does not support these hints.
+        });
+      }
+    });
     pc.onicecandidate = event => {
       if (event.candidate) socket?.emit("call:ice", { callId: id, candidate: event.candidate.toJSON() });
     };
     pc.ontrack = event => {
       const remote = event.streams[0];
-      if (remoteVideo.current) remoteVideo.current.srcObject = remote;
-      if (remoteAudio.current) remoteAudio.current.srcObject = remote;
+      // Play remote audio through exactly one element. The video element is muted
+      // during video calls so the same stream is not played twice (which can echo).
+      if (remoteVideo.current) {
+        remoteVideo.current.srcObject = remote;
+        remoteVideo.current.muted = true;
+      }
+      if (remoteAudio.current) {
+        remoteAudio.current.srcObject = remote;
+        void remoteAudio.current.play().catch(() => {
+          // Playback may require the user's first interaction in some mobile WebViews.
+        });
+      }
     };
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === "connected") setPhase("connected");
@@ -222,7 +265,7 @@ export default function CallsPanel({ socket, person }: Props) {
     {phase !== "idle" && phase !== "incoming" && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label={kind + " call"}>
       <div className={"halls-call-stage " + (kind === "video" ? "halls-call-stage-video" : "")}>
         {kind === "video" && <><video ref={remoteVideo} className="halls-call-remote-video" autoPlay playsInline /><video ref={localVideo} className="halls-call-local-video" autoPlay muted playsInline /></>}
-        <audio ref={remoteAudio} autoPlay /><audio ref={localAudio} autoPlay />
+        <audio ref={remoteAudio} autoPlay playsInline /><audio ref={localAudio} autoPlay muted playsInline />
         <button className="halls-call-close" type="button" onClick={endCall} aria-label="Close call"><X /></button>
         {kind === "audio" && <div className="halls-call-avatar halls-call-avatar-large">{peerName.slice(0,1).toUpperCase()}</div>}
         <span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2>{peerName}</h2>
