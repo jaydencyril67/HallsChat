@@ -630,3 +630,12 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-comment-delete-confirm>div{display:flex;gap:6px;margin-top:9px}
 .social-comment-delete-confirm button{flex:1;min-height:27px;padding:4px 6px;border:1px solid rgba(255,210,219,.15);border-radius:7px;background:rgba(255,255,255,.06);color:#f5dce1;font-size:10px;cursor:pointer}
 .social-comment-delete-confirm button:last-child{border:0;background:#b92d45;color:#fff;font-weight:750}
+
+/* HallsChat toast notifications */
+.halls-toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:50%;transform:translateX(-50%);z-index:10000;display:flex;align-items:center;gap:12px;width:min(520px,calc(100vw - 28px));box-sizing:border-box;padding:12px 14px;border:1px solid rgba(255,210,219,.2);border-radius:13px;background:linear-gradient(145deg,rgba(38,16,23,.97),rgba(20,9,13,.98));box-shadow:0 12px 34px rgba(0,0,0,.42);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);color:#fff0f3;font-size:12px;line-height:1.5;animation:halls-toast-in .18s ease-out}
+.halls-toast>span{min-width:0;flex:1;overflow-wrap:anywhere}
+.halls-toast>button{display:grid;place-items:center;flex:0 0 26px;width:26px;height:26px;padding:0;border:0;border-radius:8px;background:rgba(255,255,255,.08);color:inherit;font-size:20px;line-height:1;cursor:pointer}
+.halls-toast-error{border-color:rgba(255,112,132,.38);background:linear-gradient(145deg,rgba(75,19,31,.98),rgba(32,9,16,.99));color:#ffd2d9}
+.halls-toast-success{border-color:rgba(91,218,157,.3);background:linear-gradient(145deg,rgba(16,57,43,.98),rgba(10,28,23,.99));color:#c5f5dc}
+@keyframes halls-toast-in{from{opacity:0;transform:translate(-50%,-8px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(prefers-reduced-motion:reduce){.halls-toast{animation:none}}
