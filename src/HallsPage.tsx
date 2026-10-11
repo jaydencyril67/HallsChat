@@ -84,14 +84,6 @@ export default function HallsPage() {
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell" style={{ paddingBottom: 112 }}>
       <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "12px 0 24px", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-          <div style={{ width: 46, height: 46, borderRadius: 15, display: "grid", placeItems: "center", color: "#ff9cab", background: "rgba(184,32,50,.16)", border: "1px solid rgba(230,76,98,.24)" }}><UsersRound size={23} /></div>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <h1 style={{ margin: 0, fontSize: "clamp(1.35rem,5vw,1.8rem)", letterSpacing: "-.04em" }}>Halls</h1>
-            <p style={{ margin: "5px 0 0", fontSize: ".83rem", ...muted }}>Find your people. Build your circle.</p>
-          </div>
-        </div>
-
         <div style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
           {([{ id: "discover", label: "Discover people", icon: UserPlus }, { id: "followers", label: "Your followers", icon: UserRoundCheck }] as const).map(({ id, label, icon: Icon }) =>
             <button key={id} type="button" onClick={() => { setTab(id); setNotice(""); }} aria-pressed={tab === id} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "8px 10px", borderRadius: 9, border: tab === id ? "1px solid rgba(229,70,92,.7)" : "1px solid rgba(255,210,219,.11)", background: "rgba(255,255,255,.035)", color: tab === id ? "#ff9cab" : "rgba(246,220,225,.66)", fontSize: ".8rem", fontWeight: 750 }}>
