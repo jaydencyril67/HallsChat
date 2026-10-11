@@ -2255,3 +2255,12 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-story-text-color-popout .social-story-colors button{border:1px solid rgba(255,255,255,.32)}
 .social-story-text-color-popout .social-story-colors button.is-selected{outline:2px solid #fff;outline-offset:3px}
 
+
+/* Continuous, edge-to-edge modal canvas: keep actions, remove header/footer pavements. */
+.social-image-modal-header{position:absolute;top:0;left:0;right:0;z-index:2;display:flex;justify-content:flex-end;align-items:center;min-height:0;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;border:0!important;background:transparent!important;box-shadow:none!important;pointer-events:none}
+.social-image-modal-header>div{display:none!important}
+.social-image-modal-close{pointer-events:auto}
+.social-image-modal-controls{display:none!important}
+.social-story-crop-header{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;justify-content:space-between;align-items:flex-start;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;border:0!important;background:transparent!important;box-shadow:none!important}
+.social-story-crop-header>div{display:none!important}
+.social-story-crop-bottom{display:none!important}
