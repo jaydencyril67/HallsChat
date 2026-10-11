@@ -1184,7 +1184,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
    The desktop two-column conversation layout remains unchanged. */
 @media (max-width: 700px) {
   .chat-page:not(.chat-page-conversation-open) .chat-shell {
-    padding-top: 12px !important;
+    /* Keep the reserved space beneath the fixed app header. */
+    padding-top: 78px !important;
   }
   .chat-page:not(.chat-page-conversation-open) .chat-layout {
     display: block !important;
