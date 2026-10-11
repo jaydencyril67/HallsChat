@@ -9,6 +9,8 @@ export default function SignupPage() {
   const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid" | "error">("idle");
   const [usernameMessage, setUsernameMessage] = useState("");
   const [email, setEmail] = useState("");
+  const [emailStatus, setEmailStatus] = useState<"idle" | "checking" | "accepted" | "rejected" | "invalid" | "error">("idle");
+  const [emailMessage, setEmailMessage] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -47,6 +49,44 @@ export default function SignupPage() {
     return () => { window.clearTimeout(timer); controller.abort(); };
   }, [username]);
 
+  useEffect(() => {
+    const value = email.trim().toLowerCase();
+    if (!value) { setEmailStatus("idle"); setEmailMessage(""); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setEmailStatus("invalid");
+      setEmailMessage("Enter a valid email address.");
+      return;
+    }
+    const controller = new AbortController();
+    setEmailStatus("checking");
+    setEmailMessage("Checking accepted email providers…");
+    const timer = window.setTimeout(async () => {
+      const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+      try {
+        const response = await fetch(apiBase + "/api/auth/signup/check-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: value }),
+          signal: controller.signal
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (controller.signal.aborted) return;
+        if (response.ok) {
+          setEmailStatus("accepted");
+          setEmailMessage(payload.message || "Email provider accepted.");
+        } else {
+          setEmailStatus("rejected");
+          setEmailMessage(payload.message || "Please use an email address from an accepted email provider.");
+        }
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        setEmailStatus("error");
+        setEmailMessage("We couldn't verify this email right now. Please try again.");
+      }
+    }, 500);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [email]);
+
   const passwordHasMinLength = password.length >= 8;
   const passwordHasUppercase = /[A-Z]/.test(password);
   const passwordHasLowercase = /[a-z]/.test(password);
@@ -65,6 +105,10 @@ export default function SignupPage() {
     event.preventDefault();
     setError("");
     setSuccess("");
+    if (emailStatus !== "accepted") {
+      setError(emailStatus === "checking" ? "Please wait while we check whether this email provider is accepted." : emailStatus === "rejected" || emailStatus === "invalid" ? emailMessage || "Please use an email address from an accepted email provider." : "Please verify your email address before continuing.");
+      return;
+    }
     if (!passwordMeetsRequirement) {
       setError("Password must be at least 8 characters long and include uppercase, lowercase, number, and symbol.");
       return;
@@ -160,7 +204,7 @@ export default function SignupPage() {
         <form className="signup-form" onSubmit={handleSubmit} noValidate>
           <label className="signup-field"><span>Full name</span><input autoComplete="name" name="name" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" required maxLength={80} /></label>
           <label className="signup-field"><span>Username</span><span className="signup-username-wrap"><input autoComplete="username" name="username" value={username} onChange={e => { setUsername(e.target.value.replace(/\s/g, "")); setError(""); }} placeholder="Choose a username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_.]+" title="Use 3–24 letters, numbers, underscores or periods." aria-describedby="username-availability" aria-invalid={usernameStatus === "taken" || usernameStatus === "invalid"} />{usernameStatus === "checking" ? <span className="signup-username-spinner" aria-label="Checking username" /> : usernameStatus === "available" ? <Check size={16} className="signup-username-ok" aria-label="Username available" /> : null}</span><small id="username-availability" className={"signup-username-status signup-username-status-" + usernameStatus} aria-live="polite">{usernameMessage || "3–24 letters, numbers, underscores or periods."}</small></label>
-          <label className="signup-field"><span>Email address</span><input autoComplete="email" name="email" type="email" inputMode="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required maxLength={254} /></label>
+          <label className="signup-field"><span>Email address</span><span className="signup-email-wrap"><input autoComplete="email" name="email" type="email" inputMode="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }} placeholder="you@example.com" required maxLength={254} aria-describedby="email-allowance-status" aria-invalid={emailStatus === "rejected" || emailStatus === "invalid"} />{emailStatus === "checking" ? <span className="signup-username-spinner" aria-label="Checking email provider" /> : emailStatus === "accepted" ? <Check size={16} className="signup-username-ok" aria-label="Email provider accepted" /> : null}</span><small id="email-allowance-status" className={"signup-email-status signup-email-status-" + emailStatus} aria-live="polite">{emailMessage || "Use an email address from an accepted provider."}</small></label>
           <div className="signup-field-row">
             <label className="signup-field"><span>Password</span><span className="signup-password-wrap"><input autoComplete="new-password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Create a password" required minLength={8} maxLength={128} aria-describedby="signup-password-rules" /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
             <label className="signup-field"><span>Confirm password</span><span className="signup-password-wrap"><input autoComplete="new-password" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter password" required minLength={8} /><button type="button" aria-label={showConfirmPassword ? "Hide password confirmation" : "Show password confirmation"} onClick={() => setShowConfirmPassword(v => !v)}>{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
