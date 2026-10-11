@@ -15,7 +15,7 @@ type ChatPerson = {
   lastMessage?: string;
   lastMessageAt?: string | null;
 };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; createdAt: string };
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; createdAt: string };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
@@ -48,8 +48,8 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState("");
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [viewingImageUrl, setViewingImageUrl] = useState("");
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -123,10 +123,7 @@ export default function ChatPage() {
     return () => window.clearInterval(timer);
   }, [activeId, loadMessages]);
 
-  useEffect(() => {
-    if (!imagePreview) return;
-    return () => URL.revokeObjectURL(imagePreview);
-  }, [imagePreview]);
+
 
   useEffect(() => {
     const input = draftInputRef.current;
@@ -158,31 +155,39 @@ export default function ChatPage() {
   }
 
   function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
+    const picked = Array.from(event.target.files || []);
     event.target.value = "";
-    if (!file) return;
-    if (!file.type.startsWith("image/")) { setError("Choose an image file."); return; }
-    if (file.size > MAX_CHAT_IMAGE_SIZE) { setError("Chat images must be 10 MB or smaller."); return; }
+    if (!picked.length) return;
+    if (imageFiles.length + picked.length > 4) { setError("You can send up to 4 images in one message."); return; }
+    if (picked.some(file => !file.type.startsWith("image/"))) { setError("Choose image files only."); return; }
+    if (picked.some(file => file.size > MAX_CHAT_IMAGE_SIZE)) { setError("Each chat image must be 10 MB or smaller."); return; }
     setError("");
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
+    setImageFiles(current => [...current, ...picked]);
+    setImagePreviews(current => [...current, ...picked.map(file => URL.createObjectURL(file))]);
+  }
+
+  function removeSelectedImage(index: number) {
+    const preview = imagePreviews[index];
+    if (preview) URL.revokeObjectURL(preview);
+    setImageFiles(current => current.filter((_, i) => i !== index));
+    setImagePreviews(current => current.filter((_, i) => i !== index));
   }
 
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
     const text = draft.trim();
-    if (!activePerson || !activePerson.canMessage || (!text && !imageFile) || sending) return;
+    if (!activePerson || !activePerson.canMessage || (!text && imageFiles.length === 0) || sending) return;
     const savedToken = token();
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
     setSending(true);
     setError("");
     try {
-      let imageUrl = "";
-      if (imageFile) imageUrl = await uploadChatImage(imageFile, savedToken);
+      const images: string[] = [];
+      for (const file of imageFiles) images.push(await uploadChatImage(file, savedToken));
       const response = await fetch(`${apiBase}/api/chat/${encodeURIComponent(activePerson.id)}/messages`, {
         method: "POST",
         headers: { Authorization: `Bearer ${savedToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ text, imageUrl })
+        body: JSON.stringify({ text, images })
       });
       const payload = await response.json().catch(() => ({}));
       if (response.status === 401) { localStorage.removeItem("hallschat_token"); navigate("/signin", { replace: true }); return; }
@@ -190,9 +195,10 @@ export default function ChatPage() {
       const sent = payload.message as ChatMessage;
       setMessages(current => current.some(item => item.id === sent.id) ? current : [...current, sent]);
       setDraft("");
-      setImageFile(null);
-      setImagePreview("");
-      setPeople(current => current.map(person => person.id === activePerson.id ? { ...person, lastMessage: sent.text || (sent.imageUrl ? "📷 Photo" : ""), lastMessageAt: sent.createdAt } : person).sort((a, b) => {
+      imagePreviews.forEach(url => URL.revokeObjectURL(url));
+      setImageFiles([]);
+      setImagePreviews([]);
+      setPeople(current => current.map(person => person.id === activePerson.id ? { ...person, lastMessage: sent.text || ((sent.images?.length || sent.imageUrl) ? "📷 Photo" : ""), lastMessageAt: sent.createdAt } : person).sort((a, b) => {
         const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
         const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
         return bTime - aTime || a.name.localeCompare(b.name);
@@ -235,7 +241,7 @@ export default function ChatPage() {
                 const mine = message.senderId === currentUserId;
                 return <div key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}>
                   <div className="chat-message-content">
-                    {message.imageUrl && <button type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(message.imageUrl || "")} aria-label="View image"><img src={message.imageUrl} alt={message.text || "Shared image"} loading="lazy" /></button>}
+                    {(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).length > 0 && <div className={`chat-image-grid ${(message.images?.length || (message.imageUrl ? 1 : 0)) === 1 ? "chat-image-grid-single" : ""}`}>{(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
                     {message.text && <p className="chat-message-text">{message.text}</p>}
                     <time>{formatTime(message.createdAt)}</time>
                   </div>
@@ -243,11 +249,11 @@ export default function ChatPage() {
               }) : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
               <div ref={bottomRef} />
             </div>
-            {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" hidden onChange={handleImageSelection} />{imagePreview && <div className="chat-image-pending"><img src={imagePreview} alt="Image ready to send" /><span>Ready to send</span><button type="button" onClick={() => { setImageFile(null); setImagePreview(""); }} aria-label="Remove selected image"><X size={17} /></button></div>}<form className="chat-composer" onSubmit={sendMessage}>
+            {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelection} />{imagePreviews.length > 0 && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">{imageFiles.length}/4 images</span></div>}<form className="chat-composer" onSubmit={sendMessage}>
               <button type="button" className="chat-attach-button" onClick={() => imageInputRef.current?.click()} disabled={sending} aria-label="Attach image" title="Send image"><ImagePlus size={20} /></button>
               <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
               <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>
-              <button type="submit" disabled={(!draft.trim() && !imageFile) || sending} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
+              <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || sending} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
             </form></> : <div className="chat-readonly-notice"><ShieldCheck size={16} /><span>This person no longer follows you, so you can’t send new messages.</span></div>}
           </> : <div className="chat-welcome"><span><MessageCircle size={30} /></span><h2>Your conversations, all in one place</h2><p>Select a follower to start chatting. Only people who follow you can receive messages from you.</p></div>}
         </section>
