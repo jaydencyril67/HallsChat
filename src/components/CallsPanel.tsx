@@ -93,7 +93,7 @@ export default function CallsPanel({ socket, person }: Props) {
         await pc.setLocalDescription(offer);
         socket.emit("call:offer", { callId: response.callId, description: pc.localDescription });
       } catch {
-        socket.emit("call:end", { callId: response.callId });
+        socket.emit("call:failed", { callId: response.callId });
         cleanup("Microphone or camera access failed. Allow permissions and try again.");
       }
     });
