@@ -1109,7 +1109,7 @@ export default function HomePage() {
           {storyColorPickerOpen && <div className="social-story-color-popout" role="dialog" aria-label="Choose story background color">
             <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setStoryColorPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
             <div className="social-story-colors" aria-label="Story background color">
-              {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryBackground(color); setStoryColorPickerOpen(false); setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; }); }} aria-label={`Choose ${color} background`} />)}
+              {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e","#9333ea"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryBackground(color); setStoryColorPickerOpen(false); setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; }); }} aria-label={`Choose ${color} background`} />)}
             </div>
           </div>}
           <div className="social-story-snap-bottom">
