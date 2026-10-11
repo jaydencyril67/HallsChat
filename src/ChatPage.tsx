@@ -304,25 +304,37 @@ export default function ChatPage() {
       for (const file of imageFiles) images.push(await uploadChatImage(file, savedToken));
       const socket = socketRef.current;
       if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending again in a moment.");
-      const result = await new Promise<{ ok: boolean; message?: ChatMessage }>((resolve, reject) => {
+
+      const sendOne = (messageText: string, imageUrl?: string) => new Promise<ChatMessage>((resolve, reject) => {
         socket.timeout(15000).emit(
           "chat:send",
-          { recipientId: activePerson.id, text, images },
+          { recipientId: activePerson.id, text: messageText, images: imageUrl ? [imageUrl] : [] },
           (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
-            if (timeoutError) return reject(new Error("The live connection timed out. Please try again."));
+            if (timeoutError) return reject(new Error("The live connection timed out. Some items may already have been sent."));
             if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your message couldn't be sent."));
-            resolve({ ok: true, message: response.message as ChatMessage });
+            const sent = response.message as ChatMessage;
+            if (!sent || typeof sent !== "object" || !sent.id) return reject(new Error("The server didn't confirm your message."));
+            resolve(sent);
           }
         );
       });
-      const sent = result.message;
-      if (!sent) throw new Error("The server didn't confirm your message.");
-      setMessages(current => current.some(item => item.id === sent.id) ? current : [...current, sent]);
+
+      const sentMessages: ChatMessage[] = [];
+      // Send text as its own message, then send each image as a separate message/bubble.
+      if (text) sentMessages.push(await sendOne(text));
+      for (const imageUrl of images) sentMessages.push(await sendOne("", imageUrl));
+
+      setMessages(current => {
+        const byId = new Map(current.map(message => [message.id, message]));
+        sentMessages.forEach(message => byId.set(message.id, message));
+        return Array.from(byId.values()).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      });
       setDraft("");
       imagePreviews.forEach(url => URL.revokeObjectURL(url));
       setImageFiles([]);
       setImagePreviews([]);
-      setPeople(current => current.map(person => person.id === activePerson.id ? { ...person, lastMessage: sent.text || ((sent.images?.length || sent.imageUrl) ? "📷 Photo" : ""), lastMessageAt: sent.createdAt } : person).sort((a, b) => {
+      const lastSent = sentMessages[sentMessages.length - 1];
+      if (lastSent) setPeople(current => current.map(person => person.id === activePerson.id ? { ...person, lastMessage: lastSent.text || ((lastSent.images?.length || lastSent.imageUrl) ? "📷 Photo" : ""), lastMessageAt: lastSent.createdAt } : person).sort((a, b) => {
         const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
         const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
         return bTime - aTime || a.name.localeCompare(b.name);
