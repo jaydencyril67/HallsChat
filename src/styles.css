@@ -1603,3 +1603,59 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .chat-reaction-picker button{flex-basis:32px;width:32px;height:34px;font-size:21px}
   .chat-message-actions{min-width:172px}
 }
+
+
+/* Compact Facebook-style post composer and story tray. */
+.social-composer-collapsed{padding:12px 14px 10px}
+.social-composer-quick{display:flex;flex-direction:column;gap:11px}
+.social-composer-quick-top{display:flex;align-items:center;gap:10px;min-width:0}
+.social-composer-quick-top .social-avatar{overflow:hidden;flex:0 0 40px;width:40px;height:40px;border-radius:50%}
+.social-composer-quick-top .social-avatar img,.social-story-add-media img,.social-story-ring img,.social-story-viewer-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+.social-composer-open{flex:1;min-width:0;padding:11px 14px;border:1px solid rgba(255,226,231,.11);border-radius:999px;background:rgba(10,3,6,.3);color:#d8bdc3;text-align:left;font:12px 'DM Sans',sans-serif}
+.social-composer-open:hover{background:rgba(255,255,255,.045);border-color:rgba(214,74,91,.3)}
+.social-composer-quick-tools{display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid var(--theme-line)}
+.social-composer-quick-tools button{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-width:0;padding:8px 5px;border:0;border-radius:9px;background:transparent;color:#d8bdc3;font-size:11px;font-weight:650}
+.social-composer-quick-tools button:hover{background:rgba(255,255,255,.045)}
+.social-composer-quick-tools button svg{color:#f07889;flex-shrink:0}
+.social-stories{display:flex;gap:10px;width:100%;margin:0 0 12px;padding:11px;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid var(--theme-line);border-radius:15px;background:linear-gradient(145deg,rgba(42,13,21,.86),rgba(22,7,12,.92));scrollbar-width:thin;scrollbar-color:rgba(214,74,91,.35) transparent}
+.social-story-add,.social-story-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 76px;width:76px;min-width:0;padding:0;border:0;background:transparent;color:var(--theme-text);text-align:center;cursor:pointer}
+.social-story-add-media{position:relative;display:grid;place-items:center;flex:0 0 68px;width:68px;height:68px;overflow:hidden;border:1px solid rgba(255,210,219,.14);border-radius:13px;background:linear-gradient(145deg,#4b1725,#21090f);color:#ffe9ed;font-size:16px;font-weight:750}
+.social-story-add-media i{position:absolute;right:3px;bottom:3px;display:grid;place-items:center;width:24px;height:24px;border:2px solid #21090f;border-radius:50%;background:#d8445b;color:white;font-style:normal}
+.social-story-add strong,.social-story-item strong{width:100%;overflow:hidden;color:#f4e4e8;font-size:10px;font-weight:700;text-overflow:ellipsis;white-space:nowrap}
+.social-story-add small,.social-story-item small{max-width:100%;overflow:hidden;color:#a88790;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.social-story-ring{display:grid;place-items:center;flex:0 0 68px;width:68px;height:68px;padding:3px;border-radius:16px;background:linear-gradient(135deg,#f07889,#8b1e35,#e6a0aa)}
+.social-story-ring>span{display:grid;place-items:center;width:100%;height:100%;overflow:hidden;border:2px solid #230d15;border-radius:13px;background:#421522;color:#fff;font-size:15px;font-weight:700}
+.social-story-overlay{position:fixed;inset:0;z-index:1500;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(7,3,6,.82);backdrop-filter:blur(9px)}
+.social-story-dialog{width:min(100%,430px);max-height:min(92dvh,760px);overflow-y:auto;padding:17px;border:1px solid rgba(255,210,219,.17);border-radius:20px;background:linear-gradient(160deg,#2b0d17,#15070c);color:#f8e9ec;box-shadow:0 24px 70px #0009}
+.social-story-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}
+.social-story-dialog-head h2{margin:4px 0 0;font-size:20px;letter-spacing:-.4px}
+.social-story-dialog-head>button,.social-story-viewer-head>button{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid rgba(255,210,219,.12);border-radius:50%;background:rgba(255,255,255,.06);color:#f9e9ed}
+.social-story-preview{position:relative;display:flex;align-items:center;justify-content:center;min-height:270px;max-height:390px;overflow:hidden;border-radius:14px;color:white;text-align:center}
+.social-story-preview>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.social-story-preview>p{position:relative;z-index:1;max-width:100%;max-height:100%;overflow-y:auto;margin:0;padding:24px;color:#fff;font-size:clamp(19px,5vw,27px);font-weight:800;line-height:1.35;overflow-wrap:anywhere;text-shadow:0 2px 12px #0009;white-space:pre-wrap}
+.social-story-preview>span{color:rgba(255,255,255,.68);font-size:12px}
+.social-story-remove-photo{position:absolute;z-index:2;top:9px;right:9px;display:grid;place-items:center;width:32px;height:32px;border:1px solid #ffffff55;border-radius:50%;background:#12070ac9;color:#fff}
+.social-story-dialog>textarea{display:block;width:100%;min-height:78px;margin:12px 0 10px;padding:11px 12px;resize:vertical;border:1px solid var(--theme-line);border-radius:11px;background:rgba(10,3,6,.45);color:#fff0f3;font:12px/1.6 'DM Sans',sans-serif;outline:none}
+.social-story-dialog>textarea:focus{border-color:rgba(240,120,137,.7)}
+.social-story-colors{display:flex;gap:9px;margin:9px 0 13px}
+.social-story-colors button{width:27px;height:27px;border:2px solid rgba(255,255,255,.2);border-radius:50%}
+.social-story-colors button.is-selected{outline:2px solid #fff;outline-offset:2px}
+.social-story-dialog-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--theme-line)}
+.social-story-photo-button{display:inline-flex;align-items:center;gap:7px;padding:9px 11px;border:1px solid rgba(240,120,137,.25);border-radius:10px;background:rgba(240,120,137,.08);color:#ffdce2;font-size:11px;font-weight:700;cursor:pointer}
+.social-story-dialog-actions>span{margin-left:auto;color:#a88790;font-size:10px}
+.social-story-dialog-actions>button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:37px;padding:0 13px;border:0;border-radius:10px;background:linear-gradient(145deg,#e2536b,#a82039);color:white;font-size:11px;font-weight:750}
+.social-story-dialog-actions>button:disabled{opacity:.45}
+.social-story-expiry{margin:10px 0 0;color:#a88790;font-size:10px;text-align:center}
+.social-story-viewer{display:flex;flex-direction:column;width:min(100%,420px);height:min(86dvh,740px);overflow:hidden;border:1px solid rgba(255,210,219,.17);border-radius:20px;background:#17070d;box-shadow:0 24px 70px #000b}
+.social-story-progress{height:3px;margin:9px 10px 0;overflow:hidden;border-radius:99px;background:#ffffff38}
+.social-story-progress span{display:block;width:100%;height:100%;background:#fff}
+.social-story-viewer-head{display:flex;align-items:center;gap:9px;padding:11px 12px}
+.social-story-viewer-avatar{display:grid;place-items:center;flex:0 0 37px;width:37px;height:37px;overflow:hidden;border:1px solid #ffffff3b;border-radius:50%;background:#5b1a2b;color:white;font-size:12px;font-weight:750}
+.social-story-viewer-head>div{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+.social-story-viewer-head strong{overflow:hidden;color:#fff0f3;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.social-story-viewer-head small{color:#c29da6;font-size:10px}
+.social-story-viewer-content{position:relative;display:flex;align-items:center;justify-content:center;flex:1;min-height:0;overflow:hidden;color:white;text-align:center}
+.social-story-viewer-content>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#10070b}
+.social-story-viewer-content>p{position:relative;z-index:1;max-height:100%;overflow-y:auto;margin:0;padding:22px;font-size:clamp(20px,5vw,29px);font-weight:800;line-height:1.4;overflow-wrap:anywhere;text-shadow:0 2px 14px #000b;white-space:pre-wrap}
+.social-story-viewer-footer{padding:10px;color:#a88790;font-size:10px;text-align:center}
+@media(max-width:520px){.social-stories{gap:8px;padding:9px}.social-story-add,.social-story-item{flex-basis:70px;width:70px}.social-story-add-media,.social-story-ring{flex-basis:62px;width:62px;height:62px}.social-story-overlay{padding:10px}.social-story-dialog{padding:13px}.social-story-preview{min-height:245px;max-height:330px}.social-story-dialog-actions>button{margin-left:auto}}
