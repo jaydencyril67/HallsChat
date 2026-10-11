@@ -1997,3 +1997,63 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-close{
   top:calc(15px + env(safe-area-inset-top, 0px))!important;
 }
+
+
+/* Calls page: keep filter tabs and search stationary; scroll only the history area. */
+.home-page.halls-calls-page{
+  height:100dvh;
+  min-height:0;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.home-page.halls-calls-page .halls-call-history-shell{
+  display:flex;
+  flex:1 1 auto;
+  flex-direction:column;
+  min-height:0;
+  height:calc(100dvh - var(--app-top-gap));
+  overflow:hidden;
+  padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px));
+}
+.home-page.halls-calls-page .halls-call-history-toolbar{
+  position:relative;
+  z-index:2;
+  flex:0 0 auto;
+  margin-bottom:12px;
+  background:var(--theme-bg,#10090d);
+}
+.home-page.halls-calls-page .halls-call-history-scroll{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  scrollbar-width:thin;
+}
+.home-page.halls-calls-page .halls-call-history-note{
+  padding:12px 0 2px;
+}
+@media(max-width:560px){
+  .home-page.halls-calls-page .halls-call-history-toolbar{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  .home-page.halls-calls-page .halls-call-history-tabs{
+    width:100%;
+    max-width:100%;
+    overflow-x:auto;
+    flex-shrink:0;
+    scrollbar-width:none;
+  }
+  .home-page.halls-calls-page .halls-call-history-tabs::-webkit-scrollbar{display:none}
+  .home-page.halls-calls-page .halls-call-history-tabs button{
+    flex:0 0 auto;
+    padding:0 12px;
+  }
+  .home-page.halls-calls-page .halls-call-history-scroll{
+    padding-bottom:8px;
+  }
+}
