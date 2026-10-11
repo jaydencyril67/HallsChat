@@ -743,3 +743,11 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .signup-password-rules li.signup-password-rule-met{color:#83ddb0}
 .signup-password-rules li.signup-password-rule-met svg{opacity:1}
 @media(max-width:520px){.signup-password-rules{gap:8px 6px;padding:10px}.signup-password-rules li{font-size:8.5px}}
+
+
+.signup-email-wrap{position:relative;display:flex;align-items:center;width:100%;min-width:0}
+.signup-email-wrap>input{padding-right:38px!important}
+.signup-email-status{display:flex;align-items:center;min-height:13px;line-height:1.45}
+.signup-email-status-checking{color:#c5a3ac!important}
+.signup-email-status-accepted{color:#83ddb0!important}
+.signup-email-status-rejected,.signup-email-status-invalid,.signup-email-status-error{color:#ff929f!important}
