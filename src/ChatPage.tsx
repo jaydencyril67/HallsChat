@@ -88,6 +88,46 @@ function Avatar({ person, size = "normal" }: { person: Pick<ChatPerson, "name" |
   </span>;
 }
 
+function formatAudioTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const total = Math.floor(seconds);
+  return Math.floor(total / 60) + ":" + String(total % 60).padStart(2, "0");
+}
+
+function VoiceNotePlayer({ src, pending = false }: { src: string; pending?: boolean }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const bars = [3,5,8,12,7,15,10,18,13,6,11,16,8,20,12,7,15,10,22,13,6,17,11,8,19,12,5,14,9,18,7,12,20,9,5,15,11,7,17,10,4,13];
+  const progress = duration > 0 ? currentTime / duration : 0;
+  async function togglePlayback() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      try { await audio.play(); setPlaying(true); } catch { setPlaying(false); }
+    } else { audio.pause(); setPlaying(false); }
+  }
+  function seek(event: React.MouseEvent<HTMLDivElement>) {
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    audio.currentTime = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)) * audio.duration;
+    setCurrentTime(audio.currentTime);
+  }
+  return <div className={"chat-voice-note" + (pending ? " chat-voice-note-pending" : "")}>
+    <audio ref={audioRef} src={src} preload="metadata" onLoadedMetadata={event => setDuration(event.currentTarget.duration || 0)} onDurationChange={event => setDuration(event.currentTarget.duration || 0)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setCurrentTime(0); }} />
+    <button type="button" className="chat-voice-play" onClick={() => void togglePlayback()} aria-label={playing ? "Pause voice note" : "Play voice note"}>{playing ? <Square size={17} fill="currentColor" /> : <ArrowUp className="chat-voice-play-symbol" size={18} />}</button>
+    <div className="chat-voice-track">
+      <div className="chat-voice-waveform" role="slider" aria-label="Voice note playback position" aria-valuemin={0} aria-valuemax={Math.floor(duration || 0)} aria-valuenow={Math.floor(currentTime)} tabIndex={0} onClick={seek} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const audio = audioRef.current; if (audio && Number.isFinite(audio.duration)) { audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5))); setCurrentTime(audio.currentTime); } } }}>
+        {bars.map((height, index) => <span key={index} className={index / bars.length <= progress ? "is-played" : ""} style={{ height: height + "px" }} />)}
+      </div>
+      <div className="chat-voice-meta"><span>{playing || currentTime > 0 ? formatAudioTime(currentTime) : formatAudioTime(duration)}</span>{pending && <span className="chat-voice-sending">Sending…</span>}</div>
+    </div>
+    <span className="chat-voice-mic"><Mic size={13} /></span>
+  </div>;
+}
+
 export default function ChatPage() {
   const [people, setPeople] = useState<ChatPerson[]>([]);
   const [activeId, setActiveId] = useState("");
@@ -526,7 +566,7 @@ export default function ChatPage() {
                   <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"}`}>
                     <div className="chat-message-body">
                     {(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).length > 0 && <div className={`chat-image-grid ${(message.images?.length || (message.imageUrl ? 1 : 0)) === 1 ? "chat-image-grid-single" : ""}`}>{(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
-                    {message.audioUrl && <div className="chat-voice-note"><span className="chat-voice-icon"><Mic size={17} /></span><audio controls preload="metadata" src={message.audioUrl}>Your browser does not support audio playback.</audio></div>}
+                    {message.audioUrl && <VoiceNotePlayer src={message.audioUrl} pending={Boolean(message.pending)} />}
                     {message.text && <p className="chat-message-text">{message.text}</p>}
                     </div>
                     <time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}</time>
