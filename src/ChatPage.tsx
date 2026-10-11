@@ -19,7 +19,8 @@ type ChatPerson = {
   lastMessageAt?: string | null;
 };
 type ChatReply = { id: string; senderId: string; text?: string; imageUrl?: string; audioUrl?: string; deleted?: boolean };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: ChatReply | null; deletedForEveryone?: boolean; createdAt: string; pending?: boolean };
+type ChatReaction = { userId: string; emoji: string };
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: ChatReply | null; reactions?: ChatReaction[]; deletedForEveryone?: boolean; createdAt: string; pending?: boolean };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -139,6 +140,7 @@ export default function ChatPage() {
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
   const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
+  const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deletingMessage, setDeletingMessage] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
@@ -222,6 +224,21 @@ export default function ChatPage() {
   function cancelMessagePress() {
     if (messagePressTimerRef.current !== null) window.clearTimeout(messagePressTimerRef.current);
     messagePressTimerRef.current = null;
+  }
+  function reactToMessage(message: ChatMessage, emoji: string) {
+    if (message.pending || message.deletedForEveryone) return;
+    const socket = socketRef.current;
+    if (!socket?.connected) { setError("Reconnect to chat before reacting."); return; }
+    setReactionPickerFor(null);
+    socket.timeout(10000).emit("chat:react", { messageId: message.id, emoji }, (timeoutError: Error | null, response: { ok?: boolean; message?: string; reactions?: ChatReaction[] }) => {
+      if (timeoutError || !response?.ok) {
+        setError(response?.message || "That reaction couldn't be saved. Please try again.");
+        return;
+      }
+      if (Array.isArray(response.reactions)) {
+        setMessages(current => current.map(item => item.id === message.id ? { ...item, reactions: response.reactions } : item));
+      }
+    });
   }
   async function deleteMessageForEveryone() {
     if (!deleteConfirmId || deletingMessage) return;
@@ -408,6 +425,7 @@ export default function ChatPage() {
     setReplyingTo(null);
     setActionMenuFor(null);
     setDeleteConfirmId(null);
+    setReactionPickerFor(null);
     if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current);
     otherTypingTimerRef.current = null;
     stopTyping();
@@ -798,7 +816,7 @@ export default function ChatPage() {
                     if (event.pointerType !== "touch" || message.pending) return;
                     cancelMessagePress();
                     messageSwipeRef.current = { id: message.id, startX: event.clientX, startY: event.clientY, startLeft: 0, triggered: false };
-                    messagePressTimerRef.current = window.setTimeout(() => setActionMenuFor(message.id), 520);
+                    messagePressTimerRef.current = window.setTimeout(() => { setReactionPickerFor(message.id); setActionMenuFor(null); }, 520);
                   }}
                   onPointerMove={event => {
                     const swipe = messageSwipeRef.current;
@@ -847,6 +865,8 @@ export default function ChatPage() {
                     <div className="chat-message-footer"><time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}</time>
                       {!message.pending && !message.deletedForEveryone && <button type="button" className="chat-message-more" aria-label="Message actions" title="Message actions" onClick={event => { event.stopPropagation(); setActionMenuFor(current => current === message.id ? null : message.id); }}><MoreVertical size={15} /></button>}
                     </div>
+                    {reactionPickerFor === message.id && !message.pending && !message.deletedForEveryone && <div className="chat-reaction-picker" role="group" aria-label="React to message">{["❤️","😂","😮","😢","🙏","👍"].map(emoji => <button key={emoji} type="button" aria-label={`React ${emoji}`} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); reactToMessage(message, emoji); }}>{emoji}</button>)}</div>}
+                    {Array.from((message.reactions || []).reduce((groups, reaction) => groups.set(reaction.emoji, [...(groups.get(reaction.emoji) || []), reaction]), new Map<string, ChatReaction[]>()).entries()).map(([emoji, reactions]) => <button key={emoji} type="button" className={`chat-reaction-pill ${(reactions as ChatReaction[]).some(reaction => reaction.userId === currentUserId) ? "chat-reaction-pill-mine" : ""}`} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); reactToMessage(message, (reactions as ChatReaction[]).some(reaction => reaction.userId === currentUserId) ? "" : emoji); }} aria-label={`${emoji}, ${(reactions as ChatReaction[]).length} reactions`}>{emoji}<span>{(reactions as ChatReaction[]).length}</span></button>)}
                     {actionMenuFor === message.id && <div className="chat-message-actions" role="menu">
                       <button type="button" role="menuitem" onClick={() => beginReply(message)}><Reply size={16} /><span>Reply</span></button>
                       {mine && !message.deletedForEveryone && <button type="button" role="menuitem" className="chat-message-action-delete" onClick={() => { setActionMenuFor(null); setDeleteConfirmId(message.id); }}><Trash2 size={16} /><span>Delete for everyone</span></button>}
