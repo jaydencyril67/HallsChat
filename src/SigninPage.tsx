@@ -75,6 +75,7 @@ export default function SigninPage() {
           {notice && <div className="signup-feedback signup-feedback-success" role="status">{notice}</div>}
           {needsVerification && <div className="auth-verify-help"><MailCheck size={18} /><span>Your email needs confirmation first. Check your inbox or request a fresh confirmation link below.</span></div>}
           {needsVerification && <button className="button button-secondary auth-resend" type="button" onClick={resendConfirmation} disabled={resending}>{resending ? <><LoadingDots /> Sending confirmation…</> : "Resend confirmation email"}</button>}
+          <div className="auth-forgot-link"><a href="/forgot-password">Forgot password?</a></div>
           <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? <><LoadingDots /> Signing in…</> : "Sign in"} {!submitting && <ArrowRight size={17} />}</button>
           <p className="signup-form-note"><LockKeyhole size={13} /> Your account is checked securely before access is granted.</p>
         </form>
