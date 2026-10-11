@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { CSSProperties, useCallback, useEffect, useState } from "react";
 import { Search, UsersRound, UserRoundCheck, UserPlus, RefreshCw } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -73,7 +73,7 @@ export default function HallsPage() {
     `${person.name} ${person.username}`.toLowerCase().includes(search.trim().toLowerCase())
   );
 
-  const panel: React.CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
+  const panel: CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
   const muted: React.CSSProperties = { color: "rgba(246,220,225,.58)" };
 
   return <main className="home-page social-home halls-page">
