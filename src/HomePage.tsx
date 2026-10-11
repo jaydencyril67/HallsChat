@@ -113,6 +113,10 @@ export default function HomePage() {
   const [stories, setStories] = useState<SocialStory[]>([]);
   const [storyComposerOpen, setStoryComposerOpen] = useState(false);
   const [storyViewer, setStoryViewer] = useState<SocialStory | null>(null);
+  const [storyPlaybackQueue, setStoryPlaybackQueue] = useState<SocialStory[]>([]);
+  const [storyPlaybackIndex, setStoryPlaybackIndex] = useState(0);
+  const [storyPlaybackPaused, setStoryPlaybackPaused] = useState(false);
+  const storySwipeRef = useRef<{ x: number; y: number } | null>(null);
   const [storyText, setStoryText] = useState("");
   const [storyTextPosition, setStoryTextPosition] = useState({ x: 50, y: 50 });
   const storyTextDragRef = useRef<{ pointerId: number; startX: number; startY: number; originX: number; originY: number } | null>(null);
@@ -235,6 +239,68 @@ export default function HomePage() {
       .catch(() => { /* Keep the feed usable if stories are temporarily unavailable. */ });
     return () => { cancelled = true; };
   }, [user]);
+
+  function openStoryViewer(story: SocialStory) {
+    const groups = new Map<string, SocialStory[]>();
+    stories.filter(item => item.author).forEach(item => {
+      const authorId = item.author!.id;
+      if (!groups.has(authorId)) groups.set(authorId, []);
+      groups.get(authorId)!.push(item);
+    });
+    const groupList = Array.from(groups.values());
+    const startGroupIndex = groupList.findIndex(group => group.some(item => item.id === story.id));
+    if (startGroupIndex < 0) {
+      setStoryPlaybackQueue([story]);
+      setStoryPlaybackIndex(0);
+      setStoryViewer(story);
+      setStoryPlaybackPaused(false);
+      return;
+    }
+    // Play this author's stories from oldest to newest, then continue through the remaining story tray.
+    const queue = groupList.slice(startGroupIndex).flat();
+    const startIndex = Math.max(0, queue.findIndex(item => item.author?.id === story.author?.id));
+    setStoryPlaybackQueue(queue);
+    setStoryPlaybackIndex(startIndex);
+    setStoryViewer(queue[startIndex] || story);
+    setStoryPlaybackPaused(false);
+  }
+
+  function closeStoryViewer() {
+    setStoryViewer(null);
+    setStoryPlaybackQueue([]);
+    setStoryPlaybackIndex(0);
+    setStoryPlaybackPaused(false);
+    storySwipeRef.current = null;
+  }
+
+  function moveStoryPlayback(direction: -1 | 1) {
+    if (!storyPlaybackQueue.length) { closeStoryViewer(); return; }
+    const nextIndex = storyPlaybackIndex + direction;
+    if (nextIndex < 0) return;
+    if (nextIndex >= storyPlaybackQueue.length) { closeStoryViewer(); return; }
+    setStoryPlaybackIndex(nextIndex);
+    setStoryViewer(storyPlaybackQueue[nextIndex]);
+    setStoryPlaybackPaused(false);
+  }
+
+  const currentStoryDuration = storyViewer?.mediaUrl ? 5000 : 7000;
+
+  useEffect(() => {
+    if (!storyViewer || storyPlaybackPaused) return;
+    const timer = window.setTimeout(() => moveStoryPlayback(1), currentStoryDuration);
+    return () => window.clearTimeout(timer);
+  }, [storyViewer?.id, storyPlaybackIndex, storyPlaybackPaused, currentStoryDuration]);
+
+  useEffect(() => {
+    if (!storyViewer) return;
+    const handleStoryKeys = (event: KeyboardEvent) => {
+      if (event.key === "ArrowRight" || event.key === "PageDown") { event.preventDefault(); moveStoryPlayback(1); }
+      else if (event.key === "ArrowLeft" || event.key === "PageUp") { event.preventDefault(); moveStoryPlayback(-1); }
+      else if (event.key === "Escape") { event.preventDefault(); closeStoryViewer(); }
+    };
+    window.addEventListener("keydown", handleStoryKeys);
+    return () => window.removeEventListener("keydown", handleStoryKeys);
+  }, [storyViewer?.id, storyPlaybackIndex, storyPlaybackQueue]);
 
   async function selectImages(event: ChangeEvent<HTMLInputElement>) {
     const incoming = Array.from(event.target.files || []);
@@ -754,7 +820,7 @@ export default function HomePage() {
                 <span className="social-story-add-media">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}<i><Plus size={16}/></i></span>
                 <strong>Create story</strong><small>Share a moment</small>
               </button>
-              {Array.from(new Map(stories.filter(story => story.author).map(story => [story.author!.id, story] as const)).values()).map(story => <button type="button" key={story.id} className="social-story-item" onClick={() => setStoryViewer(story)} aria-label={`View story by ${story.author?.name || "user"}`}>
+              {Array.from(new Map(stories.filter(story => story.author).map(story => [story.author!.id, story] as const)).values()).map(story => <button type="button" key={story.id} className="social-story-item" onClick={() => openStoryViewer(story)} aria-label={`View story by ${story.author?.name || "user"}`}>
                 <span className="social-story-ring"><span>{story.author?.profilePicture ? <img src={story.author.profilePicture} alt="" /> : initials(story.author?.name || "H")}</span></span>
                 <strong>{story.isMine ? "Your story" : story.author?.name}</strong><small>{timeAgo(story.createdAt)}</small>
               </button>)}
@@ -888,10 +954,20 @@ export default function HomePage() {
       </form>
     </div>}
     {storyEditingImageUrl && <StoryImageCropModal imageUrl={storyEditingImageUrl} onCancel={cancelStoryPhotoEdit} onDone={finishStoryPhotoEdit} />}
-    {storyViewer && <div className="social-story-overlay" role="presentation" onClick={() => setStoryViewer(null)}>
+    {storyViewer && <div className="social-story-overlay" role="presentation" onClick={closeStoryViewer}>
       <div className="social-story-viewer" role="dialog" aria-modal="true" aria-label={`Story by ${storyViewer.author?.name || "user"}`} onClick={event => event.stopPropagation()}>
-        <div className="social-story-progress"><span /></div><div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div><button type="button" onClick={() => setStoryViewer(null)} aria-label="Close story"><X size={19}/></button></div>
-        <div className="social-story-viewer-content" style={{background:storyViewer.background || "#8b1e35"}}>{storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}{storyViewer.text && <p className="social-story-positioned-text" style={{ left: `${storyViewer.textPosition?.x ?? 50}%`, top: `${storyViewer.textPosition?.y ?? 50}%` }}>{storyViewer.text}</p>}</div>
+        <div className="social-story-progress-list" aria-label="Story progress">{storyPlaybackQueue.filter(item => item.author?.id === storyViewer.author?.id).map(item => {
+          const queueIndex = storyPlaybackQueue.findIndex(entry => entry.id === item.id);
+          const status = queueIndex < storyPlaybackIndex ? "complete" : queueIndex === storyPlaybackIndex ? "active" : "upcoming";
+          return <span className={`social-story-progress-segment ${status}`} key={item.id}><i key={item.id + (status === "active" ? "-" + storyPlaybackIndex : "")} style={status === "active" ? { animationDuration: `${currentStoryDuration}ms`, animationPlayState: storyPlaybackPaused ? "paused" : "running" } : undefined} /></span>;
+        })}</div>
+        <div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div><button type="button" onClick={closeStoryViewer} aria-label="Close story"><X size={19}/></button></div>
+        <div className="social-story-viewer-content" style={{background:storyViewer.background || "#8b1e35"}} onPointerDown={event => { storySwipeRef.current = { x: event.clientX, y: event.clientY }; setStoryPlaybackPaused(true); }} onPointerUp={event => { const start = storySwipeRef.current; storySwipeRef.current = null; setStoryPlaybackPaused(false); if (!start) return; const dx = event.clientX - start.x; const dy = event.clientY - start.y; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.25) moveStoryPlayback(dx < 0 ? 1 : -1); }} onPointerCancel={() => { storySwipeRef.current = null; setStoryPlaybackPaused(false); }}>
+          {storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}
+          {storyViewer.text && <p className="social-story-positioned-text" style={{ left: `${storyViewer.textPosition?.x ?? 50}%`, top: `${storyViewer.textPosition?.y ?? 50}%` }}>{storyViewer.text}</p>}
+          <button type="button" className="social-story-tap-zone previous" aria-label="Previous story" onClick={() => moveStoryPlayback(-1)} />
+          <button type="button" className="social-story-tap-zone next" aria-label="Next story" onClick={() => moveStoryPlayback(1)} />
+        </div>
         <div className="social-story-viewer-footer">HallsChat · 24-hour story</div>
       </div>
     </div>}
