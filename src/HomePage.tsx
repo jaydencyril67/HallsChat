@@ -245,6 +245,28 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, [user]);
 
+  useEffect(() => {
+    if (!user) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    let cancelled = false;
+    const refreshStories = () => {
+      fetch(`${apiBase}/api/social/stories`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(async response => {
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) return null;
+          return Array.isArray(payload.stories) ? payload.stories as SocialStory[] : [];
+        })
+        .then(items => {
+          if (cancelled || !items) return;
+          setStories(items);
+          setStoryViewer(current => current?.isMine ? items.find(item => item.id === current.id) || current : current);
+        }).catch(() => {});
+    };
+    const timer = window.setInterval(refreshStories, 12000);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [user]);
+
   function openStoryViewer(story: SocialStory) {
     const groups = new Map<string, SocialStory[]>();
     stories.filter(item => item.author).forEach(item => {
