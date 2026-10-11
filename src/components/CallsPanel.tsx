@@ -17,6 +17,7 @@ export default function CallsPanel({ socket, person }: Props) {
   const [cameraOff, setCameraOff] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [callError, setCallError] = useState("");
+  const [pendingCallKind, setPendingCallKind] = useState<"audio" | "video" | null>(null);
   const localVideo = useRef<HTMLVideoElement | null>(null);
   const remoteVideo = useRef<HTMLVideoElement | null>(null);
   const localAudio = useRef<HTMLAudioElement | null>(null);
@@ -261,8 +262,20 @@ export default function CallsPanel({ socket, person }: Props) {
 
   return <>
     {person && <div className="halls-call-triggers">
-      <button className="halls-call-trigger-audio" type="button" title={"Audio call " + person.name} aria-label={"Audio call " + person.name} onClick={() => startCall("audio")} disabled={phase !== "idle"}><Phone size={18} /><span>Audio call</span></button>
-      <button className="halls-call-trigger-video" type="button" title={"Video call " + person.name} aria-label={"Video call " + person.name} onClick={() => startCall("video")} disabled={phase !== "idle"}><Video size={18} /><span>Video call</span></button>
+      <button className="halls-call-trigger-audio" type="button" title={"Audio call " + person.name} aria-label={"Audio call " + person.name} onClick={() => setPendingCallKind("audio")} disabled={phase !== "idle"}><Phone size={18} /><span>Audio call</span></button>
+      <button className="halls-call-trigger-video" type="button" title={"Video call " + person.name} aria-label={"Video call " + person.name} onClick={() => setPendingCallKind("video")} disabled={phase !== "idle"}><Video size={18} /><span>Video call</span></button>
+    </div>}
+    {pendingCallKind && phase === "idle" && <div className="halls-call-backdrop halls-call-confirm-backdrop" role="dialog" aria-modal="true" aria-label="Confirm call" onClick={() => setPendingCallKind(null)}>
+      <div className="halls-call-confirm-card" onClick={event => event.stopPropagation()}>
+        <div className="halls-call-confirm-icon">{pendingCallKind === "video" ? <Video size={25} /> : <Phone size={25} />}</div>
+        <span className="halls-call-eyebrow">START A CALL</span>
+        <h2>{pendingCallKind === "video" ? "Start video call?" : "Start audio call?"}</h2>
+        <p>Call <strong>{person?.name || "this contact"}</strong> now?</p>
+        <div className="halls-call-confirm-actions">
+          <button type="button" className="halls-call-confirm-cancel" onClick={() => setPendingCallKind(null)}>Cancel</button>
+          <button type="button" className="halls-call-confirm-start" onClick={() => { const selectedKind = pendingCallKind; setPendingCallKind(null); startCall(selectedKind); }}>{pendingCallKind === "video" ? <Video size={17} /> : <Phone size={17} />} Start call</button>
+        </div>
+      </div>
     </div>}
     {incoming && phase === "incoming" && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label="Incoming call">
       <div className="halls-call-card">
