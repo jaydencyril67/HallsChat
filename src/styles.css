@@ -2186,7 +2186,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-comment-edit-modal>header button{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.06);color:#fff0f3}
 .social-comment-edit-modal>textarea{width:100%;min-height:130px;max-height:45dvh;resize:vertical;padding:12px;box-sizing:border-box;border:1px solid rgba(255,210,219,.18);border-radius:12px;background:rgba(0,0,0,.22);color:#fff0f3;font:inherit;line-height:1.55;outline:none}
 .social-comment-edit-modal>textarea:focus{border-color:rgba(240,139,155,.7)}
-.social-comment-edit-modal>footer{display:flex;justify-content:flex-end;gap:8px}
+.social-comment-edit-modal>footer{display:flex;justify-content:stretch;gap:8px}.social-comment-edit-modal>footer button{flex:1;min-width:0}
 .social-comment-edit-modal>footer button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:38px;padding:8px 13px;border:1px solid rgba(255,210,219,.16);border-radius:10px;background:rgba(255,255,255,.05);color:#f4dfe3;font-size:.8rem;font-weight:650}
 .social-comment-edit-modal>footer button:last-child{border:0;background:#b92d45;color:#fff}
 .social-comment-edit-modal>footer button:disabled{opacity:.45;cursor:not-allowed}
