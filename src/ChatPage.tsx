@@ -156,7 +156,13 @@ export default function ChatPage() {
       const payload = await response.json().catch(() => ({}));
       if (response.status === 401) { localStorage.removeItem("hallschat_token"); navigate("/signin", { replace: true }); return; }
       if (!response.ok) throw new Error(payload.message || "This conversation couldn't be loaded.");
-      setMessages(Array.isArray(payload.messages) ? payload.messages as ChatMessage[] : []);
+      const history = Array.isArray(payload.messages) ? payload.messages as ChatMessage[] : [];
+      // Merge history with any socket event that arrived while the history request was in flight.
+      setMessages(current => {
+        const byId = new Map<string, ChatMessage>();
+        [...history, ...current].forEach(message => byId.set(message.id, message));
+        return Array.from(byId.values()).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      });
       setPeople(current => current.map(person => person.id === personId ? { ...person, canMessage: Boolean(payload.canMessage) } : person));
       setError("");
     } catch (err) {
