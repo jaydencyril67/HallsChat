@@ -798,3 +798,20 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .auth-forgot-link a:hover,.signup-bottom-note a:hover{color:#ffd4da;text-decoration:underline}
 .auth-form-panel .signup-password-wrap>svg{flex-shrink:0;margin-left:10px;color:#a98a91}
 .auth-form-panel .signup-password-wrap input{font-size:12px}
+
+
+/* Conversation messages are plain page content, not individual bubble cards. */
+.chat-message-line{display:flex;justify-content:flex-start;width:100%;padding:2px 0}
+.chat-message-line-mine{justify-content:flex-end}
+.chat-message-content{display:flex;flex-direction:column;gap:4px;max-width:min(88%,560px);min-width:0;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow-wrap:anywhere}
+.chat-message-text{margin:0;color:#f8e9ec;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.86rem;line-height:1.7}
+.chat-message-line-mine .chat-message-text{color:#fff1f4;text-align:right}
+.chat-message-content time{display:block;margin:0;color:rgba(255,231,235,.48);font-size:.6rem;text-align:inherit}
+.chat-message-line-mine .chat-message-content time{text-align:right}
+/* Keep the conversation itself flush with the page instead of inside a large card. */
+.chat-layout{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
+.chat-conversation{background:transparent}
+.chat-sidebar{background:transparent}
+.chat-conversation-header{background:transparent}
+.chat-message-list{padding:18px 10px 12px}
+@media(max-width:680px){.chat-message-list{padding:14px 8px 10px}}
