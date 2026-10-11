@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, Plus, Camera, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X } from "lucide-react";
+import { ArrowLeft, ArrowUp, Plus, Camera, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -147,12 +147,15 @@ export default function ChatPage() {
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
   const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [recordingPaused, setRecordingPaused] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [voiceDraft, setVoiceDraft] = useState<File | null>(null);
+  const [voiceDraftUrl, setVoiceDraftUrl] = useState("");
   const [voiceBusy, setVoiceBusy] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
-  const recordingStartedAtRef = useRef(0);
+  const discardRecordingRef = useRef(false);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -367,79 +370,140 @@ export default function ChatPage() {
   }
 
   async function recordVoiceNote() {
-    if (recording) { mediaRecorderRef.current?.stop(); return; }
-    if (voiceBusy) return;
+    if (recording) {
+      mediaRecorderRef.current?.pause();
+      setRecording(false);
+      setRecordingPaused(true);
+      return;
+    }
+    if (recordingPaused) {
+      mediaRecorderRef.current?.resume();
+      setRecording(true);
+      setRecordingPaused(false);
+      return;
+    }
+    if (voiceBusy || voiceDraft) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") { setError("Voice recording is not supported by this browser or app."); return; }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       recordingStreamRef.current = stream;
       recordingChunksRef.current = [];
+      discardRecordingRef.current = false;
       const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"].find(type => MediaRecorder.isTypeSupported(type));
       const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
-      recordingStartedAtRef.current = Date.now();
       setRecordingSeconds(0);
       setRecording(true);
+      setRecordingPaused(false);
       setAttachmentMenuOpen(false);
       recorder.ondataavailable = event => { if (event.data.size) recordingChunksRef.current.push(event.data); };
-      recorder.onerror = () => { setError("Recording failed. Please try again."); setRecording(false); stream.getTracks().forEach(track => track.stop()); };
-      recorder.onstop = async () => {
+      recorder.onerror = () => {
+        setError("Recording failed. Please try again.");
         setRecording(false);
+        setRecordingPaused(false);
+        stream.getTracks().forEach(track => track.stop());
+        recordingStreamRef.current = null;
+      };
+      recorder.onstop = () => {
+        setRecording(false);
+        setRecordingPaused(false);
         stream.getTracks().forEach(track => track.stop());
         recordingStreamRef.current = null;
         const chunks = recordingChunksRef.current;
         recordingChunksRef.current = [];
+        if (discardRecordingRef.current) { discardRecordingRef.current = false; return; }
         if (!chunks.length) return;
         const type = recorder.mimeType || "audio/webm";
         const blob = new Blob(chunks, { type });
         if (blob.size > 12 * 1024 * 1024) { setError("That voice note is too large. Please record a shorter one."); return; }
         const ext = type.includes("ogg") ? "ogg" : type.includes("mp4") ? "m4a" : "webm";
         const file = new File([blob], "voice-note-" + Date.now() + "." + ext, { type });
-        const savedToken = token();
-        const person = people.find(item => item.id === activeIdRef.current);
-        if (!savedToken || !person?.canMessage) return;
-        setVoiceBusy(true);
-        const pendingId = "pending-audio-" + Date.now();
-        const previewUrl = URL.createObjectURL(blob);
-        const pending: ChatMessage = { id: pendingId, senderId: currentUserIdRef.current, recipientId: person.id, text: "", audioUrl: previewUrl, createdAt: new Date().toISOString(), pending: true };
-        setMessages(current => [...current, pending]);
-        try {
-          const audioUrl = await uploadChatImage(file, savedToken);
-          const socket = socketRef.current;
-          if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending the voice note again.");
-          const sent = await new Promise<ChatMessage>((resolve, reject) => socket.timeout(20000).emit("chat:send", { recipientId: person.id, text: "", images: [], audioUrl }, (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
-            if (timeoutError) return reject(new Error("The live connection timed out while sending your voice note."));
-            if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your voice note couldn't be sent."));
-            const result = response.message as ChatMessage;
-            if (!result || typeof result !== "object" || !result.id) return reject(new Error("The server didn't confirm your voice note."));
-            resolve(result);
-          }));
-          URL.revokeObjectURL(previewUrl);
-          setMessages(current => [...current.filter(item => item.id !== pendingId && item.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
-          setPeople(current => current.map(item => item.id === person.id ? { ...item, lastMessage: "🎤 Voice note", lastMessageAt: sent.createdAt } : item));
-        } catch (err) {
-          URL.revokeObjectURL(previewUrl);
-          setMessages(current => current.filter(item => item.id !== pendingId));
-          setError(err instanceof Error ? err.message : "Your voice note couldn't be sent.");
-        } finally { setVoiceBusy(false); }
+        setVoiceDraft(file);
+        setVoiceDraftUrl(URL.createObjectURL(blob));
       };
-      recorder.start();
+      recorder.start(250);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Microphone access was denied.");
       setRecording(false);
+      setRecordingPaused(false);
     }
+  }
+
+  function finishVoiceRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") recorder.stop();
+  }
+
+  function discardVoiceDraft() {
+    if (recording || recordingPaused) {
+      discardRecordingRef.current = true;
+      const recorder = mediaRecorderRef.current;
+      if (recorder && recorder.state !== "inactive") recorder.stop();
+      else {
+        setRecording(false);
+        setRecordingPaused(false);
+        recordingStreamRef.current?.getTracks().forEach(track => track.stop());
+        recordingStreamRef.current = null;
+        recordingChunksRef.current = [];
+      }
+    }
+    if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
+    setVoiceDraft(null);
+    setVoiceDraftUrl("");
+    setRecordingSeconds(0);
+    setRecording(false);
+    setRecordingPaused(false);
+  }
+
+  async function sendVoiceDraft() {
+    if (!voiceDraft || voiceBusy) return;
+    const savedToken = token();
+    const person = people.find(item => item.id === activeIdRef.current);
+    if (!savedToken || !person?.canMessage) return;
+    const file = voiceDraft;
+    const previewUrl = voiceDraftUrl;
+    setVoiceBusy(true);
+    setError("");
+    const pendingId = "pending-audio-" + Date.now();
+    const pending: ChatMessage = { id: pendingId, senderId: currentUserIdRef.current, recipientId: person.id, text: "", audioUrl: previewUrl, createdAt: new Date().toISOString(), pending: true };
+    setMessages(current => [...current, pending]);
+    try {
+      const audioUrl = await uploadChatImage(file, savedToken);
+      const socket = socketRef.current;
+      if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending the voice note again.");
+      const sent = await new Promise<ChatMessage>((resolve, reject) => socket.timeout(20000).emit("chat:send", { recipientId: person.id, text: "", images: [], audioUrl }, (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
+        if (timeoutError) return reject(new Error("The live connection timed out while sending your voice note."));
+        if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your voice note couldn't be sent."));
+        const result = response.message as ChatMessage;
+        if (!result || typeof result !== "object" || !result.id) return reject(new Error("The server didn't confirm your voice note."));
+        resolve(result);
+      }));
+      setMessages(current => [...current.filter(item => item.id !== pendingId && item.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+      setPeople(current => current.map(item => item.id === person.id ? { ...item, lastMessage: "🎤 Voice note", lastMessageAt: sent.createdAt } : item));
+      URL.revokeObjectURL(previewUrl);
+      setVoiceDraft(null);
+      setVoiceDraftUrl("");
+      setRecordingSeconds(0);
+    } catch (err) {
+      setMessages(current => current.filter(item => item.id !== pendingId));
+      setError(err instanceof Error ? err.message : "Your voice note couldn't be sent.");
+    } finally { setVoiceBusy(false); }
   }
 
   useEffect(() => {
     if (!recording) return;
-    const interval = window.setInterval(() => setRecordingSeconds(Math.floor((Date.now() - recordingStartedAtRef.current) / 1000)), 500);
+    const interval = window.setInterval(() => setRecordingSeconds(seconds => seconds + 1), 1000);
     return () => window.clearInterval(interval);
   }, [recording]);
 
   useEffect(() => () => {
-    if (mediaRecorderRef.current?.state === "recording") mediaRecorderRef.current.stop();
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      discardRecordingRef.current = true;
+      mediaRecorderRef.current.stop();
+    }
     recordingStreamRef.current?.getTracks().forEach(track => track.stop());
-  }, []);
+    if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
+  }, [voiceDraftUrl]);
 
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
