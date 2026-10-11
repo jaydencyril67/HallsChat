@@ -297,8 +297,8 @@ export default function ChatPage() {
             <header className="chat-conversation-header">
               <button className="chat-back-button" type="button" onClick={() => { setMobileConversationOpen(false); setActiveId(""); }} aria-label="Back to messages"><ArrowLeft size={19} /></button>
               <Avatar person={activePerson} size="large" />
-              <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span>@{activePerson.username} · {activePerson.isOnline ? "Online" : "Offline"}</span></div>
-              <span className={`chat-access-pill ${activePerson.canMessage ? "chat-access-allowed" : "chat-access-blocked"}`}>{activePerson.canMessage ? "Follower" : "Read only"}</span>
+              <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span>@{activePerson.username}</span></div>
+              <span className={`chat-access-pill ${activePerson.isOnline ? "chat-status-online" : "chat-status-offline"}`} aria-label={activePerson.isOnline ? "Online" : "Offline"}>{activePerson.isOnline ? "Online" : "Offline"}</span>
             </header>
             <div className="chat-message-list">
               {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : messages.length ? messages.map(message => {
