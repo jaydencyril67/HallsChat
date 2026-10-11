@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, CheckCircle2, CircleAlert, MailCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
+import LoadingDots from "./components/LoadingDots";
 
 type VerificationState = "loading" | "success" | "error";
 
@@ -48,7 +49,7 @@ export default function EmailVerificationPage() {
     <AppHeader homeHref="/" />
     <section className="signup-confirmation-panel" aria-live="polite">
       <div className={`signup-confirmation-icon ${state === "error" ? "signup-confirmation-icon-error" : ""}`}>
-        {state === "loading" ? <MailCheck size={30} /> : state === "success" ? <CheckCircle2 size={30} /> : <CircleAlert size={30} />}
+        {state === "loading" ? <LoadingDots /> : state === "success" ? <CheckCircle2 size={30} /> : <CircleAlert size={30} />}
       </div>
       <span className="signup-form-kicker">{state === "loading" ? "SECURE EMAIL CONFIRMATION" : state === "success" ? "CONFIRMATION COMPLETE" : "CONFIRMATION NEEDS ATTENTION"}</span>
       <h1>{state === "loading" ? "Confirming your email" : state === "success" ? "You're confirmed" : "We couldn't confirm that link"}</h1>
