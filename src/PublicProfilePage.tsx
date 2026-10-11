@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { ArrowLeft, MessageCircle, UserRoundCheck, UserPlus, Image as ImageIcon, CalendarDays } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -64,8 +64,8 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     } finally { setBusy(false); }
   }
 
-  const panel: React.CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
-  const muted: React.CSSProperties = { color: "rgba(246,220,225,.58)" };
+  const panel: CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
+  const muted: CSSProperties = { color: "rgba(246,220,225,.58)" };
 
   return <main className="home-page social-home public-profile-page">
     <AppHeader homeHref="/home" />
