@@ -56,7 +56,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return;
     const maxWidth = Math.max(200, Math.min(window.innerWidth * 0.92, 900));
-    const maxHeight = Math.max(180, Math.min(window.innerHeight * 0.62, 720));
+    const maxHeight = Math.max(180, Math.min(window.innerHeight * 0.76, 900));
     const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
     const width = Math.max(1, image.naturalWidth * scale);
     const height = Math.max(1, image.naturalHeight * scale);
@@ -169,7 +169,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
       <div className="social-story-crop-stage">
         <div
           className="social-story-crop-frame"
-          style={{ width: frame.width, height: frame.height, maxWidth: "92vw", maxHeight: "62dvh" }}
+          style={{ width: frame.width, height: frame.height, maxWidth: "92vw", maxHeight: "76dvh" }}
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
@@ -190,6 +190,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
           <div className="social-story-crop-grid" aria-hidden="true" />
         </div>
       </div>
+      <footer className="social-story-crop-bottom" aria-hidden="true"><span /></footer>
     </div>
   );
 }
