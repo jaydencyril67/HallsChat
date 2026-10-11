@@ -36,7 +36,6 @@ function formatTime(value?: string | null) {
 function Avatar({ person, size = "normal" }: { person: Pick<ChatPerson, "name" | "profilePicture" | "isOnline">; size?: "normal" | "large" }) {
   return <span className={`chat-avatar ${size === "large" ? "chat-avatar-large" : ""}`}>
     {person.profilePicture ? <img src={person.profilePicture} alt="" /> : initials(person.name)}
-    <span className={`chat-avatar-presence ${person.isOnline ? "is-online" : "is-offline"}`} aria-label={person.isOnline ? "Online" : "Offline"} title={person.isOnline ? "Online" : "Offline"} />
   </span>;
 }
 
