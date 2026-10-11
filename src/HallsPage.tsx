@@ -90,9 +90,9 @@ export default function HallsPage() {
           <button type="button" aria-label="Refresh people" onClick={() => void loadUsers(tab)} style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,210,219,.14)", background: "rgba(255,255,255,.035)", color: "#f6dce1" }}><RefreshCw size={17} /></button>
         </div>
 
-        <div style={{ ...panel, padding: 5, display: "flex", gap: 5, marginBottom: 15 }}>
+        <div style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
           {([{ id: "discover", label: "Discover people", icon: UserPlus }, { id: "followers", label: "Your followers", icon: UserRoundCheck }] as const).map(({ id, label, icon: Icon }) =>
-            <button key={id} type="button" onClick={() => { setTab(id); setSearch(""); setNotice(""); }} aria-pressed={tab === id} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "12px 8px", borderRadius: 12, border: tab === id ? "1px solid rgba(229,70,92,.55)" : "1px solid transparent", background: tab === id ? "linear-gradient(135deg,rgba(184,32,50,.28),rgba(103,20,36,.2))" : "transparent", color: tab === id ? "#ff9cab" : "rgba(246,220,225,.66)", fontSize: ".8rem", fontWeight: 750 }}>
+            <button key={id} type="button" onClick={() => { setTab(id); setSearch(""); setNotice(""); }} aria-pressed={tab === id} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "8px 10px", borderRadius: 9, border: tab === id ? "1px solid rgba(229,70,92,.7)" : "1px solid rgba(255,210,219,.11)", background: "rgba(255,255,255,.035)", color: tab === id ? "#ff9cab" : "rgba(246,220,225,.66)", fontSize: ".8rem", fontWeight: 750 }}>
               <Icon size={16} /><span>{label}</span>
             </button>
           )}
