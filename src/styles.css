@@ -1685,3 +1685,10 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-story-crop-bottom span{display:block;width:34px;height:4px;border-radius:99px;background:rgba(255,210,219,.24)}
 .social-story-crop-error{position:absolute;left:16px;right:16px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:2;padding:10px 12px;border:1px solid rgba(255,115,135,.38);border-radius:12px;background:rgba(54,9,19,.96);color:#ffdce2;font-size:.82rem;line-height:1.4;text-align:center;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 @media(max-width:520px){.social-story-crop-stage{padding:10px 8px}.social-story-crop-header{gap:7px;padding-right:10px;padding-left:10px}.social-story-crop-header>button{flex-basis:38px;width:38px;height:38px}.social-story-crop-bottom{min-height:48px;padding-bottom:calc(10px + env(safe-area-inset-bottom))}}
+
+/* Draggable story text: keep the gesture confined to the story canvas. */
+.social-story-preview{position:relative;overflow:hidden;touch-action:pan-y}
+.social-story-preview>.social-story-draggable-text{position:absolute;z-index:1;left:50%;top:50%;width:max-content;max-width:86%;margin:0;padding:8px 12px;border-radius:9px;background:rgba(0,0,0,.36);color:#fff;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:700;line-height:1.35;text-shadow:0 1px 4px rgba(0,0,0,.65);transform:translate(-50%,-50%);touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;will-change:left,top}
+.social-story-preview>.social-story-draggable-text:active{cursor:grabbing}
+.social-story-viewer-content{position:relative;overflow:hidden}
+.social-story-viewer-content>.social-story-positioned-text{position:absolute;z-index:2;left:50%;top:50%;width:max-content;max-width:86%;max-height:75%;overflow:auto;margin:0;padding:8px 12px;border-radius:9px;background:rgba(0,0,0,.36);color:#fff;text-align:center;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:700;line-height:1.35;text-shadow:0 1px 4px rgba(0,0,0,.65);transform:translate(-50%,-50%);pointer-events:none}
