@@ -24,7 +24,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
     if (token) {
       try {
         const payload = JSON.parse(window.atob(token.split(".")[1])) as { exp?: number };
-        tokenIsValid = typeof payload.exp === "number" && payload.exp * 1000 > Date.now();
+        tokenIsValid = typeof payload.exp === "number" && payload.exp > Date.now();
       } catch {
         tokenIsValid = false;
       }
