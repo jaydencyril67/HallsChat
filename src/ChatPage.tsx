@@ -567,6 +567,10 @@ export default function ChatPage() {
     const pendingId = "pending-audio-" + Date.now();
     const pending: ChatMessage = { id: pendingId, senderId: currentUserIdRef.current, recipientId: person.id, text: "", audioUrl: previewUrl, createdAt: new Date().toISOString(), pending: true };
     setMessages(current => [...current, pending]);
+    // Clear the composer immediately; the chat-list pending bubble now owns the sending preview.
+    setVoiceDraft(null);
+    setVoiceDraftUrl("");
+    setRecordingSeconds(0);
     try {
       const audioUrl = await uploadChatImage(file, savedToken);
       const socket = socketRef.current;
@@ -588,6 +592,9 @@ export default function ChatPage() {
       setRecordingSeconds(0);
     } catch (err) {
       setMessages(current => current.filter(item => item.id !== pendingId));
+      // If sending fails, put the recording back so the user can retry it.
+      setVoiceDraft(file);
+      setVoiceDraftUrl(previewUrl);
       setError(err instanceof Error ? err.message : "Your voice note couldn't be sent.");
     } finally { setVoiceBusy(false); }
   }
