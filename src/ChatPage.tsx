@@ -314,7 +314,14 @@ export default function ChatPage() {
       if (!response.ok) throw new Error(payload.message || "Your chats couldn't be loaded.");
       const nextPeople = Array.isArray(payload.people) ? payload.people as ChatPerson[] : [];
       setPeople(nextPeople);
-      setActiveId(current => current && nextPeople.some(person => person.id === current) ? current : "");
+      const requestedUserId = new URLSearchParams(window.location.search).get("user");
+      const requestedPerson = requestedUserId ? nextPeople.find(person => person.id === requestedUserId && person.canMessage) : undefined;
+      if (requestedPerson) {
+        setActiveId(requestedPerson.id);
+        setMobileConversationOpen(true);
+      } else {
+        setActiveId(current => current && nextPeople.some(person => person.id === current) ? current : "");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Your chats couldn't be loaded.");
     } finally {
@@ -814,8 +821,8 @@ export default function ChatPage() {
           {activePerson ? <>
             <header className="chat-conversation-header">
               <button className="chat-back-button" type="button" onClick={() => { stopTyping(); setOtherTyping(false); setMobileConversationOpen(false); setActiveId(""); }} aria-label="Back to messages"><ArrowLeft size={19} /></button>
-              <Avatar person={activePerson} size="large" />
-              <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span className={otherTyping ? "chat-typing-label" : ""}>{otherTyping ? "Typing…" : `@${activePerson.username}`}</span></div>
+              <button type="button" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} aria-label={"View " + activePerson.name + " profile"} style={{ padding: 0, border: 0, background: "transparent", borderRadius: "50%", flexShrink: 0 }}><Avatar person={activePerson} size="large" /></button>
+              <button type="button" className="chat-conversation-person" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} style={{ minWidth: 0, padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left", cursor: "pointer" }} aria-label={"View " + activePerson.name + " profile"><strong>{activePerson.name}</strong><span className={otherTyping ? "chat-typing-label" : ""}>{otherTyping ? "Typing…" : "@" + activePerson.username}</span></button>
               <span className={`chat-access-pill ${activePerson.isOnline ? "chat-status-online" : "chat-status-offline"}`} aria-label={activePerson.isOnline ? "Online" : "Offline"}>{activePerson.isOnline ? "Online" : "Offline"}</span>
             </header>
             <div className="chat-message-list" ref={chatMessageListRef}>
