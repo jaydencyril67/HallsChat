@@ -156,7 +156,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
       }, nextZoom);
       zoomRef.current = nextZoom;
       offsetRef.current = nextOffset;
-      syncImageStyles(nextZoom);
+      syncImageStyles();
       return;
     }
     if (!dragRef.current) return;
