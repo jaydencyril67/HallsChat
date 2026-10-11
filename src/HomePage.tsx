@@ -982,7 +982,7 @@ export default function HomePage() {
             <div className="social-story-editor-tools">
               <button type="button" className="social-story-manage-trigger" onClick={() => setStoryTextManagerOpen(value => !value)} aria-expanded={storyTextManagerOpen}>Manage</button>
               {!storyPhoto && <button type="button" className="social-story-manage-trigger" onClick={() => setStoryColorPickerOpen(value => !value)} aria-expanded={storyColorPickerOpen}>Background</button>}
-              <button type="button" onClick={addStoryTextSection disabled={storyTextSections.length >= 10}><Plus size={15}/> Add text</button>
+              <button type="button" onClick={addStoryTextSection} disabled={storyTextSections.length >= 10}><Plus size={15}/> Add text</button>
             </div>
           </div>
           <div className="social-story-section-rail" aria-label="Choose text section">
