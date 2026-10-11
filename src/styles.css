@@ -1127,3 +1127,54 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   background: #85818a;
 }
 .presence-online .presence-dot { background: #39d98a; }
+
+
+/* Individual message cards: match the Halls page panel instead of wrapping
+   the entire conversation in one large grouped card. */
+.chat-message-list {
+  margin: 0 !important;
+  padding: 10px 10px 14px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.chat-message-line {
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 0;
+  justify-content: flex-start;
+}
+.chat-message-line:last-of-type { margin-bottom: 0; }
+.chat-message-line-mine { justify-content: flex-end; }
+.chat-message-content {
+  max-width: min(88%, 440px);
+  min-width: 0;
+  padding: 12px 12px 9px;
+  border: 1px solid rgba(255,210,219,.11);
+  border-radius: 17px;
+  background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
+  color: #f8e9ec;
+  box-shadow: none;
+}
+.chat-message-content-theirs {
+  border-color: rgba(255,210,219,.11);
+  border-radius: 17px;
+  background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
+}
+.chat-message-content-mine {
+  border-color: rgba(222,68,89,.32);
+  border-radius: 17px;
+  background: linear-gradient(145deg,rgba(82,24,37,.78),rgba(42,13,22,.9));
+  color: #fff1f4;
+}
+.chat-message-content time { margin-top: 3px; }
+.chat-message-content:has(.chat-image-grid) {
+  max-width: min(280px, 82vw);
+  padding: 7px !important;
+}
+@media(max-width:680px) {
+  .chat-message-list { padding: 9px 9px 12px !important; }
+  .chat-message-line { margin-bottom: 9px; }
+  .chat-message-content { max-width: 88%; }
+}
