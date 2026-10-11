@@ -105,7 +105,6 @@ function renderTextWithLinks(value: string): ReactNode {
 export default function HomePage() {
   const [user, setUser] = useState<Account | null>(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState("");
@@ -206,7 +205,7 @@ export default function HomePage() {
         // removed only when the backend definitively rejects the session.
         setError(err instanceof Error ? err.message : "Unable to load your account.");
       })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .finally(() => { /* Account loading has no separate hero state. */ });
     return () => { cancelled = true; };
   }, []);
 
