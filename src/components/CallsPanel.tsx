@@ -77,8 +77,12 @@ export default function CallsPanel({ socket, person }: Props) {
     }
     setCallError("");
     socket.timeout(10000).emit("call:invite", { recipientId: person.id, kind: callKind }, async (timeoutError: Error | null, response: { ok?: boolean; callId?: string; message?: string }) => {
-      if (timeoutError || !response?.ok || !response.callId) {
-        setCallError(response?.message || "Couldn't start the call. Please try again.");
+      if (timeoutError) {
+        setCallError("The call server didn't respond. Deploy the latest HallsChats backend and confirm VITE_API_URL points to https://hallschats.onrender.com.");
+        return;
+      }
+      if (!response?.ok || !response.callId) {
+        setCallError(response?.message || "The call server rejected the request without an explanation. Check the HallsChats backend logs.");
         return;
       }
       activeCallRef.current = response.callId;
