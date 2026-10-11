@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, MailCheck, ShieldCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
+import LoadingDots from "./components/LoadingDots";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -90,7 +91,7 @@ export default function SignupPage() {
       <p>We've sent a confirmation link to <strong>{confirmationEmail}</strong>. Open the email and tap <strong>Confirm email address</strong> to finish creating your HallsChat account.</p>
       <div className="signup-confirmation-tip">The link expires in 15 minutes. If you don't see the email, check your spam or promotions folder.</div>
       {resendMessage && <div className={resendError ? "signup-feedback signup-feedback-error" : "signup-feedback signup-feedback-success"} role="status">{resendMessage}</div>}
-      <button className="button button-primary signup-submit" type="button" onClick={handleResendConfirmation} disabled={resending}>{resending ? "Sending…" : "Resend confirmation email"} {!resending && <ArrowRight size={17} />}</button>
+      <button className="button button-primary signup-submit" type="button" onClick={handleResendConfirmation} disabled={resending}>{resending ? <><LoadingDots /> Sending…</> : "Resend confirmation email"} {!resending && <ArrowRight size={17} />}</button>
       <button className="signup-confirmation-back" type="button" onClick={() => { setShowCheckEmail(false); setResendMessage(""); setResendError(false); }}>Back to signup</button>
     </section> : <>
     <div className="signup-shell">
@@ -123,7 +124,7 @@ export default function SignupPage() {
           <label className="signup-terms"><input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} /><span>I agree to HallsChat’s Terms and Privacy Policy.</span></label>
           {error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
           {success && <div className="signup-feedback signup-feedback-success" role="status">{success}</div>}
-          <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? "Creating your account…" : "Create account"} {!submitting && <ArrowRight size={17} />}</button>
+          <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? <><LoadingDots /> Creating your account…</> : "Create account"} {!submitting && <ArrowRight size={17} />}</button>
           <p className="signup-form-note"><LockKeyhole size={13} /> Your password is protected with one-way password hashing.</p>
         </form>
         <div className="signup-bottom-note">Already have an account? <a href="/signin">Sign in</a></div>
