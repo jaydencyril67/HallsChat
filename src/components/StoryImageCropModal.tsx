@@ -280,7 +280,6 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     <div role="dialog" aria-modal="true" aria-label={title} className="social-story-crop-overlay">
       <header className="social-story-crop-header">
         <button type="button" onClick={onCancel} disabled={saving} aria-label="Cancel photo edit"><X size={23} /></button>
-        <div><strong>{title}</strong><span>Drag the box to move it · Drag handles to resize</span></div>
         <button type="button" onClick={() => void saveCrop()} disabled={!ready || saving} aria-label="Apply crop">{saving ? "…" : <Check size={25} />}</button>
       </header>
       <div className="social-story-crop-stage">
@@ -326,7 +325,6 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
         </div>
       </div>
       {errorMessage && <div className="social-story-crop-error" role="alert">{errorMessage}</div>}
-      <footer className="social-story-crop-bottom" aria-hidden="true"><span /></footer>
     </div>
   );
 }
