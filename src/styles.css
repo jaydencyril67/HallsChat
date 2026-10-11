@@ -1831,3 +1831,62 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-toast{position:fixed;z-index:1100;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:15px;align-items:center;max-width:calc(100% - 24px);padding:12px 15px;border:1px solid #d94a6040;border-radius:13px;background:#211016;color:#fff;font-size:12px;box-shadow:0 8px 35px #0007}
 .halls-call-toast button{border:0;background:transparent;color:#fff;font-size:20px}
 @media(max-width:520px){.halls-call-card,.halls-call-stage{min-height:390px;border-radius:22px}.halls-call-stage-video{height:calc(100dvh - 24px);min-height:420px}.halls-call-triggers{gap:4px}.halls-call-triggers button{width:32px;height:32px}}
+
+
+/* Calls centre: explicit contact selection and unmistakable call actions. */
+.halls-calls-shell{width:min(100% - 28px,1040px);margin:0 auto;padding:24px 0 110px}
+.halls-calls-heading{display:flex;align-items:center;gap:14px;margin:8px 0 24px}
+.halls-calls-heading-icon{width:52px;height:52px;display:grid;place-items:center;flex:0 0 52px;border:1px solid rgba(235,94,116,.3);border-radius:17px;background:linear-gradient(145deg,rgba(185,32,54,.25),rgba(80,17,33,.3));color:#ff9cac}
+.halls-calls-kicker{margin:0 0 3px;color:#e99aa5;font-size:10px;font-weight:800;letter-spacing:1.7px}
+.halls-calls-heading h1{margin:0;font-size:clamp(25px,5vw,34px);letter-spacing:-.8px}
+.halls-calls-heading p:last-child{margin:5px 0 0;color:var(--theme-muted,#a99aa0);font-size:13px}
+.halls-calls-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;align-items:stretch}
+.halls-calls-people,.halls-calls-detail{min-width:0;border:1px solid var(--theme-line,rgba(255,255,255,.1));border-radius:22px;background:var(--theme-surface,rgba(255,255,255,.035));overflow:hidden}
+.halls-calls-people{padding:13px}
+.halls-calls-search{display:flex;align-items:center;gap:10px;height:43px;padding:0 12px;border:1px solid var(--theme-line,rgba(255,255,255,.1));border-radius:13px;color:#bfaeb3;background:rgba(0,0,0,.13)}
+.halls-calls-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--theme-text,#fff);font:inherit;font-size:13px}
+.halls-calls-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.halls-calls-person{display:flex;align-items:center;gap:11px;width:100%;min-width:0;padding:11px 9px;border:1px solid transparent;border-radius:14px;text-align:left;background:transparent;color:var(--theme-text,#fff);cursor:pointer}
+.halls-calls-person:hover,.halls-calls-person.is-selected{border-color:rgba(229,82,105,.3);background:rgba(174,29,51,.13)}
+.halls-calls-person:disabled{opacity:.5;cursor:not-allowed}
+.halls-calls-person-avatar{position:relative;display:grid;place-items:center;flex:0 0 43px;width:43px;height:43px;border-radius:50%;overflow:hidden;background:linear-gradient(145deg,#d94a60,#702032);color:white;font-weight:800;font-size:13px}
+.halls-calls-person-avatar img,.halls-calls-selected-avatar img{width:100%;height:100%;object-fit:cover}
+.halls-calls-person-avatar i{position:absolute;right:0;bottom:1px;width:11px;height:11px;border:2px solid #241218;border-radius:50%;background:#777}
+.halls-calls-person-avatar i.is-online{background:#39d98a}
+.halls-calls-person-copy{display:flex;flex:1;flex-direction:column;gap:3px;min-width:0}
+.halls-calls-person-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
+.halls-calls-person-copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#b9a6ac;font-size:11px}
+.halls-calls-person-copy em{font-style:normal;color:#d49aa4;font-size:10px}
+.halls-calls-person>svg{flex:0 0 auto;color:#c98995}
+.halls-calls-detail{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:410px;padding:25px 18px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(157,32,56,.18),transparent 62%),var(--theme-surface,rgba(255,255,255,.025))}
+.halls-calls-selected-avatar{display:grid;place-items:center;width:92px;height:92px;overflow:hidden;border:3px solid rgba(239,108,130,.28);border-radius:50%;background:linear-gradient(145deg,#d94a60,#702032);color:white;font-size:27px;font-weight:800;box-shadow:0 8px 35px rgba(170,30,55,.2)}
+.halls-calls-status{display:flex;align-items:center;gap:6px;margin-top:16px;color:#d5a2aa;font-size:9px;font-weight:800;letter-spacing:1.4px}
+.halls-calls-status i{width:6px;height:6px;border-radius:50%;background:#9b7e85}
+.halls-calls-status.is-online i{background:#39d98a;box-shadow:0 0 9px #39d98a66}
+.halls-calls-detail h2{margin:7px 0 0;font-size:23px}
+.halls-calls-username{margin:3px 0 0;color:#b9a6ac;font-size:12px}
+.halls-calls-instruction{margin:19px 0 12px;color:var(--theme-muted,#b9a6ac);font-size:12px}
+.halls-calls-methods{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:min(100%,360px);margin-bottom:13px}
+.halls-calls-method{display:flex;align-items:center;gap:9px;min-width:0;padding:10px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:rgba(0,0,0,.12);text-align:left}
+.halls-calls-method>span{display:grid;place-items:center;flex:0 0 35px;width:35px;height:35px;border-radius:11px;background:rgba(197,49,71,.18);color:#ff9cac}
+.halls-calls-method-video>span{background:rgba(130,72,190,.2);color:#d8b2ff}
+.halls-calls-method>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.halls-calls-method strong{font-size:11px;white-space:nowrap}
+.halls-calls-method small{color:#b9a6ac;font-size:10px}
+.halls-calls-detail .halls-call-triggers{width:min(100%,360px);margin:0;gap:9px}
+.halls-calls-detail .halls-call-triggers button{display:flex;align-items:center;justify-content:center;gap:8px;flex:1;width:auto;height:46px;padding:0 12px;border:0;border-radius:13px;font-size:12px;font-weight:750}
+.halls-calls-detail .halls-call-trigger-audio{background:#c62e48;color:white}
+.halls-calls-detail .halls-call-trigger-video{background:#6737a0;color:white}
+.halls-calls-detail .halls-call-triggers button:disabled{opacity:.45}
+.halls-calls-chat-link{margin-top:12px;padding:8px 12px;border:0;background:transparent;color:#e99aa5;font-size:11px;cursor:pointer}
+.halls-calls-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:190px;padding:22px;text-align:center;color:#b9a6ac;font-size:12px}
+.halls-calls-empty strong{color:var(--theme-text,#fff);font-size:14px}
+.halls-calls-empty span{max-width:240px;line-height:1.5}
+.halls-calls-empty button{margin-top:4px;padding:9px 14px;border:1px solid rgba(229,82,105,.3);border-radius:10px;background:rgba(174,29,51,.15);color:#ffdfe4;font-size:12px}
+.halls-calls-spinner{width:20px;height:20px;border:2px solid #ffffff22;border-top-color:#e56b80;border-radius:50%;animation:halls-calls-spin .7s linear infinite}
+.halls-calls-error{margin:12px 0;color:#ff9ba8;font-size:12px}
+.halls-calls-note{max-width:700px;margin:15px auto 0;color:var(--theme-muted,#a99aa0);font-size:10px;line-height:1.6;text-align:center}
+@keyframes halls-calls-spin{to{transform:rotate(360deg)}}
+.halls-call-triggers button span{font-size:11px;font-weight:700}
+@media(max-width:720px){.halls-calls-shell{width:min(100% - 20px,540px);padding-top:15px}.halls-calls-layout{grid-template-columns:1fr;gap:12px}.halls-calls-people{padding:10px}.halls-calls-list{max-height:260px;overflow:auto}.halls-calls-detail{min-height:350px;padding:22px 14px}.halls-calls-heading{margin-bottom:16px}.halls-calls-detail .halls-call-triggers button{height:44px}}
+@media(max-width:380px){.halls-calls-methods{gap:5px}.halls-calls-method{gap:6px;padding:8px}.halls-calls-method>span{flex-basis:30px;width:30px;height:30px}.halls-calls-detail h2{font-size:20px}}
