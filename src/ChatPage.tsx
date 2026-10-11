@@ -136,6 +136,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [currentUserId, setCurrentUserId] = useState("");
+  const [otherTyping, setOtherTyping] = useState(false);
   const [listLoading, setListLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [historyLoadedFor, setHistoryLoadedFor] = useState("");
@@ -164,11 +165,41 @@ export default function ChatPage() {
   const activeIdRef = useRef(activeId);
   const currentUserIdRef = useRef(currentUserId);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const typingRecipientRef = useRef("");
+  const typingStopTimerRef = useRef<number | null>(null);
+  const otherTypingTimerRef = useRef<number | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
   activeIdRef.current = activeId;
   currentUserIdRef.current = currentUserId;
 
   const token = () => localStorage.getItem("hallschat_token");
+
+  function stopTyping(recipientId = typingRecipientRef.current) {
+    if (typingStopTimerRef.current !== null) window.clearTimeout(typingStopTimerRef.current);
+    typingStopTimerRef.current = null;
+    if (recipientId && typingRecipientRef.current === recipientId) {
+      const socket = socketRef.current;
+      if (socket?.connected) socket.emit("chat:typing", { recipientId, isTyping: false });
+      typingRecipientRef.current = "";
+    }
+  }
+
+  function handleDraftChange(value: string) {
+    setDraft(value);
+    const recipientId = activeIdRef.current;
+    const socket = socketRef.current;
+    if (!value.trim() || !recipientId || !socket?.connected) {
+      stopTyping();
+      return;
+    }
+    if (typingRecipientRef.current !== recipientId) {
+      stopTyping();
+      typingRecipientRef.current = recipientId;
+      socket.emit("chat:typing", { recipientId, isTyping: true });
+    }
+    if (typingStopTimerRef.current !== null) window.clearTimeout(typingStopTimerRef.current);
+    typingStopTimerRef.current = window.setTimeout(() => stopTyping(recipientId), 1800);
+  }
 
 
   const loadPeople = useCallback(async (showLoader = false) => {
@@ -219,6 +250,19 @@ export default function ChatPage() {
     socket.on("connect_error", () => {
       // REST history remains available while the socket reconnects.
     });
+    socket.on("chat:typing", (payload: { senderId?: string; isTyping?: boolean }) => {
+      if (!payload?.senderId || payload.senderId !== activeIdRef.current) return;
+      if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current);
+      setOtherTyping(Boolean(payload.isTyping));
+      if (payload.isTyping) {
+        otherTypingTimerRef.current = window.setTimeout(() => {
+          setOtherTyping(false);
+          otherTypingTimerRef.current = null;
+        }, 2500);
+      } else {
+        otherTypingTimerRef.current = null;
+      }
+    });
     socket.on("chat:message", (message: ChatMessage) => {
       const me = currentUserIdRef.current;
       const openId = activeIdRef.current;
@@ -260,11 +304,20 @@ export default function ChatPage() {
       });
     });
     return () => {
+      stopTyping();
+      if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current);
       socket.removeAllListeners();
       socket.disconnect();
       if (socketRef.current === socket) socketRef.current = null;
     };
   }, [currentUserId]);
+
+  useEffect(() => {
+    setOtherTyping(false);
+    if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current);
+    otherTypingTimerRef.current = null;
+    stopTyping();
+  }, [activeId]);
 
   const loadMessages = useCallback(async (personId: string, showLoader = false) => {
     const savedToken = localStorage.getItem("hallschat_token");
@@ -507,6 +560,7 @@ export default function ChatPage() {
 
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
+    stopTyping();
     const text = draft.trim();
     if (!activePerson || !activePerson.canMessage || (!text && imageFiles.length === 0) || compressingImages) return;
     const savedToken = token();
@@ -608,7 +662,7 @@ export default function ChatPage() {
           {listLoading ? <div className="chat-list-state"><LoadingDots /></div> : people.length ? <div className="chat-people-list">
             {people.map(person => <article key={person.id} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""}`}>
               <Avatar person={person} />
-              <button type="button" className="chat-person-copy chat-person-select" onClick={() => { scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open chat with ${person.name}`}>
+              <button type="button" className="chat-person-copy chat-person-select" onClick={() => { stopTyping(); setOtherTyping(false); scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open chat with ${person.name}`}>
                 <strong>{person.name}</strong><small>@{person.username} · {person.isOnline ? "Online" : "Offline"}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </button>
               <span className="chat-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="chat-lock-dot" title="Messaging unavailable">•</span>}</span>
@@ -620,9 +674,9 @@ export default function ChatPage() {
         <section className="chat-conversation" aria-label="Conversation">
           {activePerson ? <>
             <header className="chat-conversation-header">
-              <button className="chat-back-button" type="button" onClick={() => { setMobileConversationOpen(false); setActiveId(""); }} aria-label="Back to messages"><ArrowLeft size={19} /></button>
+              <button className="chat-back-button" type="button" onClick={() => { stopTyping(); setOtherTyping(false); setMobileConversationOpen(false); setActiveId(""); }} aria-label="Back to messages"><ArrowLeft size={19} /></button>
               <Avatar person={activePerson} size="large" />
-              <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span>@{activePerson.username}</span></div>
+              <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span className={otherTyping ? "chat-typing-label" : ""}>{otherTyping ? "Typing…" : `@${activePerson.username}`}</span></div>
               <span className={`chat-access-pill ${activePerson.isOnline ? "chat-status-online" : "chat-status-offline"}`} aria-label={activePerson.isOnline ? "Online" : "Offline"}>{activePerson.isOnline ? "Online" : "Offline"}</span>
             </header>
             <div className="chat-message-list">
@@ -650,7 +704,7 @@ export default function ChatPage() {
                   <button type="button" onClick={() => void recordVoiceNote()} disabled={voiceBusy}><Mic size={19} /><span>Voice note</span></button>
                 </div>}
               </div>
-              {(recording || recordingPaused) ? <div className={"chat-recording-status" + (recordingPaused ? " is-paused" : "")}><span className={"chat-recording-dot" + (recordingPaused ? " is-paused" : "")} />{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceDraft && voiceDraftUrl ? <div className="chat-voice-draft-preview"><VoiceNotePlayer src={voiceDraftUrl} /><span>Voice note ready</span></div> : <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />}
+              {(recording || recordingPaused) ? <div className={"chat-recording-status" + (recordingPaused ? " is-paused" : "")}><span className={"chat-recording-dot" + (recordingPaused ? " is-paused" : "")} />{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceDraft && voiceDraftUrl ? <div className="chat-voice-draft-preview"><VoiceNotePlayer src={voiceDraftUrl} /><span>Voice note ready</span></div> : <textarea ref={draftInputRef} value={draft} onChange={event => handleDraftChange(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />}
               {!recording && !recordingPaused && !voiceDraft && <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>}
               {(recording || recordingPaused) ? <><button type="button" className="chat-recording-control" onClick={() => void recordVoiceNote()} aria-label={recordingPaused ? "Resume recording" : "Pause recording"} title={recordingPaused ? "Resume recording" : "Pause recording"}>{recordingPaused ? <Play size={17} fill="currentColor" /> : <Pause size={17} fill="currentColor" />}</button><button type="button" className="chat-stop-recording" onClick={finishVoiceRecording} aria-label="Finish recording and review" title="Finish recording and review"><Square size={17} fill="currentColor" /></button><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} aria-label="Delete recording" title="Delete recording"><Trash2 size={17} /></button></> : voiceDraft ? <><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} disabled={voiceBusy} aria-label="Delete voice note" title="Delete voice note"><Trash2 size={17} /></button><button type="button" className="chat-stop-recording" onClick={() => void sendVoiceDraft()} disabled={voiceBusy} aria-label="Send voice note" title="Send voice note">{voiceBusy ? <LoadingDots /> : <Send size={18} />}</button></> : <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || compressingImages} aria-label="Send message"><ArrowUp size={20} strokeWidth={2.5} /></button>}
             </form></> : <div className="chat-readonly-notice"><ShieldCheck size={16} /><span>This person no longer follows you, so you can’t send new messages.</span></div>}
