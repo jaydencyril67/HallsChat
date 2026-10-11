@@ -45,7 +45,8 @@ export default function ProfilePage() {
     return () => { cancelled = true; };
   }, []);
 
-  const posts = allPosts.filter(post => Boolean(user?.id) && post.author?.id === user?.id);\n  const initials = user?.name?.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
+  const posts = allPosts.filter(post => Boolean(user?.id) && post.author?.id === user?.id);
+  const initials = user?.name?.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
   const panel: React.CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
   const muted: React.CSSProperties = { color: "rgba(246,220,225,.58)" };
 
