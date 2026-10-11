@@ -5,7 +5,7 @@ import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
 
 export default function SigninPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -21,7 +21,7 @@ export default function SigninPage() {
     try {
       const response = await fetch(`${apiBase}/api/auth/login`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password })
+        body: JSON.stringify({ identifier: identifier.trim().toLowerCase(), password })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -42,7 +42,7 @@ export default function SigninPage() {
     try {
       const response = await fetch(`${apiBase}/api/auth/resend-confirmation`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase() })
+        body: JSON.stringify({ email: identifier.trim().toLowerCase() })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || "Unable to resend the confirmation email.");
@@ -69,7 +69,7 @@ export default function SigninPage() {
           <p>Enter your account details to continue.</p>
         </div>
         <form className="signup-form" onSubmit={handleSubmit}>
-          <label className="signup-field"><span>Email address</span><input type="email" name="email" autoComplete="email" inputMode="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required maxLength={254} /></label>
+          <label className="signup-field"><span>Email address or username</span><input type="text" name="identifier" autoComplete="username" value={identifier} onChange={e => setIdentifier(e.target.value)} placeholder="you@example.com or username" required maxLength={254} /></label>
           <label className="signup-field"><span>Password</span><span className="signup-password-wrap"><input type={showPassword ? "text" : "password"} name="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Your password" required maxLength={128} /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
           {error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
           {notice && <div className="signup-feedback signup-feedback-success" role="status">{notice}</div>}
