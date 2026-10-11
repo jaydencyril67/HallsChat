@@ -150,10 +150,9 @@ export default function ProfilePage() {
               </div>
               <h1 style={{ margin: "13px 0 4px", color: "#fff0f3", fontSize: "clamp(1.4rem,5vw,1.9rem)", letterSpacing: "-.04em", overflowWrap: "anywhere" }}>{loading ? "Loading profile…" : user?.name || "HallsChat member"}</h1>
               <p style={{ margin: 0, color: "#e69aa7", fontSize: ".88rem" }}>{user?.username ? `@${user.username}` : "Your HallsChat account"}</p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 13 }}>
-                <button type="button" onClick={() => fileInput.current?.click()} disabled={pictureBusy} className="button button-primary" style={{ minHeight: 37, fontSize: ".78rem" }}><Camera size={15} /> {user?.profilePicture ? "Change photo" : "Add profile photo"}</button>
-                {user?.profilePicture && <button type="button" onClick={() => void removePicture()} disabled={pictureBusy} className="button button-secondary" style={{ minHeight: 37, fontSize: ".78rem" }}><Trash2 size={14} /> Remove</button>}
-              </div>
+              {user?.profilePicture && <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 13 }}>
+                <button type="button" onClick={() => void removePicture()} disabled={pictureBusy} className="button button-secondary" style={{ minHeight: 37, fontSize: ".78rem" }}><Trash2 size={14} /> Remove</button>
+              </div>}
               {pictureBusy && <p role="status" style={{ margin: "12px 0 0", color: "#f09aa7", fontSize: ".8rem" }}><LoadingDots /> Saving profile picture…</p>}
               {pictureError && <p role="alert" style={{ margin: "12px 0 0", color: "#ff9cab", fontSize: ".8rem", lineHeight: 1.5 }}>{pictureError}</p>}
               <p style={{ margin: "12px 0 0", ...muted, fontSize: ".76rem", lineHeight: 1.6 }}>Choose a photo, adjust the square crop, then save. JPG, PNG, WebP and other image formats up to 10 MB are supported.</p>
