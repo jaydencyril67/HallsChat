@@ -30,17 +30,23 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     setReady(false);
   }, [imageUrl]);
 
-  const geometry = () => {
+  const baseScale = () => {
+    const image = imageRef.current;
+    if (!image?.naturalWidth || !image.naturalHeight) return 1;
+    return Math.max(frame.width / image.naturalWidth, frame.height / image.naturalHeight);
+  };
+
+  const geometry = (activeZoom = zoomRef.current) => {
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return null;
-    const scale = (frame.width / image.naturalWidth) * zoomRef.current;
+    const scale = baseScale() * activeZoom;
     return { width: image.naturalWidth * scale, height: image.naturalHeight * scale };
   };
 
   const constrainOffset = (next: { x: number; y: number }, nextZoom = zoomRef.current) => {
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return next;
-    const scale = (frame.width / image.naturalWidth) * nextZoom;
+    const scale = baseScale() * nextZoom;
     return {
       x: clamp(next.x, frame.width - image.naturalWidth * scale, 0),
       y: clamp(next.y, frame.height - image.naturalHeight * scale, 0),
@@ -51,8 +57,8 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return;
     const nextZoom = clamp(next, 1, 5);
-    const currentScale = (frame.width / image.naturalWidth) * zoomRef.current;
-    const nextScale = (frame.width / image.naturalWidth) * nextZoom;
+    const currentScale = baseScale() * zoomRef.current;
+    const nextScale = baseScale() * nextZoom;
     const centerX = frame.width / 2;
     const centerY = frame.height / 2;
     const imagePointX = (centerX - offsetRef.current.x) / currentScale;
@@ -94,6 +100,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
       const [a, b] = Array.from(pointersRef.current.values());
       gestureRef.current = {
         distance: Math.max(1, Math.hypot(b.x - a.x, b.y - a.y)),
+        midpoint: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
         zoom: zoomRef.current,
         offset: offsetRef.current,
       };
@@ -101,14 +108,23 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     }
   };
 
-  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (!pointersRef.current.has(event.pointerId) || !ready || saving) return;
+    event.preventDefault();
     pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointersRef.current.size >= 2 && gestureRef.current) {
       const [a, b] = Array.from(pointersRef.current.values());
       const distance = Math.max(1, Math.hypot(b.x - a.x, b.y - a.y));
-      const nextZoom = clamp(gestureRef.current.zoom * distance / gestureRef.current.distance, 1, 5);
-      const nextOffset = constrainOffset(gestureRef.current.offset, nextZoom);
+      const midpoint = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      const nextZoom = clamp(gestureRef.current.zoom * distance / gestureRef.current.distance, 1, 12);
+      const startScale = baseScale() * gestureRef.current.zoom;
+      const nextScale = baseScale() * nextZoom;
+      const imagePointX = (gestureRef.current.midpoint.x - gestureRef.current.offset.x) / startScale;
+      const imagePointY = (gestureRef.current.midpoint.y - gestureRef.current.offset.y) / startScale;
+      const nextOffset = constrainOffset({
+        x: midpoint.x - imagePointX * nextScale,
+        y: midpoint.y - imagePointY * nextScale,
+      }, nextZoom);
       zoomRef.current = nextZoom;
       offsetRef.current = nextOffset;
       setZoom(nextZoom);
@@ -124,7 +140,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
     setOffset(nextOffset);
   };
 
-  const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
     pointersRef.current.delete(event.pointerId);
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Pointer capture may already be released. */ }
     gestureRef.current = null;
@@ -193,8 +209,8 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone }: Stor
       </div>
       <footer className="social-story-crop-footer">
         <button type="button" onClick={() => changeZoom(zoom - 0.25)} disabled={!ready || zoom <= 1} aria-label="Zoom out"><Minus size={18} /></button>
-        <input type="range" min="1" max="5" step="0.05" value={zoom} onChange={event => changeZoom(Number(event.target.value))} disabled={!ready || saving} aria-label="Crop zoom" />
-        <button type="button" onClick={() => changeZoom(zoom + 0.25)} disabled={!ready || zoom >= 5} aria-label="Zoom in"><Plus size={18} /></button>
+        <input type="range" min="1" max="12" step="0.05" value={zoom} onChange={event => changeZoom(Number(event.target.value))} disabled={!ready || saving} aria-label="Crop zoom" />
+        <button type="button" onClick={() => changeZoom(zoom + 0.25)} disabled={!ready || zoom >= 12} aria-label="Zoom in"><Plus size={18} /></button>
         <span>{Math.round(zoom * 100)}%</span>
       </footer>
     </div>
