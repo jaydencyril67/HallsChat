@@ -16,8 +16,6 @@ export default function CallsPanel({ socket, person }: Props) {
   const [muted, setMuted] = useState(false);
   const [cameraOff, setCameraOff] = useState(false);
   const [seconds, setSeconds] = useState(0);
-  const [ringRemaining, setRingRemaining] = useState(30);
-  const ringStartedAtRef = useRef(0);
   const [callError, setCallError] = useState("");
   const localVideo = useRef<HTMLVideoElement | null>(null);
   const remoteVideo = useRef<HTMLVideoElement | null>(null);
@@ -40,7 +38,7 @@ export default function CallsPanel({ socket, person }: Props) {
     if (localAudio.current) localAudio.current.srcObject = null;
     if (remoteAudio.current) remoteAudio.current.srcObject = null;
     activeCallRef.current = "";
-    setCallId(""); setIncoming(null); setPhase("idle"); setMuted(false); setCameraOff(false); setSeconds(0); setRingRemaining(30); ringStartedAtRef.current = 0;
+    setCallId(""); setIncoming(null); setPhase("idle"); setMuted(false); setCameraOff(false); setSeconds(0);
     if (reason) setCallError(reason);
   }, []);
 
@@ -144,7 +142,7 @@ export default function CallsPanel({ socket, person }: Props) {
         return;
       }
       activeCallRef.current = response.callId;
-      setCallId(response.callId); setKind(callKind); setPeerName(person.name); ringStartedAtRef.current = Date.now(); setRingRemaining(30); setPhase("outgoing");
+      setCallId(response.callId); setKind(callKind); setPeerName(person.name); setPhase("outgoing");
       try {
         const pc = await createPeer(response.callId, callKind === "video");
         const offer = await pc.createOffer();
@@ -190,7 +188,7 @@ export default function CallsPanel({ socket, person }: Props) {
         socket.emit("call:decline", { callId: call.callId });
         return;
       }
-      ringStartedAtRef.current = call.createdAt || Date.now(); setRingRemaining(Math.max(0, 30 - Math.floor((Date.now() - ringStartedAtRef.current) / 1000))); setIncoming(call); setKind(call.kind); setPeerName(call.caller.name); setPhase("incoming");
+      setIncoming(call); setKind(call.kind); setPeerName(call.caller.name); setPhase("incoming");
     };
     const onAccepted = async (payload: { callId: string }) => {
       if (payload.callId !== activeCallRef.current || !pcRef.current) return;
@@ -240,14 +238,6 @@ export default function CallsPanel({ socket, person }: Props) {
   }, [socket, incoming?.callId, cleanup]);
 
   useEffect(() => {
-    if (phase !== "incoming" && phase !== "outgoing") return;
-    const updateRingTimer = () => setRingRemaining(Math.max(0, 30 - Math.floor((Date.now() - ringStartedAtRef.current) / 1000)));
-    updateRingTimer();
-    const timer = window.setInterval(updateRingTimer, 250);
-    return () => window.clearInterval(timer);
-  }, [phase]);
-
-  useEffect(() => {
     if (phase !== "connected") return;
     const timer = window.setInterval(() => setSeconds(s => s + 1), 1000);
     return () => window.clearInterval(timer);
@@ -278,7 +268,7 @@ export default function CallsPanel({ socket, person }: Props) {
       <div className="halls-call-card">
         <div className="halls-call-avatar">{incoming.caller.profilePicture ? <img src={incoming.caller.profilePicture} alt="" /> : incoming.caller.name.slice(0,1).toUpperCase()}</div>
         <span className="halls-call-eyebrow">INCOMING {incoming.kind.toUpperCase()} CALL</span>
-        <h2>{incoming.caller.name}</h2><p>@{incoming.caller.username}</p><p className="halls-call-ring-time">Ringing · {formatDuration(ringRemaining)}</p>
+        <h2>{incoming.caller.name}</h2><p>@{incoming.caller.username}</p><p className="halls-call-ring-time">Ringing…</p>
         <div className="halls-call-actions">
           <button className="halls-call-decline" type="button" onClick={() => { socket?.emit("call:decline", { callId: incoming.callId }); cleanup(); }} aria-label="Decline call"><PhoneOff /></button>
           <button className="halls-call-accept" type="button" onClick={() => void acceptCall()} aria-label="Accept call"><PhoneCall /></button>
@@ -292,7 +282,7 @@ export default function CallsPanel({ socket, person }: Props) {
         <button className="halls-call-close" type="button" onClick={endCall} aria-label="Close call"><X /></button>
         {kind === "audio" && <div className="halls-call-avatar halls-call-avatar-large">{peerName.slice(0,1).toUpperCase()}</div>}
         <span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2>{peerName}</h2>
-        <p>{phase === "outgoing" ? `Ringing · ${formatDuration(ringRemaining)}` : phase === "connecting" ? "Connecting…" : formatDuration(seconds)}</p>
+        <p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? "Connecting…" : formatDuration(seconds)}</p>
         {callError && <p className="halls-call-error">{callError}</p>}
         <div className="halls-call-controls">
           <button type="button" className={muted ? "is-active" : ""} onClick={toggleMute} aria-label={muted ? "Unmute microphone" : "Mute microphone"}>{muted ? <MicOff /> : <Mic />}</button>
