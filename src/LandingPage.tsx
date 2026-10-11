@@ -1,5 +1,6 @@
 import { ArrowDownRight, ArrowRight, Check, Heart, LockKeyhole, MessageCircle, Smartphone, Users, Video } from "lucide-react";
 import AppHeader from "./AppHeader";
+import { navigate } from "./utils/navigate";
 
 type LandingPageProps = { onSignup: () => void };
 
@@ -17,6 +18,20 @@ function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 export default function LandingPage({ onSignup }: LandingPageProps) {
+  const handleLogin = () => {
+    const token = window.localStorage.getItem("hallschat_token");
+    let tokenIsValid = false;
+    if (token) {
+      try {
+        const payload = JSON.parse(window.atob(token.split(".")[1])) as { exp?: number };
+        tokenIsValid = typeof payload.exp === "number" && payload.exp * 1000 > Date.now();
+      } catch {
+        tokenIsValid = false;
+      }
+    }
+    navigate(token && tokenIsValid ? "/home" : "/signin");
+  };
+
   return <main className="landing-page">
     <div className="landing-glow landing-glow-one" aria-hidden="true" />
     <div className="landing-glow landing-glow-two" aria-hidden="true" />
@@ -29,7 +44,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
           <button className="button button-primary landing-cta" onClick={onSignup}>Create your account <ArrowRight size={17} /></button>
-          <p className="landing-signin-note">Already have an account? <a href="/signin">Sign in</a></p>
+          <p className="landing-signin-note">Already have an account? <a href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Sign in</a></p>
           <a className="landing-text-link" href="#why-hallschat">Get to know us <ArrowDownRight size={16} /></a>
         </div>
         <div className="landing-social-proof">
@@ -78,7 +93,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
       <h2>Your next good<br /><em>conversation starts here.</em></h2>
       <p>Create your HallsChat account and make room for the conversations that matter.</p>
       <button className="button button-primary landing-cta" onClick={onSignup}>Get started with HallsChat <ArrowRight size={17} /></button>
-      <p className="landing-signin-note">Already have an account? <a href="/signin">Sign in</a></p>
+      <p className="landing-signin-note">Already have an account? <a href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Sign in</a></p>
     </section>
 
     <footer className="landing-footer"><a className="landing-brand-link" href="#top"><Brand compact /></a><span>Made for meaningful moments.</span><a href="#top" className="landing-back-top">Back to top ↑</a><small>© {new Date().getFullYear()} HallsChat. Built with care.</small></footer>
