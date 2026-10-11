@@ -3,6 +3,7 @@ import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Heart, ImagePlus, Mes
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
+import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 
 type Account = { id: string; name: string; username: string; email: string; createdAt?: string };
@@ -41,7 +42,7 @@ export default function HomePage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<SocialPost[]>([]);
-  const [feedLoading, setFeedLoading] = useState(false);
+  const [feedLoading, setFeedLoading] = useState(true);
   const [feedError, setFeedError] = useState("");
   const [draft, setDraft] = useState("");
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
@@ -256,9 +257,9 @@ export default function HomePage() {
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell">
-      {loading ? <div className="home-state" role="status">Getting your space ready…</div> : error ? <div className="home-state home-error"><p>{error}</p><a className="button button-primary" href="/signin">Back to sign in <ArrowUpRight size={16} /></a></div> : user && <>
+      {error ? <div className="home-state home-error"><p>{error}</p><a className="button button-primary" href="/signin">Back to sign in <ArrowUpRight size={16} /></a></div> : <>
         <div className="social-welcome">
-          <div><h1>Good to see you, {user.name.trim().split(/\s+/)[0] || "there"}.</h1><p>Share a thought, catch up with your people, and find your community.</p></div>
+          <div><h1>{loading ? <>Good to see you, <LoadingDots /></> : `Good to see you, ${user?.name.trim().split(/\s+/)[0] || "there"}.`}</h1><p>Share a thought, catch up with your people, and find your community.</p></div>
         </div>
         <div className="social-layout">
           <section className="social-feed-column" aria-label="Social feed">
@@ -294,7 +295,7 @@ export default function HomePage() {
                 {composerMode === "post" && <span className="social-char-count">{draft.length}/2000</span>}
                 <button className="social-publish" type="submit" disabled={publishing || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{publishing ? "Publishing…" : composerMode === "poll" ? "Post poll" : "Publish"} <Send size={15}/></button>
               </div>
-              {uploadStatus && <p className="social-upload-status" role="status">{uploadStatus}</p>}
+              {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /> {uploadStatus}</p>}
             </form>
 
             {notice && <p className="social-notice" role="status">{notice}</p>}
@@ -318,7 +319,7 @@ export default function HomePage() {
               </article>)}
             </div>}
             {!feedLoading && posts.length === 0 && !feedError && <div className="social-empty-feed"><ImagePlus size={22}/><strong>Your feed starts here</strong><span>Share a thought or photo with your community.</span></div>}
-            {feedLoading && <div className="social-empty-feed" role="status">Loading your feed…</div>}
+            {feedLoading && <div className="social-empty-feed" role="status"><LoadingDots /><span>Loading your feed…</span></div>}
           </section>
         </div>
       </>}
