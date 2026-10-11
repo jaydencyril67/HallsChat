@@ -98,12 +98,16 @@ export default function HomePage() {
     if (!incoming.length) return;
     setFeedError("");
     const available = MAX_IMAGES - selectedImages.length;
-    if (available <= 0) {
-      setFeedError(`You can add up to ${MAX_IMAGES} images to a post.`);
+    if (available <= 0 || incoming.length > available) {
+      setFeedError(
+        available <= 0
+          ? `You can add up to ${MAX_IMAGES} images to a post.`
+          : `You can select ${available} more image${available === 1 ? "" : "s"}; this post can contain a maximum of ${MAX_IMAGES}.`
+      );
       return;
     }
     const accepted: SelectedImage[] = [];
-    for (const file of incoming.slice(0, available)) {
+    for (const file of incoming) {
       if (!file.type.startsWith("image/")) {
         setFeedError("Please choose image files only.");
         continue;
