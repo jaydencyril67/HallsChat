@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Phone, Video, ArrowDownLeft, ArrowUpRight, Clock3, PhoneCall, CalendarDays } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
+import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 
 type CallRecord = {
@@ -116,7 +117,7 @@ export default function CallsPage() {
       </div>
 
       <div className="halls-call-history-scroll">
-        {loading ? <div className="halls-call-history-state"><span className="halls-calls-spinner" /><strong>Loading call history…</strong></div> :
+        {loading ? <div className="halls-call-history-state"><LoadingDots /><strong>Loading call history…</strong></div> :
           error ? <div className="halls-call-history-state halls-call-history-error"><Phone size={23} /><strong>Call history unavailable</strong><span>{error}</span><button type="button" onClick={() => window.location.reload()}>Try again</button></div> :
           visibleCalls.length ? <div className="halls-call-history-list">
             {visibleCalls.map(call => {
