@@ -257,7 +257,7 @@ export default function HomePage() {
       return;
     }
     // Play this author's stories from oldest to newest, then continue through the remaining story tray.
-    const queue = groupList.slice(startGroupIndex).flat();
+    const queue = groupList.flat();
     const startIndex = Math.max(0, queue.findIndex(item => item.author?.id === story.author?.id));
     setStoryPlaybackQueue(queue);
     setStoryPlaybackIndex(startIndex);
