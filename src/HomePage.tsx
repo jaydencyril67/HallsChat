@@ -472,7 +472,7 @@ export default function HomePage() {
   async function publishStory(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const validSections = storyTextSections.filter(section => section.text.trim()).map(section => ({ ...section, text: section.text.trim() }));
-    const combinedText = validSections.map(section => section.text).join("\n");
+    const combinedText = validSections.map(section => section.text).join("\n").slice(0, 500);
     if (storyPublishing || (!combinedText && !storyPhoto)) return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
@@ -970,7 +970,7 @@ export default function HomePage() {
           {storyPhoto && <button type="button" className="social-story-remove-photo" onClick={() => setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; })} aria-label="Remove story photo"><X size={16}/></button>}
         </div>
         <div className="social-story-text-editor">
-          <div className="social-story-text-editor-head"><strong>Text sections</strong><button type="button" onClick={addStoryTextSection}><Plus size={15}/> Add text</button></div>
+          <div className="social-story-text-editor-head"><strong>Text sections</strong><button type="button" onClick={addStoryTextSection} disabled={storyTextSections.length >= 10}><Plus size={15}/> Add text</button></div>
           {storyTextSections.map((section, index) => <div className={`social-story-text-section ${activeStoryTextId === section.id ? "is-active" : ""}`} key={section.id}>
             <label><span>Section {index + 1}</span><button type="button" onClick={() => removeStoryTextSection(section.id)} disabled={storyTextSections.length === 1} aria-label={`Remove text section ${index + 1}`}><Trash2 size={14}/></button></label>
             <textarea value={section.text} onFocus={() => setActiveStoryTextId(section.id)} onChange={event => updateStoryTextSection(section.id, event.target.value)} maxLength={500} rows={2} placeholder={index === 0 ? "Good morning…" : "Write another text section…"} aria-label={`Story text section ${index + 1}`} />
