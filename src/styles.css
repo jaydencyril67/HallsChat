@@ -1178,3 +1178,63 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .chat-message-line { margin-bottom: 9px; }
   .chat-message-content { max-width: 88%; }
 }
+
+
+/* Messages inbox: compact, individually carded conversations like the Halls people list.
+   The desktop two-column conversation layout remains unchanged. */
+@media (max-width: 700px) {
+  .chat-page:not(.chat-page-conversation-open) .chat-shell {
+    padding-top: 12px !important;
+  }
+  .chat-page:not(.chat-page-conversation-open) .chat-layout {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .chat-page:not(.chat-page-conversation-open) .chat-sidebar {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+    border: 0 !important;
+    background: transparent !important;
+  }
+  .chat-page:not(.chat-page-conversation-open) .chat-sidebar-heading {
+    min-height: 48px !important;
+    margin: 0 0 12px !important;
+    padding: 0 8px !important;
+    border-bottom: 1px solid rgba(255,210,219,.09) !important;
+  }
+  .chat-page:not(.chat-page-conversation-open) .chat-people-list {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: none !important;
+    gap: 10px !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .chat-page:not(.chat-page-conversation-open) .chat-person-row {
+    display: flex !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 13px 12px !important;
+    border: 1px solid rgba(255,210,219,.11) !important;
+    border-radius: 17px !important;
+    background: linear-gradient(145deg,rgba(49,14,23,.78),rgba(27,8,13,.88)) !important;
+    box-shadow: none !important;
+  }
+  .chat-page:not(.chat-page-conversation-open) .chat-person-row:last-child {
+    margin-bottom: 0 !important;
+  }
+  .chat-page:not(.chat-page-conversation-open) .chat-person-row-active {
+    border-color: rgba(222,68,89,.32) !important;
+    box-shadow: none !important;
+  }
+}
