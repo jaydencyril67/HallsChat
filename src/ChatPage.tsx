@@ -358,6 +358,9 @@ export default function ChatPage() {
 
   useEffect(() => {
     setOtherTyping(false);
+    setReplyingTo(null);
+    setActionMenuFor(null);
+    setDeleteConfirmId(null);
     if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current);
     otherTypingTimerRef.current = null;
     stopTyping();
