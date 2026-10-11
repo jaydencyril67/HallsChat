@@ -201,8 +201,8 @@ export default function CallsPanel({ socket, person }: Props) {
 
   return <>
     {person && <div className="halls-call-triggers">
-      <button type="button" title="Audio call" aria-label={"Audio call " + person.name} onClick={() => startCall("audio")} disabled={phase !== "idle"}><Phone size={18} /></button>
-      <button type="button" title="Video call" aria-label={"Video call " + person.name} onClick={() => startCall("video")} disabled={phase !== "idle"}><Video size={18} /></button>
+      <button className="halls-call-trigger-audio" type="button" title={"Audio call " + person.name} aria-label={"Audio call " + person.name} onClick={() => startCall("audio")} disabled={phase !== "idle"}><Phone size={18} /><span>Audio call</span></button>
+      <button className="halls-call-trigger-video" type="button" title={"Video call " + person.name} aria-label={"Video call " + person.name} onClick={() => startCall("video")} disabled={phase !== "idle"}><Video size={18} /><span>Video call</span></button>
     </div>}
     {incoming && phase === "incoming" && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label="Incoming call">
       <div className="halls-call-card">
