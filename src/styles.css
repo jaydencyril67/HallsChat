@@ -1404,6 +1404,26 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-voice-draft-preview .chat-voice-waveform{display:flex;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
 .chat-voice-draft-preview .chat-voice-waveform:active{cursor:grabbing}
 
+/* Strictly contain chat interactions to the conversation viewport and message scroller. */
+.chat-page.chat-page-conversation-open,
+.chat-page.chat-page-conversation-open .chat-shell,
+.chat-page.chat-page-conversation-open .chat-layout,
+.chat-page.chat-page-conversation-open .chat-conversation {
+  overscroll-behavior: none;
+}
+.chat-page.chat-page-conversation-open .chat-message-list {
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  scroll-behavior: smooth;
+  touch-action: pan-y;
+}
+.chat-page.chat-page-conversation-open .chat-message-line {
+  touch-action: pan-y;
+}
+.chat-page.chat-page-conversation-open .chat-message-content {
+  will-change: auto;
+}
+
 /* WhatsApp-style message reply, actions and delete confirmation. */
 .chat-message-line{position:relative}
 .chat-message-content{position:relative}
