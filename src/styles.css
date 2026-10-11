@@ -2093,3 +2093,17 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-story-delete-dialog>div>button{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-height:42px;padding:9px 12px;border:1px solid rgba(255,210,219,.13);border-radius:12px;background:rgba(255,255,255,.06);color:#f9e9ed;font-size:12px;font-weight:700}
 .social-story-delete-dialog>div>button.danger{border-color:#d93e60;background:#d93e60;color:#fff}
 .social-story-delete-dialog>div>button:disabled{opacity:.6}
+
+
+/* Compact confirmation before an outgoing call, so accidental taps can be cancelled. */
+.halls-call-confirm-backdrop{place-items:center!important;padding:20px!important}
+.halls-call-confirm-card{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:12px;width:min(100%,360px);padding:27px 22px 21px;border:1px solid rgba(255,255,255,.13);border-radius:24px;background:linear-gradient(155deg,#291017,#100a0e 82%);color:#fff;box-shadow:0 24px 90px #0009;text-align:center}
+.halls-call-confirm-icon{display:grid;place-items:center;width:58px;height:58px;border:1px solid rgba(229,82,105,.28);border-radius:50%;background:rgba(184,32,50,.15);color:#ff91a3}
+.halls-call-confirm-card h2{margin:0;font-size:21px;font-weight:800}
+.halls-call-confirm-card>p{margin:0;color:#cbb9bf;font-size:13px;line-height:1.55}
+.halls-call-confirm-card>p strong{color:#fff}
+.halls-call-confirm-actions{display:flex;gap:10px;width:100%;margin-top:10px}
+.halls-call-confirm-actions button{display:flex;align-items:center;justify-content:center;gap:7px;flex:1;min-height:45px;padding:10px 12px;border:1px solid rgba(255,255,255,.13);border-radius:12px;font-size:13px;font-weight:750;cursor:pointer}
+.halls-call-confirm-cancel{background:rgba(255,255,255,.06);color:#f7e9ed}
+.halls-call-confirm-start{border-color:#b82032!important;background:#b82032;color:#fff}
+.halls-call-confirm-actions button:active{transform:scale(.98)}
