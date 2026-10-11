@@ -60,6 +60,7 @@ export default function ChatPage() {
   const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
   const activeIdRef = useRef(activeId);
   const currentUserIdRef = useRef(currentUserId);
+  const socketRef = useRef<ReturnType<typeof io> | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
   activeIdRef.current = activeId;
   currentUserIdRef.current = currentUserId;
@@ -111,6 +112,7 @@ export default function ChatPage() {
       auth: { token: savedToken },
       transports: ["websocket", "polling"]
     });
+    socketRef.current = socket;
     socket.on("connect_error", () => {
       // REST history remains available while the socket reconnects.
     });
@@ -139,6 +141,7 @@ export default function ChatPage() {
     return () => {
       socket.removeAllListeners();
       socket.disconnect();
+      if (socketRef.current === socket) socketRef.current = null;
     };
   }, [currentUserId]);
 
@@ -233,15 +236,21 @@ export default function ChatPage() {
     try {
       const images: string[] = [];
       for (const file of imageFiles) images.push(await uploadChatImage(file, savedToken));
-      const response = await fetch(`${apiBase}/api/chat/${encodeURIComponent(activePerson.id)}/messages`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${savedToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ text, images })
+      const socket = socketRef.current;
+      if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending again in a moment.");
+      const result = await new Promise<{ ok: boolean; message?: ChatMessage }>((resolve, reject) => {
+        socket.timeout(15000).emit(
+          "chat:send",
+          { recipientId: activePerson.id, text, images },
+          (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
+            if (timeoutError) return reject(new Error("The live connection timed out. Please try again."));
+            if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your message couldn't be sent."));
+            resolve({ ok: true, message: response.message as ChatMessage });
+          }
+        );
       });
-      const payload = await response.json().catch(() => ({}));
-      if (response.status === 401) { localStorage.removeItem("hallschat_token"); navigate("/signin", { replace: true }); return; }
-      if (!response.ok) throw new Error(payload.message || "Your message couldn't be sent.");
-      const sent = payload.message as ChatMessage;
+      const sent = result.message;
+      if (!sent) throw new Error("The server didn't confirm your message.");
       setMessages(current => current.some(item => item.id === sent.id) ? current : [...current, sent]);
       setDraft("");
       imagePreviews.forEach(url => URL.revokeObjectURL(url));
