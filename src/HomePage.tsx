@@ -40,6 +40,40 @@ function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
 }
 
+async function compressPostImage(file: File): Promise<File> {
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error(`Could not read ${file.name}.`));
+      element.src = sourceUrl;
+    });
+    const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Unable to prepare this image.");
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const toBlob = (type: string, quality: number) => new Promise<Blob | null>(resolve => canvas.toBlob(resolve, type, quality));
+    let blob = await toBlob("image/webp", 0.82);
+    let type = "image/webp";
+    if (!blob || blob.type !== "image/webp") {
+      blob = await toBlob("image/jpeg", 0.82);
+      type = "image/jpeg";
+    }
+    if (!blob) throw new Error(`Unable to compress ${file.name}.`);
+    // Keep the original when compression would make the file larger.
+    if (blob.size >= file.size && scale === 1) return file;
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "hallschat-image";
+    const extension = type === "image/webp" ? "webp" : "jpg";
+    return new File([blob], `${baseName}.${extension}`, { type, lastModified: Date.now() });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 function renderTextWithLinks(value: string): ReactNode {
   const pattern = /(?:https?:\/\/|www\.)[^\s<>]+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
   const parts: ReactNode[] = [];
@@ -79,6 +113,7 @@ export default function HomePage() {
   const [votingIds, setVotingIds] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [publishing, setPublishing] = useState(false);
+  const [compressingImages, setCompressingImages] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [likingIds, setLikingIds] = useState<string[]>([]);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
@@ -154,10 +189,10 @@ export default function HomePage() {
     return () => { cancelled = true; };
   }, [user]);
 
-  function selectImages(event: ChangeEvent<HTMLInputElement>) {
+  async function selectImages(event: ChangeEvent<HTMLInputElement>) {
     const incoming = Array.from(event.target.files || []);
     event.target.value = "";
-    if (!incoming.length) return;
+    if (!incoming.length || compressingImages || publishing) return;
     setFeedError("");
     const available = MAX_IMAGES - selectedImages.length;
     if (available <= 0 || incoming.length > available) {
@@ -168,7 +203,7 @@ export default function HomePage() {
       );
       return;
     }
-    const accepted: SelectedImage[] = [];
+    const accepted: File[] = [];
     for (const file of incoming) {
       if (!file.type.startsWith("image/")) {
         setFeedError("Please choose image files only.");
@@ -178,9 +213,20 @@ export default function HomePage() {
         setFeedError(`${file.name} is larger than 10 MB.`);
         continue;
       }
-      accepted.push({ file, preview: URL.createObjectURL(file) });
+      accepted.push(file);
     }
-    setSelectedImages(current => [...current, ...accepted].slice(0, MAX_IMAGES));
+    if (!accepted.length) return;
+    setCompressingImages(true);
+    setUploadStatus("Compressing images…");
+    try {
+      const compressed = await Promise.all(accepted.map(compressPostImage));
+      setSelectedImages(current => [...current, ...compressed.map(file => ({ file, preview: URL.createObjectURL(file) }))].slice(0, MAX_IMAGES));
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "One or more images couldn't be prepared.");
+    } finally {
+      setCompressingImages(false);
+      setUploadStatus("");
+    }
   }
 
   function removeSelectedImage(index: number) {
@@ -238,7 +284,7 @@ export default function HomePage() {
       setFeedError("Add a poll question and at least two options.");
       return;
     }
-    if ((!content && selectedImages.length === 0 && !poll) || publishing) return;
+    if ((!content && selectedImages.length === 0 && !poll) || publishing || compressingImages) return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
     setPublishing(true);
@@ -478,12 +524,12 @@ export default function HomePage() {
                   {composerMode === "post" ? <>
                     <label className={`social-add-image social-add-image-icon-only${selectedImages.length >= MAX_IMAGES || publishing ? " is-disabled" : ""}`} title="Add photos" aria-label="Add photos">
                       <Camera size={19} />
-                      <input type="file" accept="image/*" multiple onChange={selectImages} disabled={selectedImages.length >= MAX_IMAGES || publishing} />
+                      <input type="file" accept="image/*" multiple onChange={selectImages} disabled={selectedImages.length >= MAX_IMAGES || publishing || compressingImages} />
                     </label>
                     <button type="button" className="social-composer-mode-button" onClick={() => { setComposerMode("poll"); setSelectedImages(current => { current.forEach(item => URL.revokeObjectURL(item.preview)); return []; }); }} title="Create a poll" aria-label="Create a poll" disabled={publishing}><ChartNoAxesColumn size={19}/></button>
                   </> : <button type="button" className="social-composer-mode-button" onClick={() => setComposerMode("post")} title="Back to post" aria-label="Back to post" disabled={publishing}><ImagePlus size={19}/></button>}
                 </div>
-                <button className="social-publish" type="submit" disabled={publishing || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{publishing ? <><LoadingDots /> Publishing…</> : composerMode === "poll" ? "Post poll" : "Publish"} {!publishing && <Send size={15}/>}</button>
+                <button className="social-publish" type="submit" disabled={publishing || compressingImages || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{compressingImages ? <><LoadingDots /> Preparing images…</> : publishing ? <><LoadingDots /> Publishing…</> : composerMode === "poll" ? "Post poll" : "Publish"} {!publishing && !compressingImages && <Send size={15}/>}</button>
               </div>
               {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /> {uploadStatus}</p>}
             </form>
