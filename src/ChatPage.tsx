@@ -99,6 +99,7 @@ function VoiceNotePlayer({ src, pending = false }: { src: string; pending?: bool
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const draggingRef = useRef(false);
   const bars = [3,5,8,12,7,15,10,18,13,6,11,16,8,20,12,7,15,10,22,13,6,17,11,8,19,12,5,14,9,18,7,12,20,9,5,15,11,7,17,10,4,13];
   const progress = duration > 0 ? currentTime / duration : 0;
   async function togglePlayback() {
@@ -108,18 +109,19 @@ function VoiceNotePlayer({ src, pending = false }: { src: string; pending?: bool
       try { await audio.play(); setPlaying(true); } catch { setPlaying(false); }
     } else { audio.pause(); setPlaying(false); }
   }
-  function seek(event: MouseEvent<HTMLDivElement>) {
+  function seek(clientX: number, waveform: HTMLDivElement) {
     const audio = audioRef.current;
     if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    audio.currentTime = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)) * audio.duration;
+    const rect = waveform.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    audio.currentTime = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * audio.duration;
     setCurrentTime(audio.currentTime);
   }
   return <div className={"chat-voice-note" + (pending ? " chat-voice-note-pending" : "")}>
     <audio ref={audioRef} src={src} preload="metadata" onLoadedMetadata={event => setDuration(event.currentTarget.duration || 0)} onDurationChange={event => setDuration(event.currentTarget.duration || 0)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setCurrentTime(0); }} />
     <button type="button" className="chat-voice-play" onClick={() => void togglePlayback()} aria-label={playing ? "Pause voice note" : "Play voice note"}>{playing ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}</button>
     <div className="chat-voice-track">
-      <div className="chat-voice-waveform" role="slider" aria-label="Voice note playback position" aria-valuemin={0} aria-valuemax={Math.floor(duration || 0)} aria-valuenow={Math.floor(currentTime)} tabIndex={0} onClick={seek} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const audio = audioRef.current; if (audio && Number.isFinite(audio.duration)) { audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5))); setCurrentTime(audio.currentTime); } } }}>
+      <div className="chat-voice-waveform" role="slider" aria-label="Voice note playback position" aria-valuemin={0} aria-valuemax={Math.floor(duration || 0)} aria-valuenow={Math.floor(currentTime)} tabIndex={0} onPointerDown={event => { if (event.pointerType === "mouse" && event.button !== 0) return; event.preventDefault(); draggingRef.current = true; event.currentTarget.setPointerCapture(event.pointerId); seek(event.clientX, event.currentTarget); }} onPointerMove={event => { if (draggingRef.current) seek(event.clientX, event.currentTarget); }} onPointerUp={event => { if (draggingRef.current) seek(event.clientX, event.currentTarget); draggingRef.current = false; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onPointerCancel={event => { draggingRef.current = false; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const audio = audioRef.current; if (audio && Number.isFinite(audio.duration)) { audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5))); setCurrentTime(audio.currentTime); } } }}>
         {bars.map((height, index) => <span key={index} className={index / bars.length <= progress ? "is-played" : ""} style={{ height: height + "px" }} />)}
       </div>
       <div className="chat-voice-meta"><span>{playing || currentTime > 0 ? formatAudioTime(currentTime) : formatAudioTime(duration)}</span>{pending && <span className="chat-voice-sending">Sending…</span>}</div>
