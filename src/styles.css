@@ -803,13 +803,13 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 /* CryBots-style live chat bubbles: incoming neutral, outgoing accent, with chat-tail corners. */
 .chat-message-line{display:flex;justify-content:flex-start;width:100%;padding:2px 6px;box-sizing:border-box}
 .chat-message-line-mine{justify-content:flex-end}
-.chat-message-content{display:flex;flex-direction:column;gap:4px;max-width:min(82%,440px);min-width:0;padding:10px 12px 7px;border:1px solid var(--chat-line,rgba(255,210,219,.11));border-radius:15px 15px 15px 4px;overflow-wrap:anywhere;box-sizing:border-box}
+.chat-message-content{display:flex;flex-direction:column;gap:4px;max-width:min(78%,440px);min-width:0;padding:10px 13px;border:1px solid var(--chat-line,rgba(255,210,219,.11));border-radius:14px;overflow-wrap:anywhere;box-sizing:border-box}
 .chat-message-content-theirs{background:rgba(255,255,255,.045);color:#f8e9ec}
-.chat-message-content-mine{border-color:rgba(226,76,99,.27);border-radius:15px 15px 4px 15px;background:linear-gradient(145deg,rgba(155,30,51,.58),rgba(92,18,33,.55));color:#fff1f4}
+.chat-message-content-mine{border-color:rgba(226,76,99,.27);border-radius:14px;background:linear-gradient(145deg,rgba(155,30,51,.58),rgba(92,18,33,.55));color:#fff1f4}
 .chat-message-text{margin:0;color:inherit;white-space:pre-wrap;overflow-wrap:anywhere;font-size:.82rem;line-height:1.6}
 .chat-message-content time{display:block;margin-top:1px;color:rgba(255,231,235,.5);font-size:.59rem;text-align:right}
-.chat-message-content:has(.chat-image-grid){max-width:min(260px,78vw);padding:5px}
-.chat-message-content:has(.chat-image-grid) .chat-message-text{padding:4px 6px 2px}
+.chat-message-content:has(.chat-image-grid){max-width:min(78%,440px);padding:10px 13px}
+.chat-message-content:has(.chat-image-grid) .chat-message-text{padding:0}
 /* Keep the conversation itself flush with the page instead of inside a large card. */
 .chat-layout{border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden}
 .chat-conversation{background:transparent}
@@ -911,29 +911,33 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 /* HallsChat image messages: compact rounded image bubbles, matching CryBots Live Chat. */
 .chat-image-bubble {
   display: block;
-  width: min(220px, 100%);
-  height: 240px;
-  padding: 2px;
-  margin: 0 0 4px;
+  width: fit-content;
+  max-width: 100%;
+  height: auto;
+  max-height: 320px;
+  padding: 0;
+  margin: 0;
   overflow: hidden;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
   background: transparent;
   cursor: zoom-in;
 }
 .chat-image-bubble img {
   display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 6px;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  border-radius: 10px;
 }
 .chat-message-content:has(.chat-image-bubble) {
-  max-width: min(260px, 78vw);
-  padding: 5px !important;
+  max-width: min(78%, 440px);
+  padding: 10px 13px !important;
 }
 .chat-message-content:has(.chat-image-bubble) .chat-message-text {
-  padding: 4px 6px 2px;
+  padding: 0;
   overflow-wrap: anywhere;
 }
 .chat-image-pending {
@@ -1013,20 +1017,30 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 3px;
-  width: min(260px, 78vw);
+  width: min(260px, 100%);
+  max-width: 100%;
   overflow: hidden;
-  border-radius: 9px;
-  margin-bottom: 4px;
+  border-radius: 10px;
+  margin-bottom: 0;
 }
-.chat-image-grid-single { grid-template-columns: minmax(0, 1fr); width: min(220px, 78vw); }
-.chat-image-grid .chat-image-bubble {
+.chat-image-grid-single { display: block; width: fit-content; max-width: 100%; }
+.chat-image-grid:not(.chat-image-grid-single) .chat-image-bubble {
   width: 100%;
   height: 124px;
   min-width: 0;
+  max-height: none;
   margin: 0;
   padding: 1px;
+  border-radius: 8px;
 }
-.chat-image-grid-single .chat-image-bubble { height: 240px; }
+.chat-image-grid:not(.chat-image-grid-single) .chat-image-bubble img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  border-radius: 7px;
+}
+.chat-image-grid-single .chat-image-bubble { width: fit-content; max-width: 100%; height: auto; max-height: 320px; }
 .chat-image-pending-grid {
   display: flex;
   align-items: center;
@@ -1148,35 +1162,35 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-message-line:last-of-type { margin-bottom: 0; }
 .chat-message-line-mine { justify-content: flex-end; }
 .chat-message-content {
-  max-width: min(88%, 440px);
+  max-width: min(78%, 440px);
   min-width: 0;
-  padding: 12px 12px 9px;
+  padding: 10px 13px;
   border: 1px solid rgba(255,210,219,.11);
-  border-radius: 17px;
+  border-radius: 14px;
   background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
   color: #f8e9ec;
   box-shadow: none;
 }
 .chat-message-content-theirs {
   border-color: rgba(255,210,219,.11);
-  border-radius: 17px;
+  border-radius: 14px;
   background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
 }
 .chat-message-content-mine {
   border-color: rgba(222,68,89,.32);
-  border-radius: 17px;
+  border-radius: 14px;
   background: linear-gradient(145deg,rgba(82,24,37,.78),rgba(42,13,22,.9));
   color: #fff1f4;
 }
 .chat-message-content time { margin-top: 3px; }
 .chat-message-content:has(.chat-image-grid) {
-  max-width: min(280px, 82vw);
-  padding: 7px !important;
+  max-width: min(78%, 440px);
+  padding: 10px 13px !important;
 }
 @media(max-width:680px) {
   .chat-message-list { padding: 9px 9px 12px !important; }
   .chat-message-line { margin-bottom: 9px; }
-  .chat-message-content { max-width: 88%; }
+  .chat-message-content { max-width: 78%; }
 }
 
 
@@ -1185,7 +1199,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media (max-width: 700px) {
   .chat-page:not(.chat-page-conversation-open) .chat-shell {
     /* Keep the reserved space beneath the fixed app header. */
-    padding-top: 78px !important;
+    padding-top: var(--app-top-gap) !important;
   }
   .chat-page:not(.chat-page-conversation-open) .chat-layout {
     display: block !important;
