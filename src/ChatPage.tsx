@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, Plus, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical } from "lucide-react";
+import { ArrowLeft, ArrowUp, Plus, Pencil, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -20,7 +20,7 @@ type ChatPerson = {
 };
 type ChatReply = { id: string; senderId: string; text?: string; imageUrl?: string; audioUrl?: string; deleted?: boolean };
 type ChatReaction = { userId: string; emoji: string };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: ChatReply | null; reactions?: ChatReaction[]; deletedForEveryone?: boolean; createdAt: string; pending?: boolean };
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: ChatReply | null; reactions?: ChatReaction[]; deletedForEveryone?: boolean; editedAt?: string | null; createdAt: string; pending?: boolean };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -143,6 +143,9 @@ export default function ChatPage() {
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deletingMessage, setDeletingMessage] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editMessageDraft, setEditMessageDraft] = useState("");
+  const [savingMessageEdit, setSavingMessageEdit] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
   const [otherTyping, setOtherTyping] = useState(false);
   const [listLoading, setListLoading] = useState(true);
@@ -257,6 +260,50 @@ export default function ChatPage() {
       }
     });
   }
+  function beginEditMessage(message: ChatMessage) {
+    if (message.senderId !== currentUserId || message.pending || message.deletedForEveryone || !message.text.trim() || message.images?.length || message.imageUrl || message.audioUrl || Date.now() - new Date(message.createdAt).getTime() > 24 * 60 * 60 * 1000) return;
+    setEditingMessageId(message.id);
+    setEditMessageDraft(message.text);
+    setActionMenuFor(null);
+    setError("");
+  }
+
+  async function saveMessageEdit(message: ChatMessage) {
+    if (savingMessageEdit || editingMessageId !== message.id) return;
+    const text = editMessageDraft.trim();
+    if (!text) { setError("A message cannot be empty."); return; }
+    if (text === message.text.trim()) { setEditingMessageId(null); setEditMessageDraft(""); return; }
+    const savedToken = token();
+    if (!savedToken) { navigate("/signin", { replace: true }); return; }
+    setSavingMessageEdit(true);
+    setError("");
+    try {
+      const response = await fetch(`${apiBase}/api/chat/messages/${encodeURIComponent(message.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${savedToken}` },
+        body: JSON.stringify({ text })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.message) throw new Error(payload.message?.message || payload.message || "That message couldn't be edited.");
+      const edited = payload.message as { id: string; text: string; editedAt?: string | null };
+      setMessages(current => current.map(item => {
+        if (item.id === message.id) return { ...item, text: edited.text, editedAt: edited.editedAt || new Date().toISOString() };
+        if (item.replyTo?.id === message.id) return { ...item, replyTo: { ...item.replyTo, text: edited.text } };
+        return item;
+      }));
+      setReplyingTo(current => current?.id === message.id ? { ...current, text: edited.text, editedAt: edited.editedAt || new Date().toISOString() } : current);
+      setPeople(current => current.map(person => person.id === message.recipientId || person.id === message.senderId
+        ? { ...person, lastMessage: edited.text }
+        : person));
+      setEditingMessageId(null);
+      setEditMessageDraft("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "That message couldn't be edited.");
+    } finally {
+      setSavingMessageEdit(false);
+    }
+  }
+
   async function deleteMessageForEveryone() {
     if (!deleteConfirmId || deletingMessage) return;
     const messageId = deleteConfirmId, savedToken = token();
@@ -381,6 +428,15 @@ export default function ChatPage() {
     socket.on("chat:reaction", (payload: { id?: string; reactions?: ChatReaction[] }) => {
       if (!payload?.id || !Array.isArray(payload.reactions)) return;
       setMessages(current => current.map(message => message.id === payload.id ? { ...message, reactions: payload.reactions } : message));
+    });
+    socket.on("chat:edited", (payload: { id?: string; text?: string; editedAt?: string | null }) => {
+      if (!payload?.id || typeof payload.text !== "string") return;
+      setMessages(current => current.map(message => {
+        if (message.id === payload.id) return { ...message, text: payload.text!, editedAt: payload.editedAt || new Date().toISOString() };
+        if (message.replyTo?.id === payload.id) return { ...message, replyTo: { ...message.replyTo, text: payload.text! } };
+        return message;
+      }));
+      setReplyingTo(current => current?.id === payload.id ? { ...current, text: payload.text! , editedAt: payload.editedAt || new Date().toISOString() } : current);
     });
     socket.on("chat:deleted", (payload: { id?: string }) => {
       if (!payload?.id) return;
@@ -887,15 +943,16 @@ export default function ChatPage() {
                     {message.deletedForEveryone ? <p className="chat-message-deleted-text"><Trash2 size={14} /> This message was deleted</p> : <div className="chat-message-body">
                       {messageImages.length > 0 && <div className={`chat-image-grid ${messageImages.length === 1 ? "chat-image-grid-single" : ""}`}>{messageImages.map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
                       {message.audioUrl && <VoiceNotePlayer src={message.audioUrl} pending={Boolean(message.pending)} />}
-                      {message.text && <p className="chat-message-text">{message.text}</p>}
+                      {message.text && (editingMessageId === message.id ? <form onSubmit={event => { event.preventDefault(); void saveMessageEdit(message); }} onClick={event => event.stopPropagation()} style={{ display: "grid", gap: 8, minWidth: 0, margin: "3px 0" }}><textarea value={editMessageDraft} onChange={event => setEditMessageDraft(event.target.value)} maxLength={4000} rows={Math.max(2, Math.min(6, editMessageDraft.split("\n").length + 1))} aria-label="Edit message" autoFocus style={{ width: "100%", minWidth: 0, boxSizing: "border-box", resize: "vertical", padding: "9px 10px", border: "1px solid rgba(255,255,255,.2)", borderRadius: 10, background: "rgba(0,0,0,.2)", color: "inherit", font: "inherit", lineHeight: 1.45 }} /><div style={{ display: "flex", justifyContent: "flex-end", gap: 7 }}><button type="button" onClick={() => { setEditingMessageId(null); setEditMessageDraft(""); }} disabled={savingMessageEdit} style={{ minHeight: 30, padding: "5px 10px", border: "1px solid rgba(255,255,255,.16)", borderRadius: 8, background: "transparent", color: "inherit", fontSize: ".75rem" }}>Cancel</button><button type="submit" disabled={savingMessageEdit || !editMessageDraft.trim() || editMessageDraft.trim() === message.text.trim()} style={{ minHeight: 30, padding: "5px 10px", border: 0, borderRadius: 8, background: "var(--accent, #a855f7)", color: "#fff", fontSize: ".75rem", fontWeight: 700 }}>{savingMessageEdit ? <LoadingDots /> : "Save"}</button></div></form> : <p className="chat-message-text">{message.text}</p>)}
                     </div>}
-                    <div className="chat-message-footer"><time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}</time>
+                    <div className="chat-message-footer"><time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}{message.editedAt && !message.pending ? " · Edited" : ""}</time>
                       {!message.pending && !message.deletedForEveryone && <button type="button" className="chat-message-more" aria-label="Message actions" title="Message actions" onClick={event => { event.stopPropagation(); setActionMenuFor(current => current === message.id ? null : message.id); }}><MoreVertical size={15} /></button>}
                     </div>
                     {reactionPickerFor === message.id && !message.pending && !message.deletedForEveryone && <div className="chat-reaction-picker" role="group" aria-label="React to message">{["❤️","😂","😮","😢","🙏","👍"].map(emoji => <button key={emoji} type="button" aria-label={`React ${emoji}`} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); reactToMessage(message, emoji); }}>{emoji}</button>)}</div>}
                     {Array.from((message.reactions || []).reduce((groups, reaction) => groups.set(reaction.emoji, [...(groups.get(reaction.emoji) || []), reaction]), new Map<string, ChatReaction[]>()).entries()).map(([emoji, reactions]) => <button key={emoji} type="button" className={`chat-reaction-pill ${(reactions as ChatReaction[]).some(reaction => reaction.userId === currentUserId) ? "chat-reaction-pill-mine" : ""}`} onPointerDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); reactToMessage(message, (reactions as ChatReaction[]).some(reaction => reaction.userId === currentUserId) ? "" : emoji); }} aria-label={`${emoji}, ${(reactions as ChatReaction[]).length} reactions`}>{emoji}<span>{(reactions as ChatReaction[]).length}</span></button>)}
                     {actionMenuFor === message.id && <div className="chat-message-actions" role="menu">
                       <button type="button" role="menuitem" onClick={() => beginReply(message)}><Reply size={16} /><span>Reply</span></button>
+                      {mine && !message.deletedForEveryone && !message.pending && message.text.trim() && !message.images?.length && !message.imageUrl && !message.audioUrl && Date.now() - new Date(message.createdAt).getTime() <= 24 * 60 * 60 * 1000 && <button type="button" role="menuitem" onClick={() => beginEditMessage(message)}><Pencil size={16} /><span>Edit message</span></button>}
                       {mine && !message.deletedForEveryone && <button type="button" role="menuitem" className="chat-message-action-delete" onClick={() => { setActionMenuFor(null); setDeleteConfirmId(message.id); }}><Trash2 size={16} /><span>Delete for everyone</span></button>}
                     </div>}
                   </div>
