@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal } from "lucide-react";
+import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -119,6 +119,7 @@ export default function HomePage() {
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const [postActionMenuId, setPostActionMenuId] = useState<string | null>(null);
+  const [downloadingPostIds, setDownloadingPostIds] = useState<string[]>([]);
   const [editPostDraft, setEditPostDraft] = useState("");
   const [savingPostIds, setSavingPostIds] = useState<string[]>([]);
   const [postDeleteConfirmId, setPostDeleteConfirmId] = useState<string | null>(null);
@@ -526,6 +527,56 @@ export default function HomePage() {
     }
   }
 
+  async function downloadPost(post: SocialPost) {
+    if (deletingIds.includes(post.id) || downloadingPostIds.includes(post.id)) return;
+    setDownloadingPostIds(current => [...current, post.id]);
+    setPostActionMenuId(null);
+    setFeedError("");
+    try {
+      const lines = [
+        `HallsChat post by ${post.author?.name || "HallsChat member"} (@${post.author?.username || "member"})`,
+        `Posted: ${new Date(post.createdAt).toLocaleString()}`,
+        "",
+        post.content || ""
+      ];
+      if (post.poll) {
+        lines.push("", `Poll: ${post.poll.question}`);
+        post.poll.options.forEach(option => lines.push(`- ${option.text} (${option.voteCount} votes)`));
+      }
+      if (post.images?.length) lines.push("", `Attached images: ${post.images.length} (downloaded separately)`);
+      const textBlob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+      const textUrl = URL.createObjectURL(textBlob);
+      const textLink = document.createElement("a");
+      textLink.href = textUrl;
+      textLink.download = `hallschat-post-${post.id}.txt`;
+      document.body.appendChild(textLink);
+      textLink.click();
+      textLink.remove();
+      window.setTimeout(() => URL.revokeObjectURL(textUrl), 1000);
+
+      for (let index = 0; index < (post.images || []).length; index += 1) {
+        const imageUrl = post.images![index];
+        const response = await fetch(imageUrl, { mode: "cors" });
+        if (!response.ok) throw new Error(`Image ${index + 1} couldn't be downloaded. Please open the image and save it manually.`);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        const extension = blob.type.includes("png") ? "png" : blob.type.includes("webp") ? "webp" : blob.type.includes("gif") ? "gif" : "jpg";
+        link.href = blobUrl;
+        link.download = `hallschat-post-${post.id}-image-${index + 1}.${extension}`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1500);
+      }
+      setNotice(post.images?.length ? "Post text and image download started." : "Post downloaded as a text file.");
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "This post couldn't be downloaded.");
+    } finally {
+      setDownloadingPostIds(current => current.filter(id => id !== post.id));
+    }
+  }
+
   async function toggleLike(post: SocialPost) {
     if (likingIds.includes(post.id)) return;
     const token = localStorage.getItem("hallschat_token");
@@ -592,13 +643,14 @@ export default function HomePage() {
             <div className="social-feed-heading"><div><span className="signup-form-kicker">THE LATEST</span><h2>Your feed</h2></div><span className="social-feed-count">{posts.length} {posts.length === 1 ? "post" : "posts"}</span></div>
             {!feedLoading && posts.length > 0 && <div className="social-post-list">
               {posts.map(post => <article className="social-post" key={post.id}>
-                <div className="social-post-head">{post.author?.profilePicture ? <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, overflow: "hidden", cursor: "pointer" }}><img src={post.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></button> : <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, cursor: "pointer" }}>{initials(post.author?.name || "HallsChat member")}</button>}<button type="button" className="social-post-author" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} style={{ padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left", cursor: "pointer" }}><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></button>{post.author?.id === user?.id && <div className="social-post-delete-wrap" style={{ position: "relative", marginLeft: "auto", flexShrink: 0 }}>
+                <div className="social-post-head">{post.author?.profilePicture ? <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, overflow: "hidden", cursor: "pointer" }}><img src={post.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></button> : <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, cursor: "pointer" }}>{initials(post.author?.name || "HallsChat member")}</button>}<button type="button" className="social-post-author" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} style={{ padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left", cursor: "pointer" }}><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></button><div className="social-post-delete-wrap" style={{ position: "relative", marginLeft: "auto", flexShrink: 0 }}>
 <button type="button" className="social-post-action-muted" onClick={() => { setPostActionMenuId(current => current === post.id ? null : post.id); setPostDeleteConfirmId(null); }} aria-label="Post options" aria-expanded={postActionMenuId === post.id} title="Post options" style={{ width: 36, height: 36, minWidth: 36, padding: 0, display: "grid", placeItems: "center", border: "1px solid rgba(255,210,219,.12)", borderRadius: 10, background: "rgba(255,255,255,.045)", color: "#f2dce1", cursor: "pointer" }}><MoreHorizontal size={19} /></button>
-{postActionMenuId === post.id && <div role="menu" aria-label="Post options" style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 9, width: 158, padding: 6, display: "grid", gap: 4, border: "1px solid rgba(255,210,219,.16)", borderRadius: 12, background: "linear-gradient(145deg,rgba(57,17,27,.98),rgba(28,9,15,.99))", boxShadow: "0 10px 28px rgba(0,0,0,.42)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+{postActionMenuId === post.id && <div role="menu" aria-label="Post options" style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 9, width: 176, padding: 6, display: "grid", gap: 4, border: "1px solid rgba(255,210,219,.16)", borderRadius: 12, background: "linear-gradient(145deg,rgba(57,17,27,.98),rgba(28,9,15,.99))", boxShadow: "0 10px 28px rgba(0,0,0,.42)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+<button type="button" role="menuitem" onClick={() => void downloadPost(post)} disabled={downloadingPostIds.includes(post.id)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "transparent", color: "#f2dce1", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}>{downloadingPostIds.includes(post.id) ? <LoadingDots /> : <Download size={15} />} Download post</button>
 {!post.poll && Date.now() - new Date(post.createdAt).getTime() <= 24 * 60 * 60 * 1000 && <button type="button" role="menuitem" onClick={() => beginEditPost(post)} disabled={savingPostIds.includes(post.id)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "transparent", color: "#f2dce1", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}><Pencil size={15} /> Edit post</button>}
-<button type="button" role="menuitem" onClick={() => { setPostActionMenuId(null); setPostDeleteConfirmId(post.id); }} disabled={deletingIds.includes(post.id)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "transparent", color: "#ff8192", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}><Trash2 size={15} /> Delete post</button>
+{post.author?.id === user?.id && <button type="button" role="menuitem" onClick={() => { setPostActionMenuId(null); setPostDeleteConfirmId(post.id); }} disabled={deletingIds.includes(post.id)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "transparent", color: "#ff8192", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}><Trash2 size={15} /> Delete post</button>}
 </div>}
-{postDeleteConfirmId === post.id && <div role="alertdialog" aria-label="Confirm post deletion" style={{ position: "absolute", right: "calc(100% + 8px)", top: "50%", transform: "translateY(-50%)", zIndex: 8, width: 188, boxSizing: "border-box", padding: 11, border: "1px solid rgba(255,210,219,.2)", borderRadius: 13, background: "linear-gradient(145deg,rgba(57,17,27,.98),rgba(28,9,15,.99))", boxShadow: "0 10px 28px rgba(0,0,0,.42)", color: "#fff0f3", textAlign: "left", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}><div style={{ fontSize: ".76rem", fontWeight: 750, lineHeight: 1.4 }}>Delete this post?</div><div style={{ fontSize: ".7rem", marginTop: 4, color: "#e8c6ce" }}>This action cannot be undone.</div><div style={{ display: "flex", gap: 6, marginTop: 9 }}><button type="button" onClick={() => setPostDeleteConfirmId(null)} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: "1px solid rgba(255,210,219,.15)", borderRadius: 8, background: "rgba(255,255,255,.06)", color: "#f5dce1", fontSize: ".7rem" }}>Cancel</button><button type="button" onClick={() => { setPostDeleteConfirmId(null); void deletePost(post); }} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: 0, borderRadius: 8, background: "#b92d45", color: "#fff", fontSize: ".7rem", fontWeight: 750 }}>Delete</button></div></div>}</div>}</div>
+{post.author?.id === user?.id && postDeleteConfirmId === post.id && <div role="alertdialog" aria-label="Confirm post deletion" style={{ position: "absolute", right: "calc(100% + 8px)", top: "50%", transform: "translateY(-50%)", zIndex: 8, width: 188, boxSizing: "border-box", padding: 11, border: "1px solid rgba(255,210,219,.2)", borderRadius: 13, background: "linear-gradient(145deg,rgba(57,17,27,.98),rgba(28,9,15,.99))", boxShadow: "0 10px 28px rgba(0,0,0,.42)", color: "#fff0f3", textAlign: "left", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}><div style={{ fontSize: ".76rem", fontWeight: 750, lineHeight: 1.4 }}>Delete this post?</div><div style={{ fontSize: ".7rem", marginTop: 4, color: "#e8c6ce" }}>This action cannot be undone.</div><div style={{ display: "flex", gap: 6, marginTop: 9 }}><button type="button" onClick={() => setPostDeleteConfirmId(null)} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: "1px solid rgba(255,210,219,.15)", borderRadius: 8, background: "rgba(255,255,255,.06)", color: "#f5dce1", fontSize: ".7rem" }}>Cancel</button><button type="button" onClick={() => { setPostDeleteConfirmId(null); void deletePost(post); }} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: 0, borderRadius: 8, background: "#b92d45", color: "#fff", fontSize: ".7rem", fontWeight: 750 }}>Delete</button></div></div>}</div>}</div>
                 {editingPostId === post.id ? <form onSubmit={event => { event.preventDefault(); void savePostEdit(post); }} style={{ display: "grid", gap: 9, margin: "0 0 12px" }}><textarea value={editPostDraft} onChange={event => setEditPostDraft(event.target.value)} maxLength={5000} rows={Math.max(3, Math.min(8, editPostDraft.split("\n").length + 1))} aria-label="Edit post text" autoFocus style={{ width: "100%", boxSizing: "border-box", resize: "vertical", padding: 12, border: "1px solid rgba(255,210,219,.2)", borderRadius: 12, background: "rgba(0,0,0,.22)", color: "#f6e7ea", font: "inherit", lineHeight: 1.6 }} /><div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}><button type="button" onClick={() => { setEditingPostId(null); setEditPostDraft(""); }} disabled={savingPostIds.includes(post.id)} style={{ minHeight: 34, padding: "7px 12px", border: "1px solid rgba(255,210,219,.16)", borderRadius: 9, background: "rgba(255,255,255,.04)", color: "#f4dfe3", fontSize: ".78rem" }}>Cancel</button><button type="submit" disabled={savingPostIds.includes(post.id) || editPostDraft.trim() === (post.content || "").trim()} style={{ minHeight: 34, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "7px 12px", border: 0, borderRadius: 9, background: "#b92d45", color: "#fff", fontSize: ".78rem", fontWeight: 750 }}>{savingPostIds.includes(post.id) ? <LoadingDots /> : <Check size={14} />} Save changes</button></div></form> : post.content && <p className="social-post-content">{renderTextWithLinks(post.content)}</p>}
                 {post.poll && <div className="social-poll-card"><h3>{post.poll.question}</h3><div className="social-poll-results">{post.poll.options.map((option, index) => {
                   const totalVotes = post.poll!.options.reduce((sum, item) => sum + item.voteCount, 0);
