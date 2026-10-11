@@ -304,8 +304,10 @@ export default function ChatPage() {
                 const mine = message.senderId === currentUserId;
                 return <div key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}>
                   <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"}`}>
+                    <div className="chat-message-body">
                     {(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).length > 0 && <div className={`chat-image-grid ${(message.images?.length || (message.imageUrl ? 1 : 0)) === 1 ? "chat-image-grid-single" : ""}`}>{(message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : []).map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
                     {message.text && <p className="chat-message-text">{message.text}</p>}
+                    </div>
                     <time>{new Date(message.createdAt).toLocaleString()}</time>
                   </div>
                 </div>;
