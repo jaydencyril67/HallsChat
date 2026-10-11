@@ -22,7 +22,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
   const cropDragRef = useRef<CropDrag | null>(null);
   const zoomRef = useRef(1);
   const offsetRef = useRef<Point>({ x: 0, y: 0 });
-  const paintFrameRef = useRef<number | null>(null);
+  const paintFrameRef = useRef<number | null>(null);\n  const cropPaintFrameRef = useRef<number | null>(null);
   const [frame, setFrame] = useState({ width: 320, height: 320 });
   const [crop, setCrop] = useState<CropRect>({ x: 16, y: 16, width: 288, height: 288 });
   const cropRef = useRef(crop);
