@@ -153,19 +153,24 @@ export default function HomePage() {
   const [commentLikingIds, setCommentLikingIds] = useState<string[]>([]);
   const [commentDeletingIds, setCommentDeletingIds] = useState<string[]>([]);
   const [commentDeleteConfirmId, setCommentDeleteConfirmId] = useState<string | null>(null);
+  const [commentActionMenuId, setCommentActionMenuId] = useState<string | null>(null);
+  const [editingComment, setEditingComment] = useState<{ postId: string; comment: SocialComment } | null>(null);
+  const [editCommentDraft, setEditCommentDraft] = useState("");
+  const [savingCommentIds, setSavingCommentIds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!commentDeleteConfirmId && !postDeleteConfirmId && !postActionMenuId) return;
+    if (!commentDeleteConfirmId && !postDeleteConfirmId && !postActionMenuId && !commentActionMenuId) return;
     const closeDeletePopoutsOutside = (event: PointerEvent) => {
       const target = event.target;
       if (target instanceof Element && target.closest(".social-comment-delete-wrap, .social-post-delete-wrap")) return;
       setCommentDeleteConfirmId(null);
       setPostDeleteConfirmId(null);
       setPostActionMenuId(null);
+      setCommentActionMenuId(null);
     };
     document.addEventListener("pointerdown", closeDeletePopoutsOutside);
     return () => document.removeEventListener("pointerdown", closeDeletePopoutsOutside);
-  }, [commentDeleteConfirmId, postDeleteConfirmId, postActionMenuId]);
+  }, [commentDeleteConfirmId, postDeleteConfirmId, postActionMenuId, commentActionMenuId]);
   const [commentErrors, setCommentErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -723,6 +728,35 @@ export default function HomePage() {
     }
   }
 
+  function beginEditComment(post: SocialPost, comment: SocialComment) {
+    setEditingComment({ postId: post.id, comment });
+    setEditCommentDraft(comment.content);
+    setCommentActionMenuId(null);
+  }
+
+  async function saveCommentEdit() {
+    if (!editingComment) return;
+    const content = editCommentDraft.trim();
+    const { postId, comment } = editingComment;
+    if (!content || content === comment.content.trim() || savingCommentIds.includes(comment.id)) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setSavingCommentIds(current => [...current, comment.id]);
+    setCommentErrors(current => ({ ...current, [postId]: "" }));
+    try {
+      const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(postId)}/comments/${encodeURIComponent(comment.id)}`, {
+        method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify({ content })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Your comment could not be edited.");
+      const updated = (payload.comment || { ...comment, content }) as SocialComment;
+      setCommentsByPost(current => ({ ...current, [postId]: (current[postId] || []).map(item => item.id === comment.id ? { ...item, ...updated } : item) }));
+      setEditingComment(null); setEditCommentDraft(""); setNotice("Comment updated.");
+    } catch (err) {
+      setCommentErrors(current => ({ ...current, [postId]: err instanceof Error ? err.message : "Your comment could not be edited." }));
+    } finally { setSavingCommentIds(current => current.filter(id => id !== comment.id)); }
+  }
+
   async function deleteComment(post: SocialPost, comment: SocialComment) {
     if (commentDeletingIds.includes(comment.id) || comment.author?.id !== user?.id) return;
     const token = localStorage.getItem("hallschat_token");
@@ -989,12 +1023,12 @@ export default function HomePage() {
                             <div className="social-comment-bubble"><strong>{comment.author?.name || "HallsChat member"}</strong><span>{renderTextWithLinks(comment.content)}</span></div>
                             <div className="social-comment-meta"><small>{timeAgo(comment.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div>
                           </div>
-                          <button type="button" className={comment.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, comment)} disabled={commentLikingIds.includes(comment.id)} aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"} aria-pressed={comment.likedByMe}>{commentLikingIds.includes(comment.id) ? <LoadingDots/> : <Heart size={16} fill={comment.likedByMe ? "currentColor" : "none"}/>}<small>{comment.likeCount || ""}</small></button>{comment.author?.id === user?.id && <div className="social-comment-delete-wrap"><button type="button" className="social-comment-delete" onClick={() => setCommentDeleteConfirmId(current => current === comment.id ? null : comment.id)} disabled={commentDeletingIds.includes(comment.id)} aria-label="Delete your comment" title="Delete comment">{commentDeletingIds.includes(comment.id) ? <LoadingDots /> : <Trash2 size={14} />}</button>{commentDeleteConfirmId === comment.id && <div className="social-comment-delete-confirm" role="alertdialog" aria-label="Confirm comment deletion"><strong>Delete comment?</strong><span>{(commentsByPost[post.id] || []).some(item => item.parentId === comment.id) ? "Its replies will also be removed." : "This action cannot be undone."}</span><div><button type="button" onClick={() => setCommentDeleteConfirmId(null)}>Cancel</button><button type="button" onClick={() => void deleteComment(post, comment)}>Delete</button></div></div>}</div>}
+                          <button type="button" className={comment.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, comment)} disabled={commentLikingIds.includes(comment.id)} aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"} aria-pressed={comment.likedByMe}>{commentLikingIds.includes(comment.id) ? <LoadingDots/> : <Heart size={16} fill={comment.likedByMe ? "currentColor" : "none"}/>}<small>{comment.likeCount || ""}</small></button>{comment.author?.id === user?.id && <div className="social-comment-delete-wrap"><button type="button" className="social-comment-delete" onClick={() => setCommentActionMenuId(current => current === comment.id ? null : comment.id)} disabled={commentDeletingIds.includes(comment.id) || savingCommentIds.includes(comment.id)} aria-label="Comment options" title="Comment options"><MoreHorizontal size={17}/></button>{commentActionMenuId === comment.id && <div className="social-comment-delete-confirm social-comment-action-menu" role="menu" aria-label="Comment options"><button type="button" role="menuitem" onClick={() => beginEditComment(post, comment)}><Pencil size={14}/> Edit comment</button><button type="button" role="menuitem" onClick={() => { setCommentActionMenuId(null); setCommentDeleteConfirmId(comment.id); }}><Trash2 size={14}/> Delete comment</button></div>}{commentDeleteConfirmId === comment.id && <div className="social-comment-delete-confirm" role="alertdialog" aria-label="Confirm comment deletion"><strong>Delete comment?</strong><span>{(commentsByPost[post.id] || []).some(item => item.parentId === comment.id) ? "Its replies will also be removed." : "This action cannot be undone."}</span><div><button type="button" onClick={() => setCommentDeleteConfirmId(null)}>Cancel</button><button type="button" onClick={() => void deleteComment(post, comment)}>Delete</button></div></div>}</div>}
                         </article>
                         {(commentsByPost[post.id] || []).filter(reply => reply.parentId === comment.id).map(reply => <article className="social-comment social-comment-reply" key={reply.id}>
                           {reply.author?.id ? <button type="button" className="social-comment-avatar" onClick={() => navigate("/users/" + encodeURIComponent(reply.author!.id))} aria-label={"View " + (reply.author.name || "member") + " profile"} style={{ padding: 0, cursor: "pointer" }}>{reply.author.profilePicture ? <img src={reply.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : initials(reply.author.name || "HallsChat member")}</button> : reply.author?.profilePicture ? <img className="social-comment-avatar" src={reply.author.profilePicture} alt="" loading="lazy" /> : <div className="social-comment-avatar">{initials(reply.author?.name || "HallsChat member")}</div>}
                           <div className="social-comment-body"><div className="social-comment-bubble"><strong>{reply.author?.name || "HallsChat member"}</strong><span>{renderTextWithLinks(reply.content)}</span></div><div className="social-comment-meta"><small>{timeAgo(reply.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div></div>
-                          <button type="button" className={reply.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, reply)} disabled={commentLikingIds.includes(reply.id)} aria-label={reply.likedByMe ? "Unlike reply" : "Like reply"} aria-pressed={reply.likedByMe}>{commentLikingIds.includes(reply.id) ? <LoadingDots/> : <Heart size={16} fill={reply.likedByMe ? "currentColor" : "none"}/>}<small>{reply.likeCount || ""}</small></button>{reply.author?.id === user?.id && <div className="social-comment-delete-wrap"><button type="button" className="social-comment-delete" onClick={() => setCommentDeleteConfirmId(current => current === reply.id ? null : reply.id)} disabled={commentDeletingIds.includes(reply.id)} aria-label="Delete your reply" title="Delete reply">{commentDeletingIds.includes(reply.id) ? <LoadingDots /> : <Trash2 size={14} />}</button>{commentDeleteConfirmId === reply.id && <div className="social-comment-delete-confirm" role="alertdialog" aria-label="Confirm reply deletion"><strong>Delete reply?</strong><span>This action cannot be undone.</span><div><button type="button" onClick={() => setCommentDeleteConfirmId(null)}>Cancel</button><button type="button" onClick={() => void deleteComment(post, reply)}>Delete</button></div></div>}</div>}
+                          <button type="button" className={reply.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, reply)} disabled={commentLikingIds.includes(reply.id)} aria-label={reply.likedByMe ? "Unlike reply" : "Like reply"} aria-pressed={reply.likedByMe}>{commentLikingIds.includes(reply.id) ? <LoadingDots/> : <Heart size={16} fill={reply.likedByMe ? "currentColor" : "none"}/>}<small>{reply.likeCount || ""}</small></button>{reply.author?.id === user?.id && <div className="social-comment-delete-wrap"><button type="button" className="social-comment-delete" onClick={() => setCommentActionMenuId(current => current === reply.id ? null : reply.id)} disabled={commentDeletingIds.includes(reply.id) || savingCommentIds.includes(reply.id)} aria-label="Reply options" title="Reply options"><MoreHorizontal size={17}/></button>{commentActionMenuId === reply.id && <div className="social-comment-delete-confirm social-comment-action-menu" role="menu" aria-label="Reply options"><button type="button" role="menuitem" onClick={() => beginEditComment(post, reply)}><Pencil size={14}/> Edit reply</button><button type="button" role="menuitem" onClick={() => { setCommentActionMenuId(null); setCommentDeleteConfirmId(reply.id); }}><Trash2 size={14}/> Delete reply</button></div>}{commentDeleteConfirmId === reply.id && <div className="social-comment-delete-confirm" role="alertdialog" aria-label="Confirm reply deletion"><strong>Delete reply?</strong><span>This action cannot be undone.</span><div><button type="button" onClick={() => setCommentDeleteConfirmId(null)}>Cancel</button><button type="button" onClick={() => void deleteComment(post, reply)}>Delete</button></div></div>}</div>}
                         </article>)}
                       </div>) : commentsByPost[post.id] && !commentErrors[post.id] && !commentsLoading.includes(post.id) ? <p className="social-comments-empty">No comments yet. Start the conversation.</p> : null}
                     </div>
@@ -1091,6 +1125,7 @@ export default function HomePage() {
         <div><button type="button" onClick={() => setStoryDeleteConfirm(null)} disabled={storyDeleting}>Cancel</button><button type="button" className="danger" onClick={() => deleteStory(storyDeleteConfirm)} disabled={storyDeleting}>{storyDeleting ? <><LoadingDots/> Deleting…</> : "Delete story"}</button></div>
       </div>
     </div>}
+    {editingComment && <div className="social-comment-edit-overlay" role="presentation" onClick={() => { if (!savingCommentIds.includes(editingComment.comment.id)) { setEditingComment(null); setEditCommentDraft(""); } }}><form className="social-comment-edit-modal" role="dialog" aria-modal="true" aria-label="Edit comment" onClick={event => event.stopPropagation()} onSubmit={event => { event.preventDefault(); void saveCommentEdit(); }}><header><div><strong>Edit comment</strong><small>Make your changes below</small></div><button type="button" onClick={() => { setEditingComment(null); setEditCommentDraft(""); }} disabled={savingCommentIds.includes(editingComment.comment.id)} aria-label="Close edit comment"><X size={19}/></button></header><textarea value={editCommentDraft} onChange={event => setEditCommentDraft(event.target.value)} maxLength={2000} rows={5} autoFocus aria-label="Comment text" placeholder="Write your comment…"/><footer><button type="button" onClick={() => { setEditingComment(null); setEditCommentDraft(""); }} disabled={savingCommentIds.includes(editingComment.comment.id)}>Cancel</button><button type="submit" disabled={!editCommentDraft.trim() || editCommentDraft.trim() === editingComment.comment.content.trim() || savingCommentIds.includes(editingComment.comment.id)}>{savingCommentIds.includes(editingComment.comment.id) ? <LoadingDots/> : <Check size={15}/>} Save changes</button></footer></form></div>}
     {previewImage && <ImagePreviewModal imageUrl={previewImage} onClose={() => setPreviewImage(null)} />}
     <NowBar />
   </main>;
