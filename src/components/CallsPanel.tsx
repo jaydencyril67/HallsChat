@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
 
@@ -18,6 +18,10 @@ export default function CallsPanel({ socket, person }: Props) {
   const [seconds, setSeconds] = useState(0);
   const [callError, setCallError] = useState("");
   const [pendingCallKind, setPendingCallKind] = useState<"audio" | "video" | null>(null);
+  const audioTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const videoTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const confirmPopoutRef = useRef<HTMLDivElement | null>(null);
+  const [confirmPopoutPosition, setConfirmPopoutPosition] = useState({ left: 8, top: 8 });
   const localVideo = useRef<HTMLVideoElement | null>(null);
   const remoteVideo = useRef<HTMLVideoElement | null>(null);
   const localAudio = useRef<HTMLAudioElement | null>(null);
@@ -27,6 +31,30 @@ export default function CallsPanel({ socket, person }: Props) {
   const activeCallRef = useRef("");
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
+
+  useLayoutEffect(() => {
+    if (!pendingCallKind) return;
+    const reposition = () => {
+      const anchor = (pendingCallKind === "audio" ? audioTriggerRef.current : videoTriggerRef.current)?.getBoundingClientRect();
+      const popout = confirmPopoutRef.current;
+      if (!anchor || !popout) return;
+      const margin = 8;
+      const gap = 8;
+      const width = popout.offsetWidth;
+      const height = popout.offsetHeight;
+      let left = anchor.left;
+      if (left + width > window.innerWidth - margin) left = anchor.right - width;
+      left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+      let top = anchor.bottom + gap;
+      if (top + height > window.innerHeight - margin) top = anchor.top - height - gap;
+      top = Math.max(margin, Math.min(top, window.innerHeight - height - margin));
+      setConfirmPopoutPosition({ left, top });
+    };
+    reposition();
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => { window.removeEventListener("resize", reposition); window.removeEventListener("scroll", reposition, true); };
+  }, [pendingCallKind, person?.name]);
 
   useEffect(() => {
     if (!pendingCallKind) return;
@@ -274,16 +302,16 @@ export default function CallsPanel({ socket, person }: Props) {
   return <>
     {person && <div className="halls-call-triggers">
       <div className="halls-call-trigger-wrap">
-        <button className="halls-call-trigger-audio" type="button" title={"Audio call " + person.name} aria-label={"Audio call " + person.name} onClick={() => setPendingCallKind(current => current === "audio" ? null : "audio")} disabled={phase !== "idle"}><Phone size={18} /><span>Audio call</span></button>
-        {pendingCallKind === "audio" && phase === "idle" && <div className="halls-call-confirm-popout" role="dialog" aria-label="Confirm audio call">
+        <button ref={audioTriggerRef} className="halls-call-trigger-audio" type="button" title={"Audio call " + person.name} aria-label={"Audio call " + person.name} onClick={() => setPendingCallKind(current => current === "audio" ? null : "audio")} disabled={phase !== "idle"}><Phone size={18} /><span>Audio call</span></button>
+        {pendingCallKind === "audio" && phase === "idle" && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label="Confirm audio call">
           <strong>Start audio call?</strong>
           <span>Call <b>{person.name}</b> now?</span>
           <div><button type="button" className="halls-call-confirm-cancel" onClick={() => setPendingCallKind(null)}>Cancel</button><button type="button" className="halls-call-confirm-start" onClick={() => { setPendingCallKind(null); startCall("audio"); }}><Phone size={14} /> Start call</button></div>
         </div>}
       </div>
       <div className="halls-call-trigger-wrap">
-        <button className="halls-call-trigger-video" type="button" title={"Video call " + person.name} aria-label={"Video call " + person.name} onClick={() => setPendingCallKind(current => current === "video" ? null : "video")} disabled={phase !== "idle"}><Video size={18} /><span>Video call</span></button>
-        {pendingCallKind === "video" && phase === "idle" && <div className="halls-call-confirm-popout" role="dialog" aria-label="Confirm video call">
+        <button ref={videoTriggerRef} className="halls-call-trigger-video" type="button" title={"Video call " + person.name} aria-label={"Video call " + person.name} onClick={() => setPendingCallKind(current => current === "video" ? null : "video")} disabled={phase !== "idle"}><Video size={18} /><span>Video call</span></button>
+        {pendingCallKind === "video" && phase === "idle" && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label="Confirm video call">
           <strong>Start video call?</strong>
           <span>Call <b>{person.name}</b> now?</span>
           <div><button type="button" className="halls-call-confirm-cancel" onClick={() => setPendingCallKind(null)}>Cancel</button><button type="button" className="halls-call-confirm-start" onClick={() => { setPendingCallKind(null); startCall("video"); }}><Video size={14} /> Start call</button></div>
