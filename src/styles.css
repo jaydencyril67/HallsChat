@@ -837,3 +837,70 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media(max-width:680px){
   .chat-page-conversation-open .chat-shell{padding-top:72px;padding-bottom:6px}
 }
+
+
+/* Final viewport lock for an open conversation: pin the composer to the bottom
+   and allow vertical scrolling only inside the message list. */
+.chat-page.chat-page-conversation-open{
+  height:100dvh;
+  min-height:0;
+  max-height:100dvh;
+  padding-bottom:0!important;
+  overflow:hidden!important;
+}
+.chat-page-conversation-open .chat-shell{
+  flex:1 1 0;
+  width:100%;
+  height:100%;
+  min-height:0;
+  max-height:100%;
+  margin:0;
+  padding:140px 0 0!important;
+  overflow:hidden;
+}
+.chat-page-conversation-open .chat-layout{
+  display:flex;
+  flex:1 1 0;
+  width:100%;
+  height:100%;
+  min-height:0;
+  max-height:100%;
+  padding:0;
+  overflow:hidden;
+}
+.chat-page-conversation-open .chat-conversation{
+  position:relative;
+  inset:auto;
+  display:flex;
+  flex:1 1 0;
+  width:100%;
+  height:100%;
+  min-height:0;
+  max-height:100%;
+  overflow:hidden;
+}
+.chat-page-conversation-open .chat-message-list{
+  flex:1 1 0;
+  min-height:0;
+  height:auto;
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+}
+.chat-page-conversation-open .chat-composer{
+  flex:0 0 auto;
+  margin-bottom:calc(8px + env(safe-area-inset-bottom));
+}
+@media(max-width:680px){
+  .chat-page-conversation-open .chat-shell{
+    width:100%;
+    padding:140px 0 0!important;
+  }
+  .chat-page-conversation-open .chat-layout{
+    height:100%;
+    min-height:0;
+  }
+  .chat-page-conversation-open .chat-conversation-header{
+    flex:0 0 auto;
+  }
+}
