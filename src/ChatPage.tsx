@@ -196,7 +196,10 @@ export default function ChatPage() {
               {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : messages.length ? messages.map(message => {
                 const mine = message.senderId === currentUserId;
                 return <div key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}>
-                  <div className={`chat-bubble ${mine ? "chat-bubble-mine" : "chat-bubble-theirs"}`}><p>{message.text}</p><time>{formatTime(message.createdAt)}</time></div>
+                  <div className="chat-message-content">
+                    <p className="chat-message-text">{message.text}</p>
+                    <time>{formatTime(message.createdAt)}</time>
+                  </div>
                 </div>;
               }) : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
               <div ref={bottomRef} />
