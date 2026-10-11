@@ -1,4 +1,4 @@
-import { ArrowLeft, Bell, CheckCheck, CircleAlert, Inbox, Trash2, ExternalLink } from "lucide-react";
+import { Bell, CheckCheck, CircleAlert, Inbox, Trash2, ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import AppHeader from "./AppHeader";
@@ -137,15 +137,6 @@ export default function AlertsPage() {
     <main className="home-page social-home halls-alerts-page">
       <AppHeader homeHref="/home" />
       <section className="home-shell social-shell halls-alerts-shell">
-        <button type="button" className="halls-alerts-back" onClick={() => navigate("/home")}><ArrowLeft size={16} /> Home</button>
-        <div className="halls-alerts-heading">
-          <div className="halls-alerts-heading-icon"><Bell size={22} /></div>
-          <div>
-            <p className="halls-alerts-eyebrow">YOUR UPDATES</p>
-            <h1>Alerts {unreadCount > 0 ? <span className="halls-alerts-unread-count">{unreadCount > 99 ? "99+" : unreadCount} unread</span> : null}</h1>
-            <p className="halls-alerts-description">Messages, calls and activity that matter to you.</p>
-          </div>
-        </div>
         <div className="halls-alerts-controls">
           <div className="halls-alerts-toolbar" role="tablist" aria-label="Alert filter">
             <button type="button" role="tab" aria-selected={filter === "all"} className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}><Inbox size={15} /> All alerts <span>{alerts.length}</span></button>
