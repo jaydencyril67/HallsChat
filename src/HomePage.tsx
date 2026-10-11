@@ -4,6 +4,7 @@ import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, Imag
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
+import StoryImageCropModal from "./components/StoryImageCropModal";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 
@@ -115,6 +116,7 @@ export default function HomePage() {
   const [storyText, setStoryText] = useState("");
   const [storyBackground, setStoryBackground] = useState("#8b1e35");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
+  const [storyEditingImageUrl, setStoryEditingImageUrl] = useState("");
   const [storyPublishing, setStoryPublishing] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
   const [pollQuestion, setPollQuestion] = useState("");
@@ -319,19 +321,34 @@ export default function HomePage() {
     return urls;
   }
 
-  async function selectStoryPhoto(event: ChangeEvent<HTMLInputElement>) {
+  function selectStoryPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || storyPublishing) return;
     if (!file.type.startsWith("image/")) { setFeedError("Choose an image for your story."); return; }
     if (file.size > MAX_IMAGE_SIZE) { setFeedError("Story photos must be 10 MB or smaller."); return; }
-    try {
-      const compressed = await compressPostImage(file);
-      setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return { file: compressed, preview: URL.createObjectURL(compressed) }; });
-      setFeedError("");
-    } catch (err) {
-      setFeedError(err instanceof Error ? err.message : "That photo couldn't be prepared.");
-    }
+    setStoryEditingImageUrl(URL.createObjectURL(file));
+    setFeedError("");
+  }
+
+  async function finishStoryPhotoEdit(file: File) {
+    const compressed = await compressPostImage(file);
+    setStoryPhoto(current => {
+      if (current) URL.revokeObjectURL(current.preview);
+      return { file: compressed, preview: URL.createObjectURL(compressed) };
+    });
+    setStoryEditingImageUrl(current => {
+      if (current) URL.revokeObjectURL(current);
+      return "";
+    });
+    setFeedError("");
+  }
+
+  function cancelStoryPhotoEdit() {
+    setStoryEditingImageUrl(current => {
+      if (current) URL.revokeObjectURL(current);
+      return "";
+    });
   }
 
   async function publishStory(event: FormEvent<HTMLFormElement>) {
@@ -382,6 +399,7 @@ export default function HomePage() {
   function closeStoryComposer() {
     setStoryComposerOpen(false);
     setStoryText("");
+    cancelStoryPhotoEdit();
     setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
   }
 
@@ -836,6 +854,7 @@ export default function HomePage() {
         <p className="social-story-expiry">Stories disappear automatically after 24 hours.</p>
       </form>
     </div>}
+    {storyEditingImageUrl && <StoryImageCropModal imageUrl={storyEditingImageUrl} onCancel={cancelStoryPhotoEdit} onDone={finishStoryPhotoEdit} />}
     {storyViewer && <div className="social-story-overlay" role="presentation" onClick={() => setStoryViewer(null)}>
       <div className="social-story-viewer" role="dialog" aria-modal="true" aria-label={`Story by ${storyViewer.author?.name || "user"}`} onClick={event => event.stopPropagation()}>
         <div className="social-story-progress"><span /></div><div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div><button type="button" onClick={() => setStoryViewer(null)} aria-label="Close story"><X size={19}/></button></div>
