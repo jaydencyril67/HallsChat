@@ -855,7 +855,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   min-height:0;
   max-height:100%;
   margin:0;
-  padding:88px 0 0!important;
+  padding:76px 0 0!important;
   overflow:hidden;
 }
 .chat-page-conversation-open .chat-layout{
@@ -894,7 +894,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media(max-width:680px){
   .chat-page-conversation-open .chat-shell{
     width:100%;
-    padding:88px 0 0!important;
+    padding:76px 0 0!important;
   }
   .chat-page-conversation-open .chat-layout{
     height:100%;
