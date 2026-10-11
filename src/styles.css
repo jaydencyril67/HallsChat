@@ -55,10 +55,11 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar, *::befor
 .signup-form-heading>p{margin:0;color:#b99ba1;font-size:11px;line-height:1.7}
 .signup-form{display:grid;gap:15px;margin-top:27px}
 .signup-field{display:flex;min-width:0;flex-direction:column;gap:8px;color:#e8d8dc;font-size:10px;font-weight:700}
-.signup-field>input,.signup-password-wrap{width:100%;height:44px;min-width:0;border:1px solid rgba(255,220,226,.13);border-radius:11px;background:#12050988;color:#fff2f4;transition:border-color .16s,box-shadow .16s}
+.signup-field>input,.signup-password-wrap,.signup-field>.signup-username-wrap,.signup-field>.signup-email-wrap{width:100%;height:44px;min-width:0;border:1px solid rgba(255,220,226,.13);border-radius:11px;background:#12050988;color:#fff2f4;transition:border-color .16s,box-shadow .16s}
 .signup-field>input{padding:0 13px;outline:0;font-size:11px;font-weight:400}
+.signup-username-wrap>input,.signup-email-wrap>input{display:block;flex:1;width:100%;height:100%;min-width:0;padding:0 38px 0 13px;border:0;border-radius:inherit;outline:0;background:transparent;color:#fff2f4;font:400 11px 'DM Sans',sans-serif}
 .signup-field input::placeholder{color:#785861}
-.signup-field>input:focus,.signup-password-wrap:focus-within{border-color:#c83a4e;box-shadow:0 0 0 3px #c42b4017;outline:0}
+.signup-field>input:focus,.signup-password-wrap:focus-within,.signup-username-wrap:focus-within,.signup-email-wrap:focus-within{border-color:#c83a4e;box-shadow:0 0 0 3px #c42b4017;outline:0}
 .signup-field>small{color:#94757c;font-size:9px;font-weight:400;margin-top:-2px}
 .signup-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .signup-password-wrap{display:flex;align-items:center;gap:5px;padding-right:7px}
@@ -729,7 +730,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 
 .signup-username-wrap{position:relative;display:flex;align-items:center;width:100%;min-width:0}
-.signup-username-wrap>input{padding-right:38px!important}
+.signup-username-wrap>input,.signup-email-wrap>input{padding-right:38px!important}
 .signup-username-status{display:flex;align-items:center;min-height:13px;line-height:1.45}
 .signup-username-status-checking{color:#c5a3ac!important}
 .signup-username-status-available{color:#83ddb0!important}
