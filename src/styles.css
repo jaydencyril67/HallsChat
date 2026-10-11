@@ -1890,3 +1890,5 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-triggers button span{font-size:11px;font-weight:700}
 @media(max-width:720px){.halls-calls-shell{width:min(100% - 20px,540px);padding-top:15px}.halls-calls-layout{grid-template-columns:1fr;gap:12px}.halls-calls-people{padding:10px}.halls-calls-list{max-height:260px;overflow:auto}.halls-calls-detail{min-height:350px;padding:22px 14px}.halls-calls-heading{margin-bottom:16px}.halls-calls-detail .halls-call-triggers button{height:44px}}
 @media(max-width:380px){.halls-calls-methods{gap:5px}.halls-calls-method{gap:6px;padding:8px}.halls-calls-method>span{flex-basis:30px;width:30px;height:30px}.halls-calls-detail h2{font-size:20px}}
+
+.chat-conversation-header .halls-call-triggers button span{display:none}
