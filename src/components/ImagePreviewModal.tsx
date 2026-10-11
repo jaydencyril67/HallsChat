@@ -12,7 +12,8 @@ function touchDistance(touches: TouchList) {
 export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const pinchStart = useRef<{ distance: number; zoom: number } | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const pinchStart = useRef<{ distance: number; zoom: number; imagePointX: number; imagePointY: number } | null>(null);
   const dragStart = useRef<{ x: number; y: number; offsetX: number; offsetY: number } | null>(null);
   const dragging = useRef(false);
 
@@ -34,7 +35,17 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
   const reset = () => { setZoom(1); setOffset({ x: 0, y: 0 }); };
   const touchStart = (event: TouchEvent<HTMLDivElement>) => {
     if (event.touches.length === 2) {
-      pinchStart.current = { distance: touchDistance(event.touches), zoom };
+      const bounds = stageRef.current?.getBoundingClientRect();
+      const midX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+      const midY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+      const centerX = bounds ? bounds.left + bounds.width / 2 : midX;
+      const centerY = bounds ? bounds.top + bounds.height / 2 : midY;
+      pinchStart.current = {
+        distance: Math.max(1, touchDistance(event.touches)),
+        zoom,
+        imagePointX: (midX - centerX - offset.x) / zoom,
+        imagePointY: (midY - centerY - offset.y) / zoom,
+      };
       dragStart.current = null;
     } else if (event.touches.length === 1 && zoom > 1) {
       dragStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY, offsetX: offset.x, offsetY: offset.y };
@@ -44,7 +55,17 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
     if (event.touches.length === 2 && pinchStart.current) {
       event.preventDefault();
       const start = pinchStart.current;
-      setZoom(Math.max(1, Math.min(10, start.zoom * touchDistance(event.touches) / Math.max(1, start.distance))));
+      const nextZoom = Math.max(1, Math.min(10, start.zoom * touchDistance(event.touches) / Math.max(1, start.distance)));
+      const bounds = stageRef.current?.getBoundingClientRect();
+      const midX = (event.touches[0].clientX + event.touches[1].clientX) / 2;
+      const midY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
+      const centerX = bounds ? bounds.left + bounds.width / 2 : midX;
+      const centerY = bounds ? bounds.top + bounds.height / 2 : midY;
+      setOffset({
+        x: midX - centerX - start.imagePointX * nextZoom,
+        y: midY - centerY - start.imagePointY * nextZoom,
+      });
+      setZoom(nextZoom);
     } else if (event.touches.length === 1 && dragStart.current && zoom > 1) {
       event.preventDefault();
       const start = dragStart.current;
@@ -80,8 +101,8 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
         </div>
         <button type="button" className="social-image-modal-close" onClick={onClose} aria-label="Close image preview" title="Close preview">Close</button>
       </header>
-      <div className="social-image-modal-stage" onClick={event => event.stopPropagation()} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onWheel={wheel}>
-        <img src={imageUrl} alt="Full-size post image" draggable={false} onMouseDown={mouseDown} onMouseMove={mouseMove} onMouseUp={mouseUp} onMouseLeave={mouseUp} style={{ transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`, cursor: zoom > 1 ? (dragging.current ? "grabbing" : "grab") : "zoom-in", transition: pinchStart.current ? "none" : "transform 80ms ease-out" }} />
+      <div ref={stageRef} className="social-image-modal-stage" onClick={event => event.stopPropagation()} onTouchStart={touchStart} onTouchMove={touchMove} onTouchEnd={touchEnd} onWheel={wheel}>
+        <img src={imageUrl} alt="Full-size post image" draggable={false} onMouseDown={mouseDown} onMouseMove={mouseMove} onMouseUp={mouseUp} onMouseLeave={mouseUp} style={{ transform: `translate3d(${offset.x}px, ${offset.y}px, 0) scale(${zoom})`, transformOrigin: "center center", willChange: "transform", transition: "none", cursor: zoom > 1 ? (dragging.current ? "grabbing" : "grab") : "zoom-in", transition: pinchStart.current ? "none" : "transform 80ms ease-out" }} />
       </div>
       <footer className="social-image-modal-controls" onClick={event => event.stopPropagation()}>
         <button type="button" onClick={() => setZoom(z => Math.max(1, z - 0.25))} aria-label="Zoom out" disabled={zoom <= 1} style={{ opacity: zoom <= 1 ? .4 : 1 }}><ZoomOut size={19} /></button>
