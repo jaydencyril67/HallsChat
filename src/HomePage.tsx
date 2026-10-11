@@ -97,6 +97,16 @@ export default function HomePage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!notice && !feedError && !Object.values(commentErrors).some(Boolean)) return;
+    const timer = window.setTimeout(() => {
+      setNotice("");
+      setFeedError("");
+      setCommentErrors(current => Object.fromEntries(Object.keys(current).map(id => [id, ""])));
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [notice, feedError, commentErrors]);
+
+  useEffect(() => {
     let cancelled = false;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
@@ -472,8 +482,6 @@ export default function HomePage() {
               {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /> {uploadStatus}</p>}
             </form>
 
-            {notice && <p className="social-notice" role="status">{notice}</p>}
-            {feedError && <div className="social-error" role="alert">{feedError}<button type="button" onClick={() => setFeedError("")} aria-label="Dismiss error">×</button></div>}
             <div className="social-feed-heading"><div><span className="signup-form-kicker">THE LATEST</span><h2>Your feed</h2></div><span className="social-feed-count">{posts.length} {posts.length === 1 ? "post" : "posts"}</span></div>
             {!feedLoading && posts.length > 0 && <div className="social-post-list">
               {posts.map(post => <article className="social-post" key={post.id}>
@@ -514,7 +522,6 @@ export default function HomePage() {
                         </article>)}
                       </div>) : !commentErrors[post.id] && !commentsLoading.includes(post.id) ? <p className="social-comments-empty">No comments yet. Start the conversation.</p> : null}
                     </div>
-                    {commentErrors[post.id] && <p className="social-comment-error" role="alert">{commentErrors[post.id]} <button type="button" onClick={() => { setCommentErrors(current => ({ ...current, [post.id]: "" })); setCommentsByPost(current => { const next = { ...current }; delete next[post.id]; return next; }); void toggleComments(post); }}>Try again</button></p>}
                     <div className="social-comments-composer-wrap">
                       {replyTargets[post.id] && <div className="social-replying-to"><span>Replying to <strong>@{replyTargets[post.id]?.author?.username || "member"}</strong></span><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: null }))} aria-label="Cancel reply"><X size={14}/></button></div>}
                       <form className="social-comment-form" onSubmit={event => void submitComment(event, post)}>
@@ -533,6 +540,10 @@ export default function HomePage() {
         </div>
       </>}
     </section>
+    {(feedError || Object.values(commentErrors).find(Boolean) || notice) && <div className={`halls-toast ${(feedError || Object.values(commentErrors).some(Boolean)) ? "halls-toast-error" : "halls-toast-success"}`} role={(feedError || Object.values(commentErrors).some(Boolean)) ? "alert" : "status"}>
+      <span>{feedError || Object.values(commentErrors).find(Boolean) || notice}</span>
+      <button type="button" onClick={() => { setNotice(""); setFeedError(""); setCommentErrors(current => Object.fromEntries(Object.keys(current).map(id => [id, ""]))); }} aria-label="Dismiss notification">×</button>
+    </div>}
     {previewImage && <ImagePreviewModal imageUrl={previewImage} onClose={() => setPreviewImage(null)} />}
     <NowBar />
   </main>;
