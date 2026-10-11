@@ -242,6 +242,55 @@ export default function HomePage() {
     }
   }
 
+  async function toggleComments(post: SocialPost) {
+    if (openComments.includes(post.id)) {
+      setOpenComments(current => current.filter(id => id !== post.id));
+      return;
+    }
+    setOpenComments(current => [...current, post.id]);
+    if (commentsByPost[post.id] || commentsLoading.includes(post.id)) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setCommentsLoading(current => [...current, post.id]);
+    setCommentErrors(current => ({ ...current, [post.id]: "" }));
+    try {
+      const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(post.id)}/comments`, { headers: { Authorization: `Bearer ${token}` } });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Comments couldn't load.");
+      setCommentsByPost(current => ({ ...current, [post.id]: Array.isArray(payload.comments) ? payload.comments : [] }));
+    } catch (err) {
+      setCommentErrors(current => ({ ...current, [post.id]: err instanceof Error ? err.message : "Comments couldn't load." }));
+    } finally {
+      setCommentsLoading(current => current.filter(id => id !== post.id));
+    }
+  }
+
+  async function submitComment(event: FormEvent<HTMLFormElement>, post: SocialPost) {
+    event.preventDefault();
+    const content = (commentDrafts[post.id] || "").trim();
+    if (!content || commentSending.includes(post.id)) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setCommentSending(current => [...current, post.id]);
+    setCommentErrors(current => ({ ...current, [post.id]: "" }));
+    try {
+      const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(post.id)}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ content })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload.comment) throw new Error(payload.message || "Your comment couldn't be published.");
+      setCommentsByPost(current => ({ ...current, [post.id]: [...(current[post.id] || []), payload.comment as SocialComment] }));
+      setCommentDrafts(current => ({ ...current, [post.id]: "" }));
+      setPosts(current => current.map(item => item.id === post.id ? { ...item, commentCount: Number(payload.commentCount) || (item.commentCount || 0) + 1 } : item));
+    } catch (err) {
+      setCommentErrors(current => ({ ...current, [post.id]: err instanceof Error ? err.message : "Your comment couldn't be published." }));
+    } finally {
+      setCommentSending(current => current.filter(id => id !== post.id));
+    }
+  }
+
   async function toggleLike(post: SocialPost) {
     if (likingIds.includes(post.id)) return;
     const token = localStorage.getItem("hallschat_token");
