@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X } from "lucide-react";
+import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2 } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -55,6 +55,7 @@ export default function HomePage() {
   const [publishing, setPublishing] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
   const [likingIds, setLikingIds] = useState<string[]>([]);
+  const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const [openComments, setOpenComments] = useState<string[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, SocialComment[]>>({});
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
@@ -317,6 +318,31 @@ export default function HomePage() {
     }
   }
 
+  async function deletePost(post: SocialPost) {
+    if (deletingIds.includes(post.id) || post.author?.id !== user?.id) return;
+    if (!window.confirm("Delete this post? This action cannot be undone.")) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setDeletingIds(current => [...current, post.id]);
+    setFeedError("");
+    try {
+      const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(post.id)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Your post couldn't be deleted.");
+      setPosts(current => current.filter(item => item.id !== post.id));
+      setCommentsByPost(current => { const next = { ...current }; delete next[post.id]; return next; });
+      setOpenComments(current => current.filter(id => id !== post.id));
+      setNotice("Your post was deleted.");
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "Your post couldn't be deleted.");
+    } finally {
+      setDeletingIds(current => current.filter(id => id !== post.id));
+    }
+  }
+
   async function toggleLike(post: SocialPost) {
     if (likingIds.includes(post.id)) return;
     const token = localStorage.getItem("hallschat_token");
@@ -385,7 +411,7 @@ export default function HomePage() {
             <div className="social-feed-heading"><div><span className="signup-form-kicker">THE LATEST</span><h2>Your feed</h2></div><span className="social-feed-count">{posts.length} {posts.length === 1 ? "post" : "posts"}</span></div>
             {!feedLoading && posts.length > 0 && <div className="social-post-list">
               {posts.map(post => <article className="social-post" key={post.id}>
-                <div className="social-post-head"><div className="social-avatar">{initials(post.author?.name || "HallsChat member")}</div><div className="social-post-author"><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div></div>
+                <div className="social-post-head"><div className="social-avatar">{initials(post.author?.name || "HallsChat member")}</div><div className="social-post-author"><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div>{post.author?.id === user?.id && <button type="button" className="social-post-action-muted" onClick={() => void deletePost(post)} disabled={deletingIds.includes(post.id)} aria-label="Delete your post" title="Delete post" style={{ marginLeft: "auto", color: "#ff8c9c", opacity: deletingIds.includes(post.id) ? .6 : 1 }}>{deletingIds.includes(post.id) ? <LoadingDots /> : <Trash2 size={16} />}{deletingIds.includes(post.id) ? "Deleting…" : "Delete"}</button>}</div>
                 {post.content && <p className="social-post-content">{post.content}</p>}
                 {post.poll && <div className="social-poll-card"><h3>{post.poll.question}</h3><div className="social-poll-results">{post.poll.options.map((option, index) => {
                   const totalVotes = post.poll!.options.reduce((sum, item) => sum + item.voteCount, 0);
