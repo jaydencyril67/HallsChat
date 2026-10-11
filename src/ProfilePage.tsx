@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { FileText, Camera, Trash2, LogOut, Eye } from "lucide-react";
+import { FileText, Camera, Trash2, LogOut, Eye, Mail } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -26,6 +26,7 @@ export default function ProfilePage() {
   const [pictureActionsOpen, setPictureActionsOpen] = useState(false);
   const [pictureDeleteConfirm, setPictureDeleteConfirm] = useState(false);
   const [coverBusy, setCoverBusy] = useState(false);
+  const [coverCropSource, setCoverCropSource] = useState<string | null>(null);
   const coverInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -66,7 +67,7 @@ export default function ProfilePage() {
   const panel: React.CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
   const muted: React.CSSProperties = { color: "rgba(246,220,225,.58)" };
 
-  async function selectCoverPhoto(event: ChangeEvent<HTMLInputElement>) {
+  function selectCoverPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -74,9 +75,28 @@ export default function ProfilePage() {
     if (!file.type.startsWith("image/")) { setPictureError("Choose an image file for your cover photo."); return; }
     if (file.size > MAX_PROFILE_IMAGE_SIZE) { setPictureError("Choose a cover photo smaller than 10 MB."); return; }
     if (coverBusy || pictureBusy) return;
+    setCoverCropSource(URL.createObjectURL(file));
+  }
+
+  function cancelCoverCrop() {
+    if (coverCropSource) URL.revokeObjectURL(coverCropSource);
+    setCoverCropSource(null);
+  }
+
+  async function confirmCroppedCover(croppedFile: File) {
+    if (coverCropSource) URL.revokeObjectURL(coverCropSource);
+    setCoverCropSource(null);
+    // Close the crop editor before starting the upload.
+    await new Promise<void>(resolve => window.setTimeout(resolve, 0));
+    await saveCoverPhoto(croppedFile);
+  }
+
+  async function saveCoverPhoto(croppedFile: File) {
+    if (coverBusy || pictureBusy) return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
     setCoverBusy(true);
+    setPictureError("");
     try {
       const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${token}` } });
       const authPayload = await authResponse.json().catch(() => ({}));
@@ -84,8 +104,8 @@ export default function ProfilePage() {
       const auth = authPayload as ImageKitAuth;
       if (!auth.token || !auth.signature || !auth.publicKey || !auth.expire) throw new Error("Image upload authentication is incomplete.");
       const formData = new FormData();
-      formData.append("file", file, file.name || "cover-photo");
-      formData.append("fileName", `hallschat-cover-${user?.id || "member"}-${Date.now()}`);
+      formData.append("file", croppedFile, "cover-photo.jpg");
+      formData.append("fileName", `hallschat-cover-${user?.id || "member"}-${Date.now()}.jpg`);
       formData.append("publicKey", auth.publicKey);
       formData.append("token", auth.token);
       formData.append("signature", auth.signature);
@@ -252,7 +272,8 @@ export default function ProfilePage() {
         </>}
       </div>
     </section>
-    {cropSource && <ProfileImageCropModal imageUrl={cropSource} onCancel={cancelCrop} onDone={confirmCroppedPicture} />}
+    {coverCropSource && <ProfileImageCropModal imageUrl={coverCropSource} onCancel={cancelCoverCrop} onDone={confirmCroppedCover} title="Edit cover photo" aspectRatio={3} />}
+    {cropSource && <ProfileImageCropModal imageUrl={cropSource} onCancel={cancelCrop} onDone={confirmCroppedPicture} title="Edit profile picture" />}
     {previewPicture && <ImagePreviewModal imageUrl={previewPicture} onClose={() => setPreviewPicture(null)} />}
     {pictureError && <div className="halls-toast halls-toast-error" role="alert"><span>{pictureError}</span><button type="button" onClick={() => setPictureError("")} aria-label="Dismiss notification">×</button></div>}
     <NowBar />
