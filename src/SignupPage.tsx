@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, MailCheck, ShieldCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
 import LoadingDots from "./components/LoadingDots";
+import { navigate } from "./utils/navigate";
 
 function formatNameInput(value: string) {
   return value.toLocaleLowerCase().replace(/(^|\s)(\S)/g, (_match, space: string, character: string) => space + character.toLocaleUpperCase());
@@ -28,6 +29,12 @@ export default function SignupPage() {
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState("");
   const [resendError, setResendError] = useState(false);
+
+  useEffect(() => {
+    if (!showCheckEmail) return;
+    const timer = window.setTimeout(() => navigate("/signin", { replace: true }), 10000);
+    return () => window.clearTimeout(timer);
+  }, [showCheckEmail]);
 
   useEffect(() => {
     const value = username.trim().toLowerCase();
