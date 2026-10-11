@@ -374,7 +374,7 @@ export default function HomePage() {
         [post.id]: current[post.id] && deletedIds.has(current[post.id]!.id) ? null : current[post.id]
       }));
       setPosts(current => current.map(item => item.id === post.id
-        ? { ...item, commentCount: Number(payload.commentCount) || Math.max(0, (item.commentCount || 0) - deletedIds.size) }
+        ? { ...item, commentCount: typeof payload.commentCount === "number" ? payload.commentCount : Math.max(0, (item.commentCount || 0) - deletedIds.size) }
         : item));
       setCommentDeleteConfirmId(null);
       setNotice("Your comment was deleted.");
