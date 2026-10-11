@@ -2001,20 +2001,23 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* Calls page: keep filter tabs and search stationary; history fills the remaining viewport. */
 .home-page.halls-calls-page{
+  box-sizing:border-box;
   height:100vh;
   height:100dvh;
   min-height:0;
   overflow:hidden;
   display:flex;
   flex-direction:column;
+  padding:0!important;
 }
 .home-page.halls-calls-page .halls-call-history-shell{
   box-sizing:border-box;
   display:flex;
-  flex:1 1 0;
+  flex:1 1 0%;
   flex-direction:column;
   min-height:0;
-  height:auto;
+  height:0;
+  max-height:none;
   overflow:hidden;
   padding-bottom:0!important;
 }
@@ -2059,6 +2062,6 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     padding:0 12px;
   }
   .home-page.halls-calls-page .halls-call-history-scroll{
-    padding-bottom:8px;
+    padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px));
   }
 }
