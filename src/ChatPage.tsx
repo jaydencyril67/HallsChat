@@ -96,6 +96,7 @@ export default function ChatPage() {
   const [currentUserId, setCurrentUserId] = useState("");
   const [listLoading, setListLoading] = useState(true);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [historyLoadedFor, setHistoryLoadedFor] = useState("");
   const [error, setError] = useState("");
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -214,6 +215,7 @@ export default function ChatPage() {
   const loadMessages = useCallback(async (personId: string, showLoader = false) => {
     const savedToken = localStorage.getItem("hallschat_token");
     if (!savedToken || !personId) return;
+    setHistoryLoadedFor("");
     if (showLoader) setMessagesLoading(true);
     try {
       const response = await fetch(`${apiBase}/api/chat/${encodeURIComponent(personId)}/messages`, {
@@ -235,11 +237,12 @@ export default function ChatPage() {
       setError(err instanceof Error ? err.message : "This conversation couldn't be loaded.");
     } finally {
       if (showLoader) setMessagesLoading(false);
+      setHistoryLoadedFor(personId);
     }
   }, []);
 
   useEffect(() => {
-    if (!activeId) { setMessages([]); setMessagesLoading(false); return; }
+    if (!activeId) { setMessages([]); setMessagesLoading(false); setHistoryLoadedFor(""); return; }
     // Fetch history once when a conversation opens; new messages arrive over Socket.IO.
     void loadMessages(activeId, true);
   }, [activeId, loadMessages]);
@@ -247,10 +250,14 @@ export default function ChatPage() {
 
 
   useEffect(() => {
-    if (!scrollOnOpenRef.current || !activeId || messagesLoading) return;
-    bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-    scrollOnOpenRef.current = false;
-  }, [activeId, messages, messagesLoading]);
+    if (!scrollOnOpenRef.current || !activeId || messagesLoading || historyLoadedFor !== activeId) return;
+    // Wait until the fetched history has rendered before moving to the latest message.
+    const frame = window.requestAnimationFrame(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+      scrollOnOpenRef.current = false;
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeId, messages, messagesLoading, historyLoadedFor]);
 
   useEffect(() => {
     const input = draftInputRef.current;
