@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
-import { ArrowLeft, ArrowUp, MessageCircle, ShieldCheck, UsersRound } from "lucide-react";
+import { ArrowLeft, ArrowUp, ImagePlus, MessageCircle, ShieldCheck, UsersRound, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -15,7 +15,7 @@ type ChatPerson = {
   lastMessage?: string;
   lastMessageAt?: string | null;
 };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; createdAt: string };
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; createdAt: string };\nconst MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
 function initials(name: string) {
@@ -46,7 +46,7 @@ export default function ChatPage() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
+  const [mobileConversationOpen, setMobileConversationOpen] = useState(false);\n  const [imageFile, setImageFile] = useState<File | null>(null);\n  const [imagePreview, setImagePreview] = useState("");\n  const [viewingImageUrl, setViewingImageUrl] = useState("");\n  const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
@@ -129,19 +129,50 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, activeId]);
 
+  async function uploadChatImage(file: File, savedToken: string): Promise<string> {
+    const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${savedToken}` } });
+    const auth = await authResponse.json().catch(() => ({}));
+    if (authResponse.status === 401) { localStorage.removeItem("hallschat_token"); navigate("/signin", { replace: true }); throw new Error("Please sign in again."); }
+    if (!authResponse.ok) throw new Error(auth.message || "Image uploads are not configured yet.");
+    const form = new FormData();
+    form.append("file", file);
+    form.append("fileName", `hallschat-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
+    form.append("publicKey", auth.publicKey);
+    form.append("token", auth.token);
+    form.append("expire", String(auth.expire));
+    form.append("signature", auth.signature);
+    const uploadResponse = await fetch("https://upload.imagekit.io/api/v1/files/upload", { method: "POST", body: form });
+    const uploaded = await uploadResponse.json().catch(() => ({}));
+    if (!uploadResponse.ok || typeof uploaded.url !== "string") throw new Error(uploaded.message || "The image couldn't be uploaded. Please try again.");
+    return uploaded.url;
+  }
+
+  function handleImageSelection(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { setError("Choose an image file."); return; }
+    if (file.size > MAX_CHAT_IMAGE_SIZE) { setError("Chat images must be 10 MB or smaller."); return; }
+    setError("");
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
     const text = draft.trim();
-    if (!activePerson || !activePerson.canMessage || !text || sending) return;
+    if (!activePerson || !activePerson.canMessage || (!text && !imageFile) || sending) return;
     const savedToken = token();
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
     setSending(true);
     setError("");
     try {
+      let imageUrl = "";
+      if (imageFile) imageUrl = await uploadChatImage(imageFile, savedToken);
       const response = await fetch(`${apiBase}/api/chat/${encodeURIComponent(activePerson.id)}/messages`, {
         method: "POST",
         headers: { Authorization: `Bearer ${savedToken}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text, imageUrl })
       });
       const payload = await response.json().catch(() => ({}));
       if (response.status === 401) { localStorage.removeItem("hallschat_token"); navigate("/signin", { replace: true }); return; }
@@ -149,7 +180,9 @@ export default function ChatPage() {
       const sent = payload.message as ChatMessage;
       setMessages(current => current.some(item => item.id === sent.id) ? current : [...current, sent]);
       setDraft("");
-      setPeople(current => current.map(person => person.id === activePerson.id ? { ...person, lastMessage: sent.text, lastMessageAt: sent.createdAt } : person).sort((a, b) => {
+      setImageFile(null);
+      setImagePreview("");
+      setPeople(current => current.map(person => person.id === activePerson.id ? { ...person, lastMessage: sent.text || (sent.imageUrl ? "📷 Photo" : ""), lastMessageAt: sent.createdAt } : person).sort((a, b) => {
         const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
         const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
         return bTime - aTime || a.name.localeCompare(b.name);
@@ -202,13 +235,13 @@ export default function ChatPage() {
             {activePerson.canMessage ? <form className="chat-composer" onSubmit={sendMessage}>
               <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
               <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>
-              <button type="submit" disabled={!draft.trim() || sending} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
-            </form> : <div className="chat-readonly-notice"><ShieldCheck size={16} /><span>This person no longer follows you, so you can’t send new messages.</span></div>}
+              <button type="submit" disabled={(!draft.trim() && !imageFile) || sending} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
+            </form></> : <div className="chat-readonly-notice"><ShieldCheck size={16} /><span>This person no longer follows you, so you can’t send new messages.</span></div>}
           </> : <div className="chat-welcome"><span><MessageCircle size={30} /></span><h2>Your conversations, all in one place</h2><p>Select a follower to start chatting. Only people who follow you can receive messages from you.</p></div>}
         </section>
       </div>
     </section>
-    {error && <div className="halls-toast halls-toast-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
+    {viewingImageUrl && <div className="chat-image-viewer" role="dialog" aria-modal="true" aria-label="Image preview" onClick={() => setViewingImageUrl("")}><button type="button" aria-label="Close image" onClick={() => setViewingImageUrl("")}><X size={22} /></button><img src={viewingImageUrl} alt="Shared image full size" onClick={event => event.stopPropagation()} /></div>}\n    {error && <div className="halls-toast halls-toast-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
     {!(activePerson && mobileConversationOpen) && <NowBar />}
   </main>;
 }
