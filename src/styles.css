@@ -644,7 +644,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* HallsChat direct messaging */
 .chat-page{--chat-line:rgba(255,210,219,.105);--chat-muted:rgba(246,220,225,.58);--chat-text:#fff0f3}
-.chat-shell{width:min(1120px,calc(100% - 28px));margin:0 auto;padding:86px 0 112px}
+.chat-shell{width:min(1120px,calc(100% - 28px));margin:0 auto;padding:75px 0 112px}
 .chat-heading{display:flex;align-items:center;gap:12px;margin:0 0 18px}
 .chat-heading-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border:1px solid rgba(230,76,98,.25);border-radius:14px;background:rgba(184,32,50,.14);color:#ff9cab}
 .chat-heading h1{margin:0;color:var(--chat-text);font-size:clamp(1.35rem,4vw,1.75rem);letter-spacing:-.04em}
@@ -707,7 +707,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-readonly-notice{display:flex;align-items:center;gap:9px;padding:14px 15px;border-top:1px solid var(--chat-line);background:rgba(197,45,68,.07);color:#ffb7c2;font-size:.73rem;line-height:1.5}
 .chat-readonly-notice svg{flex-shrink:0}
 @media(max-width:680px){
-.chat-shell{width:calc(100% - 22px);padding:78px 0 106px}
+.chat-shell{width:calc(100% - 22px);padding:75px 0 106px}
 .chat-heading{margin-bottom:13px}
 .chat-heading-icon{width:40px;height:40px;flex-basis:40px}
 .chat-heading p{font-size:.72rem}
@@ -789,7 +789,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 
 .chat-page-conversation-open .chat-heading{display:none}
-.chat-page-conversation-open .chat-shell{padding-top:78px}
+.chat-page-conversation-open .chat-shell{padding-top:75px}
 
 
 /* Password recovery */
@@ -821,15 +821,15 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* Keep Chats within the available app viewport; only the message list scrolls when needed. */
 .chat-page{height:100dvh;min-height:0;overflow:hidden;display:flex;flex-direction:column}
-.chat-shell{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;height:auto;padding:78px 0 92px;overflow:hidden}
+.chat-shell{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;height:auto;padding:75px 0 92px;overflow:hidden}
 .chat-layout{flex:1 1 auto;height:auto;min-height:0;max-height:none;overflow:hidden}
 .chat-sidebar,.chat-conversation{min-height:0;overflow:hidden}
 .chat-people-list,.chat-message-list{min-height:0;overscroll-behavior:contain}
 .chat-message-list{flex:1 1 auto;overflow-y:auto;overflow-x:hidden}
 @media(max-width:680px){
-  .chat-shell{width:calc(100% - 22px);padding:76px 0 88px}
+  .chat-shell{width:calc(100% - 22px);padding:75px 0 88px}
   .chat-layout{height:auto;min-height:0;max-height:none}
-  .chat-page-conversation-open .chat-shell{padding-top:76px}
+  .chat-page-conversation-open .chat-shell{padding-top:75px}
 }
 
 
@@ -837,7 +837,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-page-conversation-open .chat-shell{padding-bottom:8px}
 .chat-page-conversation-open .chat-layout{padding-bottom:env(safe-area-inset-bottom,0px)}
 @media(max-width:680px){
-  .chat-page-conversation-open .chat-shell{padding-top:72px;padding-bottom:6px}
+  .chat-page-conversation-open .chat-shell{padding-top:75px;padding-bottom:6px}
 }
 
 
@@ -857,7 +857,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   min-height:0;
   max-height:100%;
   margin:0;
-  padding:76px 0 0!important;
+  padding:75px 0 0!important;
   overflow:hidden;
 }
 .chat-page-conversation-open .chat-layout{
