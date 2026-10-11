@@ -20,6 +20,7 @@ type ChatPerson = {
 };
 type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; createdAt: string };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
+const MAX_CHAT_IMAGES = 4;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
 function initials(name: string) {
@@ -33,6 +34,53 @@ function formatTime(value?: string | null) {
   return date.toDateString() === now.toDateString()
     ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
     : date.toLocaleDateString([], { month: "short", day: "numeric" });
+}
+
+async function compressChatImage(file: File): Promise<File> {
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error(`Couldn't read ${file.name}.`));
+      element.src = sourceUrl;
+    });
+    const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Image compression isn't available in this browser.");
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
+    context.drawImage(image, 0, 0, width, height);
+
+    const encode = (type: string, quality: number) => new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("This image couldn't be compressed.")), type, quality);
+    });
+    let blob = await encode("image/webp", 0.82);
+    let type = blob.type === "image/webp" ? "image/webp" : "image/jpeg";
+    if (type === "image/jpeg") {
+      const jpegCanvas = document.createElement("canvas");
+      jpegCanvas.width = width;
+      jpegCanvas.height = height;
+      const jpegContext = jpegCanvas.getContext("2d");
+      if (!jpegContext) throw new Error("Image compression isn't available in this browser.");
+      jpegContext.fillStyle = "#fff";
+      jpegContext.fillRect(0, 0, width, height);
+      jpegContext.drawImage(image, 0, 0, width, height);
+      blob = await new Promise<Blob>((resolve, reject) => {
+        jpegCanvas.toBlob(result => result ? resolve(result) : reject(new Error("This image couldn't be compressed.")), "image/jpeg", 0.82);
+      });
+    }
+    const extension = type === "image/webp" ? "webp" : "jpg";
+    const baseName = file.name.replace(/\\.[^.]+$/, "") || "chat-image";
+    return new File([blob], `${baseName}.${extension}`, { type, lastModified: Date.now() });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
 }
 function Avatar({ person, size = "normal" }: { person: Pick<ChatPerson, "name" | "profilePicture" | "isOnline">; size?: "normal" | "large" }) {
   return <span className={`chat-avatar ${size === "large" ? "chat-avatar-large" : ""}`}>
@@ -53,6 +101,7 @@ export default function ChatPage() {
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [compressingImages, setCompressingImages] = useState(false);
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
@@ -212,16 +261,27 @@ export default function ChatPage() {
     return uploaded.url;
   }
 
-  function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
+  async function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(event.target.files || []);
     event.target.value = "";
     if (!picked.length) return;
-    if (picked.length > 1 || imageFiles.length + picked.length > 1) { setError("You can send one image per message."); return; }
+    if (imageFiles.length + picked.length > MAX_CHAT_IMAGES) {
+      setError(`You can attach up to ${MAX_CHAT_IMAGES} images per message.`);
+      return;
+    }
     if (picked.some(file => !file.type.startsWith("image/"))) { setError("Choose image files only."); return; }
-    if (picked.some(file => file.size > MAX_CHAT_IMAGE_SIZE)) { setError("Each chat image must be 10 MB or smaller."); return; }
+    if (picked.some(file => file.size > MAX_CHAT_IMAGE_SIZE)) { setError("Each original image must be 10 MB or smaller."); return; }
     setError("");
-    setImageFiles(current => [...current, ...picked]);
-    setImagePreviews(current => [...current, ...picked.map(file => URL.createObjectURL(file))]);
+    setCompressingImages(true);
+    try {
+      const compressed = await Promise.all(picked.map(compressChatImage));
+      setImageFiles(current => [...current, ...compressed]);
+      setImagePreviews(current => [...current, ...compressed.map(file => URL.createObjectURL(file))]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "One or more images couldn't be prepared.");
+    } finally {
+      setCompressingImages(false);
+    }
   }
 
   function removeSelectedImage(index: number) {
@@ -234,7 +294,7 @@ export default function ChatPage() {
   async function sendMessage(event: FormEvent) {
     event.preventDefault();
     const text = draft.trim();
-    if (!activePerson || !activePerson.canMessage || (!text && imageFiles.length === 0) || sending) return;
+    if (!activePerson || !activePerson.canMessage || (!text && imageFiles.length === 0) || sending || compressingImages) return;
     const savedToken = token();
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
     setSending(true);
@@ -315,11 +375,11 @@ export default function ChatPage() {
               }) : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
               <div ref={bottomRef} />
             </div>
-            {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" hidden onChange={handleImageSelection} />{imagePreviews.length > 0 && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">1 image ready</span></div>}<form className="chat-composer" onSubmit={sendMessage}>
-              <button type="button" className="chat-attach-button" onClick={() => imageInputRef.current?.click()} disabled={sending} aria-label="Attach image" title="Send image"><ImagePlus size={20} /></button>
+            {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelection} />{imagePreviews.length > 0 && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">{compressingImages ? "Compressing images…" : `${imageFiles.length} ${imageFiles.length === 1 ? "image" : "images"} ready`}</span></div>}<form className="chat-composer" onSubmit={sendMessage}>
+              <button type="button" className="chat-attach-button" onClick={() => imageInputRef.current?.click()} disabled={sending || compressingImages || imageFiles.length >= MAX_CHAT_IMAGES} aria-label="Attach image" title="Send image"><ImagePlus size={20} /></button>
               <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
               <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>
-              <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || sending} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
+              <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || sending || compressingImages} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
             </form></> : <div className="chat-readonly-notice"><ShieldCheck size={16} /><span>This person no longer follows you, so you can’t send new messages.</span></div>}
           </> : <div className="chat-welcome"><span><MessageCircle size={30} /></span><h2>Your conversations, all in one place</h2><p>Select a follower to start chatting. Only people who follow you can receive messages from you.</p></div>}
         </section>
