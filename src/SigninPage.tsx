@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { ArrowRight, Eye, EyeOff, LockKeyhole, MailCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
 import { navigate } from "./utils/navigate";
+import LoadingDots from "./components/LoadingDots";
 
 export default function SigninPage() {
   const [email, setEmail] = useState("");
@@ -73,8 +74,8 @@ export default function SigninPage() {
           {error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
           {notice && <div className="signup-feedback signup-feedback-success" role="status">{notice}</div>}
           {needsVerification && <div className="auth-verify-help"><MailCheck size={18} /><span>Your email needs confirmation first. Check your inbox or request a fresh confirmation link below.</span></div>}
-          {needsVerification && <button className="button button-secondary auth-resend" type="button" onClick={resendConfirmation} disabled={resending}>{resending ? "Sending confirmation…" : "Resend confirmation email"}</button>}
-          <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? "Signing in…" : "Sign in"} {!submitting && <ArrowRight size={17} />}</button>
+          {needsVerification && <button className="button button-secondary auth-resend" type="button" onClick={resendConfirmation} disabled={resending}>{resending ? <><LoadingDots /> Sending confirmation…</> : "Resend confirmation email"}</button>}
+          <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? <><LoadingDots /> Signing in…</> : "Sign in"} {!submitting && <ArrowRight size={17} />}</button>
           <p className="signup-form-note"><LockKeyhole size={13} /> Your account is checked securely before access is granted.</p>
         </form>
         <div className="signup-bottom-note">New to HallsChat? <a href="/signup">Create an account</a></div>
