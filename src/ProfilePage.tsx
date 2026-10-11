@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { CalendarDays, FileText, Mail, UserRound, AtSign, UsersRound, Camera, Trash2 } from "lucide-react";
+import { CalendarDays, FileText, Mail, UserRound, AtSign, UsersRound, Camera, Trash2, LogOut } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -176,9 +176,11 @@ export default function ProfilePage() {
             </div>
           </section>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button type="button" className="button button-primary" onClick={() => navigate("/halls")}><UsersRound size={16} /> Find people</button>
-            <button type="button" className="button button-secondary" onClick={() => navigate("/settings")}>Settings</button>
+          <div style={{ marginTop: 4 }}>
+            <button type="button" className="button button-secondary" onClick={() => {
+              localStorage.removeItem("hallschat_token");
+              navigate("/signin", { replace: true });
+            }} style={{ width: "100%", minHeight: 44, justifyContent: "center" }}><LogOut size={16} /> Logout</button>
           </div>
         </>}
       </div>
