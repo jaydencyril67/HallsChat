@@ -125,20 +125,26 @@ export default function HomePage() {
 
   async function uploadImages(token: string): Promise<string[]> {
     if (!selectedImages.length) return [];
-    setUploadStatus("Preparing secure upload…");
-    const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const authPayload = await authResponse.json().catch(() => ({}));
-    if (!authResponse.ok) throw new Error(authPayload.message || "Image upload could not be prepared.");
-    const auth = authPayload as ImageKitAuth;
-    if (!auth.token || !auth.signature || !auth.publicKey || !auth.expire) {
-      throw new Error("Image upload authentication returned incomplete details.");
-    }
 
     const urls: string[] = [];
     for (let index = 0; index < selectedImages.length; index += 1) {
       const file = selectedImages[index].file;
+      setUploadStatus(`Preparing image ${index + 1} of ${selectedImages.length}…`);
+
+      // ImageKit upload tokens are single-use. Request fresh authentication for
+      // every image instead of reusing one token across a multi-image post.
+      const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const authPayload = await authResponse.json().catch(() => ({}));
+      if (!authResponse.ok) {
+        throw new Error(authPayload.message || `Image ${index + 1} upload could not be prepared.`);
+      }
+      const auth = authPayload as ImageKitAuth;
+      if (!auth.token || !auth.signature || !auth.publicKey || !auth.expire) {
+        throw new Error(`Image ${index + 1} upload authentication returned incomplete details.`);
+      }
+
       setUploadStatus(`Uploading image ${index + 1} of ${selectedImages.length}…`);
       const formData = new FormData();
       formData.append("file", file);
