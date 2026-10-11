@@ -7,6 +7,7 @@ import HallsPage from "./HallsPage";
 import ChatPage from "./ChatPage";
 import CallsPage from "./CallsPage";
 import ProfilePage from "./ProfilePage";
+import AlertsPage from "./AlertsPage";
 import PublicProfilePage from "./PublicProfilePage";
 import EmailVerificationPage from "./EmailVerificationPage";
 import ForgotPasswordPage from "./ForgotPasswordPage";
@@ -19,7 +20,6 @@ const navigationSections: Record<string, { title: string; description: string }>
   "/contacts": { title: "People", description: "Your contacts and connections will live here." },
   "/calls": { title: "Calls", description: "Your calls will live here." },
   "/groups": { title: "Groups", description: "Your group conversations will live here." },
-  "/notifications": { title: "Alerts", description: "Your notifications will live here." },
   "/settings": { title: "Settings", description: "Your HallsChat preferences will live here." },
   "/help": { title: "Help", description: "Help and support will live here." },
 };
@@ -116,6 +116,7 @@ export default function App() {
   if (normalizedPath === "/chats") return <ChatPage />;
   if (normalizedPath === "/calls") return <CallsPage />;
   if (normalizedPath === "/profile") return <ProfilePage />;
+  if (normalizedPath === "/notifications" || normalizedPath === "/alerts") return <AlertsPage />;
   const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);
   if (publicProfileMatch) return <PublicProfilePage userId={decodeURIComponent(publicProfileMatch[1])} />;
   if (navigationSections[normalizedPath]) {
