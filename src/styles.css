@@ -2132,8 +2132,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @media(max-width:640px){.halls-alerts-toolbar button{flex:1}.halls-alerts-empty{min-height:230px;padding:28px 15px}}
 
 
-/* Persistent alerts center and unread badge. */
-.topbar.hallschat-clickable-header{position:relative}
+/* Persistent alerts center and unread badge. Keep the shared app header fixed. */
+.topbar.hallschat-clickable-header{position:fixed}
 .halls-header-alert-badge{position:absolute;top:7px;right:8px;z-index:3;display:grid;place-items:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border:2px solid var(--theme-bg,#18080e);border-radius:999px;background:#d93654;color:#fff;font-size:9px;font-weight:850;line-height:1;box-shadow:0 0 0 1px #f8a0ad30,0 3px 10px #0005}
 .halls-alerts-unread-count{display:inline-flex;vertical-align:middle;align-items:center;margin-left:8px;padding:5px 8px;border:1px solid #d64a5b50;border-radius:999px;background:#b8203218;color:#f18b9a;font:750 9px/1 'DM Sans',sans-serif;letter-spacing:0}
 .halls-alerts-controls{display:flex;align-items:center;justify-content:space-between;gap:12px}
