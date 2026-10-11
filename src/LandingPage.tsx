@@ -19,17 +19,10 @@ function Brand({ compact = false }: { compact?: boolean }) {
 
 export default function LandingPage({ onSignup }: LandingPageProps) {
   const handleLogin = () => {
+    // The backend is authoritative for session validity. A client-side expiry
+    // parse must not send a user to sign-in when a saved session still exists.
     const token = window.localStorage.getItem("hallschat_token");
-    let tokenIsValid = false;
-    if (token) {
-      try {
-        const payload = JSON.parse(window.atob(token.split(".")[1])) as { exp?: number };
-        tokenIsValid = typeof payload.exp === "number" && payload.exp > Date.now();
-      } catch {
-        tokenIsValid = false;
-      }
-    }
-    navigate(token && tokenIsValid ? "/home" : "/signin");
+    navigate(token ? "/home" : "/signin");
   };
 
   return <main className="landing-page">
