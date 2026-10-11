@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { CSSProperties } from "react";
-import { Search, UsersRound, UserRoundCheck, UserPlus, RefreshCw } from "lucide-react";
+import { Search, UsersRound, UserRoundCheck, UserPlus } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -87,7 +87,6 @@ export default function HallsPage() {
             <h1 style={{ margin: 0, fontSize: "clamp(1.35rem,5vw,1.8rem)", letterSpacing: "-.04em" }}>Halls</h1>
             <p style={{ margin: "5px 0 0", fontSize: ".83rem", ...muted }}>Find your people. Build your circle.</p>
           </div>
-          <button type="button" aria-label="Refresh people" onClick={() => void loadUsers(tab)} style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: 12, border: "1px solid rgba(255,210,219,.14)", background: "rgba(255,255,255,.035)", color: "#f6dce1" }}><RefreshCw size={17} /></button>
         </div>
 
         <div style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
