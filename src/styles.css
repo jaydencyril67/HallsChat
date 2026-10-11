@@ -1953,3 +1953,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
  .halls-call-history-time{gap:7px}
  .halls-call-history-time small{font-size:9px}
 }
+
+
+/* Keep the Calls history content aligned with the shared top gap used by other app pages. */
+.home-page.halls-calls-page .halls-call-history-shell{padding-top:var(--app-top-gap)!important}
