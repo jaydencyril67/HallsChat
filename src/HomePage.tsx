@@ -294,7 +294,6 @@ export default function HomePage() {
                 {composerMode === "post" && <span className="social-char-count">{draft.length}/2000</span>}
                 <button className="social-publish" type="submit" disabled={publishing || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{publishing ? "Publishing…" : composerMode === "poll" ? "Post poll" : "Publish"} <Send size={15}/></button>
               </div>
-              {composerMode === "post" && <p className="social-image-hint">Up to 4 images · 10 MB each</p>}
               {uploadStatus && <p className="social-upload-status" role="status">{uploadStatus}</p>}
             </form>
 
