@@ -5,6 +5,7 @@ import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
+import { io } from "socket.io-client";
 
 type ChatPerson = {
   id: string;
@@ -57,7 +58,11 @@ export default function ChatPage() {
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const scrollOnOpenRef = useRef(false);
   const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const activeIdRef = useRef(activeId);
+  const currentUserIdRef = useRef(currentUserId);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
+  activeIdRef.current = activeId;
+  currentUserIdRef.current = currentUserId;
 
   const token = () => localStorage.getItem("hallschat_token");
 
@@ -98,6 +103,45 @@ export default function ChatPage() {
     return () => { cancelled = true; window.clearInterval(timer); };
   }, [loadPeople]);
 
+  useEffect(() => {
+    if (!currentUserId) return;
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken) return;
+    const socket = io(apiBase, {
+      auth: { token: savedToken },
+      transports: ["websocket", "polling"]
+    });
+    socket.on("connect_error", () => {
+      // REST history remains available while the socket reconnects.
+    });
+    socket.on("chat:message", (message: ChatMessage) => {
+      const me = currentUserIdRef.current;
+      const openId = activeIdRef.current;
+      const belongsToOpenConversation =
+        (message.senderId === me && message.recipientId === openId) ||
+        (message.senderId === openId && message.recipientId === me);
+      if (belongsToOpenConversation) {
+        setMessages(current => current.some(item => item.id === message.id) ? current : [...current, message]);
+      }
+      const otherId = message.senderId === me ? message.recipientId : message.senderId;
+      const preview = message.text || ((message.images?.length || message.imageUrl) ? "📷 Photo" : "");
+      setPeople(current => {
+        const next = current.map(person => person.id === otherId
+          ? { ...person, lastMessage: preview, lastMessageAt: message.createdAt }
+          : person);
+        return next.sort((a, b) => {
+          const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+          const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+          return bTime - aTime || a.name.localeCompare(b.name);
+        });
+      });
+    });
+    return () => {
+      socket.removeAllListeners();
+      socket.disconnect();
+    };
+  }, [currentUserId]);
+
   const loadMessages = useCallback(async (personId: string, showLoader = false) => {
     const savedToken = localStorage.getItem("hallschat_token");
     if (!savedToken || !personId) return;
@@ -121,9 +165,8 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!activeId) { setMessages([]); setMessagesLoading(false); return; }
+    // Fetch history once when a conversation opens; new messages arrive over Socket.IO.
     void loadMessages(activeId, true);
-    const timer = window.setInterval(() => { void loadMessages(activeId, false); }, 4000);
-    return () => window.clearInterval(timer);
   }, [activeId, loadMessages]);
 
 
