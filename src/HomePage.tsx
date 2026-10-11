@@ -988,7 +988,7 @@ export default function HomePage() {
           <div className="social-story-section-rail" aria-label="Choose text section">
             {storyTextSections.map((section, index) => <button type="button" key={section.id} className={activeStoryTextId === section.id ? "is-active" : ""} onClick={() => setActiveStoryTextId(section.id)}><span>{index + 1}</span>{section.text.trim() ? section.text.trim().slice(0, 18) : "Empty text"}</button>)}
           </div>
-          {storyTextManagerOpen && <div className="social-story-text-manager" role="dialog" aria-label="Manage story text sections">
+          {storyTextManagerOpen && <div className={`social-story-text-manager ${storyTextSections.length > 3 ? "is-scrollable" : ""}`} role="dialog" aria-label="Manage story text sections">
             <div className="social-story-text-manager-head"><strong>Text sections</strong><button type="button" onClick={() => setStoryTextManagerOpen(false)} aria-label="Close text section manager"><X size={15}/></button></div>
             <div className="social-story-text-manager-list">
               {storyTextSections.map((section, index) => <div key={section.id} className={activeStoryTextId === section.id ? "is-active" : ""}>
