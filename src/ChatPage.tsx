@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, Plus, Camera, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send } from "lucide-react";
+import { ArrowLeft, ArrowUp, Plus, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -700,8 +700,9 @@ export default function ChatPage() {
               <div className="chat-attachment-wrap">
                 <button type="button" className="chat-attach-button" onClick={() => setAttachmentMenuOpen(value => !value)} aria-label="Open attachments" title="Attach"><Plus size={22} /></button>
                 {attachmentMenuOpen && <div className="chat-attachment-menu">
-                  <button type="button" onClick={() => { setAttachmentMenuOpen(false); cameraInputRef.current?.click(); }}><Camera size={19} /><span>Camera / photo</span></button>
-                  <button type="button" onClick={() => void recordVoiceNote()} disabled={voiceBusy}><Mic size={19} /><span>Voice note</span></button>
+                  <button type="button" onClick={() => { setAttachmentMenuOpen(false); cameraInputRef.current?.click(); }}><Camera size={19} /><span>Camera</span></button>
+                  <button type="button" onClick={() => { setAttachmentMenuOpen(false); imageInputRef.current?.click(); }}><ImageIcon size={19} /><span>Gallery</span></button>
+                  <button type="button" onClick={() => { setAttachmentMenuOpen(false); void recordVoiceNote(); }} disabled={voiceBusy}><Mic size={19} /><span>Voice Note</span></button>
                 </div>}
               </div>
               {(recording || recordingPaused) ? <div className={"chat-recording-status" + (recordingPaused ? " is-paused" : "")}><span className={"chat-recording-dot" + (recordingPaused ? " is-paused" : "")} />{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceDraft && voiceDraftUrl ? <div className="chat-voice-draft-preview"><VoiceNotePlayer src={voiceDraftUrl} /></div> : <textarea ref={draftInputRef} value={draft} onChange={event => handleDraftChange(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />}
