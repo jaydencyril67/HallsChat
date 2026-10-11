@@ -124,6 +124,11 @@ export default function ChatPage() {
   }, [activeId, loadMessages]);
 
   useEffect(() => {
+    if (!imagePreview) return;
+    return () => URL.revokeObjectURL(imagePreview);
+  }, [imagePreview]);
+
+  useEffect(() => {
     const input = draftInputRef.current;
     if (!input) return;
     input.style.height = "auto";
