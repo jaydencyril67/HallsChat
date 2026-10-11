@@ -829,3 +829,11 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .chat-layout{height:auto;min-height:0;max-height:none}
   .chat-page-conversation-open .chat-shell{padding-top:76px}
 }
+
+
+/* Give the active HallsChat conversation the full viewport, like CryBots live chat. */
+.chat-page-conversation-open .chat-shell{padding-bottom:8px}
+.chat-page-conversation-open .chat-layout{padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(max-width:680px){
+  .chat-page-conversation-open .chat-shell{padding-top:72px;padding-bottom:6px}
+}
