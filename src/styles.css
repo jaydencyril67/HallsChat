@@ -1395,3 +1395,10 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-typing-label{color:#f07889!important;font-style:italic;animation:chat-typing-pulse 1.15s ease-in-out infinite}
 @keyframes chat-typing-pulse{0%,100%{opacity:1}50%{opacity:.58}}
 @media(prefers-reduced-motion:reduce){.chat-typing-label{animation:none}}
+
+/* Keep the unsent voice-note preview using the same visible, seekable waveform as sent voice notes. */
+.chat-voice-draft-preview{display:flex;align-items:center;flex:1;min-width:0;width:100%;gap:0;flex-wrap:nowrap}
+.chat-voice-draft-preview .chat-voice-note{flex:1 1 100%;width:100%;max-width:100%;min-width:0;padding:0}
+.chat-voice-draft-preview .chat-voice-track{flex:1 1 auto;min-width:0}
+.chat-voice-draft-preview .chat-voice-waveform{display:flex;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+.chat-voice-draft-preview .chat-voice-waveform:active{cursor:grabbing}
