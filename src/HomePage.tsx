@@ -698,6 +698,16 @@ export default function HomePage() {
         </div>
         <div className="social-layout">
           <section className="social-feed-column" aria-label="Social feed">
+            <section className="social-stories" aria-label="Stories">
+              <button type="button" className="social-story-add" onClick={() => setStoryComposerOpen(true)}>
+                <span className="social-story-add-media">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}<i><Plus size={16}/></i></span>
+                <strong>Create story</strong><small>Share a moment</small>
+              </button>
+              {stories.filter(story => story.author).map(story => <button type="button" key={story.id} className="social-story-item" onClick={() => setStoryViewer(story)} aria-label={`View story by ${story.author?.name || "user"}`}>
+                <span className="social-story-ring"><span>{story.author?.profilePicture ? <img src={story.author.profilePicture} alt="" /> : initials(story.author?.name || "H")}</span></span>
+                <strong>{story.isMine ? "Your story" : story.author?.name}</strong><small>{timeAgo(story.createdAt)}</small>
+              </button>)}
+            </section>
             <form className={`social-composer ${composerMode === "poll" ? "social-composer-poll-mode" : ""} ${!composerExpanded && composerMode === "post" && !draft.trim() && selectedImages.length === 0 ? "social-composer-collapsed" : ""}`} onSubmit={publishPost}>
               {composerMode === "post" && !composerExpanded && !draft.trim() && selectedImages.length === 0 ? <div className="social-composer-quick">
                 <div className="social-composer-quick-top"><span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span><button type="button" className="social-composer-open" onClick={() => setComposerExpanded(true)}>What's on your mind?</button></div>
@@ -808,6 +818,30 @@ export default function HomePage() {
     {(feedError || Object.values(commentErrors).find(Boolean) || notice) && <div className={`halls-toast ${(feedError || Object.values(commentErrors).some(Boolean)) ? "halls-toast-error" : "halls-toast-success"}`} role={(feedError || Object.values(commentErrors).some(Boolean)) ? "alert" : "status"}>
       <span>{feedError || Object.values(commentErrors).find(Boolean) || notice}</span>
       <button type="button" onClick={() => { setNotice(""); setFeedError(""); setCommentErrors(current => Object.fromEntries(Object.keys(current).map(id => [id, ""]))); }} aria-label="Dismiss notification">×</button>
+    </div>}
+    {storyComposerOpen && <div className="social-story-overlay" role="presentation" onClick={closeStoryComposer}>
+      <form className="social-story-dialog" role="dialog" aria-modal="true" aria-label="Create story" onClick={event => event.stopPropagation()} onSubmit={publishStory}>
+        <div className="social-story-dialog-head"><div><span className="signup-form-kicker">YOUR MOMENT</span><h2>Create story</h2></div><button type="button" onClick={closeStoryComposer} aria-label="Close story creator"><X size={19}/></button></div>
+        <div className="social-story-preview" style={{ background: storyPhoto ? "#16090d" : storyBackground }}>
+          {storyPhoto && <img src={storyPhoto.preview} alt="Story preview" />}
+          {storyText.trim() && <p>{storyText}</p>}
+          {!storyPhoto && !storyText.trim() && <span>Your story preview</span>}
+          {storyPhoto && <button type="button" className="social-story-remove-photo" onClick={() => setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; })} aria-label="Remove story photo"><X size={16}/></button>}
+        </div>
+        <textarea value={storyText} onChange={event => setStoryText(event.target.value)} maxLength={500} rows={3} placeholder="Add text to your story…" aria-label="Story text" />
+        {!storyPhoto && <div className="social-story-colors" aria-label="Story background color">
+          {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => setStoryBackground(color)} aria-label={`Choose ${color} background`} />)}
+        </div>}
+        <div className="social-story-dialog-actions"><label className="social-story-photo-button"><Camera size={17}/> Add photo<input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label><span>{storyText.length}/500</span><button type="submit" disabled={storyPublishing || (!storyText.trim() && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Publishing…</> : <><Send size={15}/> Share story</>}</button></div>
+        <p className="social-story-expiry">Stories disappear automatically after 24 hours.</p>
+      </form>
+    </div>}
+    {storyViewer && <div className="social-story-overlay" role="presentation" onClick={() => setStoryViewer(null)}>
+      <div className="social-story-viewer" role="dialog" aria-modal="true" aria-label={`Story by ${storyViewer.author?.name || "user"}`} onClick={event => event.stopPropagation()}>
+        <div className="social-story-progress"><span /></div><div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div><button type="button" onClick={() => setStoryViewer(null)} aria-label="Close story"><X size={19}/></button></div>
+        <div className="social-story-viewer-content" style={{background:storyViewer.background || "#8b1e35"}}>{storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}{storyViewer.text && <p>{storyViewer.text}</p>}</div>
+        <div className="social-story-viewer-footer">HallsChat · 24-hour story</div>
+      </div>
     </div>}
     {previewImage && <ImagePreviewModal imageUrl={previewImage} onClose={() => setPreviewImage(null)} />}
     <NowBar />
