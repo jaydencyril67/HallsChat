@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { ArrowUpRight, Compass, Heart, ImagePlus, MessageCircle, Send, ShieldCheck, UsersRound, UserRound, X } from "lucide-react";
+import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -10,6 +10,7 @@ type SocialPost = {
   id: string;
   content: string;
   images?: string[];
+  poll?: { question: string; options: { id: string; text: string; voteCount: number; votedByMe: boolean }[] } | null;
   createdAt: string;
   author: { id: string; name: string; username: string } | null;
   likeCount: number;
@@ -43,6 +44,10 @@ export default function HomePage() {
   const [feedLoading, setFeedLoading] = useState(false);
   const [feedError, setFeedError] = useState("");
   const [draft, setDraft] = useState("");
+  const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
+  const [pollQuestion, setPollQuestion] = useState("");
+  const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [votingIds, setVotingIds] = useState<string[]>([]);
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
@@ -171,7 +176,12 @@ export default function HomePage() {
   async function publishPost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = draft.trim();
-    if ((!content && selectedImages.length === 0) || publishing) return;
+    const poll = composerMode === "poll" ? { question: pollQuestion.trim(), options: pollOptions.map(option => option.trim()) } : null;
+    if (composerMode === "poll" && (poll!.question.length < 3 || poll!.options.length < 2 || poll!.options.some(option => !option))) {
+      setFeedError("Add a poll question and at least two options.");
+      return;
+    }
+    if ((!content && selectedImages.length === 0 && !poll) || publishing) return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
     setPublishing(true);
@@ -183,12 +193,15 @@ export default function HomePage() {
       const response = await fetch(`${apiBase}/api/social/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content, images })
+        body: JSON.stringify({ content: composerMode === "post" ? content : "", images, poll })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.post) throw new Error(payload.message || "Your post couldn't be published.");
       setPosts(current => [payload.post as SocialPost, ...current]);
       setDraft("");
+      setComposerMode("post");
+      setPollQuestion("");
+      setPollOptions(["", ""]);
       selectedImages.forEach(item => URL.revokeObjectURL(item.preview));
       setSelectedImages([]);
       setNotice("Your post is live.");
@@ -197,6 +210,26 @@ export default function HomePage() {
     } finally {
       setPublishing(false);
       setUploadStatus("");
+    }
+  }
+
+  async function votePoll(post: SocialPost, optionIndex: number) {
+    if (votingIds.includes(post.id)) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setVotingIds(current => [...current, post.id]);
+    try {
+      const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(post.id)}/vote`, {
+        method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ optionIndex })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !Array.isArray(payload.options)) throw new Error(payload.message || "Your vote couldn't be saved.");
+      setPosts(current => current.map(item => item.id === post.id && item.poll ? { ...item, poll: { ...item.poll, options: payload.options } } : item));
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "Your vote couldn't be saved.");
+    } finally {
+      setVotingIds(current => current.filter(id => id !== post.id));
     }
   }
 
@@ -229,26 +262,39 @@ export default function HomePage() {
         </div>
         <div className="social-layout">
           <section className="social-feed-column" aria-label="Social feed">
-            <form className="social-composer" onSubmit={publishPost}>
-              <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} placeholder="What's on your mind? Share something with your HallsChat community…" rows={4} />
-              {selectedImages.length > 0 && <div className="social-image-previews" aria-label="Images attached to your post">
+            <form className={`social-composer ${composerMode === "poll" ? "social-composer-poll-mode" : ""}`} onSubmit={publishPost}>
+              {composerMode === "post" ? <>
+                <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} placeholder="What's on your mind? Share something with your HallsChat community…" rows={4} />
+                {selectedImages.length > 0 && <div className="social-image-previews" aria-label="Images attached to your post">
                 {selectedImages.map((item, index) => <div className="social-image-preview" key={item.preview}>
                   <button type="button" className="social-image-preview-open" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview ${item.file.name}`}><img src={item.preview} alt={item.file.name} /></button>
                   <button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove ${item.file.name}`} disabled={publishing}><X size={14} /></button>
                   <span>{item.file.name}</span>
                 </div>)}
+                </div>
+              </> : <div className="social-poll-builder">
+                <div className="social-poll-builder-heading"><ChartNoAxesColumn size={19}/><div><strong>Create a poll</strong><span>Ask a question and let everyone vote.</span></div></div>
+                <label className="social-poll-field-label" htmlFor="social-poll-question">Poll question</label>
+                <textarea id="social-poll-question" className="social-poll-question" value={pollQuestion} onChange={event => setPollQuestion(event.target.value)} maxLength={240} placeholder="What do you want to ask?" rows={2} />
+                <div className="social-poll-options-label"><span>Answer options</span><small>{pollOptions.length}/4</small></div>
+                <div className="social-poll-option-fields">{pollOptions.map((option, index) => <div className="social-poll-option-field" key={index}><input aria-label={`Poll option ${index + 1}`} maxLength={120} value={option} onChange={event => setPollOptions(current => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} />{pollOptions.length > 2 && <button type="button" onClick={() => setPollOptions(current => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={`Remove option ${index + 1}`}><X size={15}/></button>}</div>)}</div>
+                {pollOptions.length < 4 && <button type="button" className="social-poll-add-option" onClick={() => setPollOptions(current => [...current, ""])}><Plus size={15}/> Add option</button>}
+                <p className="social-image-hint">Polls are public. Each person can vote once and change their vote.</p>
               </div>}
               <div className="social-composer-bottom">
                 <div className="social-composer-tools">
-                  <label className={`social-add-image${selectedImages.length >= MAX_IMAGES || publishing ? " is-disabled" : ""}`} title="Add images">
-                    <ImagePlus size={17} /><span>Add image</span>
-                    <input type="file" accept="image/*" multiple onChange={selectImages} disabled={selectedImages.length >= MAX_IMAGES || publishing} />
-                  </label>
+                  {composerMode === "post" ? <>
+                    <label className={`social-add-image social-add-image-icon-only${selectedImages.length >= MAX_IMAGES || publishing ? " is-disabled" : ""}`} title="Add photos" aria-label="Add photos">
+                      <Camera size={19} />
+                      <input type="file" accept="image/*" multiple onChange={selectImages} disabled={selectedImages.length >= MAX_IMAGES || publishing} />
+                    </label>
+                    <button type="button" className="social-composer-mode-button" onClick={() => { setComposerMode("poll"); setSelectedImages(current => { current.forEach(item => URL.revokeObjectURL(item.preview)); return []; }); }} title="Create a poll" aria-label="Create a poll" disabled={publishing}><ChartNoAxesColumn size={19}/></button>
+                  </> : <button type="button" className="social-composer-mode-button" onClick={() => setComposerMode("post")} title="Back to post" aria-label="Back to post" disabled={publishing}><ImagePlus size={19}/></button>}
                 </div>
-                <span className="social-char-count">{draft.length}/2000</span>
-                <button className="social-publish" type="submit" disabled={(!draft.trim() && selectedImages.length === 0) || publishing}>{publishing ? "Publishing…" : "Publish"} <Send size={15}/></button>
+                {composerMode === "post" && <span className="social-char-count">{draft.length}/2000</span>}
+                <button className="social-publish" type="submit" disabled={publishing || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{publishing ? "Publishing…" : composerMode === "poll" ? "Post poll" : "Publish"} <Send size={15}/></button>
               </div>
-              <p className="social-image-hint">Up to 4 images · 10 MB each</p>
+              {composerMode === "post" && <p className="social-image-hint">Up to 4 images · 10 MB each</p>}
               {uploadStatus && <p className="social-upload-status" role="status">{uploadStatus}</p>}
             </form>
 
@@ -259,6 +305,13 @@ export default function HomePage() {
               {posts.map(post => <article className="social-post" key={post.id}>
                 <div className="social-post-head"><div className="social-avatar">{initials(post.author?.name || "HallsChat member")}</div><div className="social-post-author"><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div></div>
                 {post.content && <p className="social-post-content">{post.content}</p>}
+                {post.poll && <div className="social-poll-card"><h3>{post.poll.question}</h3><div className="social-poll-results">{post.poll.options.map((option, index) => {
+                  const totalVotes = post.poll!.options.reduce((sum, item) => sum + item.voteCount, 0);
+                  const percent = totalVotes ? Math.round(option.voteCount / totalVotes * 100) : 0;
+                  return <button type="button" key={option.id} className={`social-poll-result ${option.votedByMe ? "is-voted" : ""}`} onClick={() => votePoll(post, index)} disabled={votingIds.includes(post.id)} aria-pressed={option.votedByMe}>
+                    <span className="social-poll-result-top"><span>{option.text}</span><strong>{percent}%</strong></span><span className="social-poll-result-track"><span style={{ width: `${percent}%` }}/></span><small>{option.voteCount} {option.voteCount === 1 ? "vote" : "votes"}{option.votedByMe ? " · Your vote" : ""}</small>
+                  </button>;
+                })}</div><p className="social-poll-total">{post.poll.options.reduce((sum, item) => sum + item.voteCount, 0)} votes · Tap an option to vote or change your vote</p></div>}
                 {Array.isArray(post.images) && post.images.length > 0 && <div className={`social-post-images social-post-images-${Math.min(post.images.length, 4)}`} style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
                   {post.images.map((url, index) => <button type="button" className="social-post-image-link" onClick={() => setPreviewImage(url)} aria-label={`Preview image ${index + 1} in post`} key={url}><img src={url} alt={`Image ${index + 1} in post by ${post.author?.name || "HallsChat member"}`} loading="lazy" /></button>)}
                 </div>}
