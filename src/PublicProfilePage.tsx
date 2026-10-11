@@ -7,7 +7,7 @@ import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
 
 type ProfilePost = { id: string; content: string; images: string[]; createdAt: string; likeCount: number; commentCount: number };
-type PublicUser = { id: string; name: string; username: string; profilePicture?: string; coverPhoto?: string; createdAt?: string; followersCount: number; followingCount: number; isFollowing: boolean; isSelf: boolean; isOnline: boolean };
+type PublicUser = { id: string; name: string; username: string; profilePicture?: string; coverPhoto?: string; createdAt?: string; followersCount: number; followingCount: number; isFollowing: boolean; isSelf: boolean; canMessage: boolean; isOnline: boolean };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
 const timeAgo = (value: string) => {
@@ -83,7 +83,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                   <div style={{ display: "flex", gap: 8, paddingBottom: 3, flexWrap: "wrap" }}>
                     {profile.isSelf ? <button type="button" onClick={() => navigate("/profile")} style={{ minHeight: 38, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "9px 13px", border: "1px solid rgba(222,68,89,.65)", borderRadius: 999, background: "linear-gradient(135deg,#c52d44,#8f172c)", color: "#fff6f7", fontSize: ".78rem", fontWeight: 800 }}>Edit profile</button> : <>
                       <button type="button" disabled={busy} onClick={() => void toggleFollow()} style={{ minWidth: 112, minHeight: 38, display: "inline-flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "9px 13px", border: profile.isFollowing ? "1px solid rgba(255,210,219,.2)" : "1px solid rgba(222,68,89,.65)", borderRadius: 999, background: profile.isFollowing ? "rgba(255,255,255,.045)" : "linear-gradient(135deg,#c52d44,#8f172c)", color: "#fff6f7", fontSize: ".78rem", fontWeight: 800 }}>{busy ? <LoadingDots /> : profile.isFollowing ? <><UserRoundCheck size={15} /> Following</> : <><UserPlus size={15} /> Follow</>}</button>
-                      <button type="button" onClick={() => navigate("/chats?user=" + encodeURIComponent(profile.id))} style={{ minHeight: 38, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "9px 13px", border: "1px solid rgba(255,210,219,.18)", borderRadius: 999, background: "rgba(255,255,255,.06)", color: "#fff6f7", fontSize: ".78rem", fontWeight: 800 }}><MessageCircle size={15} /> Message</button>
+                      {profile.canMessage ? <button type="button" onClick={() => navigate("/chats?user=" + encodeURIComponent(profile.id))} style={{ minHeight: 38, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "9px 13px", border: "1px solid rgba(255,210,219,.18)", borderRadius: 999, background: "rgba(255,255,255,.06)", color: "#fff6f7", fontSize: ".78rem", fontWeight: 800 }}><MessageCircle size={15} /> Message</button> : <span title="This person must follow you before you can message them" style={{ minHeight: 38, display: "inline-flex", alignItems: "center", padding: "9px 13px", border: "1px solid rgba(255,210,219,.1)", borderRadius: 999, color: "rgba(246,220,225,.48)", fontSize: ".72rem" }}>Message unavailable</span>}
                     </>}
                   </div>
                 </div>
