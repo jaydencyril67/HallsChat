@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { FormEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import { ArrowLeft, ArrowUp, ImagePlus, MessageCircle, ShieldCheck, UsersRound, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -15,7 +15,8 @@ type ChatPerson = {
   lastMessage?: string;
   lastMessageAt?: string | null;
 };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; createdAt: string };\nconst MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; createdAt: string };
+const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
 function initials(name: string) {
@@ -46,7 +47,11 @@ export default function ChatPage() {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const [mobileConversationOpen, setMobileConversationOpen] = useState(false);\n  const [imageFile, setImageFile] = useState<File | null>(null);\n  const [imagePreview, setImagePreview] = useState("");\n  const [viewingImageUrl, setViewingImageUrl] = useState("");\n  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState("");
+  const [viewingImageUrl, setViewingImageUrl] = useState("");
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
@@ -147,7 +152,7 @@ export default function ChatPage() {
     return uploaded.url;
   }
 
-  function handleImageSelection(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -225,14 +230,16 @@ export default function ChatPage() {
                 const mine = message.senderId === currentUserId;
                 return <div key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}>
                   <div className="chat-message-content">
-                    <p className="chat-message-text">{message.text}</p>
+                    {message.imageUrl && <button type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(message.imageUrl || "")} aria-label="View image"><img src={message.imageUrl} alt={message.text || "Shared image"} loading="lazy" /></button>}
+                    {message.text && <p className="chat-message-text">{message.text}</p>}
                     <time>{formatTime(message.createdAt)}</time>
                   </div>
                 </div>;
               }) : <div className="chat-empty-conversation"><span><MessageCircle size={25} /></span><strong>Say hello</strong><p>Your messages with @{activePerson.username} will appear here.</p></div>}
               <div ref={bottomRef} />
             </div>
-            {activePerson.canMessage ? <form className="chat-composer" onSubmit={sendMessage}>
+            {activePerson.canMessage ? <><input ref={imageInputRef} type="file" accept="image/*" hidden onChange={handleImageSelection} />{imagePreview && <div className="chat-image-pending"><img src={imagePreview} alt="Image ready to send" /><span>Ready to send</span><button type="button" onClick={() => { setImageFile(null); setImagePreview(""); }} aria-label="Remove selected image"><X size={17} /></button></div>}<form className="chat-composer" onSubmit={sendMessage}>
+              <button type="button" className="chat-attach-button" onClick={() => imageInputRef.current?.click()} disabled={sending} aria-label="Attach image" title="Send image"><ImagePlus size={20} /></button>
               <textarea ref={draftInputRef} value={draft} onChange={event => setDraft(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />
               <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>
               <button type="submit" disabled={(!draft.trim() && !imageFile) || sending} aria-label="Send message">{sending ? <LoadingDots /> : <ArrowUp size={20} strokeWidth={2.5} />}</button>
@@ -241,7 +248,8 @@ export default function ChatPage() {
         </section>
       </div>
     </section>
-    {viewingImageUrl && <div className="chat-image-viewer" role="dialog" aria-modal="true" aria-label="Image preview" onClick={() => setViewingImageUrl("")}><button type="button" aria-label="Close image" onClick={() => setViewingImageUrl("")}><X size={22} /></button><img src={viewingImageUrl} alt="Shared image full size" onClick={event => event.stopPropagation()} /></div>}\n    {error && <div className="halls-toast halls-toast-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
+    {viewingImageUrl && <div className="chat-image-viewer" role="dialog" aria-modal="true" aria-label="Image preview" onClick={() => setViewingImageUrl("")}><button type="button" aria-label="Close image" onClick={() => setViewingImageUrl("")}><X size={22} /></button><img src={viewingImageUrl} alt="Shared image full size" onClick={event => event.stopPropagation()} /></div>}
+    {error && <div className="halls-toast halls-toast-error" role="alert"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
     {!(activePerson && mobileConversationOpen) && <NowBar />}
   </main>;
 }
