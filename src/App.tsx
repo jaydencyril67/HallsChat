@@ -37,6 +37,13 @@ export default function App() {
   const [path, setPath] = useState(() => window.location.pathname);
 
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      document.getElementById("initial-splash")?.remove();
+    }, 3000);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
     const syncPath = () => setPath(window.location.pathname);
     const handleInternalLinks = (event: MouseEvent) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
