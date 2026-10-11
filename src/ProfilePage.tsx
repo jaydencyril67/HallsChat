@@ -155,7 +155,6 @@ export default function ProfilePage() {
               </div>}
               {pictureBusy && <p role="status" style={{ margin: "12px 0 0", color: "#f09aa7", fontSize: ".8rem" }}><LoadingDots /> Saving profile picture…</p>}
               {pictureError && <p role="alert" style={{ margin: "12px 0 0", color: "#ff9cab", fontSize: ".8rem", lineHeight: 1.5 }}>{pictureError}</p>}
-              <p style={{ margin: "12px 0 0", ...muted, fontSize: ".76rem", lineHeight: 1.6 }}>Choose a photo, adjust the square crop, then save. JPG, PNG, WebP and other image formats up to 10 MB are supported.</p>
               <p style={{ margin: "12px 0 0", ...muted, fontSize: ".84rem", lineHeight: 1.7 }}>Your space on HallsChat. Keep up with your posts and the details connected to your account.</p>
             </div>
           </div>
