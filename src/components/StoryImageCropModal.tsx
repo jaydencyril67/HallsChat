@@ -8,21 +8,32 @@ type StoryImageCropModalProps = {
   title?: string;
   aspectRatio?: number;
 };
-
+type Point = { x: number; y: number };
+type CropRect = { x: number; y: number; width: number; height: number };
+type CropDrag = { pointerId: number; start: Point; crop: CropRect; mode: "move" | "resize"; handle?: string };
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title = "Edit story photo", aspectRatio }: StoryImageCropModalProps) {
   const imageRef = useRef<HTMLImageElement | null>(null);
-  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
-  const gestureRef = useRef<{ distance: number; midpoint: { x: number; y: number }; zoom: number; offset: { x: number; y: number } } | null>(null);
-  const dragRef = useRef<{ x: number; y: number; offset: { x: number; y: number } } | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const pointersRef = useRef(new Map<number, Point>());
+  const gestureRef = useRef<{ distance: number; midpoint: Point; zoom: number; offset: Point } | null>(null);
+  const imageDragRef = useRef<{ pointerId: number; point: Point; offset: Point } | null>(null);
+  const cropDragRef = useRef<CropDrag | null>(null);
   const zoomRef = useRef(1);
-  const offsetRef = useRef({ x: 0, y: 0 });
+  const offsetRef = useRef<Point>({ x: 0, y: 0 });
   const paintFrameRef = useRef<number | null>(null);
   const [frame, setFrame] = useState({ width: 320, height: 320 });
+  const [crop, setCrop] = useState<CropRect>({ x: 16, y: 16, width: 288, height: 288 });
+  const cropRef = useRef(crop);
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const updateCrop = (next: CropRect) => {
+    cropRef.current = next;
+    setCrop(next);
+  };
 
   useEffect(() => {
     zoomRef.current = 1;
@@ -30,7 +41,8 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     setReady(false);
     pointersRef.current.clear();
     gestureRef.current = null;
-    dragRef.current = null;
+    imageDragRef.current = null;
+    cropDragRef.current = null;
     if (paintFrameRef.current !== null) cancelAnimationFrame(paintFrameRef.current);
     paintFrameRef.current = null;
     setErrorMessage("");
@@ -39,14 +51,15 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
       paintFrameRef.current = null;
       pointersRef.current.clear();
       gestureRef.current = null;
-      dragRef.current = null;
+      imageDragRef.current = null;
+      cropDragRef.current = null;
     };
   }, [imageUrl]);
 
   const baseScale = () => {
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return 1;
-    return Math.max(frame.width / image.naturalWidth, frame.height / image.naturalHeight);
+    return frame.width / image.naturalWidth;
   };
 
   const geometry = (activeZoom = zoomRef.current) => {
@@ -56,7 +69,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     return { width: image.naturalWidth * scale, height: image.naturalHeight * scale };
   };
 
-  const constrainOffset = (next: { x: number; y: number }, nextZoom = zoomRef.current) => {
+  const constrainOffset = (next: Point, nextZoom = zoomRef.current) => {
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return next;
     const scale = baseScale() * nextZoom;
@@ -66,41 +79,30 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     };
   };
 
-
   const handleImageLoad = () => {
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return;
     const maxWidth = Math.max(200, Math.min(window.innerWidth * 0.92, 900));
-    const maxHeight = Math.max(180, Math.min(window.innerHeight * 0.76, 900));
-    let width: number;
-    let height: number;
-    if (typeof aspectRatio === "number" && aspectRatio > 0) {
-      width = maxWidth;
-      height = width / aspectRatio;
-      if (height > maxHeight) {
-        height = maxHeight;
-        width = height * aspectRatio;
-      }
-    } else {
-      const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
-      width = image.naturalWidth * scale;
-      height = image.naturalHeight * scale;
-    }
-    const nextFrame = { width: Math.max(1, width), height: Math.max(1, height) };
-    const scale = Math.max(nextFrame.width / image.naturalWidth, nextFrame.height / image.naturalHeight);
-    const initialOffset = {
-      x: (nextFrame.width - image.naturalWidth * scale) / 2,
-      y: (nextFrame.height - image.naturalHeight * scale) / 2,
-    };
+    const maxHeight = Math.max(180, Math.min(window.innerHeight * 0.70, 900));
+    const scale = Math.min(maxWidth / image.naturalWidth, maxHeight / image.naturalHeight);
+    const width = Math.max(1, image.naturalWidth * scale);
+    const height = Math.max(1, image.naturalHeight * scale);
+    const nextFrame = { width, height };
     setFrame(nextFrame);
+    const ratio = typeof aspectRatio === "number" && aspectRatio > 0 ? aspectRatio : null;
+    let cropWidth = width * 0.84;
+    let cropHeight = height * 0.84;
+    if (ratio) {
+      if (cropWidth / cropHeight > ratio) cropWidth = cropHeight * ratio;
+      else cropHeight = cropWidth / ratio;
+    }
+    const initialCrop = { x: (width - cropWidth) / 2, y: (height - cropHeight) / 2, width: cropWidth, height: cropHeight };
+    updateCrop(initialCrop);
     zoomRef.current = 1;
-    offsetRef.current = initialOffset;
+    offsetRef.current = { x: 0, y: 0 };
     setReady(true);
   };
 
-  // Batch visual writes to one paint per frame. Keep the image at its base size
-  // and use a GPU-composited transform for zoom instead of relaying out width/height
-  // on every finger movement.
   const syncImageStyles = () => {
     if (paintFrameRef.current !== null) return;
     paintFrameRef.current = requestAnimationFrame(() => {
@@ -114,15 +116,19 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     });
   };
 
-  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
-    if (!ready || saving) return;
+  const localPoint = (event: PointerEvent<HTMLDivElement>): Point => {
+    const bounds = stageRef.current?.getBoundingClientRect();
+    return bounds ? { x: event.clientX - bounds.left, y: event.clientY - bounds.top } : { x: 0, y: 0 };
+  };
+
+  const handleStagePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (!ready || saving || (event.target as HTMLElement).closest(".social-story-crop-selection")) return;
     setErrorMessage("");
-    try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Continue with pointer events if capture is unavailable. */ }
-    const bounds = event.currentTarget.getBoundingClientRect();
-    pointersRef.current.set(event.pointerId, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Pointer capture is optional. */ }
+    const point = localPoint(event);
+    pointersRef.current.set(event.pointerId, point);
     if (pointersRef.current.size === 1) {
-      const point = pointersRef.current.get(event.pointerId)!;
-      dragRef.current = { x: point.x, y: point.y, offset: offsetRef.current };
+      imageDragRef.current = { pointerId: event.pointerId, point, offset: offsetRef.current };
       gestureRef.current = null;
     } else if (pointersRef.current.size === 2) {
       const [a, b] = Array.from(pointersRef.current.values());
@@ -132,15 +138,15 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
         zoom: zoomRef.current,
         offset: offsetRef.current,
       };
-      dragRef.current = null;
+      imageDragRef.current = null;
     }
   };
 
-  const handlePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+  const handleStagePointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (!pointersRef.current.has(event.pointerId) || !ready || saving) return;
     event.preventDefault();
-    const bounds = event.currentTarget.getBoundingClientRect();
-    pointersRef.current.set(event.pointerId, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
+    const point = localPoint(event);
+    pointersRef.current.set(event.pointerId, point);
     if (pointersRef.current.size >= 2 && gestureRef.current) {
       const [a, b] = Array.from(pointersRef.current.values());
       const distance = Math.max(1, Math.hypot(b.x - a.x, b.y - a.y));
@@ -150,36 +156,82 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
       const nextScale = baseScale() * nextZoom;
       const imagePointX = (gestureRef.current.midpoint.x - gestureRef.current.offset.x) / startScale;
       const imagePointY = (gestureRef.current.midpoint.y - gestureRef.current.offset.y) / startScale;
-      const nextOffset = constrainOffset({
-        x: midpoint.x - imagePointX * nextScale,
-        y: midpoint.y - imagePointY * nextScale,
-      }, nextZoom);
+      offsetRef.current = constrainOffset({ x: midpoint.x - imagePointX * nextScale, y: midpoint.y - imagePointY * nextScale }, nextZoom);
       zoomRef.current = nextZoom;
-      offsetRef.current = nextOffset;
       syncImageStyles();
       return;
     }
-    if (!dragRef.current) return;
-    const point = pointersRef.current.get(event.pointerId);
-    if (!point) return;
-    const nextOffset = constrainOffset({
-      x: offsetRef.current.x + point.x - dragRef.current.x,
-      y: offsetRef.current.y + point.y - dragRef.current.y,
+    if (!imageDragRef.current || imageDragRef.current.pointerId !== event.pointerId) return;
+    offsetRef.current = constrainOffset({
+      x: offsetRef.current.x + point.x - imageDragRef.current.point.x,
+      y: offsetRef.current.y + point.y - imageDragRef.current.point.y,
     });
-    dragRef.current = { x: point.x, y: point.y, offset: nextOffset };
-    offsetRef.current = nextOffset;
+    imageDragRef.current = { pointerId: event.pointerId, point, offset: offsetRef.current };
     syncImageStyles();
   };
 
-  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
+  const handleStagePointerUp = (event: PointerEvent<HTMLDivElement>) => {
     pointersRef.current.delete(event.pointerId);
-    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Pointer capture may already be released. */ }
+    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Capture may already be released. */ }
     gestureRef.current = null;
-    dragRef.current = null;
+    imageDragRef.current = null;
     if (pointersRef.current.size === 1) {
-      const point = Array.from(pointersRef.current.values())[0];
-      dragRef.current = { x: point.x, y: point.y, offset: offsetRef.current };
+      const [pointerId, point] = Array.from(pointersRef.current.entries())[0];
+      imageDragRef.current = { pointerId, point, offset: offsetRef.current };
     }
+  };
+
+  const handleCropPointerDown = (event: PointerEvent<HTMLDivElement>, mode: "move" | "resize", handle?: string) => {
+    if (!ready || saving) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setErrorMessage("");
+    try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* Pointer capture is optional. */ }
+    cropDragRef.current = { pointerId: event.pointerId, start: localPoint(event), crop: cropRef.current, mode, handle };
+  };
+
+  const handleCropPointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const drag = cropDragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId || saving) return;
+    event.preventDefault();
+    const point = localPoint(event);
+    const dx = point.x - drag.start.x;
+    const dy = point.y - drag.start.y;
+    const minSize = 56;
+    if (drag.mode === "move") {
+      updateCrop({ ...drag.crop, x: clamp(drag.crop.x + dx, 0, frame.width - drag.crop.width), y: clamp(drag.crop.y + dy, 0, frame.height - drag.crop.height) });
+      return;
+    }
+    let left = drag.crop.x;
+    let top = drag.crop.y;
+    let right = drag.crop.x + drag.crop.width;
+    let bottom = drag.crop.y + drag.crop.height;
+    const handle = drag.handle || "";
+    if (handle.includes("w")) left = clamp(drag.crop.x + dx, 0, right - minSize);
+    if (handle.includes("e")) right = clamp(drag.crop.x + drag.crop.width + dx, left + minSize, frame.width);
+    if (handle.includes("n")) top = clamp(drag.crop.y + dy, 0, bottom - minSize);
+    if (handle.includes("s")) bottom = clamp(drag.crop.y + drag.crop.height + dy, top + minSize, frame.height);
+    const ratio = typeof aspectRatio === "number" && aspectRatio > 0 ? aspectRatio : null;
+    if (ratio) {
+      const width = right - left;
+      const height = bottom - top;
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        const nextHeight = width / ratio;
+        if (handle.includes("n")) top = clamp(bottom - nextHeight, 0, bottom - minSize);
+        else bottom = clamp(top + nextHeight, top + minSize, frame.height);
+      } else {
+        const nextWidth = height * ratio;
+        if (handle.includes("w")) left = clamp(right - nextWidth, 0, right - minSize);
+        else right = clamp(left + nextWidth, left + minSize, frame.width);
+      }
+    }
+    updateCrop({ x: left, y: top, width: Math.max(minSize, right - left), height: Math.max(minSize, bottom - top) });
+  };
+
+  const handleCropPointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    if (cropDragRef.current?.pointerId !== event.pointerId) return;
+    cropDragRef.current = null;
+    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Capture may already be released. */ }
   };
 
   const saveCrop = async () => {
@@ -189,15 +241,21 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     setSaving(true);
     setErrorMessage("");
     try {
-      const outputWidth = Math.min(1600, Math.max(800, Math.round(frame.width * 2)));
-      const outputHeight = Math.max(1, Math.round(outputWidth * frame.height / frame.width));
+      const selected = cropRef.current;
+      const scale = baseScale() * zoomRef.current;
+      const sourceX = clamp((selected.x - offsetRef.current.x) / scale, 0, image.naturalWidth);
+      const sourceY = clamp((selected.y - offsetRef.current.y) / scale, 0, image.naturalHeight);
+      const sourceWidth = Math.min(image.naturalWidth - sourceX, selected.width / scale);
+      const sourceHeight = Math.min(image.naturalHeight - sourceY, selected.height / scale);
+      if (sourceWidth <= 0 || sourceHeight <= 0) throw new Error("Move the crop box over the photo before applying it.");
+      const outputWidth = Math.min(1600, Math.max(800, Math.round(selected.width * 2)));
+      const outputHeight = Math.max(1, Math.round(outputWidth * selected.height / selected.width));
       const canvas = document.createElement("canvas");
       canvas.width = outputWidth;
       canvas.height = outputHeight;
       const context = canvas.getContext("2d");
       if (!context) throw new Error("Couldn't prepare this story photo. Please try again.");
-      const scale = outputWidth / frame.width;
-      context.drawImage(image, offsetRef.current.x * scale, offsetRef.current.y * scale, drawn.width * scale, drawn.height * scale);
+      context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, outputWidth, outputHeight);
       const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, "image/jpeg", 0.9));
       if (!blob) throw new Error("Couldn't crop this photo. Please try again.");
       await onDone(new File([blob], "story-photo.jpg", { type: "image/jpeg" }));
@@ -209,21 +267,28 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     }
   };
 
+  const handles = [
+    { key: "nw", className: "nw" }, { key: "n", className: "n" }, { key: "ne", className: "ne" },
+    { key: "w", className: "w" }, { key: "e", className: "e" },
+    { key: "sw", className: "sw" }, { key: "s", className: "s" }, { key: "se", className: "se" },
+  ];
+
   return (
     <div role="dialog" aria-modal="true" aria-label={title} className="social-story-crop-overlay">
       <header className="social-story-crop-header">
         <button type="button" onClick={onCancel} disabled={saving} aria-label="Cancel photo edit"><X size={23} /></button>
-        <div><strong>{title}</strong></div>
+        <div><strong>{title}</strong><span>Drag the box to move it · Drag handles to resize</span></div>
         <button type="button" onClick={() => void saveCrop()} disabled={!ready || saving} aria-label="Apply crop">{saving ? "…" : <Check size={25} />}</button>
       </header>
       <div className="social-story-crop-stage">
         <div
+          ref={stageRef}
           className="social-story-crop-frame"
-          style={{ width: frame.width, height: frame.height, maxWidth: "92vw", maxHeight: "76dvh", aspectRatio: typeof aspectRatio === "number" && aspectRatio > 0 ? aspectRatio : undefined }}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
+          style={{ width: frame.width, height: frame.height, maxWidth: "92vw", maxHeight: "70dvh" }}
+          onPointerDown={handleStagePointerDown}
+          onPointerMove={handleStagePointerMove}
+          onPointerUp={handleStagePointerUp}
+          onPointerCancel={handleStagePointerUp}
         >
           <img
             ref={imageRef}
@@ -237,7 +302,24 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
               transform: `translate3d(${offsetRef.current.x}px, ${offsetRef.current.y}px, 0) scale(${zoomRef.current})`,
             }}
           />
-          <div className="social-story-crop-grid" aria-hidden="true" />
+          {ready && <div
+            className="social-story-crop-selection"
+            style={{ left: crop.x, top: crop.y, width: crop.width, height: crop.height }}
+            onPointerDown={event => handleCropPointerDown(event, "move")}
+            onPointerMove={handleCropPointerMove}
+            onPointerUp={handleCropPointerUp}
+            onPointerCancel={handleCropPointerUp}
+          >
+            <div className="social-story-crop-grid" aria-hidden="true" />
+            {handles.map(({ key, className }) => <span
+              key={key}
+              className={`social-story-crop-handle ${className}`}
+              onPointerDown={event => { event.stopPropagation(); handleCropPointerDown(event, "resize", key); }}
+              onPointerMove={handleCropPointerMove}
+              onPointerUp={handleCropPointerUp}
+              onPointerCancel={handleCropPointerUp}
+            />)}
+          </div>}
         </div>
       </div>
       {errorMessage && <div className="social-story-crop-error" role="alert">{errorMessage}</div>}
