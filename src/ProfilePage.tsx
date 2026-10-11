@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { CalendarDays, FileText, Mail, UserRound, AtSign, UsersRound, Camera, Trash2, LogOut } from "lucide-react";
+import { CalendarDays, FileText, Mail, UserRound, AtSign, UsersRound, Camera, Trash2, LogOut, Eye } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -23,6 +23,7 @@ export default function ProfilePage() {
   const [pictureBusy, setPictureBusy] = useState(false);
   const [cropSource, setCropSource] = useState<string | null>(null);
   const [previewPicture, setPreviewPicture] = useState<string | null>(null);
+  const [pictureActionsOpen, setPictureActionsOpen] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -140,19 +141,20 @@ export default function ProfilePage() {
             <div style={{ padding: "0 18px 20px" }}>
               <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, marginTop: -40 }}>
                 <div style={{ position: "relative", width: 88, height: 88, flexShrink: 0 }}>
-                  <button type="button" aria-label="Preview profile picture" onClick={() => user?.profilePicture && setPreviewPicture(user.profilePicture)} style={{ width: 88, height: 88, display: "grid", placeItems: "center", overflow: "hidden", padding: 0, border: "4px solid #21090f", borderRadius: 24, background: "linear-gradient(145deg,#a72a43,#48121f)", color: "#fff0f3", fontSize: "1.25rem", fontWeight: 850 }}>
+                  <button type="button" aria-label="Profile picture actions" aria-expanded={pictureActionsOpen} onClick={() => setPictureActionsOpen(open => !open)} style={{ width: 88, height: 88, display: "grid", placeItems: "center", overflow: "hidden", padding: 0, border: "4px solid #21090f", borderRadius: 24, background: "linear-gradient(145deg,#a72a43,#48121f)", color: "#fff0f3", fontSize: "1.25rem", fontWeight: 850, cursor: "pointer" }}>
                     {user?.profilePicture ? <img src={user.profilePicture} alt={`${user.name || "Your"} profile`} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : loading ? <LoadingDots /> : initials}
                   </button>
-                  <button type="button" onClick={() => fileInput.current?.click()} aria-label="Upload profile picture" title="Change profile picture" disabled={pictureBusy} style={{ position: "absolute", right: -5, bottom: -5, display: "grid", placeItems: "center", width: 31, height: 31, padding: 0, border: "2px solid #21090f", borderRadius: 11, background: "#c52e49", color: "#fff", boxShadow: "0 4px 14px #0005" }}><Camera size={15} /></button>
+                  {pictureActionsOpen && <div role="group" aria-label="Profile picture actions" style={{ position: "absolute", left: "50%", top: -48, transform: "translateX(-50%)", zIndex: 5, display: "flex", alignItems: "center", gap: 7, padding: 7, border: "1px solid rgba(255,210,219,.18)", borderRadius: 15, background: "#21090f", boxShadow: "0 10px 28px #0008" }}>
+                    <button type="button" onClick={() => { setPictureActionsOpen(false); void removePicture(); }} aria-label="Delete profile picture" title="Delete profile picture" disabled={pictureBusy || !user?.profilePicture} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: 0, borderRadius: 10, background: "rgba(220,55,78,.15)", color: !user?.profilePicture || pictureBusy ? "#82525b" : "#ff8192", opacity: !user?.profilePicture ? .55 : 1 }}><Trash2 size={17}/></button>
+                    <button type="button" onClick={() => { setPictureActionsOpen(false); fileInput.current?.click(); }} aria-label="Upload profile picture" title="Upload or change picture" disabled={pictureBusy} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: 0, borderRadius: 10, background: "rgba(197,46,73,.22)", color: "#ffb3bf" }}><Camera size={17}/></button>
+                    <button type="button" onClick={() => { setPictureActionsOpen(false); if (user?.profilePicture) setPreviewPicture(user.profilePicture); }} aria-label="View profile picture" title="View profile picture" disabled={!user?.profilePicture} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: 0, borderRadius: 10, background: "rgba(255,255,255,.07)", color: "#fff0f3", opacity: !user?.profilePicture ? .55 : 1 }}><Eye size={17}/></button>
+                  </div>}
                   <input ref={fileInput} type="file" accept="image/*" onChange={selectPicture} hidden />
                 </div>
                 <span style={{ marginBottom: 7, padding: "6px 9px", border: "1px solid rgba(232,90,110,.24)", borderRadius: 999, color: "#f09aa7", fontSize: ".68rem", fontWeight: 800, letterSpacing: ".06em" }}>MY PROFILE</span>
               </div>
               <h1 style={{ margin: "13px 0 4px", color: "#fff0f3", fontSize: "clamp(1.4rem,5vw,1.9rem)", letterSpacing: "-.04em", overflowWrap: "anywhere" }}>{loading ? "Loading profile…" : user?.name || "HallsChat member"}</h1>
               <p style={{ margin: 0, color: "#e69aa7", fontSize: ".88rem" }}>{user?.username ? `@${user.username}` : "Your HallsChat account"}</p>
-              {user?.profilePicture && <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 13 }}>
-                <button type="button" onClick={() => void removePicture()} disabled={pictureBusy} className="button button-secondary" style={{ minHeight: 37, fontSize: ".78rem" }}><Trash2 size={14} /> Remove</button>
-              </div>}
               {pictureBusy && <p role="status" style={{ margin: "12px 0 0", color: "#f09aa7", fontSize: ".8rem" }}><LoadingDots /> Saving profile picture…</p>}
               {pictureError && <p role="alert" style={{ margin: "12px 0 0", color: "#ff9cab", fontSize: ".8rem", lineHeight: 1.5 }}>{pictureError}</p>}
               <p style={{ margin: "12px 0 0", ...muted, fontSize: ".84rem", lineHeight: 1.7 }}>Your space on HallsChat. Keep up with your posts and the details connected to your account.</p>
