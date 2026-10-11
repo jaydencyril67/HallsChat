@@ -238,7 +238,7 @@ export default function ProfilePage() {
   return <main className="home-page social-home halls-page">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell" style={{ paddingBottom: 112 }}>
-      <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "12px 0 24px", boxSizing: "border-box" }}>
+      <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "0 0 24px", boxSizing: "border-box" }}>
         {error ? <div role="alert" style={{ ...panel, padding: 18, color: "#ff9cab" }}>{error}<button type="button" onClick={() => navigate("/signin")} style={{ display: "block", marginTop: 12, padding: 0, border: 0, background: "none", color: "#ffd4db", textDecoration: "underline" }}>Sign in again</button></div> : <>
           <div style={{ ...panel, overflow: "hidden", marginBottom: 17 }}>
             <div style={{ position: "relative", height: 150, background: user?.coverPhoto ? `linear-gradient(0deg,rgba(24,6,11,.3),rgba(24,6,11,.08)),url("${user.coverPhoto}") center/cover no-repeat` : "radial-gradient(ellipse at 78% 15%,rgba(231,82,104,.32),transparent 48%),linear-gradient(125deg,#48121f,#21090f 78%)", borderBottom: "1px solid rgba(255,255,255,.06)" }}>
