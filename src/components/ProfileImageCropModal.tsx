@@ -6,6 +6,8 @@ type ProfileImageCropModalProps = {
   onCancel: () => void;
   onDone: (file: File) => void | Promise<void>;
   preserveAspectRatio?: boolean;
+  aspectRatio?: number;
+  title?: string;
 };
 
 const CROP_SIZE = 340;
@@ -13,7 +15,7 @@ const OUTPUT_SIZE = 800;
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
-const ProfileImageCropModal = ({ imageUrl, onCancel, onDone, preserveAspectRatio = false }: ProfileImageCropModalProps) => {
+const ProfileImageCropModal = ({ imageUrl, onCancel, onDone, preserveAspectRatio = false, aspectRatio, title = "Edit profile picture" }: ProfileImageCropModalProps) => {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const dragRef = useRef({ active: false, x: 0, y: 0 });
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
@@ -71,7 +73,15 @@ const ProfileImageCropModal = ({ imageUrl, onCancel, onDone, preserveAspectRatio
     const image = imageRef.current;
     if (!image?.naturalWidth || !image.naturalHeight) return;
     let nextSize = { width: CROP_SIZE, height: CROP_SIZE };
-    if (preserveAspectRatio) {
+    if (typeof aspectRatio === "number" && aspectRatio > 0) {
+      const maxWidth = Math.min(window.innerWidth * 0.92, 680);
+      const maxHeight = Math.min(window.innerHeight * 0.52, 380);
+      let width = maxWidth;
+      let height = width / aspectRatio;
+      if (height > maxHeight) { height = maxHeight; width = height * aspectRatio; }
+      nextSize = { width, height };
+      setCropSize(nextSize);
+    } else if (preserveAspectRatio) {
       const maxWidth = Math.min(window.innerWidth * 0.92, 680);
       const maxHeight = Math.min(window.innerHeight * 0.62, 620);
       const ratio = image.naturalWidth / image.naturalHeight;
@@ -193,7 +203,7 @@ const ProfileImageCropModal = ({ imageUrl, onCancel, onDone, preserveAspectRatio
     }}>
       <div style={{ width: '100%', maxWidth: '680px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <button type="button" onClick={onCancel} disabled={saving} aria-label="Cancel" style={{ background: 'transparent', border: 0, color: '#fff', padding: 8, cursor: 'pointer' }}><X size={25} /></button>
-        <strong style={{ fontSize: '1rem' }}>Edit profile picture</strong>
+        <strong style={{ fontSize: '1rem' }}>{title}</strong>
         <button type="button" onClick={() => void createCroppedFile()} disabled={!ready || saving} aria-label="Done" style={{ background: 'transparent', border: 0, color: '#fff', padding: 8, cursor: ready && !saving ? 'pointer' : 'default' }}><Check size={27} /></button>
       </div>
 
@@ -203,8 +213,8 @@ const ProfileImageCropModal = ({ imageUrl, onCancel, onDone, preserveAspectRatio
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
         style={{
-          position: 'relative', width: cropSize.width, height: cropSize.height, maxWidth: preserveAspectRatio ? '92vw' : 'min(88vw, 520px)', maxHeight: preserveAspectRatio ? '62vh' : 'min(88vw, 520px)',
-          overflow: 'hidden', borderRadius: '24px', background: '#111', touchAction: 'none',
+          position: 'relative', width: cropSize.width, height: cropSize.height, maxWidth: (preserveAspectRatio || aspectRatio) ? '92vw' : 'min(88vw, 520px)', maxHeight: (preserveAspectRatio || aspectRatio) ? '52vh' : 'min(88vw, 520px)',
+          overflow: 'hidden', borderRadius: aspectRatio ? '14px' : '24px', background: '#111', touchAction: 'none',
           cursor: saving ? 'default' : 'grab',
           boxShadow: '0 0 0 2px rgba(255,255,255,0.9), 0 0 0 100vmax rgba(0,0,0,0.18)'
         }}
@@ -222,10 +232,10 @@ const ProfileImageCropModal = ({ imageUrl, onCancel, onDone, preserveAspectRatio
             transformOrigin: 'top left', userSelect: 'none', pointerEvents: 'none'
           }}
         />
-        <div style={{ position: 'absolute', inset: 0, borderRadius: '24px', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.8)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, borderRadius: aspectRatio ? '14px' : '24px', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.8)', pointerEvents: 'none' }} />
       </div>
 
-      <span style={{ fontSize: '0.78rem', opacity: 0.7, textAlign: 'center' }}>{preserveAspectRatio ? 'Pinch to zoom • Drag to crop' : 'Pinch to zoom • Drag to position'}</span>
+      <span style={{ fontSize: '0.78rem', opacity: 0.7, textAlign: 'center' }}>{(preserveAspectRatio || aspectRatio) ? 'Pinch to zoom • Drag to choose the visible area' : 'Pinch to zoom • Drag to position'}</span>
     </div>
   );
 };
