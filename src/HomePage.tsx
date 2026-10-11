@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { ReactNode } from "react";
-import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette } from "lucide-react";
+import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, CaseSensitive } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -23,7 +23,7 @@ type SocialPost = {
 type SocialComment = { id: string; content: string; parentId?: string | null; createdAt: string; likeCount: number; likedByMe: boolean; author: { id: string; name: string; username: string; profilePicture?: string } | null };
 type SelectedImage = { file: File; preview: string };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string; message?: string };
-type StoryTextSection = { id: string; text: string; x: number; y: number };
+type StoryTextSection = { id: string; text: string; x: number; y: number; fontSize?: number; color?: string };
 type SocialStory = { id: string; text: string; textSections?: StoryTextSection[]; mediaUrl?: string; background?: string; textPosition?: { x: number; y: number }; createdAt: string; expiresAt: string; author: { id: string; name: string; username: string; profilePicture?: string } | null; isMine?: boolean; viewCount?: number; uploadState?: "uploading" };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -123,6 +123,7 @@ export default function HomePage() {
   const [activeStoryTextId, setActiveStoryTextId] = useState("story-text-1");
   const [storyTextManagerOpen, setStoryTextManagerOpen] = useState(false);
   const [storyColorPickerOpen, setStoryColorPickerOpen] = useState(false);
+  const [storyTextColorPickerOpen, setStoryTextColorPickerOpen] = useState(false);
   const storyTextDragRef = useRef<{ pointerId: number; sectionId: string; startX: number; startY: number; originX: number; originY: number; nextX: number; nextY: number; element: HTMLParagraphElement } | null>(null);
   const [storyBackground, setStoryBackground] = useState("#8b1e35");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
@@ -486,7 +487,7 @@ export default function HomePage() {
 
   function addStoryTextSection() {
     const id = `story-text-${Date.now()}-${storyTextSections.length}`;
-    setStoryTextSections(current => [...current, { id, text: "", x: 50, y: Math.min(85, 50 + current.length * 8) }]);
+    setStoryTextSections(current => [...current, { id, text: "", x: 50, y: Math.min(85, 50 + current.length * 8), fontSize: 24, color: "#ffffff" }]);
     setActiveStoryTextId(id);
   }
 
@@ -496,7 +497,7 @@ export default function HomePage() {
 
   function removeStoryTextSection(id: string) {
     const remaining = storyTextSections.filter(section => section.id !== id);
-    setStoryTextSections(remaining.length ? remaining : [{ id: `story-text-${Date.now()}`, text: "", x: 50, y: 50 }]);
+    setStoryTextSections(remaining.length ? remaining : [{ id: `story-text-${Date.now()}`, text: "", x: 50, y: 50, fontSize: 24, color: "#ffffff" }]);
     if (activeStoryTextId === id) setActiveStoryTextId(remaining[0]?.id || "");
     storyTextDragRef.current = null;
   }
@@ -566,7 +567,7 @@ export default function HomePage() {
     setNotice("");
     setStories(current => [...current.filter(item => item.id !== temporaryId), pendingStory]);
     setStoryComposerOpen(false);
-    setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50 }]);
+    setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50, fontSize: 24, color: "#ffffff" }]);
     setActiveStoryTextId("story-text-1");
     setStoryTextManagerOpen(false);
     setStoryColorPickerOpen(false);
@@ -619,6 +620,7 @@ export default function HomePage() {
     setActiveStoryTextId("story-text-1");
     setStoryTextManagerOpen(false);
     setStoryColorPickerOpen(false);
+    setStoryTextColorPickerOpen(false);
     storyTextDragRef.current = null;
     cancelStoryPhotoEdit();
     setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
@@ -1088,12 +1090,13 @@ export default function HomePage() {
       <form className="social-story-dialog social-story-snap-composer" role="dialog" aria-modal="true" aria-label="Create story" onClick={event => event.stopPropagation()} onSubmit={publishStory}>
         <div className={`social-story-preview social-story-snap-canvas ${storyPhoto ? "has-photo" : ""}`} style={{ background: storyPhoto ? "#16090d" : storyBackground }}>
           {storyPhoto && <img src={storyPhoto.preview} alt="Story preview" />}
-          {storyTextSections.filter(section => section.text.trim()).map(section => <p key={section.id} className={`social-story-draggable-text ${activeStoryTextId === section.id ? "is-active" : ""}`} style={{ left: `${section.x}%`, top: `${section.y}%` }} onPointerDown={event => handleStoryTextPointerDown(event, section)} onPointerMove={handleStoryTextPointerMove} onPointerUp={handleStoryTextPointerUp} onPointerCancel={handleStoryTextPointerUp} onClick={() => setActiveStoryTextId(section.id)} aria-label="Drag to position story text">{section.text}</p>)}
+          {storyTextSections.filter(section => section.text.trim()).map(section => <p key={section.id} className={`social-story-draggable-text ${activeStoryTextId === section.id ? "is-active" : ""}`} style={{ left: `${section.x}%`, top: `${section.y}%`, fontSize: `${section.fontSize || 24}px`, color: section.color || "#ffffff" }} onPointerDown={event => handleStoryTextPointerDown(event, section)} onPointerMove={handleStoryTextPointerMove} onPointerUp={handleStoryTextPointerUp} onPointerCancel={handleStoryTextPointerUp} onClick={() => setActiveStoryTextId(section.id)} aria-label="Drag to position story text">{section.text}</p>)}
           {!storyPhoto && !storyTextSections.some(section => section.text.trim()) && <span>Your story preview</span>}
           <button type="button" className="social-story-snap-close" onClick={closeStoryComposer} aria-label="Close story creator"><X size={21}/></button>
           <div className="social-story-snap-tools" aria-label="Story editing tools">
             <button type="button" onClick={addStoryTextSection} disabled={storyTextSections.length >= 10} aria-label="Add text" title="Add text"><Pencil size={20}/></button>
-            <button type="button" onClick={() => { setStoryColorPickerOpen(value => !value); setStoryTextManagerOpen(false); }} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
+            <button type="button" onClick={() => { setStoryColorPickerOpen(value => !value); setStoryTextColorPickerOpen(false); setStoryTextManagerOpen(false); }} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
+            <button type="button" onClick={() => { setStoryTextColorPickerOpen(value => !value); setStoryColorPickerOpen(false); setStoryTextManagerOpen(false); }} aria-label="Change text color" title="Text color"><CaseSensitive size={21}/></button>
             <label className="social-story-snap-tool" aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label>
             <button type="button" onClick={() => setStoryTextManagerOpen(value => !value)} aria-expanded={storyTextManagerOpen} aria-label="Manage text sections" title="Manage text"><MoreHorizontal size={21}/></button>
           </div>
@@ -1106,6 +1109,7 @@ export default function HomePage() {
               </div>)}
             </div>
           </div>}
+          {storyTextColorPickerOpen && <div className="social-story-color-popout social-story-text-color-popout" role="dialog" aria-label="Choose text color"><div className="social-story-color-popout-head"><strong>Text color</strong><button type="button" onClick={() => setStoryTextColorPickerOpen(false)} aria-label="Close text colors"><X size={14}/></button></div><div className="social-story-colors" aria-label="Story text color">{["#ffffff","#111111","#ff4d6d","#ffb703","#70e000","#00d4ff","#8b5cf6","#ff7ac6","#d1d5db","#f97316"].map(color => <button key={color} type="button" className={(storyTextSections.find(section => section.id === activeStoryTextId)?.color || "#ffffff") === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryTextSections(current => current.map(section => section.id === activeStoryTextId ? {...section,color} : section)); setStoryTextColorPickerOpen(false); }} aria-label={`Choose ${color} text`} />)}</div></div>}
           {storyColorPickerOpen && <div className="social-story-color-popout" role="dialog" aria-label="Choose story background color">
             <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setStoryColorPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
             <div className="social-story-colors" aria-label="Story background color">
@@ -1114,6 +1118,7 @@ export default function HomePage() {
           </div>}
           <div className="social-story-snap-bottom">
             {storyTextSections.filter(section => section.id === activeStoryTextId).map((section, index) => <textarea key={section.id} className="social-story-active-text-input" value={section.text} onFocus={() => setActiveStoryTextId(section.id)} onChange={event => updateStoryTextSection(section.id, event.target.value)} maxLength={500} rows={2} placeholder="Write story text…" aria-label={`Edit story text section ${index + 1}`} />)}
+            <div className="social-story-text-size-control"><label htmlFor="story-text-size">Text size</label><input id="story-text-size" type="range" min="12" max="64" step="1" value={storyTextSections.find(section => section.id === activeStoryTextId)?.fontSize || 24} onChange={event => { const fontSize = Number(event.target.value); setStoryTextSections(current => current.map(section => section.id === activeStoryTextId ? {...section,fontSize} : section)); }} aria-label="Adjust text size" /><output>{storyTextSections.find(section => section.id === activeStoryTextId)?.fontSize || 24}px</output></div>
             <div className="social-story-snap-bottom-row">
               <span>{storyTextSections.reduce((total, section) => total + section.text.length, 0)} characters</span>
               <button type="submit" disabled={storyPublishing || (!storyTextSections.some(section => section.text.trim()) && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Posting…</> : <><Send size={16}/> Post story</>}</button>
@@ -1134,7 +1139,7 @@ export default function HomePage() {
         <div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div>{storyViewer.isMine && <button type="button" className="social-story-delete-trigger" onClick={() => setStoryDeleteConfirm(storyViewer.id)} aria-label="Delete your story" title="Delete story" disabled={storyDeleting}><Trash2 size={17}/></button>}<button type="button" onClick={closeStoryViewer} aria-label="Close story"><X size={19}/></button></div>
         <div className="social-story-viewer-content" style={{background:storyViewer.background || "#8b1e35"}} onPointerDown={event => { storySwipeRef.current = { x: event.clientX, y: event.clientY }; setStoryPlaybackPaused(true); }} onPointerUp={event => { const start = storySwipeRef.current; storySwipeRef.current = null; setStoryPlaybackPaused(false); if (!start) return; const dx = event.clientX - start.x; const dy = event.clientY - start.y; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.25) moveStoryPlayback(dx < 0 ? 1 : -1); }} onPointerCancel={() => { storySwipeRef.current = null; setStoryPlaybackPaused(false); }}>
           {storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}
-          {(storyViewer.textSections?.length ? storyViewer.textSections.filter(section => section.text?.trim()) : (storyViewer.text ? [{ id: "legacy-story-text", text: storyViewer.text, x: storyViewer.textPosition?.x ?? 50, y: storyViewer.textPosition?.y ?? 50 }] : [])).map(section => <p key={section.id} className="social-story-positioned-text" style={{ left: `${section.x}%`, top: `${section.y}%` }}>{section.text}</p>)}
+          {(storyViewer.textSections?.length ? storyViewer.textSections.filter(section => section.text?.trim()) : (storyViewer.text ? [{ id: "legacy-story-text", text: storyViewer.text, x: storyViewer.textPosition?.x ?? 50, y: storyViewer.textPosition?.y ?? 50 }] : [])).map(section => <p key={section.id} className="social-story-positioned-text" style={{ left: `${section.x}%`, top: `${section.y}%`, fontSize: `${section.fontSize || 24}px`, color: section.color || "#ffffff" }}>{section.text}</p>)}
           <button type="button" className="social-story-tap-zone previous" aria-label="Previous story" onClick={() => moveStoryPlayback(-1)} />
           <button type="button" className="social-story-tap-zone next" aria-label="Next story" onClick={() => moveStoryPlayback(1)} />
         </div>
