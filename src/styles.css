@@ -1455,7 +1455,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 
 /* WhatsApp-like right-swipe reply gesture: follow the finger, then snap back. */
-.chat-message-content{transition:transform .18s ease-out}
+.chat-message-line{touch-action:pan-y}
+.chat-message-content{transition:transform .28s cubic-bezier(.22,1,.36,1)}
 .chat-message-content.chat-message-swiping{transition:none;will-change:transform}
 
 
