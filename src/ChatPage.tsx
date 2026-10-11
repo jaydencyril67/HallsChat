@@ -433,10 +433,10 @@ export default function ChatPage() {
       if (!payload?.id || typeof payload.text !== "string") return;
       setMessages(current => current.map(message => {
         if (message.id === payload.id) return { ...message, text: payload.text!, editedAt: payload.editedAt || new Date().toISOString() };
-        if (message.replyTo?.id === payload.id) return { ...message, replyTo: { ...message.replyTo, text: payload.text! } };
+        if (message.replyTo && message.replyTo.id === payload.id) return { ...message, replyTo: { ...message.replyTo, text: payload.text! } };
         return message;
       }));
-      setReplyingTo(current => current?.id === payload.id ? { ...current, text: payload.text! , editedAt: payload.editedAt || new Date().toISOString() } : current);
+      setReplyingTo(current => current && current.id === payload.id ? { ...current, text: payload.text!, editedAt: payload.editedAt || new Date().toISOString() } : current);
     });
     socket.on("chat:deleted", (payload: { id?: string }) => {
       if (!payload?.id) return;
