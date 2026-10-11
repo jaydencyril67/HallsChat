@@ -137,6 +137,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [draft, setDraft] = useState("");
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
   const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deletingMessage, setDeletingMessage] = useState(false);
@@ -165,6 +166,8 @@ export default function ChatPage() {
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const chatMessageListRef = useRef<HTMLDivElement | null>(null);
+  const replyHighlightTimerRef = useRef<number | null>(null);
   const scrollOnOpenRef = useRef(false);
   const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
   const activeIdRef = useRef(activeId);
@@ -187,6 +190,29 @@ export default function ChatPage() {
     if (message.images?.length || message.imageUrl) return "📷 Photo";
     return "Message";
   }
+  function jumpToRepliedMessage(messageId: string) {
+    const list = chatMessageListRef.current;
+    const target = document.getElementById(`chat-message-${messageId}`);
+    if (!list || !target || !list.contains(target)) return;
+
+    // Scroll only the message-list container; scrollIntoView can move the whole page.
+    const listRect = list.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const top = list.scrollTop + targetRect.top - listRect.top - (list.clientHeight - targetRect.height) / 2;
+    list.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+
+    if (replyHighlightTimerRef.current !== null) window.clearTimeout(replyHighlightTimerRef.current);
+    setHighlightedMessageId(messageId);
+    replyHighlightTimerRef.current = window.setTimeout(() => {
+      setHighlightedMessageId(current => current === messageId ? null : current);
+      replyHighlightTimerRef.current = null;
+    }, 1900);
+  }
+
+  useEffect(() => () => {
+    if (replyHighlightTimerRef.current !== null) window.clearTimeout(replyHighlightTimerRef.current);
+  }, []);
+
   function beginReply(message: ChatMessage) {
     setReplyingTo(message); setActionMenuFor(null);
     window.setTimeout(() => draftInputRef.current?.focus(), 0);
@@ -755,12 +781,12 @@ export default function ChatPage() {
               <div className="chat-conversation-person"><strong>{activePerson.name}</strong><span className={otherTyping ? "chat-typing-label" : ""}>{otherTyping ? "Typing…" : `@${activePerson.username}`}</span></div>
               <span className={`chat-access-pill ${activePerson.isOnline ? "chat-status-online" : "chat-status-offline"}`} aria-label={activePerson.isOnline ? "Online" : "Offline"}>{activePerson.isOnline ? "Online" : "Offline"}</span>
             </header>
-            <div className="chat-message-list">
+            <div className="chat-message-list" ref={chatMessageListRef}>
               {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : messages.length ? messages.map(message => {
                 const mine = message.senderId === currentUserId;
                 const quotedMessage = message.replyTo;
                 const messageImages = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
-                return <div id={`chat-message-${message.id}`} key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""}`}
+                return <div id={`chat-message-${message.id}`} key={message.id} className={`chat-message-line ${mine ? "chat-message-line-mine" : ""} ${highlightedMessageId === message.id ? "chat-message-highlighted" : ""}`}
                   onContextMenu={event => { if (!message.pending) { event.preventDefault(); setActionMenuFor(message.id); } }}
                   onPointerDown={event => {
                     if (event.pointerType !== "touch" || message.pending) return;
@@ -783,7 +809,7 @@ export default function ChatPage() {
                   onPointerLeave={() => { cancelMessagePress(); messageSwipeRef.current = null; }}
                   onPointerCancel={() => { cancelMessagePress(); messageSwipeRef.current = null; }}>
                   <div className={`chat-message-content ${mine ? "chat-message-content-mine" : "chat-message-content-theirs"} ${message.deletedForEveryone ? "chat-message-deleted" : ""}`}>
-                    {quotedMessage && <button type="button" className="chat-reply-quote" onClick={() => document.getElementById(`chat-message-${quotedMessage.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" })} aria-label="Jump to replied message">
+                    {quotedMessage && <button type="button" className="chat-reply-quote" onClick={() => jumpToRepliedMessage(quotedMessage.id)} aria-label="Jump to replied message">
                       <strong>{quotedMessage.senderId === currentUserId ? "You" : activePerson.username}</strong>
                       <span>{quotedMessage.deleted ? "This message was deleted" : quotedMessage.text || (quotedMessage.audioUrl ? "🎤 Voice note" : quotedMessage.imageUrl ? "📷 Photo" : "Message")}</span>
                     </button>}
