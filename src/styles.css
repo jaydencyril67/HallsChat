@@ -1074,23 +1074,39 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 
 
-/* Match the Halls page's shared card treatment across the messages area. */
+/* Render every conversation as its own card; never wrap the whole list in a shared card. */
 .chat-people-list {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  gap: 10px;
+  min-height: 0;
   margin: 8px 10px 10px;
+  padding: 1px;
   overflow-y: auto;
   overflow-x: hidden;
-  border: 1px solid rgba(255,210,219,.11);
-  border-radius: 17px;
-  background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(222,68,89,.45) transparent;
 }
 .chat-person-row {
+  flex: 0 0 auto;
   padding: 13px 12px;
-  border-bottom: 1px solid rgba(255,210,219,.075);
-  background: transparent;
+  border: 1px solid rgba(255,210,219,.11);
+  border-radius: 16px;
+  background: linear-gradient(145deg,rgba(49,14,23,.78),rgba(27,8,13,.88));
+  box-shadow: 0 5px 16px rgba(0,0,0,.12);
+  transition: border-color .16s ease, background .16s ease;
 }
-.chat-person-row:last-child { border-bottom: 0; }
+.chat-person-row:last-child { border-bottom: 1px solid rgba(255,210,219,.11); }
 .chat-person-row:hover,
-.chat-person-row-active { background: rgba(197,45,68,.10); }
+.chat-person-row-active {
+  border-color: rgba(222,68,89,.32);
+  background: linear-gradient(145deg,rgba(67,18,30,.88),rgba(32,8,15,.94));
+}
+.chat-person-row-active { box-shadow: inset 3px 0 #d84960, 0 5px 16px rgba(0,0,0,.12); }
 .chat-message-list {
   margin: 8px 10px 10px;
   padding: 13px 12px 12px;
@@ -1235,7 +1251,11 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     gap: 10px !important;
     min-height: 0 !important;
     height: auto !important;
+    padding: 1px !important;
     overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
   }
   .chat-page:not(.chat-page-conversation-open) .chat-person-row {
     display: flex !important;
@@ -1243,16 +1263,17 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     margin: 0 !important;
     padding: 13px 12px !important;
     border: 1px solid rgba(255,210,219,.11) !important;
-    border-radius: 17px !important;
+    border-radius: 16px !important;
     background: linear-gradient(145deg,rgba(49,14,23,.78),rgba(27,8,13,.88)) !important;
-    box-shadow: none !important;
+    box-shadow: 0 5px 16px rgba(0,0,0,.12) !important;
   }
   .chat-page:not(.chat-page-conversation-open) .chat-person-row:last-child {
     margin-bottom: 0 !important;
+    border-bottom: 1px solid rgba(255,210,219,.11) !important;
   }
   .chat-page:not(.chat-page-conversation-open) .chat-person-row-active {
     border-color: rgba(222,68,89,.32) !important;
-    box-shadow: none !important;
+    box-shadow: inset 3px 0 #d84960, 0 5px 16px rgba(0,0,0,.12) !important;
   }
 }
 
