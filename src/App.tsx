@@ -6,6 +6,7 @@ import HomePage from "./HomePage";
 import HallsPage from "./HallsPage";
 import ChatPage from "./ChatPage";
 import ProfilePage from "./ProfilePage";
+import PublicProfilePage from "./PublicProfilePage";
 import EmailVerificationPage from "./EmailVerificationPage";
 import ForgotPasswordPage from "./ForgotPasswordPage";
 import AppHeader from "./AppHeader";
@@ -113,6 +114,8 @@ export default function App() {
   if (normalizedPath === "/halls") return <HallsPage />;
   if (normalizedPath === "/chats") return <ChatPage />;
   if (normalizedPath === "/profile") return <ProfilePage />;
+  const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);
+  if (publicProfileMatch) return <PublicProfilePage userId={decodeURIComponent(publicProfileMatch[1])} />;
   if (navigationSections[normalizedPath]) {
     const section = navigationSections[normalizedPath];
     return <NavigationSectionPage title={section.title} description={section.description} />;
