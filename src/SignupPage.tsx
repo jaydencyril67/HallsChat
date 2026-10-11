@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowRight, Check, Eye, EyeOff, LockKeyhole, MailCheck, ShieldCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
 import LoadingDots from "./components/LoadingDots";
@@ -6,6 +6,8 @@ import LoadingDots from "./components/LoadingDots";
 export default function SignupPage() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
+  const [usernameStatus, setUsernameStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid" | "error">("idle");
+  const [usernameMessage, setUsernameMessage] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -21,12 +23,54 @@ export default function SignupPage() {
   const [resendMessage, setResendMessage] = useState("");
   const [resendError, setResendError] = useState(false);
 
+  useEffect(() => {
+    const value = username.trim().toLowerCase();
+    if (!value) { setUsernameStatus("idle"); setUsernameMessage(""); return; }
+    if (!/^[a-z0-9_.]{3,24}$/.test(value)) { setUsernameStatus("invalid"); setUsernameMessage("Use 3–24 letters, numbers, underscores or periods."); return; }
+    const controller = new AbortController();
+    setUsernameStatus("checking"); setUsernameMessage("Checking username…");
+    const timer = window.setTimeout(async () => {
+      const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+      try {
+        const response = await fetch(apiBase + "/api/auth/username-availability?username=" + encodeURIComponent(value), { signal: controller.signal });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || "Username availability could not be checked.");
+        if (controller.signal.aborted) return;
+        if (payload.valid === false) { setUsernameStatus("invalid"); setUsernameMessage(payload.message || "Choose a valid username."); }
+        else if (payload.available) { setUsernameStatus("available"); setUsernameMessage("Username is available."); }
+        else { setUsernameStatus("taken"); setUsernameMessage(payload.message || "That username is already taken."); }
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        setUsernameStatus("error"); setUsernameMessage(err instanceof Error ? err.message : "Couldn’t check username availability.");
+      }
+    }, 450);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [username]);
+
+  const passwordHasMinLength = password.length >= 8;
+  const passwordHasUppercase = /[A-Z]/.test(password);
+  const passwordHasLowercase = /[a-z]/.test(password);
+  const passwordHasNumber = /\d/.test(password);
+  const passwordHasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  const passwordMeetsRequirement = passwordHasMinLength && passwordHasUppercase && passwordHasLowercase && passwordHasNumber && passwordHasSymbol;
+  const passwordChecklist = [
+    { label: "At least 8 characters", met: passwordHasMinLength },
+    { label: "One uppercase letter", met: passwordHasUppercase },
+    { label: "One lowercase letter", met: passwordHasLowercase },
+    { label: "One number", met: passwordHasNumber },
+    { label: "One symbol", met: passwordHasSymbol }
+  ];
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setSuccess("");
-    if (password.length < 8) {
-      setError("Use a password with at least 8 characters.");
+    if (!passwordMeetsRequirement) {
+      setError("Password must be at least 8 characters long and include uppercase, lowercase, number, and symbol.");
+      return;
+    }
+    if (usernameStatus !== "available") {
+      setError(usernameStatus === "checking" ? "Please wait while we check your username." : usernameStatus === "taken" ? "That username is already taken. Choose another one." : usernameStatus === "error" ? "We couldn’t check username availability. Please try again." : "Please enter a valid, available username.");
       return;
     }
     if (password !== confirmPassword) {
@@ -115,12 +159,13 @@ export default function SignupPage() {
         </div>
         <form className="signup-form" onSubmit={handleSubmit} noValidate>
           <label className="signup-field"><span>Full name</span><input autoComplete="name" name="name" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" required maxLength={80} /></label>
-          <label className="signup-field"><span>Username</span><input autoComplete="username" name="username" value={username} onChange={e => setUsername(e.target.value.replace(/\s/g, ""))} placeholder="Choose a username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_.]+" title="Use 3–24 letters, numbers, underscores or periods." /><small>3–24 letters, numbers, underscores or periods.</small></label>
+          <label className="signup-field"><span>Username</span><span className="signup-username-wrap"><input autoComplete="username" name="username" value={username} onChange={e => { setUsername(e.target.value.replace(/\s/g, "")); setError(""); }} placeholder="Choose a username" required minLength={3} maxLength={24} pattern="[A-Za-z0-9_.]+" title="Use 3–24 letters, numbers, underscores or periods." aria-describedby="username-availability" aria-invalid={usernameStatus === "taken" || usernameStatus === "invalid"} />{usernameStatus === "checking" ? <span className="signup-username-spinner" aria-label="Checking username" /> : usernameStatus === "available" ? <Check size={16} className="signup-username-ok" aria-label="Username available" /> : null}</span><small id="username-availability" className={"signup-username-status signup-username-status-" + usernameStatus} aria-live="polite">{usernameMessage || "3–24 letters, numbers, underscores or periods."}</small></label>
           <label className="signup-field"><span>Email address</span><input autoComplete="email" name="email" type="email" inputMode="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" required maxLength={254} /></label>
           <div className="signup-field-row">
-            <label className="signup-field"><span>Password</span><span className="signup-password-wrap"><input autoComplete="new-password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="At least 8 characters" required minLength={8} /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
+            <label className="signup-field"><span>Password</span><span className="signup-password-wrap"><input autoComplete="new-password" name="password" type={showPassword ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Create a password" required minLength={8} maxLength={128} aria-describedby="signup-password-rules" /><button type="button" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(v => !v)}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
             <label className="signup-field"><span>Confirm password</span><span className="signup-password-wrap"><input autoComplete="new-password" name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter password" required minLength={8} /><button type="button" aria-label={showConfirmPassword ? "Hide password confirmation" : "Show password confirmation"} onClick={() => setShowConfirmPassword(v => !v)}>{showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button></span></label>
           </div>
+          <ul id="signup-password-rules" className="signup-password-rules" aria-label="Password requirements">{passwordChecklist.map(rule => <li key={rule.label} className={rule.met ? "signup-password-rule-met" : ""}><Check size={13} />{rule.label}</li>)}</ul>
           <label className="signup-terms"><input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} /><span>I agree to HallsChat’s Terms and Privacy Policy.</span></label>
           {error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
           {success && <div className="signup-feedback signup-feedback-success" role="status">{success}</div>}
