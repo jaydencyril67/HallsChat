@@ -56,11 +56,11 @@ export default function CallsPanel({ socket, person }: Props) {
 
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        autoGainControl: true,
-        channelCount: 1,
-        sampleRate: 48000
+        echoCancellation: { ideal: true },
+        noiseSuppression: { ideal: true },
+        autoGainControl: { ideal: true },
+        channelCount: { ideal: 1 },
+        sampleRate: { ideal: 48000 }
       },
       video: video ? {
         width: { ideal: 1280, max: 1280 },
@@ -99,17 +99,21 @@ export default function CallsPanel({ socket, person }: Props) {
       if (event.candidate) socket?.emit("call:ice", { callId: id, candidate: event.candidate.toJSON() });
     };
     pc.ontrack = event => {
-      const remote = event.streams[0];
-      // Play remote audio through exactly one element. The video element is muted
-      // during video calls so the same stream is not played twice (which can echo).
-      if (remoteVideo.current) {
-        remoteVideo.current.srcObject = remote;
-        remoteVideo.current.muted = true;
-      }
-      if (remoteAudio.current) {
-        remoteAudio.current.srcObject = remote;
+      // Keep incoming audio and video on separate elements. Set video muted BEFORE
+      // attaching a stream, so Android WebViews cannot briefly play its audio too.
+      if (event.track.kind === "audio" && remoteAudio.current) {
+        const audioStream = new MediaStream([event.track]);
+        remoteAudio.current.srcObject = audioStream;
+        remoteAudio.current.muted = false;
         void remoteAudio.current.play().catch(() => {
           // Playback may require the user's first interaction in some mobile WebViews.
+        });
+      }
+      if (event.track.kind === "video" && remoteVideo.current) {
+        remoteVideo.current.muted = true;
+        remoteVideo.current.srcObject = new MediaStream([event.track]);
+        void remoteVideo.current.play().catch(() => {
+          // Ignore autoplay restrictions; the muted video is only the picture.
         });
       }
     };
