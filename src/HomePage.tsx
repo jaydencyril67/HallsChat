@@ -1093,11 +1093,10 @@ export default function HomePage() {
           <button type="button" className="social-story-snap-close" onClick={closeStoryComposer} aria-label="Close story creator"><X size={21}/></button>
           <div className="social-story-snap-tools" aria-label="Story editing tools">
             <button type="button" onClick={addStoryTextSection} disabled={storyTextSections.length >= 10} aria-label="Add text" title="Add text"><Pencil size={20}/></button>
-            {!storyPhoto && <button type="button" onClick={() => setStoryColorPickerOpen(value => !value)} aria-label="Change background color" title="Background color"><Palette size={20}/></button>}
+            <button type="button" onClick={() => { setStoryColorPickerOpen(value => !value); setStoryTextManagerOpen(false); }} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
             <label className="social-story-snap-tool" aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label>
             <button type="button" onClick={() => setStoryTextManagerOpen(value => !value)} aria-expanded={storyTextManagerOpen} aria-label="Manage text sections" title="Manage text"><MoreHorizontal size={21}/></button>
           </div>
-          {storyPhoto && <button type="button" className="social-story-remove-photo" onClick={() => setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; })} aria-label="Remove story photo"><X size={16}/></button>}
           {storyTextManagerOpen && <div className={`social-story-text-manager ${storyTextSections.length > 3 ? "is-scrollable" : ""}`} role="dialog" aria-label="Manage story text sections">
             <div className="social-story-text-manager-head"><strong>Text sections</strong><button type="button" onClick={() => setStoryTextManagerOpen(false)} aria-label="Close text section manager"><X size={15}/></button></div>
             <div className="social-story-text-manager-list">
@@ -1107,10 +1106,10 @@ export default function HomePage() {
               </div>)}
             </div>
           </div>}
-          {!storyPhoto && storyColorPickerOpen && <div className="social-story-color-popout" role="dialog" aria-label="Choose story background color">
+          {storyColorPickerOpen && <div className="social-story-color-popout" role="dialog" aria-label="Choose story background color">
             <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setStoryColorPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
             <div className="social-story-colors" aria-label="Story background color">
-              {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryBackground(color); setStoryColorPickerOpen(false); }} aria-label={`Choose ${color} background`} />)}
+              {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryBackground(color); setStoryColorPickerOpen(false); setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; }); }} aria-label={`Choose ${color} background`} />)}
             </div>
           </div>}
           <div className="social-story-snap-bottom">
