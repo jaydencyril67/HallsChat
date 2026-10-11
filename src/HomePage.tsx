@@ -6,7 +6,7 @@ import ImagePreviewModal from "./components/ImagePreviewModal";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 
-type Account = { id: string; name: string; username: string; email: string; createdAt?: string };
+type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string };
 type SocialPost = {
   id: string;
   content: string;
@@ -18,7 +18,7 @@ type SocialPost = {
   likedByMe: boolean;
   commentCount?: number;
 };
-type SocialComment = { id: string; content: string; createdAt: string; author: { id: string; name: string; username: string } | null };
+type SocialComment = { id: string; content: string; parentId?: string | null; createdAt: string; likeCount: number; likedByMe: boolean; author: { id: string; name: string; username: string; profilePicture?: string } | null };
 type SelectedImage = { file: File; preview: string };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string };
 
@@ -59,7 +59,7 @@ export default function HomePage() {
   const [commentsByPost, setCommentsByPost] = useState<Record<string, SocialComment[]>>({});
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [commentsLoading, setCommentsLoading] = useState<string[]>([]);
-  const [commentSending, setCommentSending] = useState<string[]>([]);
+  const [commentSending, setCommentSending] = useState<string[]>([]);\n  const [replyTargets, setReplyTargets] = useState<Record<string, SocialComment | null>>({});\n  const [commentLikingIds, setCommentLikingIds] = useState<string[]>([]);
   const [commentErrors, setCommentErrors] = useState<Record<string, string>>({});
   const [notice, setNotice] = useState("");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -277,7 +277,7 @@ export default function HomePage() {
       const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(post.id)}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content })
+        body: JSON.stringify({ content, parentId: replyTargets[post.id]?.id || null })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.comment) throw new Error(payload.message || "Your comment couldn't be published.");
@@ -288,6 +288,30 @@ export default function HomePage() {
       setCommentErrors(current => ({ ...current, [post.id]: err instanceof Error ? err.message : "Your comment couldn't be published." }));
     } finally {
       setCommentSending(current => current.filter(id => id !== post.id));
+    }
+  }
+
+  async function toggleCommentLike(post: SocialPost, comment: SocialComment) {
+    if (commentLikingIds.includes(comment.id)) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setCommentLikingIds(current => [...current, comment.id]);
+    try {
+      const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(post.id)}/comments/${encodeURIComponent(comment.id)}/like`, {
+        method: "POST", headers: { Authorization: `Bearer ${token}` }
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Comment reaction couldn't be saved.");
+      setCommentsByPost(current => ({
+        ...current,
+        [post.id]: (current[post.id] || []).map(item => item.id === comment.id
+          ? { ...item, likedByMe: Boolean(payload.likedByMe), likeCount: Number(payload.likeCount) || 0 }
+          : item)
+      }));
+    } catch (err) {
+      setCommentErrors(current => ({ ...current, [post.id]: err instanceof Error ? err.message : "Comment reaction couldn't be saved." }));
+    } finally {
+      setCommentLikingIds(current => current.filter(id => id !== comment.id));
     }
   }
 
@@ -371,7 +395,42 @@ export default function HomePage() {
                 {Array.isArray(post.images) && post.images.length > 0 && <div className={`social-post-images social-post-images-${Math.min(post.images.length, 4)}`} style={{ gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
                   {post.images.map((url, index) => <button type="button" className="social-post-image-link" onClick={() => setPreviewImage(url)} aria-label={`Preview image ${index + 1} in post`} key={url}><img src={url} alt={`Image ${index + 1} in post by ${post.author?.name || "HallsChat member"}`} loading="lazy" /></button>)}
                 </div>}
-                <div className="social-post-actions"><button type="button" className={post.likedByMe ? "social-like is-liked" : "social-like"} onClick={() => toggleLike(post)} disabled={likingIds.includes(post.id)} aria-pressed={post.likedByMe}>{likingIds.includes(post.id) ? <LoadingDots /> : <Heart size={17} fill={post.likedByMe ? "currentColor" : "none"}/>}<span>{post.likeCount > 0 ? post.likeCount : "Like"}</span></button><button type="button" className="social-post-action-muted" onClick={() => void toggleComments(post)} aria-expanded={openComments.includes(post.id)}><MessageCircle size={16}/>{post.commentCount ? `${post.commentCount} ${post.commentCount === 1 ? "comment" : "comments"}` : "Comment"}</button></div>{openComments.includes(post.id) && <section className="social-comments" aria-label="Comments"><div className="social-comments-list">{commentsLoading.includes(post.id) ? <div className="social-comments-state"><LoadingDots /> Loading comments…</div> : (commentsByPost[post.id] || []).length ? (commentsByPost[post.id] || []).map(comment => <article className="social-comment" key={comment.id}><div className="social-comment-avatar">{initials(comment.author?.name || "HallsChat member")}</div><div className="social-comment-body"><div className="social-comment-bubble"><strong>{comment.author?.name || "HallsChat member"}</strong><span>{comment.content}</span></div><small>@{comment.author?.username || "member"} · {timeAgo(comment.createdAt)}</small></div></article>) : !commentErrors[post.id] && !commentsLoading.includes(post.id) ? <p className="social-comments-empty">No comments yet. Start the conversation.</p> : null}</div>{commentErrors[post.id] && <p className="social-comment-error" role="alert">{commentErrors[post.id]} <button type="button" onClick={() => { setCommentErrors(current => ({ ...current, [post.id]: "" })); void toggleComments(post); }}>Try again</button></p>}<form className="social-comment-form" onSubmit={event => void submitComment(event, post)}><textarea value={commentDrafts[post.id] || ""} onChange={event => setCommentDrafts(current => ({ ...current, [post.id]: event.target.value }))} placeholder="Write a comment…" rows={1} maxLength={2000} aria-label="Write a comment" /><button type="submit" disabled={!(commentDrafts[post.id] || "").trim() || commentSending.includes(post.id)} aria-label="Publish comment">{commentSending.includes(post.id) ? <LoadingDots /> : <Send size={16} />}</button></form></section>}
+                <div className="social-post-actions"><button type="button" className={post.likedByMe ? "social-like is-liked" : "social-like"} onClick={() => toggleLike(post)} disabled={likingIds.includes(post.id)} aria-pressed={post.likedByMe}>{likingIds.includes(post.id) ? <LoadingDots /> : <Heart size={17} fill={post.likedByMe ? "currentColor" : "none"}/>}<span>{post.likeCount > 0 ? post.likeCount : "Like"}</span></button><button type="button" className="social-post-action-muted" onClick={() => void toggleComments(post)} aria-expanded={openComments.includes(post.id)}><MessageCircle size={16}/>{post.commentCount ? `${post.commentCount} ${post.commentCount === 1 ? "comment" : "comments"}` : "Comment"}</button></div>{openComments.includes(post.id) && <section className="social-comments-overlay" aria-label="Comments">
+                  <button type="button" className="social-comments-backdrop" aria-label="Close comments" onClick={() => { setOpenComments([]); setReplyTargets(current => ({ ...current, [post.id]: null })); }} />
+                  <div className="social-comments-sheet" role="dialog" aria-modal="true" aria-label="Post comments" onClick={event => event.stopPropagation()}>
+                    <div className="social-comments-grabber" aria-hidden="true" />
+                    <header className="social-comments-header">
+                      <div><h3>Comments</h3><span>{post.commentCount || (commentsByPost[post.id] || []).length} comments</span></div>
+                      <button type="button" className="social-comments-close" onClick={() => { setOpenComments([]); setReplyTargets(current => ({ ...current, [post.id]: null })); }} aria-label="Close comments"><X size={19}/></button>
+                    </header>
+                    <div className="social-comments-list">
+                      {commentsLoading.includes(post.id) ? <div className="social-comments-state"><LoadingDots /> Loading comments…</div> : (commentsByPost[post.id] || []).filter(comment => !comment.parentId).length ? (commentsByPost[post.id] || []).filter(comment => !comment.parentId).map(comment => <div className="social-comment-thread" key={comment.id}>
+                        <article className="social-comment">
+                          {comment.author?.profilePicture ? <img className="social-comment-avatar" src={comment.author.profilePicture} alt="" loading="lazy" /> : <div className="social-comment-avatar">{initials(comment.author?.name || "HallsChat member")}</div>}
+                          <div className="social-comment-body">
+                            <div className="social-comment-bubble"><strong>{comment.author?.name || "HallsChat member"}</strong><span>{comment.content}</span></div>
+                            <div className="social-comment-meta"><small>{timeAgo(comment.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div>
+                          </div>
+                          <button type="button" className={comment.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, comment)} disabled={commentLikingIds.includes(comment.id)} aria-label={comment.likedByMe ? "Unlike comment" : "Like comment"} aria-pressed={comment.likedByMe}>{commentLikingIds.includes(comment.id) ? <LoadingDots/> : <Heart size={16} fill={comment.likedByMe ? "currentColor" : "none"}/>}<small>{comment.likeCount || ""}</small></button>
+                        </article>
+                        {(commentsByPost[post.id] || []).filter(reply => reply.parentId === comment.id).map(reply => <article className="social-comment social-comment-reply" key={reply.id}>
+                          {reply.author?.profilePicture ? <img className="social-comment-avatar" src={reply.author.profilePicture} alt="" loading="lazy" /> : <div className="social-comment-avatar">{initials(reply.author?.name || "HallsChat member")}</div>}
+                          <div className="social-comment-body"><div className="social-comment-bubble"><strong>{reply.author?.name || "HallsChat member"}</strong><span>{reply.content}</span></div><div className="social-comment-meta"><small>{timeAgo(reply.createdAt)}</small><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: comment }))}>Reply</button></div></div>
+                          <button type="button" className={reply.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, reply)} disabled={commentLikingIds.includes(reply.id)} aria-label={reply.likedByMe ? "Unlike reply" : "Like reply"} aria-pressed={reply.likedByMe}>{commentLikingIds.includes(reply.id) ? <LoadingDots/> : <Heart size={16} fill={reply.likedByMe ? "currentColor" : "none"}/>}<small>{reply.likeCount || ""}</small></button>
+                        </article>)}
+                      </div>) : !commentErrors[post.id] && !commentsLoading.includes(post.id) ? <p className="social-comments-empty">No comments yet. Start the conversation.</p> : null}
+                    </div>
+                    {commentErrors[post.id] && <p className="social-comment-error" role="alert">{commentErrors[post.id]} <button type="button" onClick={() => { setCommentErrors(current => ({ ...current, [post.id]: "" })); setCommentsByPost(current => { const next = { ...current }; delete next[post.id]; return next; }); void toggleComments(post); }}>Try again</button></p>}
+                    <div className="social-comments-composer-wrap">
+                      {replyTargets[post.id] && <div className="social-replying-to"><span>Replying to <strong>@{replyTargets[post.id]?.author?.username || "member"}</strong></span><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: null }))} aria-label="Cancel reply"><X size={14}/></button></div>}
+                      <form className="social-comment-form" onSubmit={event => void submitComment(event, post)}>
+                        {user?.profilePicture ? <img className="social-comment-compose-avatar" src={user.profilePicture} alt="" /> : <div className="social-comment-compose-avatar">{initials(user?.name || "You")}</div>}
+                        <textarea value={commentDrafts[post.id] || ""} onChange={event => setCommentDrafts(current => ({ ...current, [post.id]: event.target.value }))} placeholder={replyTargets[post.id] ? "Write a reply…" : "Add a comment…"} rows={1} maxLength={2000} aria-label={replyTargets[post.id] ? "Write a reply" : "Write a comment"} />
+                        <button type="submit" disabled={!(commentDrafts[post.id] || "").trim() || commentSending.includes(post.id)} aria-label={replyTargets[post.id] ? "Publish reply" : "Publish comment"}>{commentSending.includes(post.id) ? <LoadingDots /> : <Send size={17} />}</button>
+                      </form>
+                    </div>
+                  </div>
+                </section>}
               </article>)}
             </div>}
             {!feedLoading && posts.length === 0 && !feedError && <div className="social-empty-feed"><ImagePlus size={22}/><strong>Your feed starts here</strong><span>Share a thought or photo with your community.</span></div>}
