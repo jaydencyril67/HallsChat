@@ -7,7 +7,7 @@ import ImagePreviewModal from "./components/ImagePreviewModal";
 import ProfileImageCropModal from "./components/ProfileImageCropModal";
 import { navigate } from "./utils/navigate";
 
-type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string };
+type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string; followersCount?: number };
 type Post = { id: string; content: string; createdAt: string; author: { id: string; name: string; username: string } | null; likeCount?: number; images?: string[]; poll?: { question: string } | null };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -172,7 +172,7 @@ export default function ProfilePage() {
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 10, marginBottom: 18 }}>
             <div style={{ ...panel, padding: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 8, color: "#f08b9b", fontSize: ".75rem", fontWeight: 750 }}><FileText size={16} /> Your posts</div><strong style={{ display: "block", marginTop: 10, fontSize: "1.45rem", color: "#fff0f3" }}>{postsLoading ? "—" : posts.length}</strong><span style={{ display: "block", marginTop: 3, ...muted, fontSize: ".72rem" }}>Posts in your recent feed</span></div>
-            <div style={{ ...panel, padding: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 8, color: "#f08b9b", fontSize: ".75rem", fontWeight: 750 }}><UsersRound size={16} /> Community</div><strong style={{ display: "block", marginTop: 10, fontSize: "1.45rem", color: "#fff0f3" }}>Halls</strong><span style={{ display: "block", marginTop: 3, ...muted, fontSize: ".72rem" }}>Discover people to follow</span></div>
+            <div style={{ ...panel, padding: 14 }}><div style={{ display: "flex", alignItems: "center", gap: 8, color: "#f08b9b", fontSize: ".75rem", fontWeight: 750 }}><UsersRound size={16} /> Followers</div><strong style={{ display: "block", marginTop: 10, fontSize: "1.45rem", color: "#fff0f3" }}>{loading ? "—" : (user?.followersCount ?? 0).toLocaleString()}</strong><span style={{ display: "block", marginTop: 3, ...muted, fontSize: ".72rem" }}>People following you</span></div>
           </div>
 
           <section style={{ ...panel, padding: 16, marginBottom: 18 }}>
