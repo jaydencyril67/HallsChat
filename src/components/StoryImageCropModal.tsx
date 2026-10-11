@@ -194,6 +194,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
     const drag = cropDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId || saving) return;
     event.preventDefault();
+    event.stopPropagation();
     const point = localPoint(event);
     const dx = point.x - drag.start.x;
     const dy = point.y - drag.start.y;
@@ -230,6 +231,7 @@ export default function StoryImageCropModal({ imageUrl, onCancel, onDone, title 
 
   const handleCropPointerUp = (event: PointerEvent<HTMLElement>) => {
     if (cropDragRef.current?.pointerId !== event.pointerId) return;
+    event.stopPropagation();
     cropDragRef.current = null;
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Capture may already be released. */ }
   };
