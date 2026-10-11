@@ -1092,3 +1092,38 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .chat-people-list { margin: 8px 9px 10px; }
   .chat-message-list { margin: 7px 8px 8px; padding: 11px 9px 10px; }
 }
+
+
+/* Presence indicators for online/offline account status. */
+.chat-avatar { position: relative; }
+.chat-avatar-presence {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 11px;
+  height: 11px;
+  border: 2px solid #241018;
+  border-radius: 50%;
+  background: #85818a;
+}
+.chat-avatar-presence.is-online { background: #39d98a; }
+.chat-avatar-presence.is-offline { background: #85818a; }
+.presence-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  font-size: .68rem;
+  line-height: 1.2;
+}
+.presence-label.presence-online { color: #65dfa2; }
+.presence-label.presence-offline { color: rgba(246,220,225,.48); }
+.presence-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  flex: 0 0 7px;
+  border-radius: 50%;
+  background: #85818a;
+}
+.presence-online .presence-dot { background: #39d98a; }
