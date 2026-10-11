@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { ReactNode } from "react";
 import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal } from "lucide-react";
 import AppHeader from "./AppHeader";
@@ -353,7 +353,7 @@ export default function HomePage() {
     });
   }
 
-  function handleStoryTextPointerDown(event: React.PointerEvent<HTMLParagraphElement>) {
+  function handleStoryTextPointerDown(event: ReactPointerEvent<HTMLParagraphElement>) {
     if (!storyText.trim()) return;
     event.preventDefault();
     event.stopPropagation();
@@ -363,7 +363,7 @@ export default function HomePage() {
     storyTextDragRef.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, originX: storyTextPosition.x, originY: storyTextPosition.y };
   }
 
-  function handleStoryTextPointerMove(event: React.PointerEvent<HTMLParagraphElement>) {
+  function handleStoryTextPointerMove(event: ReactPointerEvent<HTMLParagraphElement>) {
     const drag = storyTextDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     const preview = event.currentTarget.closest(".social-story-preview");
@@ -376,7 +376,7 @@ export default function HomePage() {
     });
   }
 
-  function handleStoryTextPointerUp(event: React.PointerEvent<HTMLParagraphElement>) {
+  function handleStoryTextPointerUp(event: ReactPointerEvent<HTMLParagraphElement>) {
     if (storyTextDragRef.current?.pointerId === event.pointerId) storyTextDragRef.current = null;
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* Capture may already be released. */ }
   }
