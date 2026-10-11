@@ -904,3 +904,103 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     flex:0 0 auto;
   }
 }
+
+
+/* HallsChat image messages: compact rounded image bubbles, matching CryBots Live Chat. */
+.chat-image-bubble {
+  display: block;
+  width: min(220px, 100%);
+  height: 240px;
+  padding: 2px;
+  margin: 0 0 4px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  cursor: zoom-in;
+}
+.chat-image-bubble img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.chat-message-content:has(.chat-image-bubble) {
+  max-width: min(260px, 78vw);
+  padding: 5px !important;
+}
+.chat-message-content:has(.chat-image-bubble) .chat-message-text {
+  padding: 4px 6px 2px;
+  overflow-wrap: anywhere;
+}
+.chat-image-pending {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--chat-border, rgba(255,255,255,.1));
+  background: var(--chat-surface, rgba(20,20,24,.92));
+}
+.chat-image-pending img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 7px;
+}
+.chat-image-pending span {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  opacity: .8;
+}
+.chat-image-pending button,
+.chat-image-viewer > button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  background: rgba(128,128,128,.18);
+}
+.chat-composer .chat-attach-button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 38px;
+  width: 38px;
+  min-width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+}
+.chat-composer .chat-attach-button:disabled { opacity: .45; }
+.chat-image-viewer {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 14px 18px;
+  background: rgba(0,0,0,.92);
+}
+.chat-image-viewer > img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+.chat-image-viewer > button {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top));
+  right: 14px;
+  color: #fff;
+  background: rgba(255,255,255,.14);
+}
