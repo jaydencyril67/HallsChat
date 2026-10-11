@@ -40,10 +40,12 @@ function formatDuration(value: number) {
 }
 
 function callSummary(call: CallRecord) {
-  if (call.status === "missed" || (call.status === "declined" && call.direction === "incoming")) return "Missed";
+  if (call.status === "missed") return call.direction === "incoming" ? "Missed" : "No answer";
+  if (call.status === "declined" && call.direction === "incoming") return "Missed";
   if (call.status === "declined") return "Declined";
   if (call.status === "cancelled") return "Cancelled";
   if (call.status === "completed") return formatDuration(call.durationSeconds);
+  if (call.status === "ringing") return "Ringing";
   return "No answer";
 }
 
@@ -83,14 +85,14 @@ export default function CallsPage() {
   const visibleCalls = useMemo(() => {
     const term = query.trim().toLowerCase();
     return calls.filter(call => {
-      const missed = call.status === "missed" || (call.status === "declined" && call.direction === "incoming");
+      const missed = call.direction === "incoming" && (call.status === "missed" || call.status === "declined");
       const matchesFilter = filter === "all" || missed;
       const matchesQuery = !term || call.person.name.toLowerCase().includes(term) || call.person.username.toLowerCase().includes(term);
       return matchesFilter && matchesQuery;
     });
   }, [calls, filter, query]);
 
-  const missedCount = calls.filter(call => call.status === "missed" || (call.status === "declined" && call.direction === "incoming")).length;
+  const missedCount = calls.filter(call => call.direction === "incoming" && (call.status === "missed" || call.status === "declined")).length;
 
   return <main className="home-page social-home halls-calls-page">
     <AppHeader homeHref="/home" />
