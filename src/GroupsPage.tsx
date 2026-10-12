@@ -130,6 +130,7 @@ export default function GroupsPage() {
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const typingTimerRef = useRef<number | null>(null);
   const typingHideTimerRef = useRef<number | null>(null);
+  const typingActiveRef = useRef(false);
   const refreshDetailsRef = useRef<() => void>(() => undefined);
 
   activeGroupIdRef.current = activeGroupId;
@@ -298,6 +299,9 @@ export default function GroupsPage() {
     return () => {
       socket.emit("groups:typing", { groupId: activeGroupId, isTyping: false });
       socket.emit("groups:leave-room", { groupId: activeGroupId });
+      typingActiveRef.current = false;
+      if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
+      typingTimerRef.current = null;
     };
   }, [activeGroupId, socketConnected]);
 
@@ -383,11 +387,22 @@ export default function GroupsPage() {
 
   function handleDraftChange(value: string) {
     setDraft(value);
-    if (!activeGroupId || !socketRef.current?.connected) return;
-    socketRef.current.emit("groups:typing", { groupId: activeGroupId, isTyping: Boolean(value.trim()) });
+    const socket = socketRef.current;
+    if (!activeGroupId || !socket?.connected) return;
     if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
-    if (value.trim()) typingTimerRef.current = window.setTimeout(() => {
+    if (!value.trim()) {
+      if (typingActiveRef.current) socket.emit("groups:typing", { groupId: activeGroupId, isTyping: false });
+      typingActiveRef.current = false;
+      typingTimerRef.current = null;
+      return;
+    }
+    if (!typingActiveRef.current) {
+      socket.emit("groups:typing", { groupId: activeGroupId, isTyping: true });
+      typingActiveRef.current = true;
+    }
+    typingTimerRef.current = window.setTimeout(() => {
       socketRef.current?.emit("groups:typing", { groupId: activeGroupIdRef.current, isTyping: false });
+      typingActiveRef.current = false;
       typingTimerRef.current = null;
     }, 1500);
   }
