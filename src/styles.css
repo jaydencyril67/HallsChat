@@ -5975,3 +5975,81 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     transition: none;
   }
 }
+
+
+/* Create-group modal refinement: light theme only, keeping the dark palette intact. */
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-picture > button:first-child {
+  background: linear-gradient(145deg, #f8e7ea, #f0d9de) !important;
+  border-color: #d9a9b3 !important;
+  color: #8f2940 !important;
+  box-shadow: 0 5px 18px rgba(129, 39, 59, .08);
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-picture > button:first-child > span {
+  border-color: #fffaf9 !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-picture > span {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-picture > button:not(:first-child) {
+  background: #f8eff0 !important;
+  border-color: #ead8da !important;
+  color: #81273b !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-id-field [aria-live="polite"] {
+  overflow-wrap: anywhere;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-id-field [aria-live="polite"] {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-id-field [aria-live="polite"]:empty {
+  min-height: 13px;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-privacy {
+  padding: 13px;
+  border: 1px solid #ead8da;
+  border-radius: 14px;
+  background: #fffdfc;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-privacy > strong {
+  font-size: .86rem !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-privacy > div > button {
+  min-height: 68px;
+  align-content: start;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-privacy > div > button[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1px rgba(169, 44, 67, .08);
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-form > label {
+  gap: 7px;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-form > label > span {
+  line-height: 1.45;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-form > label > input,
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-form > label > textarea {
+  border-radius: 12px !important;
+  min-height: 45px;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-form > label > textarea {
+  min-height: 78px;
+}
+:root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-form > button[type="submit"] {
+  min-height: 48px;
+  border-radius: 13px !important;
+}
+@media (max-width: 380px) {
+  :root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-privacy {
+    padding: 10px;
+  }
+  :root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-privacy > div > button {
+    padding: 10px 8px !important;
+    min-height: 66px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="light"] .halls-groups-page .halls-create-group-modal .halls-create-group-privacy > div > button {
+    transition: none;
+  }
+}
