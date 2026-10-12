@@ -640,9 +640,19 @@ export default function GroupPage() {
   }
 
   async function changeRole(member: Member, role: "admin" | "member") {
-    if (!activeId) return;
-    try { await request("/api/groups/" + encodeURIComponent(activeId) + "/members/" + encodeURIComponent(member.id) + "/role", { method: "PATCH", body: JSON.stringify({ role }) }); await loadDetail(activeId, false); }
-    catch (err) { setError(err instanceof Error ? err.message : "Unable to update role."); }
+    if (!activeId || busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const payload = await request("/api/groups/" + encodeURIComponent(activeId) + "/members/" + encodeURIComponent(member.id) + "/role", { method: "PATCH", body: JSON.stringify({ role }) });
+      if (payload?.success !== true || payload?.role !== role) throw new Error("The server did not confirm the role change. Please try again.");
+      await loadDetail(activeId, false);
+      setNotice(role === "admin" ? "@" + member.username + " is now a group admin." : "@" + member.username + " is now a group member.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to update role.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   const isAdmin = detail?.role === "owner" || detail?.role === "admin";
@@ -676,7 +686,7 @@ export default function GroupPage() {
             <div style={{ display: "grid", gap: 10 }}>{detail.members.map(member => <div key={member.id} style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <span className="chat-avatar" style={{ width: 36, height: 36, flexBasis: 36 }}>{member.profilePicture ? <img src={member.profilePicture} alt=""/> : initials(member.name)}</span>
               <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontSize: ".8rem", fontWeight: 750 }}>{member.name}</div><div style={{ ...muted, fontSize: ".7rem" }}>@{member.username} · {member.role}</div></div>
-              {detail.role === "owner" && member.role !== "owner" && <button type="button" style={{ ...secondary, padding: "7px 9px" }} onClick={() => void changeRole(member, member.role === "admin" ? "member" : "admin")}>{member.role === "admin" ? "Make member" : "Make admin"}</button>}
+              {detail.role === "owner" && member.role !== "owner" && <button type="button" disabled={busy} style={{ ...secondary, padding: "7px 9px", opacity: busy ? .65 : 1 }} onClick={() => void changeRole(member, member.role === "admin" ? "member" : "admin")}>{member.role === "admin" ? "Remove admin" : "Make admin"}</button>}
               {isAdmin && member.role !== "owner" && member.id !== detail.ownerId && !(detail.role === "admin" && member.role === "admin") && <button type="button" aria-label={"Remove " + member.name} style={{ ...secondary, padding: 8 }} className="group-confirm-trigger" onClick={event => askConfirm("Remove @" + member.username + " from this group?", () => removeMember(member), event.currentTarget)}><Trash2 size={15}/></button>}
             </div>)}</div>
             {detail.role !== "owner" && <div style={{ display: "flex", marginTop: 14 }}><button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} className="group-confirm-trigger" onClick={event => { askConfirm("Leave this group? You will need to join again to read new messages.", leaveGroup, event.currentTarget); }}><LogOut size={15}/> Leave group</button></div>}
