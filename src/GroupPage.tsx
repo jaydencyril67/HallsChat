@@ -164,7 +164,17 @@ export default function GroupPage() {
     return payload;
   }, []);
 
-  useEffect(() => {\n    let cancelled = false;\n    void request("/api/auth/me").then(payload => {\n      if (!cancelled) setCurrentUserId(payload.user?.id || "");\n    }).catch(() => {\n      if (!cancelled) setCurrentUserId("");\n    });\n    return () => { cancelled = true; };\n  }, [request]);\n\n  const loadGroups = useCallback(async (activeTab: Tab, showLoader = true) => {
+  useEffect(() => {
+    let cancelled = false;
+    void request("/api/auth/me").then(payload => {
+      if (!cancelled) setCurrentUserId(payload.user?.id || "");
+    }).catch(() => {
+      if (!cancelled) setCurrentUserId("");
+    });
+    return () => { cancelled = true; };
+  }, [request]);
+
+  const loadGroups = useCallback(async (activeTab: Tab, showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
       const payload = await request("/api/groups?view=" + activeTab);
