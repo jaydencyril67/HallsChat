@@ -68,24 +68,46 @@ export default function ProfilePage() {
     let cancelled = false;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
-    fetch(`${apiBase}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(async response => {
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok || !payload.user) throw new Error(payload.message || "Your profile couldn't be loaded.");
-        return payload.user as Account;
-      })
-      .then(account => { if (!cancelled) setUser(account); })
-      .catch(err => { if (!cancelled) setError(err instanceof Error ? err.message : "Your profile couldn't be loaded."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    fetch(`${apiBase}/api/social/feed?limit=100`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(async response => {
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(payload.message || "Your posts couldn't be loaded.");
-        return Array.isArray(payload.posts) ? payload.posts as Post[] : [];
-      })
-      .then(items => { if (!cancelled) setAllPosts(items); })
-      .catch(() => { if (!cancelled) setAllPosts([]); })
-      .finally(() => { if (!cancelled) setPostsLoading(false); });
+
+    async function loadOwnProfileAndPosts() {
+      try {
+        const accountResponse = await fetch(\`\${apiBase}/api/auth/me\`, {
+          headers: { Authorization: \`Bearer \${token}\` }
+        });
+        const accountPayload = await accountResponse.json().catch(() => ({}));
+        if (!accountResponse.ok || !accountPayload.user) {
+          throw new Error(accountPayload.message || "Your profile couldn't be loaded.");
+        }
+        const account = accountPayload.user as Account;
+        if (cancelled) return;
+        setUser(account);
+        setLoading(false);
+
+        const postsResponse = await fetch(\`\${apiBase}/api/social/users/\${encodeURIComponent(account.id)}\`, {
+          headers: { Authorization: \`Bearer \${token}\` }
+        });
+        const postsPayload = await postsResponse.json().catch(() => ({}));
+        if (!postsResponse.ok) throw new Error(postsPayload.message || "Your posts couldn't be loaded.");
+        const items = Array.isArray(postsPayload.posts) ? postsPayload.posts as Omit<Post, "author">[] : [];
+        if (!cancelled) {
+          setAllPosts(items.map(post => ({
+            ...post,
+            author: { id: account.id, name: account.name, username: account.username }
+          })));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Your profile couldn't be loaded.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+          setPostsLoading(false);
+        }
+      }
+    }
+
+    void loadOwnProfileAndPosts();
     return () => { cancelled = true; };
   }, []);
 
