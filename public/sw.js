@@ -1,4 +1,4 @@
-const CACHE_NAME = "hallschat-pwa-v32";
+const CACHE_NAME = "hallschat-pwa-v33";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest?v=5", "/crown-chat.svg?v=9"];
 const CACHEABLE_EXTENSIONS = [".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".webp", ".ico", ".woff", ".woff2"];
 
