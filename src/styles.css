@@ -4998,3 +4998,94 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     max-width: calc(100vw - 24px);
   }
 }
+
+
+/* Profile page light-theme refinement pass: prefer structural selectors over
+   inline-style text matching, keeping every rule isolated from dark mode. */
+:root[data-theme="light"] .profile-page .social-shell {
+  color: #302329;
+}
+:root[data-theme="light"] .profile-page .social-shell > div > div:first-child {
+  border-color: #ead8da;
+}
+:root[data-theme="light"] .profile-page [role="tablist"] button {
+  transition: color .16s ease, border-color .16s ease, background-color .16s ease;
+}
+:root[data-theme="light"] .profile-page [role="tablist"] button:hover {
+  color: #92263b !important;
+  background: rgba(169, 44, 67, .045) !important;
+}
+:root[data-theme="light"] .profile-page [role="tablist"] button[aria-selected="false"] {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .profile-page [role="tablist"] button[aria-selected="true"] {
+  color: #92263b !important;
+  border-bottom-color: #a92c43 !important;
+}
+:root[data-theme="light"] .profile-page [role="tablist"] button:focus-visible,
+:root[data-theme="light"] .profile-page .profile-cover-popout-trigger:focus-visible,
+:root[data-theme="light"] .profile-page .profile-picture-popout-trigger:focus-visible,
+:root[data-theme="light"] .profile-page .profile-cover-popout button:focus-visible,
+:root[data-theme="light"] .profile-page .profile-picture-popout button:focus-visible {
+  outline: 2px solid #a92c43 !important;
+  outline-offset: 3px;
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout,
+:root[data-theme="light"] .profile-page .profile-picture-popout {
+  max-width: min(220px, calc(100vw - 24px));
+  overflow-wrap: anywhere;
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout button:hover:not(:disabled),
+:root[data-theme="light"] .profile-page .profile-picture-popout button:hover:not(:disabled) {
+  background-color: #f0dfe2 !important;
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout button[aria-label*="Delete"],
+:root[data-theme="light"] .profile-page .profile-picture-popout button[aria-label*="Delete"] {
+  color: #a92c43 !important;
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout button:disabled,
+:root[data-theme="light"] .profile-page .profile-picture-popout button:disabled {
+  background: #f5edef !important;
+}
+:root[data-theme="light"] .profile-page > .social-shell [role="alert"] {
+  color: #8f3045;
+}
+:root[data-theme="light"] .profile-page article[role="button"]:hover {
+  border-color: #d7aab4 !important;
+}
+:root[data-theme="light"] .profile-page article[role="button"]:focus-visible {
+  outline: 2px solid #a92c43 !important;
+  outline-offset: 2px;
+}
+:root[data-theme="light"] .profile-page article[role="button"] > p {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .profile-page article[role="button"] > div[style*="rgba(0,0,0,.78)"] {
+  background: rgba(42, 17, 25, .82) !important;
+  color: #fff !important;
+}
+:root[data-theme="light"] .profile-page .button.button-secondary:hover:not(:disabled) {
+  background: #f8eff0 !important;
+  border-color: #d7aab4 !important;
+}
+:root[data-theme="light"] .profile-page .halls-toast-error {
+  border-color: #e3b4bd !important;
+}
+:root[data-theme="light"] .profile-page .halls-toast-error button {
+  color: #92263b !important;
+}
+@media (max-width: 520px) {
+  :root[data-theme="light"] .profile-page .profile-cover-popout {
+    right: 8px !important;
+    max-width: calc(100vw - 32px);
+  }
+  :root[data-theme="light"] .profile-page .profile-picture-popout {
+    left: 0 !important;
+    top: calc(100% + 8px) !important;
+    transform: none !important;
+    max-width: calc(100vw - 32px);
+  }
+  :root[data-theme="light"] .profile-page [role="tablist"] {
+    gap: clamp(16px, 7vw, 34px) !important;
+  }
+}
