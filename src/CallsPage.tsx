@@ -117,7 +117,7 @@ export default function CallsPage() {
       </div>
 
       <div className="halls-call-history-scroll">
-        {loading ? <div className="halls-call-history-state"><LoadingDots /><strong>Loading call history…</strong></div> :
+        {loading ? <div className="halls-call-history-state"><LoadingDots /></div> :
           error ? <div className="halls-call-history-state halls-call-history-error"><Phone size={23} /><strong>Call history unavailable</strong><span>{error}</span><button type="button" onClick={() => window.location.reload()}>Try again</button></div> :
           visibleCalls.length ? <div className="halls-call-history-list">
             {visibleCalls.map(call => {
