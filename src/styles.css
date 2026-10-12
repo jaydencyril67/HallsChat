@@ -3587,3 +3587,234 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 /* The story preview, image crop frame, and story viewer remain media-first
    dark canvases so selected photos and user-picked story colors are preserved. */
+
+
+/* Chat page light-theme pass — conversation list, message tools, attachments,
+   replies, voice notes and image controls. Dark-theme declarations remain untouched. */
+:root[data-theme="light"] .chat-page {
+  --chat-line: var(--theme-line);
+  --chat-muted: var(--theme-muted);
+  --chat-text: var(--theme-text);
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .chat-page .chat-layout {
+  border-color: var(--theme-line);
+  background: var(--theme-surface);
+  box-shadow: 0 10px 30px rgba(83,31,42,.06);
+}
+:root[data-theme="light"] .chat-page .chat-sidebar,
+:root[data-theme="light"] .chat-page .chat-conversation {
+  background: var(--theme-surface);
+}
+:root[data-theme="light"] .chat-page .chat-sidebar-heading,
+:root[data-theme="light"] .chat-page .chat-conversation-header {
+  border-color: var(--theme-line);
+  background: var(--theme-surface);
+}
+:root[data-theme="light"] .chat-page .chat-sidebar-heading strong,
+:root[data-theme="light"] .chat-page .chat-conversation-person strong,
+:root[data-theme="light"] .chat-page .chat-person-copy strong,
+:root[data-theme="light"] .chat-page .chat-person-select strong,
+:root[data-theme="light"] .chat-page .chat-list-empty strong,
+:root[data-theme="light"] .chat-page .chat-empty-conversation strong,
+:root[data-theme="light"] .chat-page .chat-welcome h2 {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .chat-page .chat-sidebar-heading > span,
+:root[data-theme="light"] .chat-page .chat-person-copy small,
+:root[data-theme="light"] .chat-page .chat-person-select small,
+:root[data-theme="light"] .chat-page .chat-last-message,
+:root[data-theme="light"] .chat-page .chat-person-meta,
+:root[data-theme="light"] .chat-page .chat-heading p,
+:root[data-theme="light"] .chat-page .chat-list-empty,
+:root[data-theme="light"] .chat-page .chat-list-empty p,
+:root[data-theme="light"] .chat-page .chat-empty-conversation p,
+:root[data-theme="light"] .chat-page .chat-welcome p {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-row {
+  border-bottom-color: var(--theme-line);
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .chat-page .chat-person-row:hover,
+:root[data-theme="light"] .chat-page .chat-person-row-active {
+  background: #f8ebed;
+}
+:root[data-theme="light"] .chat-page .chat-person-row-active {
+  box-shadow: inset 3px 0 var(--theme-primary);
+}
+:root[data-theme="light"] .chat-page .chat-person-select,
+:root[data-theme="light"] .chat-page .chat-person-avatar-link {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .chat-page .chat-open-button,
+:root[data-theme="light"] .chat-page .chat-back-button,
+:root[data-theme="light"] .chat-page .chat-message-more,
+:root[data-theme="light"] .chat-page .chat-message-action-delete,
+:root[data-theme="light"] .chat-page .chat-attachment-menu button,
+:root[data-theme="light"] .chat-page .chat-attachment-wrap > button {
+  background: var(--theme-surface-raised);
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-page .chat-open-button:hover,
+:root[data-theme="light"] .chat-page .chat-back-button:hover,
+:root[data-theme="light"] .chat-page .chat-attachment-menu button:hover {
+  background: #f5e5e7;
+}
+:root[data-theme="light"] .chat-page .chat-conversation-person span {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .chat-page .chat-access-pill {
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-page .chat-status-offline {
+  background: #f5eeed;
+  color: var(--theme-muted);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-page .chat-message-list {
+  background: #fbf7f5;
+  scrollbar-color: #d8bfc3 transparent;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs,
+:root[data-theme="light"] .chat-page .chat-bubble-theirs {
+  background: #fffdfc !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine,
+:root[data-theme="light"] .chat-page .chat-bubble-mine {
+  background: linear-gradient(145deg, #b72c43, #962039) !important;
+  color: #fff8f8 !important;
+  border-color: rgba(169,31,53,.22) !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content time,
+:root[data-theme="light"] .chat-page .chat-bubble time {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine time,
+:root[data-theme="light"] .chat-page .chat-bubble-mine time {
+  color: rgba(255,248,248,.76);
+}
+:root[data-theme="light"] .chat-page .chat-reply-quote,
+:root[data-theme="light"] .chat-page .chat-reply-composer {
+  background: #f7ebeb;
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-page .chat-reply-composer-copy,
+:root[data-theme="light"] .chat-page .chat-reply-quote small {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .chat-page .chat-composer {
+  background: #fffdfc;
+  border-color: var(--theme-line);
+  box-shadow: 0 3px 12px rgba(83,31,42,.06);
+}
+:root[data-theme="light"] .chat-page .chat-composer textarea,
+:root[data-theme="light"] .chat-page .chat-composer input {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  color-scheme: light;
+}
+:root[data-theme="light"] .chat-page .chat-composer textarea::placeholder,
+:root[data-theme="light"] .chat-page .chat-composer input::placeholder {
+  color: var(--theme-muted) !important;
+  opacity: 1;
+}
+:root[data-theme="light"] .chat-page .chat-composer > button:not(.chat-attach-button),
+:root[data-theme="light"] .chat-page .chat-voice-mic,
+:root[data-theme="light"] .chat-page .chat-stop-recording {
+  background: var(--theme-primary);
+  color: #fff;
+  border-color: transparent;
+}
+:root[data-theme="light"] .chat-page .chat-attach-button {
+  background: #f6e9e9 !important;
+  color: var(--theme-primary) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .chat-page .chat-attachment-menu,
+:root[data-theme="light"] .chat-page .chat-delete-popout,
+:root[data-theme="light"] .chat-page .chat-reaction-picker {
+  background: #fffdfc !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 12px 30px rgba(61,24,33,.15);
+}
+:root[data-theme="light"] .chat-page .chat-delete-popout > div:first-child,
+:root[data-theme="light"] .chat-page .chat-delete-popout > div:nth-child(2) {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .chat-page .chat-delete-popout button:not(:last-child) {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .chat-page .chat-delete-popout button:last-child {
+  background: var(--theme-primary) !important;
+  color: #fff !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-actions {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 8px 22px rgba(61,24,33,.12);
+}
+:root[data-theme="light"] .chat-page .chat-message-actions button {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-actions button:hover {
+  background: #f7e9ea !important;
+}
+:root[data-theme="light"] .chat-page .chat-voice-note {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .chat-page .chat-voice-track {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .chat-page .chat-voice-waveform span {
+  background: #d8bfc3;
+}
+:root[data-theme="light"] .chat-page .chat-voice-waveform span.is-played {
+  background: var(--theme-primary);
+}
+:root[data-theme="light"] .chat-page .chat-voice-play {
+  background: var(--theme-primary);
+  color: #fff;
+}
+:root[data-theme="light"] .chat-page .chat-voice-draft-preview,
+:root[data-theme="light"] .chat-page .chat-image-pending {
+  background: #f8eeee;
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-page .chat-character-count,
+:root[data-theme="light"] .chat-page .chat-image-count {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .chat-page .chat-readonly-notice {
+  background: #f8ebed;
+  color: #7f2435;
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-page .chat-rule-note {
+  color: var(--theme-muted);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-page .chat-rule-note svg,
+:root[data-theme="light"] .chat-page .chat-list-empty svg,
+:root[data-theme="light"] .chat-page .chat-empty-conversation > span,
+:root[data-theme="light"] .chat-page .chat-welcome > span {
+  color: var(--theme-primary);
+}
+:root[data-theme="light"] .chat-page .chat-list-state,
+:root[data-theme="light"] .chat-page .chat-list-empty {
+  background: linear-gradient(145deg, #fffdfc, #f6e9e8);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-page :is(button,input,textarea,[role="button"]):focus-visible {
+  outline-color: var(--theme-focus);
+}
