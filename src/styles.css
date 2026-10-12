@@ -4854,3 +4854,147 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     padding-inline: 9px !important;
   }
 }
+
+
+/* Own Profile page light theme. Additive light-only overrides, scoped so
+   existing dark-theme styling and the separate public-profile page are untouched. */
+:root[data-theme="light"] .profile-page {
+  color: #302329;
+  color-scheme: light;
+}
+:root[data-theme="light"] .profile-page [style*="var(--theme-surface)"] {
+  background-color: #fffdfc !important;
+  border-color: #ead8da !important;
+  box-shadow: 0 5px 18px rgba(76, 32, 43, .07);
+}
+:root[data-theme="light"] .profile-page h1,
+:root[data-theme="light"] .profile-page [style*="color: #fff0f3"],
+:root[data-theme="light"] .profile-page [style*="color:#fff0f3"] {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .profile-page [style*="color: \"#fff0f3\""],
+:root[data-theme="light"] .profile-page [style*="color: \"#fff0f3\""] {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .profile-page [style*="color: #e69aa7"],
+:root[data-theme="light"] .profile-page [style*="color:#e69aa7"],
+:root[data-theme="light"] .profile-page [style*="color: #f09aa7"],
+:root[data-theme="light"] .profile-page [style*="color:#f09aa7"] {
+  color: #8f3045 !important;
+}
+:root[data-theme="light"] .profile-page [style*="border-right: 1px solid rgba(255,255,255,.1)"],
+:root[data-theme="light"] .profile-page [style*="border-bottom: 1px solid rgba(255,255,255,.1)"] {
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .profile-page [role="tablist"] {
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .profile-page [role="tab"] {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .profile-page [role="tab"][aria-selected="true"] {
+  color: #92263b !important;
+  border-bottom-color: #a92c43 !important;
+}
+:root[data-theme="light"] .profile-page [style*="padding: \"38px 18px\""],
+:root[data-theme="light"] .profile-page [style*="padding: \"18px\""] {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .profile-page [style*="background: \"#21090f\""],
+:root[data-theme="light"] .profile-page [style*="background:\"#21090f\""],
+:root[data-theme="light"] .profile-page [style*="background: \"rgba(25,7,12,.82)\""],
+:root[data-theme="light"] .profile-page [style*="background:\"rgba(25,7,12,.82)\""] {
+  background: rgba(255, 253, 252, .97) !important;
+  color: #302329 !important;
+  border-color: #ead8da !important;
+  box-shadow: 0 10px 28px rgba(61, 24, 33, .15) !important;
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout,
+:root[data-theme="light"] .profile-page .profile-picture-popout {
+  background: rgba(255, 253, 252, .98) !important;
+  color: #302329 !important;
+  border-color: #ead8da !important;
+  box-shadow: 0 10px 28px rgba(61, 24, 33, .15) !important;
+  backdrop-filter: blur(16px);
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout button,
+:root[data-theme="light"] .profile-page .profile-picture-popout button {
+  background: #f8e9ec !important;
+  color: #92263b !important;
+  border: 1px solid #ead1d6 !important;
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout button:disabled,
+:root[data-theme="light"] .profile-page .profile-picture-popout button:disabled {
+  color: #b99aa1 !important;
+  opacity: .65;
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout-trigger {
+  background: rgba(255, 253, 252, .94) !important;
+  color: #92263b !important;
+  border-color: #ead8da !important;
+  box-shadow: 0 3px 12px rgba(61, 24, 33, .12);
+}
+:root[data-theme="light"] .profile-page .profile-picture-popout-trigger {
+  border-color: #fffdfc !important;
+  background: linear-gradient(145deg, #f1dce0, #e6c5cc) !important;
+  color: #86253a !important;
+}
+:root[data-theme="light"] .profile-page [style*="color: #ffb3bf"],
+:root[data-theme="light"] .profile-page [style*="color:#ffb3bf"],
+:root[data-theme="light"] .profile-page [style*="color: #ff8192"],
+:root[data-theme="light"] .profile-page [style*="color:#ff8192"] {
+  color: #a92c43 !important;
+}
+:root[data-theme="light"] .profile-page [style*="background: \"rgba(255,255,255,.07)\""],
+:root[data-theme="light"] .profile-page [style*="background:\"rgba(255,255,255,.07)\""],
+:root[data-theme="light"] .profile-page [style*="background: \"rgba(255,255,255,.06)\""],
+:root[data-theme="light"] .profile-page [style*="background:\"rgba(255,255,255,.06)\""] {
+  background: #f8eff0 !important;
+  color: #755b63 !important;
+}
+:root[data-theme="light"] .profile-page [style*="background: \"linear-gradient(145deg,rgba(95,29,44"],
+:root[data-theme="light"] .profile-page [style*="background: \"linear-gradient(145deg,#5b1b2c"] {
+  background: linear-gradient(145deg, #f7e8eb, #fdf7f6) !important;
+  color: #302329 !important;
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .profile-page article[role="button"] {
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .profile-page article[role="button"]:focus-visible {
+  outline: 2px solid #a92c43 !important;
+  outline-offset: 2px;
+}
+:root[data-theme="light"] .profile-page article[role="button"]:not(:has(img)) {
+  background: linear-gradient(145deg, #f7e8eb, #fdf7f6) !important;
+}
+:root[data-theme="light"] .profile-page article[role="button"] p {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .profile-page article[role="button"] > div[style*="rgba(0,0,0,.78)"] {
+  color: #fff !important;
+}
+:root[data-theme="light"] .profile-page .button.button-secondary {
+  background: #fffdfc !important;
+  color: #81273b !important;
+  border-color: #e4c5cc !important;
+}
+:root[data-theme="light"] .profile-page .halls-toast {
+  background: rgba(255, 253, 252, .98) !important;
+  color: #302329 !important;
+  border-color: #ead8da !important;
+  box-shadow: 0 12px 34px rgba(61, 24, 33, .16) !important;
+  backdrop-filter: blur(16px);
+}
+:root[data-theme="light"] .profile-page .halls-toast button {
+  color: #81273b !important;
+}
+:root[data-theme="light"] .profile-page :is(button, a, [role="button"], input):focus-visible {
+  outline-color: #a92c43 !important;
+}
+@media (max-width: 420px) {
+  :root[data-theme="light"] .profile-page .profile-cover-popout,
+  :root[data-theme="light"] .profile-page .profile-picture-popout {
+    max-width: calc(100vw - 24px);
+  }
+}
