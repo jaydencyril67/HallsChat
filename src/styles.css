@@ -7445,3 +7445,45 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     transition: none !important;
   }
 }
+
+
+/* Own profile: keep the avatar action popout inside the viewport on narrow screens. */
+.profile-page .profile-picture-popout,
+.profile-page .profile-picture-popout[role="alertdialog"] {
+  box-sizing: border-box;
+  max-width: min(220px, calc(100vw - 24px));
+  overflow-wrap: anywhere;
+}
+.profile-page .profile-cover-popout,
+.profile-page .profile-picture-popout {
+  z-index: 20;
+}
+.profile-page .profile-cover-popout button,
+.profile-page .profile-picture-popout button {
+  flex: 0 0 auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.profile-page .profile-cover-popout button:focus-visible,
+.profile-page .profile-picture-popout button:focus-visible {
+  outline: 2px solid #f09aa8;
+  outline-offset: 2px;
+}
+:root[data-theme="light"] .profile-page .profile-picture-popout button:hover:not(:disabled),
+:root[data-theme="light"] .profile-page .profile-cover-popout button:hover:not(:disabled) {
+  background-color: #f0dfe2 !important;
+}
+@media (max-width: 520px) {
+  .profile-page .profile-picture-popout,
+  .profile-page .profile-picture-popout[role="alertdialog"] {
+    left: 0 !important;
+    top: calc(100% + 8px) !important;
+    right: auto !important;
+    transform: none !important;
+    max-width: min(220px, calc(100vw - 24px));
+  }
+  .profile-page .profile-cover-popout,
+  .profile-page .profile-cover-popout[role="alertdialog"] {
+    max-width: calc(100vw - 24px);
+  }
+}
