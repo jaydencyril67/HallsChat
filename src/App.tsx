@@ -138,6 +138,7 @@ export default function App() {
 
 
   const normalizedPath = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
+  const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);
   let page: ReactNode;
   if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />;
   else if (normalizedPath === "/verify-email") page = <EmailVerificationPage />;
