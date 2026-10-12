@@ -45,9 +45,19 @@ async function compressGroupImage(file: File): Promise<File> {
     const context = canvas.getContext("2d");
     if (!context) throw new Error("Image compression isn't available in this browser.");
     context.imageSmoothingEnabled = true; context.imageSmoothingQuality = "high"; context.drawImage(image, 0, 0, width, height);
-    const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error("This image couldn't be compressed.")), "image/webp", 0.82));
-    const type = blob.type === "image/webp" ? "image/webp" : "image/jpeg";
-    return new File([blob], `${file.name.replace(/\.[^.]+$/, "") || "group-image"}.${type === "image/webp" ? "webp" : "jpg"}`, { type, lastModified: Date.now() });
+    const encode = (target: HTMLCanvasElement, type: string, quality: number) => new Promise<Blob>((resolve, reject) => target.toBlob(blob => blob ? resolve(blob) : reject(new Error("This image couldn't be compressed.")), type, quality));
+    let blob = await encode(canvas, "image/webp", 0.82);
+    let type = blob.type === "image/webp" ? "image/webp" : "image/jpeg";
+    if (type === "image/jpeg") {
+      const jpegCanvas = document.createElement("canvas"); jpegCanvas.width = width; jpegCanvas.height = height;
+      const jpegContext = jpegCanvas.getContext("2d");
+      if (!jpegContext) throw new Error("Image compression isn't available in this browser.");
+      jpegContext.fillStyle = "#fff"; jpegContext.fillRect(0, 0, width, height); jpegContext.drawImage(image, 0, 0, width, height);
+      blob = await encode(jpegCanvas, "image/jpeg", 0.82);
+    }
+    const extension = type === "image/webp" ? "webp" : "jpg";
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "group-image";
+    return new File([blob], `${baseName}.${extension}`, { type, lastModified: Date.now() });
   } finally { URL.revokeObjectURL(sourceUrl); }
 }
 
