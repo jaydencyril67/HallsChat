@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { ReactNode } from "react";
-import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, CaseSensitive, Type } from "lucide-react";
+import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, PaintBucket, CaseSensitive, Type } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -133,6 +133,7 @@ export default function HomePage() {
   const [storyPublishing, setStoryPublishing] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
   const [postBackground, setPostBackground] = useState("#8b1e35");
+  const [postBackgroundEnabled, setPostBackgroundEnabled] = useState(false);
   const [postTextColor, setPostTextColor] = useState("#ffffff");
   const [postTextSize, setPostTextSize] = useState(27);
   const [postTextColorPickerOpen, setPostTextColorPickerOpen] = useState(false);
@@ -655,13 +656,14 @@ export default function HomePage() {
       const response = await fetch(`${apiBase}/api/social/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content: composerMode === "post" ? content : "", images, poll, backgroundColor: composerMode === "post" && !images.length ? postBackground : undefined })
+        body: JSON.stringify({ content: composerMode === "post" ? content : "", images, poll, backgroundColor: composerMode === "post" && !images.length && postBackgroundEnabled ? postBackground : undefined })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.post) throw new Error(payload.message || "Your post couldn't be published.");
       setPosts(current => [payload.post as SocialPost, ...current]);
       setDraft("");
       setPostBackground("#8b1e35");
+      setPostBackgroundEnabled(false);
       setPostTextColor("#ffffff");
       setPostTextSize(27);
       setPostBackgroundPickerOpen(false);
@@ -1070,7 +1072,7 @@ export default function HomePage() {
     </div>}
     {composerExpanded && <div className="social-story-overlay social-post-composer-overlay" role="presentation" onClick={() => setComposerExpanded(false)}>
       <form className="social-story-dialog social-story-snap-composer social-post-snap-composer" role="dialog" aria-modal="true" aria-label="Create post" onClick={event => event.stopPropagation()} onSubmit={publishPost}>
-        <div className={`social-story-preview social-story-snap-canvas social-post-snap-canvas ${selectedImages.length ? "has-photo" : ""}`} style={{ background: selectedImages.length ? "#16090d" : postBackground }}>
+        <div className={`social-story-preview social-story-snap-canvas social-post-snap-canvas ${selectedImages.length ? "has-photo" : ""}`} style={{ background: selectedImages.length ? "#16090d" : postBackgroundEnabled ? postBackground : "#10070b" }}>
           {selectedImages[0] && <img src={selectedImages[0].preview} alt="Post photo preview"/>}
           {draft.trim() && <p className="social-post-live-preview" style={{ color: postTextColor, fontSize: `clamp(18px, ${postTextSize / 5}vw, ${postTextSize}px)` }}>{draft}</p>}
           {!draft.trim() && !selectedImages.length && <span>What's on your mind?</span>}
@@ -1078,7 +1080,8 @@ export default function HomePage() {
           
           <div className="social-story-snap-tools" aria-label="Post editing tools">
             <button type="button" onClick={() => document.getElementById("social-post-content")?.focus()} aria-label="Add text" title="Add text"><Pencil size={20}/></button>
-            <button type="button" onClick={() => { setPostBackgroundPickerOpen(value => !value); setPostTextColorPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postBackgroundPickerOpen} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
+            <button type="button" className={postBackgroundEnabled ? "is-active" : ""} onClick={() => { setPostBackgroundEnabled(value => !value); setPostBackgroundPickerOpen(false); setPostTextColorPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-pressed={postBackgroundEnabled} aria-label={postBackgroundEnabled ? "Turn off colored text background" : "Turn on colored text background"} title={postBackgroundEnabled ? "Colored background on" : "Colored background off"}><PaintBucket size={20}/></button>
+            <button type="button" onClick={() => { setPostBackgroundPickerOpen(value => !value); setPostTextColorPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postBackgroundPickerOpen} aria-label="Choose background color" title="Choose background color"><Palette size={20}/></button>
             <button type="button" onClick={() => { setPostTextColorPickerOpen(value => !value); setPostBackgroundPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postTextColorPickerOpen} aria-label="Change text color" title="Text color"><CaseSensitive size={21}/></button>
             <button type="button" onClick={() => { setPostTextSizePickerOpen(value => !value); setPostBackgroundPickerOpen(false); setPostTextColorPickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postTextSizePickerOpen} aria-label="Adjust text size" title="Text size"><Type size={20}/></button>
             <label className="social-story-snap-tool" aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" hidden disabled={!!selectedImages.length || publishing || compressingImages} onChange={selectImages}/></label>
@@ -1086,7 +1089,7 @@ export default function HomePage() {
           </div>
           {postBackgroundPickerOpen && <div className="social-story-color-popout social-post-background-picker" role="dialog" aria-label="Choose post background color">
             <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setPostBackgroundPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
-            <div className="social-story-colors" aria-label="Post background colors">{["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e","#9333ea"].map(color => <button key={color} type="button" className={postBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => setPostBackground(color)} aria-label={`Choose ${color} background`} />)}</div>
+            <div className="social-story-colors" aria-label="Post background colors">{["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e","#9333ea"].map(color => <button key={color} type="button" className={postBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setPostBackground(color); setPostBackgroundEnabled(true); }} aria-label={`Choose ${color} background`} />)}</div>
           </div>}
           {postTextColorPickerOpen && <div className="social-story-color-popout social-story-text-color-popout social-post-text-color-picker" role="dialog" aria-label="Choose post text color">
             <div className="social-story-color-popout-head"><strong>Text color</strong><button type="button" onClick={() => setPostTextColorPickerOpen(false)} aria-label="Close text colors"><X size={14}/></button></div>
