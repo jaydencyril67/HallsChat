@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Reply, MoreVertical, Pencil, Smile, Paperclip } from "lucide-react";
+import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Square, Reply, MoreVertical, Pencil, Smile, Paperclip } from "lucide-react";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import type { ChangeEvent } from "react";
@@ -61,27 +61,47 @@ async function compressGroupImage(file: File): Promise<File> {
   } finally { URL.revokeObjectURL(sourceUrl); }
 }
 
-function GroupVoiceNotePlayer({ src }: { src: string }) {
+function formatGroupAudioTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const total = Math.floor(seconds);
+  return Math.floor(total / 60) + ":" + String(total % 60).padStart(2, "0");
+}
+
+function GroupVoiceNotePlayer({ src, pending = false }: { src: string; pending?: boolean }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
+  const draggingRef = useRef(false);
   const bars = [3,5,8,12,7,15,10,18,13,6,11,16,8,20,12,7,15,10,22,13,6,17,11,8,19,12,5,14,9,18,7,12,20,9,5,15,11,7,17,10,4,13];
   const progress = duration > 0 ? currentTime / duration : 0;
-  const format = (seconds: number) => Math.floor(Math.max(0, seconds) / 60) + ":" + String(Math.floor(Math.max(0, seconds) % 60)).padStart(2, "0");
-  function seek(clientX: number, waveform: HTMLDivElement) {
-    const audio = audioRef.current; if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
-    const rect = waveform.getBoundingClientRect(); if (rect.width <= 0) return;
-    audio.currentTime = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * audio.duration; setCurrentTime(audio.currentTime);
+  async function togglePlayback() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) {
+      try { await audio.play(); setPlaying(true); } catch { setPlaying(false); }
+    } else { audio.pause(); setPlaying(false); }
   }
-  return <div className="chat-voice-note">
-    <audio ref={audioRef} src={src} preload="metadata" onLoadedMetadata={event => setDuration(event.currentTarget.duration || 0)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setCurrentTime(0); }}/>
-    <button type="button" className="chat-voice-play" onClick={async () => { const audio = audioRef.current; if (!audio) return; if (audio.paused) { try { await audio.play(); } catch { setPlaying(false); } } else audio.pause(); }} aria-label={playing ? "Pause voice note" : "Play voice note"}>{playing ? <Pause size={17} fill="currentColor"/> : <Play size={17} fill="currentColor"/>}</button>
-    <div className="chat-voice-track"><div className="chat-voice-waveform" role="slider" aria-label="Voice note playback position" aria-valuemin={0} aria-valuemax={Math.floor(duration || 0)} aria-valuenow={Math.floor(currentTime)} tabIndex={0} onClick={event => seek(event.clientX, event.currentTarget)} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const audio = audioRef.current; if (audio && Number.isFinite(audio.duration)) { audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5))); setCurrentTime(audio.currentTime); } } }}>{bars.map((height,index) => <span key={index} className={index / bars.length <= progress ? "is-played" : ""} style={{ height: height + "px" }}/>)}</div><div className="chat-voice-meta"><span>{playing || currentTime > 0 ? format(currentTime) : format(duration)}</span></div></div>
-    <span className="chat-voice-mic"><Mic size={13}/></span>
+  function seek(clientX: number, waveform: HTMLDivElement) {
+    const audio = audioRef.current;
+    if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    const rect = waveform.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    audio.currentTime = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * audio.duration;
+    setCurrentTime(audio.currentTime);
+  }
+  return <div className={"chat-voice-note" + (pending ? " chat-voice-note-pending" : "")}>
+    <audio ref={audioRef} src={src} preload="metadata" onLoadedMetadata={event => setDuration(event.currentTarget.duration || 0)} onDurationChange={event => setDuration(event.currentTarget.duration || 0)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setCurrentTime(0); }} />
+    <button type="button" className="chat-voice-play" onClick={() => void togglePlayback()} aria-label={playing ? "Pause voice note" : "Play voice note"}>{playing ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}</button>
+    <div className="chat-voice-track">
+      <div className="chat-voice-waveform" role="slider" aria-label="Voice note playback position" aria-valuemin={0} aria-valuemax={Math.floor(duration || 0)} aria-valuenow={Math.floor(currentTime)} tabIndex={0} onPointerDown={event => { if (event.pointerType === "mouse" && event.button !== 0) return; event.preventDefault(); draggingRef.current = true; event.currentTarget.setPointerCapture(event.pointerId); seek(event.clientX, event.currentTarget); }} onPointerMove={event => { if (draggingRef.current) seek(event.clientX, event.currentTarget); }} onPointerUp={event => { if (draggingRef.current) seek(event.clientX, event.currentTarget); draggingRef.current = false; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onPointerCancel={event => { draggingRef.current = false; if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const audio = audioRef.current; if (audio && Number.isFinite(audio.duration)) { audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5))); setCurrentTime(audio.currentTime); } } }}>
+        {bars.map((height, index) => <span key={index} className={index / bars.length <= progress ? "is-played" : ""} style={{ height: height + "px" }} />)}
+      </div>
+      <div className="chat-voice-meta"><span>{playing || currentTime > 0 ? formatGroupAudioTime(currentTime) : formatGroupAudioTime(duration)}</span>{pending && <span className="chat-voice-sending">Sending…</span>}</div>
+    </div>
+    <span className="chat-voice-mic"><Mic size={13} /></span>
   </div>;
 }
-
 export default function GroupPage() {
   const [tab, setTab] = useState<Tab>("mine");
   const [groups, setGroups] = useState<GroupSummary[]>([]);
@@ -306,6 +326,10 @@ export default function GroupPage() {
       recorder.start(250);
     } catch (err) { setError(err instanceof Error ? err.message : "Microphone access was denied."); setRecording(false); setRecordingPaused(false); }
   }
+  function finishVoiceRecording() {
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") recorder.stop();
+  }
   function discardVoiceDraft() {
     if (recording || recordingPaused) { discardRecordingRef.current = true; const recorder = mediaRecorderRef.current; if (recorder && recorder.state !== "inactive") recorder.stop(); }
     if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
@@ -341,6 +365,21 @@ export default function GroupPage() {
       setError(err instanceof Error ? err.message : "Message wasn't sent.");
     } finally { setBusy(false); }
   }
+  useEffect(() => {
+    if (!recording) return;
+    const interval = window.setInterval(() => setRecordingSeconds(seconds => seconds + 1), 1000);
+    return () => window.clearInterval(interval);
+  }, [recording]);
+
+  useEffect(() => () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      discardRecordingRef.current = true;
+      mediaRecorderRef.current.stop();
+    }
+    recordingStreamRef.current?.getTracks().forEach(track => track.stop());
+    if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
+  }, [voiceDraftUrl]);
+
   async function reactToMessage(message: GroupMessage, emoji: string) {
     const socket = socketRef.current;
     if (!socket?.connected || message.pending || message.deletedForEveryone) { setError("Reconnect to group chat before reacting."); return; }
@@ -472,7 +511,7 @@ export default function GroupPage() {
                       {quoted && <button type="button" onClick={() => { const node = document.getElementById("chat-message-" + quoted.id); const list = groupMessageListRef.current; if (node && list) { list.scrollTo({ top: Math.max(0, list.scrollTop + node.getBoundingClientRect().top - list.getBoundingClientRect().top - 80), behavior: "smooth" }); node.style.outline = "2px solid #f07889"; window.setTimeout(() => { node.style.outline = ""; }, 1300); } }} style={{ display: "grid", width: "100%", gap: 3, textAlign: "left", padding: "7px 9px", marginBottom: 6, border: 0, borderLeft: "3px solid #f07889", borderRadius: "5px 8px 8px 5px", background: "rgba(240,120,137,.09)", color: "inherit" }}><strong style={{ fontSize: ".68rem", color: "#ff9cab" }}>{quoted.senderId === currentUserId ? "You" : (detail.members.find(member => member.id === quoted.senderId)?.name || "Group member")}</strong><span style={{ fontSize: ".75rem", opacity: .78, overflowWrap: "anywhere" }}>{quoted.deleted ? "This message was deleted" : quoted.text || (quoted.audioUrl ? "🎤 Voice note" : quoted.imageUrl ? "📷 Photo" : "Message")}</span></button>}
                       {editingMessageId === message.id ? <form onSubmit={event => { event.preventDefault(); void saveMessageEdit(message); }} style={{ display: "grid", gap: 7 }}><textarea value={editMessageDraft} onChange={event => setEditMessageDraft(event.target.value)} maxLength={4000} autoFocus rows={3} style={{ ...field, resize: "vertical" }}/><div style={{ display: "flex", gap: 7 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { setEditingMessageId(null); setEditMessageDraft(""); }}>Cancel</button><button type="submit" style={{ ...primary, flex: 1 }} disabled={!editMessageDraft.trim()}>Save</button></div></form> : message.text && <p className="chat-message-text">{message.text}</p>}
                       {imgs.length > 0 && <div style={{ display: "grid", gridTemplateColumns: imgs.length === 1 ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))", gap: 3, marginTop: message.text ? 5 : 0 }}>{imgs.map((url,index) => <button key={url + index} type="button" onClick={() => setViewingImageUrl(url)} aria-label="Preview group image" style={{ display: "block", minWidth: 0, padding: 0, border: 0, background: "transparent", overflow: "hidden", borderRadius: 8 }}><img src={url} alt="Group attachment" loading="lazy" style={{ display: "block", width: "100%", maxHeight: 320, aspectRatio: imgs.length > 1 ? "1 / 1" : "auto", objectFit: imgs.length > 1 ? "cover" : "contain" }}/></button>)}</div>}
-                      {message.audioUrl && <GroupVoiceNotePlayer src={message.audioUrl}/>}
+                      {message.audioUrl && <GroupVoiceNotePlayer src={message.audioUrl} pending={Boolean(message.pending)}/>}
                     </>}
                   </div>
                   <div className="chat-message-footer"><time>{message.editedAt && !message.deletedForEveryone ? "Edited · " : ""}{new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}{message.pending ? " · Sending…" : ""}</time>
@@ -495,13 +534,13 @@ export default function GroupPage() {
           </div>
           <form className="chat-composer" onSubmit={sendMessage}>
             {replyingTo && <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", padding: "8px 10px", borderLeft: "3px solid #f07889", borderRadius: 7, background: "rgba(240,120,137,.08)" }}><div style={{ minWidth: 0, flex: 1 }}><strong style={{ display: "block", fontSize: ".72rem", color: "#ff9cab" }}>Replying to {replyingTo.sender?.id === currentUserId ? "yourself" : replyingTo.sender?.name || "group member"}</strong><span style={{ display: "block", fontSize: ".75rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{replyingTo.deletedForEveryone ? "This message was deleted" : replyingTo.text || (replyingTo.audioUrl ? "🎤 Voice note" : (replyingTo.images?.length || replyingTo.imageUrl) ? "📷 Photo" : "Message")}</span></div><button type="button" aria-label="Cancel reply" onClick={() => setReplyingTo(null)} style={{ ...secondary, minHeight: 28, padding: 5 }}><X size={14}/></button></div>}
-            {(imagePreviews.length > 0 || voiceDraftUrl) && <div style={{ display: "flex", gap: 8, flexWrap: "wrap", width: "100%", padding: "5px 0" }}>{imagePreviews.map((url,index) => <div key={url} style={{ position: "relative", width: 66, height: 66 }}><img src={url} alt="Selected attachment" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 8 }}/><button type="button" aria-label="Remove image" onClick={() => removeSelectedImage(index)} style={{ position: "absolute", top: -5, right: -5, display: "grid", placeItems: "center", width: 22, height: 22, borderRadius: "50%", border: "1px solid #ffffff55", background: "#2b0d17", color: "#fff" }}><X size={13}/></button></div>)}{voiceDraftUrl && <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0 }}><audio controls src={voiceDraftUrl} style={{ width: "min(240px,100%)", height: 38 }}/><button type="button" onClick={discardVoiceDraft} style={{ ...secondary, minHeight: 30, padding: 5 }}><Trash2 size={14}/></button></div>}</div>}
-            {(recording || recordingPaused) && <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", color: recordingPaused ? "#d7b7be" : "#ff9cab", fontSize: ".8rem" }}><span style={{ width: 8, height: 8, borderRadius: "50%", background: recordingPaused ? "#a58b91" : "#ff657d" }}/>{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds/60)}:{String(recordingSeconds%60).padStart(2,"0")}<button type="button" onClick={discardVoiceDraft} style={{ ...secondary, marginLeft: "auto", minHeight: 30, padding: "5px 8px" }}>Discard</button><button type="button" onClick={() => { if (recordingPaused) void recordVoiceNote(); else { mediaRecorderRef.current?.stop(); } }} style={{ ...primary, minHeight: 30, padding: "5px 8px" }}>{recordingPaused ? "Resume" : "Finish"}</button></div>}
+            {imagePreviews.length > 0 && <div className="chat-image-pending-grid">{imagePreviews.map((url, index) => <div className="chat-image-pending" key={`${url}-${index}`}><img src={url} alt={`Image ${index + 1} ready to send`} /><button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove image ${index + 1}`}><X size={17} /></button></div>)}<span className="chat-image-count">{imageFiles.length} {imageFiles.length === 1 ? "image" : "images"} ready</span></div>}
+            
             <div className="chat-attachment-wrap" style={{ position: "relative" }}><button type="button" aria-label="Add attachment" title="Add attachment" onClick={() => setAttachmentMenuOpen(value => !value)} style={{ display: "grid", placeItems: "center", width: 36, height: 36, border: 0, borderRadius: 9, background: "rgba(255,255,255,.05)", color: "#ff9cab" }}><Paperclip size={18}/></button>
               {attachmentMenuOpen && <div className="chat-attachment-menu" style={{ position: "absolute", zIndex: 35, bottom: 44, left: 0, display: "grid", gap: 5, minWidth: 160, padding: 7, border: "1px solid rgba(255,210,219,.15)", borderRadius: 11, background: "rgba(28,9,15,.98)", boxShadow: "0 12px 30px #0008" }}><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => imageInputRef.current?.click()}><ImageIcon size={15}/> Gallery</button><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => cameraInputRef.current?.click()}><Camera size={15}/> Camera</button><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => void recordVoiceNote()}><Mic size={15}/> Voice note</button></div>}
             </div>
-            <textarea ref={draftInputRef} aria-label="Write a group message" value={draft} onChange={event => { setDraft(event.target.value); socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: true }); if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current); typingTimerRef.current = window.setTimeout(() => socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: false }), 1200); }} placeholder="Message the group…" maxLength={4000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }}/>
-            <button type="submit" disabled={busy || voiceBusy || compressingImages || (!draft.trim() && !imageFiles.length && !voiceDraft) || recording || recordingPaused} aria-label="Send group message" title="Send"><Send size={18}/></button>
+            {(recording || recordingPaused) ? <div className={"chat-recording-status" + (recordingPaused ? " is-paused" : "")}><span className={"chat-recording-dot" + (recordingPaused ? " is-paused" : "")} />{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceDraft && voiceDraftUrl ? <div className="chat-voice-draft-preview"><GroupVoiceNotePlayer src={voiceDraftUrl} /></div> : <textarea ref={draftInputRef} aria-label="Write a group message" value={draft} onChange={event => { setDraft(event.target.value); socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: true }); if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current); typingTimerRef.current = window.setTimeout(() => socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: false }), 1200); }} placeholder="Message the group…" maxLength={4000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }}/>}
+            {!recording && !recordingPaused && !voiceDraft && <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>}{(recording || recordingPaused) ? <><button type="button" className="chat-recording-control" onClick={() => void recordVoiceNote()} aria-label={recordingPaused ? "Resume recording" : "Pause recording"} title={recordingPaused ? "Resume recording" : "Pause recording"}>{recordingPaused ? <Play size={17} fill="currentColor" /> : <Pause size={17} fill="currentColor" />}</button><button type="button" className="chat-stop-recording" onClick={finishVoiceRecording} aria-label="Finish recording and review" title="Finish recording and review"><Square size={17} fill="currentColor" /></button><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} aria-label="Delete recording" title="Delete recording"><Trash2 size={17} /></button></> : voiceDraft ? <><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} disabled={busy || voiceBusy} aria-label="Delete voice note" title="Delete voice note"><Trash2 size={17} /></button><button type="submit" className="chat-stop-recording" disabled={busy || voiceBusy} aria-label="Send voice note" title="Send voice note">{busy || voiceBusy ? <LoadingDots /> : <Send size={18} />}</button></> : <button type="submit" disabled={busy || voiceBusy || compressingImages || (!draft.trim() && !imageFiles.length)} aria-label="Send group message" title="Send"><Send size={18}/></button>}
           </form>
         </section> : <>
           <div style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
