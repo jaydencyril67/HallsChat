@@ -640,9 +640,8 @@ export default function GroupPage() {
       </div>
     </section>
     {showCreate && <div role="dialog" aria-modal="true" aria-label="Create a group" style={{ position: "fixed", inset: 0, zIndex: 4000, display: "flex", flexDirection: "column", width: "100%", height: "100dvh", minHeight: 0, padding: 0, background: "#16080d", color: "#fff0f3", overflow: "hidden", border: 0, boxShadow: "none" }}>
-      <header style={{ display: "flex", alignItems: "center", gap: 14, padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 8px", background: "transparent", border: 0, flexShrink: 0 }}>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 8px", background: "transparent", border: 0, flexShrink: 0 }}>
         <button type="button" aria-label="Close create group" onClick={() => { setShowCreate(false); setError(""); }} style={{ ...secondary, width: 42, minWidth: 42, height: 42, padding: 0, border: 0, background: "transparent" }}><X size={23}/></button>
-        <strong style={{ display: "block", fontSize: "1.08rem", fontWeight: 800 }}>Create a group</strong>
       </header>
       <div style={{ flex: 1, minHeight: 0, overflowY: "hidden", overscrollBehavior: "contain", padding: "8px 16px calc(12px + env(safe-area-inset-bottom, 0px))" }}>
         <form onSubmit={createGroup} style={{ display: "grid", gap: 13, maxWidth: 560, margin: "0 auto" }}>
