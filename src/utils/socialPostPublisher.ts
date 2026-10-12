@@ -18,6 +18,8 @@ export type SocialPostPublishState = {
   message: string;
   lastPost: PublishedSocialPost | null;
   revision: number;
+  failureRevision: number;
+  failedInput: SocialPostPublishInput | null;
 };
 
 export type SocialPostPublishInput = {
@@ -30,7 +32,7 @@ export type SocialPostPublishInput = {
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string; message?: string };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
-let state: SocialPostPublishState = { phase: "idle", status: "", message: "", lastPost: null, revision: 0 };
+let state: SocialPostPublishState = { phase: "idle", status: "", message: "", lastPost: null, revision: 0, failureRevision: 0, failedInput: null };
 const listeners = new Set<(next: SocialPostPublishState) => void>();
 
 function updateState(patch: Partial<SocialPostPublishState>) {
@@ -58,6 +60,7 @@ export function startSocialPostPublish(input: SocialPostPublishInput, token: str
     phase: "uploading",
     status: input.images.length ? "Preparing your post…" : "Publishing your post…",
     message: "",
+    failedInput: null,
   });
   void (async () => {
     try {
@@ -110,13 +113,16 @@ export function startSocialPostPublish(input: SocialPostPublishInput, token: str
         status: "Your post is live.",
         message: "Your post is live.",
         lastPost: payload.post as PublishedSocialPost,
+        failedInput: null,
         revision: state.revision + 1
       });
     } catch (error) {
       updateState({
         phase: "error",
         status: error instanceof Error ? error.message : "Your post couldn't be published.",
-        message: error instanceof Error ? error.message : "Your post couldn't be published."
+        message: error instanceof Error ? error.message : "Your post couldn't be published.",
+        failedInput: input,
+        failureRevision: state.failureRevision + 1
       });
     }
   })();
