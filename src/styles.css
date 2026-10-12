@@ -5393,3 +5393,85 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     transition: none;
   }
 }
+
+
+/* Calls page light-theme pass 2 — tighter mobile rows, accessible focus and
+   consistent interaction states. All rules remain isolated to light mode. */
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs::-webkit-scrollbar {
+  display: none;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button,
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button,
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
+  -webkit-tap-highlight-color: transparent;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button:focus-visible,
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search:focus-within,
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button:focus-visible {
+  outline: 2px solid #a92c43;
+  outline-offset: 2px;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
+  transition: background-color .16s ease;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-avatar img {
+  display: block;
+  background: #f0dfe3;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy,
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta {
+  min-width: 0;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta > span {
+  min-width: 0;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time {
+  max-width: 35%;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time small {
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-note svg {
+  flex-shrink: 0;
+}
+@media (max-width: 420px) {
+  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
+    gap: 8px;
+    padding: 11px 8px;
+  }
+  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-avatar {
+    flex-basis: 39px;
+    width: 39px;
+    height: 39px;
+    font-size: 11px;
+  }
+  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy {
+    gap: 5px;
+  }
+  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta {
+    flex-wrap: wrap;
+    line-height: 1.4;
+  }
+  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta > span {
+    white-space: normal;
+  }
+  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time {
+    max-width: 31%;
+    gap: 5px;
+  }
+  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time small {
+    white-space: normal;
+    text-align: right;
+    line-height: 1.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
+    transition: none;
+  }
+}
