@@ -6,6 +6,7 @@ import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import StoryImageCropModal from "./components/StoryImageCropModal";
 import { navigate } from "./utils/navigate";
+import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
 
 type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string; coverPhoto?: string; followersCount?: number };
 type Post = { id: string; content: string; createdAt: string; author: { id: string; name: string; username: string } | null; likeCount?: number; images?: string[]; poll?: { question: string; options?: { id: string; text: string; voteCount: number; votedByMe?: boolean }[] } | null };
@@ -124,6 +125,7 @@ export default function ProfilePage() {
     if (!token) { navigate("/signin", { replace: true }); return; }
     setCoverBusy(true);
     setPictureError("");
+    const backgroundTaskId = startBackgroundTask("Updating cover photo", "Preparing cover photo upload…");
     try {
       const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${token}` } });
       const authPayload = await authResponse.json().catch(() => ({}));
@@ -138,9 +140,11 @@ export default function ProfilePage() {
       formData.append("signature", auth.signature);
       formData.append("expire", String(auth.expire));
       formData.append("useUniqueFileName", "true");
+      updateBackgroundTask(backgroundTaskId, "Uploading cover photo…");
       const uploadResponse = await fetch("https://upload.imagekit.io/api/v1/files/upload", { method: "POST", body: formData });
       const uploadPayload = await uploadResponse.json().catch(() => ({}));
       if (!uploadResponse.ok || typeof uploadPayload.url !== "string") throw new Error(uploadPayload.message || "Your cover photo couldn't upload.");
+      updateBackgroundTask(backgroundTaskId, "Saving cover photo to your profile…");
       const saveResponse = await fetch(`${apiBase}/api/auth/cover-photo`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -150,8 +154,11 @@ export default function ProfilePage() {
       if (!saveResponse.ok) throw new Error(savePayload.message || "Your cover photo couldn't be saved.");
       setUser(current => current ? { ...current, coverPhoto: savePayload.coverPhoto } : current);
       setPictureError("");
+      finishBackgroundTask(backgroundTaskId);
     } catch (err) {
-      setPictureError(err instanceof Error ? err.message : "Your cover photo couldn't be saved.");
+      const coverError = err instanceof Error ? err.message : "Your cover photo couldn't be saved.";
+      setPictureError(coverError);
+      finishBackgroundTask(backgroundTaskId, coverError);
     } finally { setCoverBusy(false); }
   }
 
@@ -205,6 +212,7 @@ export default function ProfilePage() {
     if (!token) { navigate("/signin", { replace: true }); return; }
     setPictureBusy(true);
     setPictureError("");
+    const backgroundTaskId = startBackgroundTask("Updating profile picture", "Preparing profile picture upload…");
     try {
       const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${token}` } });
       const authPayload = await authResponse.json().catch(() => ({}));
@@ -219,9 +227,11 @@ export default function ProfilePage() {
       formData.append("signature", auth.signature);
       formData.append("expire", String(auth.expire));
       formData.append("useUniqueFileName", "true");
+      updateBackgroundTask(backgroundTaskId, "Uploading profile picture…");
       const uploadResponse = await fetch("https://upload.imagekit.io/api/v1/files/upload", { method: "POST", body: formData });
       const uploadPayload = await uploadResponse.json().catch(() => ({}));
       if (!uploadResponse.ok || typeof uploadPayload.url !== "string") throw new Error(uploadPayload.message || "Your profile picture couldn't upload.");
+      updateBackgroundTask(backgroundTaskId, "Saving profile picture to your account…");
       const saveResponse = await fetch(`${apiBase}/api/auth/profile-picture`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -233,8 +243,11 @@ export default function ProfilePage() {
       if (cropSource) URL.revokeObjectURL(cropSource);
       setCropSource(null);
       setPictureError("");
+      finishBackgroundTask(backgroundTaskId);
     } catch (err) {
-      setPictureError(err instanceof Error ? err.message : "Your profile picture couldn't be saved.");
+      const pictureErrorMessage = err instanceof Error ? err.message : "Your profile picture couldn't be saved.";
+      setPictureError(pictureErrorMessage);
+      finishBackgroundTask(backgroundTaskId, pictureErrorMessage);
       throw err;
     } finally {
       setPictureBusy(false);
