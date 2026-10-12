@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -29,6 +29,7 @@ export default function GroupPage() {
   const [activeId, setActiveId] = useState("");
   const [detail, setDetail] = useState<GroupDetail | null>(null);
   const [messages, setMessages] = useState<GroupMessage[]>([]);
+  const groupMessageListRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -81,6 +82,7 @@ export default function GroupPage() {
 
   useEffect(() => { void loadGroups(tab); const timer = window.setInterval(() => void loadGroups(tab, false), 15000); return () => window.clearInterval(timer); }, [tab, loadGroups]);
   useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); const timer = window.setInterval(() => void loadDetail(activeId, false), 5000); return () => window.clearInterval(timer); }, [activeId, loadDetail]);
+  useEffect(() => { const list = groupMessageListRef.current; if (list) list.scrollTop = list.scrollHeight; }, [activeId, messages.length]);
 
   const filteredGroups = useMemo(() => groups.filter(group => (group.name + " " + group.description).toLowerCase().includes(search.trim().toLowerCase())), [groups, search]);
 
@@ -143,7 +145,7 @@ export default function GroupPage() {
 
   const isAdmin = detail?.role === "owner" || detail?.role === "admin";
 
-  return <main className={`home-page social-home chat-page ${activeId && detail ? "chat-page-conversation-open" : ""}`}>
+  return <main className={`home-page social-home ${activeId && detail ? "chat-page chat-page-conversation-open" : ""}`}>
     <AppHeader homeHref="/home" />
     <section className={`home-shell social-shell ${activeId && detail ? "chat-shell" : ""}`} style={activeId && detail ? undefined : { paddingBottom: 112 }}>
       <div className={activeId && detail ? "chat-layout chat-layout-conversation-open" : ""} style={{ width: "100%", maxWidth: activeId && detail ? "none" : 820, margin: "0 auto", boxSizing: "border-box", height: activeId && detail ? "100%" : undefined, minHeight: activeId && detail ? 0 : undefined }}>
@@ -173,7 +175,7 @@ export default function GroupPage() {
               {detail.role === "owner" ? <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => { setMemberPanel(false); askConfirm("Delete this group and all its messages? This cannot be undone.", deleteGroup); }}><Trash2 size={15}/> Delete</button> : <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => { setMemberPanel(false); askConfirm("Leave this group? You will need to join again to read new messages.", leaveGroup); }}><LogOut size={15}/> Leave</button>}
             </div>
           </div>}
-          <div className="chat-message-list" style={{ flex: "1 1 0", minHeight: 0, height: "auto", maxHeight: "none" }}>
+          <div ref={groupMessageListRef} className="chat-message-list" style={{ flex: "1 1 0", minHeight: 0, height: "auto", maxHeight: "none" }}>
             {detailLoading && !messages.length ? <div className="chat-message-loading"><LoadingDots/></div> : messages.length ? messages.map(message => {
               const mine = message.sender?.id === currentUserId;
               return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "")}>
@@ -215,6 +217,6 @@ export default function GroupPage() {
     </div>}
     {confirmAction && <div role="dialog" aria-modal="true" aria-label="Confirm group action" onClick={event => { if (event.target === event.currentTarget) { setConfirmAction(null); setConfirmMessage(""); } }} style={{ position: "fixed", inset: 0, zIndex: 4500, display: "grid", placeItems: "center", padding: 18, background: "rgba(7,3,6,.78)", backdropFilter: "blur(8px)" }}><div style={{ ...panel, width: "100%", maxWidth: 380, padding: 18, boxShadow: "0 20px 70px rgba(0,0,0,.5)" }}><div style={{ width: 42, height: 42, borderRadius: 13, display: "grid", placeItems: "center", background: "rgba(184,32,50,.16)", color: "#ff9cab", marginBottom: 12 }}><AlertTriangle size={20}/></div><strong style={{ display: "block", fontSize: ".98rem" }}>Are you sure?</strong><p style={{ ...muted, fontSize: ".82rem", lineHeight: 1.55, margin: "7px 0 17px" }}>{confirmMessage}</p><div style={{ display: "flex", gap: 9 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { setConfirmAction(null); setConfirmMessage(""); }}>Cancel</button><button type="button" style={{ ...primary, flex: 1 }} disabled={busy} onClick={() => { const action = confirmAction; setConfirmAction(null); setConfirmMessage(""); if (action) void action(); }}>Confirm</button></div></div></div>}
     {(error || notice) && <div role={error ? "alert" : "status"} style={{ position: "fixed", left: 14, right: 14, bottom: 90, zIndex: 5000, maxWidth: 520, margin: "0 auto", padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, borderRadius: 13, border: "1px solid " + (error ? "rgba(255,120,120,.3)" : "rgba(255,210,219,.16)"), background: "rgba(28,9,15,.97)", color: "#fff0f3", boxShadow: "0 12px 30px rgba(0,0,0,.35)", fontSize: ".8rem" }}><span style={{ flex: 1, overflowWrap: "anywhere" }}>{error || notice}</span><button type="button" aria-label="Dismiss" onClick={() => { setError(""); setNotice(""); }} style={{ ...secondary, minHeight: 28, padding: "3px 7px" }}><X size={15}/></button></div>}
-    {!(activeId && detail) && <NowBar />}
+    {!activeId && <NowBar />}
   </main>;
 }
