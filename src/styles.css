@@ -2582,3 +2582,134 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .public-profile-page [role="tablist"] button {
   color: var(--theme-text);
 }
+
+
+/* Light theme coverage — feed, comments, chat, alerts, authentication and navigation. */
+:root[data-theme="light"] .social-composer,
+:root[data-theme="light"] .social-post,
+:root[data-theme="light"] .social-empty,
+:root[data-theme="light"] .social-profile-card,
+:root[data-theme="light"] .social-side-card,
+:root[data-theme="light"] .social-side-note,
+:root[data-theme="light"] .social-poll-card,
+:root[data-theme="light"] .social-comment-bubble,
+:root[data-theme="light"] .social-comments,
+:root[data-theme="light"] .social-comment-form,
+:root[data-theme="light"] .social-poll-result,
+:root[data-theme="light"] .halls-alert-item,
+:root[data-theme="light"] .chat-conversation-card,
+:root[data-theme="light"] .chat-message-list,
+:root[data-theme="light"] .chat-composer,
+:root[data-theme="light"] .chat-delete-popout,
+:root[data-theme="light"] .chat-reaction-picker {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-composer-label,
+:root[data-theme="light"] .social-post-author strong,
+:root[data-theme="light"] .social-post-content,
+:root[data-theme="light"] .social-poll-card h3,
+:root[data-theme="light"] .social-comment-bubble strong,
+:root[data-theme="light"] .social-comment-bubble span,
+:root[data-theme="light"] .social-side-title h3,
+:root[data-theme="light"] .social-side-note strong,
+:root[data-theme="light"] .social-poll-result,
+:root[data-theme="light"] .social-post-manager-poll-summary,
+:root[data-theme="light"] .social-post-composer-head h2,
+:root[data-theme="light"] .social-post-composer-user strong,
+:root[data-theme="light"] .chat-conversation-card strong,
+:root[data-theme="light"] .chat-message-text,
+:root[data-theme="light"] .chat-composer,
+:root[data-theme="light"] .halls-alert-copy,
+:root[data-theme="light"] .halls-alert-copy strong {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-post-author span,
+:root[data-theme="light"] .social-profile-email span,
+:root[data-theme="light"] .social-profile-email strong,
+:root[data-theme="light"] .social-post-manager-poll-summary span,
+:root[data-theme="light"] .social-post-composer-user span:not(.social-avatar),
+:root[data-theme="light"] .chat-conversation-card p,
+:root[data-theme="light"] .chat-conversation-card small,
+:root[data-theme="light"] .halls-alert-copy small,
+:root[data-theme="light"] .social-poll-options-label,
+:root[data-theme="light"] .social-poll-field-label,
+:root[data-theme="light"] .social-char-count {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-composer textarea,
+:root[data-theme="light"] .social-poll-option-field input,
+:root[data-theme="light"] .social-comment-form input,
+:root[data-theme="light"] .social-comment-form textarea,
+:root[data-theme="light"] .social-comment-edit-modal>textarea,
+:root[data-theme="light"] .chat-composer textarea,
+:root[data-theme="light"] .chat-composer input {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-composer textarea::placeholder,
+:root[data-theme="light"] .social-poll-option-field input::placeholder,
+:root[data-theme="light"] .social-comment-form input::placeholder,
+:root[data-theme="light"] .social-comment-form textarea::placeholder,
+:root[data-theme="light"] .chat-composer textarea::placeholder,
+:root[data-theme="light"] .chat-composer input::placeholder {
+  color: var(--theme-muted) !important;
+  opacity: 1;
+}
+:root[data-theme="light"] .nowbar-title,
+:root[data-theme="light"] .nowbar-action,
+:root[data-theme="light"] .nowbar-label-compact,
+:root[data-theme="light"] .nowbar-label-expanded {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .nowbar-action { border-color: var(--theme-line); }
+:root[data-theme="light"] .nowbar-rail { background: linear-gradient(90deg,transparent,var(--theme-line),transparent); }
+:root[data-theme="light"] .auth-story h1,
+:root[data-theme="light"] .signup-story h1,
+:root[data-theme="light"] .signup-form-heading h1,
+:root[data-theme="light"] .signup-confirmation-panel h1,
+:root[data-theme="light"] .signup-confirmation-panel h2 {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .auth-story>p,
+:root[data-theme="light"] .signup-story-content>p,
+:root[data-theme="light"] .signup-form-heading>p,
+:root[data-theme="light"] .signup-benefit-list small,
+:root[data-theme="light"] .signup-story-footer,
+:root[data-theme="light"] .signup-terms,
+:root[data-theme="light"] .signup-form-note,
+:root[data-theme="light"] .signup-bottom-note,
+:root[data-theme="light"] .signup-page-footer,
+:root[data-theme="light"] .signup-confirmation-panel>p,
+:root[data-theme="light"] .signup-confirmation-tip {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .signup-form-panel,
+:root[data-theme="light"] .signup-confirmation-panel,
+:root[data-theme="light"] .auth-security-note {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-line) !important;
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .signup-field { color: var(--theme-text); }
+:root[data-theme="light"] .signup-field>input,
+:root[data-theme="light"] .signup-password-wrap,
+:root[data-theme="light"] .signup-field>.signup-username-wrap,
+:root[data-theme="light"] .signup-field>.signup-email-wrap,
+:root[data-theme="light"] .signup-username-wrap>input,
+:root[data-theme="light"] .signup-email-wrap>input,
+:root[data-theme="light"] .signup-password-wrap input {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .signup-field input::placeholder { color: var(--theme-muted) !important; opacity: 1; }
+:root[data-theme="light"] .signup-form-panel h2,
+:root[data-theme="light"] .signup-confirmation-panel>p strong { color: var(--theme-text) !important; }
+:root[data-theme="light"] .halls-alert-item.unread { background: #f9e9eb !important; }
+:root[data-theme="light"] .chat-bubble-theirs { background: var(--theme-surface-raised) !important; color: var(--theme-text) !important; border-color: var(--theme-line) !important; }
+:root[data-theme="light"] .chat-bubble-mine { color: #fff !important; }
+:root[data-theme="light"] .social-comment-edit-modal { background: var(--theme-surface) !important; color: var(--theme-text) !important; border-color: var(--theme-line) !important; }
+:root[data-theme="light"] .social-comment-edit-modal>header small { color: var(--theme-muted) !important; }
