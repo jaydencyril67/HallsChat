@@ -8,7 +8,6 @@ type Mode = "compact" | "expanded";
 const actions = [
   { label: "HOME", icon: Home },
   { label: "CHAT", icon: MessageCircle },
-  { label: "PEOPLE", icon: ContactRound },
   { label: "HALLS", icon: UsersRound },
   { label: "PROFILE", icon: UserRound },
   { label: "CALLS", icon: Phone },
