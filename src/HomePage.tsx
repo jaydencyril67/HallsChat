@@ -1120,7 +1120,7 @@ export default function HomePage() {
                       <div><h3>Comments</h3><span>{post.commentCount || (commentsByPost[post.id] || []).length} comments</span></div>
                     </header>
                     <div className="social-comments-list">
-                      {commentsLoading.includes(post.id) ? <div className="social-comments-state"><LoadingDots /> Loading comments…</div> : (commentsByPost[post.id] || []).filter(comment => !comment.parentId).length ? (commentsByPost[post.id] || []).filter(comment => !comment.parentId).map(comment => <div className="social-comment-thread" key={comment.id}>
+                      {commentsLoading.includes(post.id) ? <div className="social-comments-state"><LoadingDots /></div> : (commentsByPost[post.id] || []).filter(comment => !comment.parentId).length ? (commentsByPost[post.id] || []).filter(comment => !comment.parentId).map(comment => <div className="social-comment-thread" key={comment.id}>
                         <article className="social-comment">
                           {comment.author?.id ? <button type="button" className="social-comment-avatar" onClick={() => navigate("/users/" + encodeURIComponent(comment.author!.id))} aria-label={"View " + (comment.author.name || "member") + " profile"} style={{ padding: 0, cursor: "pointer" }}>{comment.author.profilePicture ? <img src={comment.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : initials(comment.author.name || "HallsChat member")}</button> : comment.author?.profilePicture ? <img className="social-comment-avatar" src={comment.author.profilePicture} alt="" loading="lazy" /> : <div className="social-comment-avatar">{initials(comment.author?.name || "HallsChat member")}</div>}
                           <div className="social-comment-body">
@@ -1149,7 +1149,7 @@ export default function HomePage() {
               </article>)}
             </div>}
             {!feedLoading && posts.length === 0 && !feedError && <div className="social-empty-feed"><ImagePlus size={22}/><strong>Your feed starts here</strong><span>Share a thought or photo with your community.</span></div>}
-            {feedLoading && <div className="social-empty-feed" role="status"><LoadingDots /><span>Loading your feed…</span></div>}
+            {feedLoading && <div className="social-empty-feed" role="status"><LoadingDots /></div>}
           </section>
         </div>
       </>}
@@ -1204,8 +1204,8 @@ export default function HomePage() {
           </div>}
           <div className="social-story-snap-bottom social-post-snap-bottom">
             <textarea id="social-post-content" className="social-story-active-text-input" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind?" rows={2} autoFocus maxLength={5000}/>
-            {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots/> {uploadStatus}</p>}
-            <div className="social-story-snap-bottom-row"><span>{draft.length}/5000 characters</span><button type="submit" disabled={publishing || compressingImages || (!draft.trim() && selectedImages.length === 0)}>{compressingImages ? <><LoadingDots/> Preparing…</> : publishing ? <><LoadingDots/> Publishing…</> : <><Send size={16}/>Publish post</>}</button></div>
+            {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /></p>}
+            <div className="social-story-snap-bottom-row"><span>{draft.length}/5000 characters</span><button type="submit" disabled={publishing || compressingImages || (!draft.trim() && selectedImages.length === 0)}>{compressingImages || publishing ? <LoadingDots /> : <><Send size={16}/>Publish post</>}</button></div>
           </div>
         </div>
       </form>
@@ -1246,7 +1246,7 @@ export default function HomePage() {
             {storyTextSections.filter(section => section.id === activeStoryTextId).map((section, index) => <textarea key={section.id} className="social-story-active-text-input" value={section.text} onFocus={() => setActiveStoryTextId(section.id)} onChange={event => updateStoryTextSection(section.id, event.target.value)} maxLength={500} rows={2} placeholder="Write story text…" aria-label={`Edit story text section ${index + 1}`} />)}
             <div className="social-story-snap-bottom-row">
               <span>{storyTextSections.reduce((total, section) => total + section.text.length, 0)} characters</span>
-              <button type="submit" disabled={storyPublishing || (!storyTextSections.some(section => section.text.trim()) && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Posting…</> : <><Send size={16}/> Post story</>}</button>
+              <button type="submit" disabled={storyPublishing || (!storyTextSections.some(section => section.text.trim()) && !storyPhoto)}>{storyPublishing ? <LoadingDots /> : <><Send size={16}/> Post story</>}</button>
             </div>
             <p className="social-story-expiry">Stories disappear automatically after 24 hours.</p>
           </div>
@@ -1277,7 +1277,7 @@ export default function HomePage() {
         <span className="social-story-delete-icon"><Trash2 size={21}/></span>
         <strong id="social-story-delete-title">Delete this story?</strong>
         <p>This story will be removed for everyone and cannot be restored.</p>
-        <div><button type="button" onClick={() => setStoryDeleteConfirm(null)} disabled={storyDeleting}>Cancel</button><button type="button" className="danger" onClick={() => deleteStory(storyDeleteConfirm)} disabled={storyDeleting}>{storyDeleting ? <><LoadingDots/> Deleting…</> : "Delete story"}</button></div>
+        <div><button type="button" onClick={() => setStoryDeleteConfirm(null)} disabled={storyDeleting}>Cancel</button><button type="button" className="danger" onClick={() => deleteStory(storyDeleteConfirm)} disabled={storyDeleting}>{storyDeleting ? <LoadingDots /> : "Delete story"}</button></div>
       </div>
     </div>}
     {editingComment && <div className="social-comment-edit-overlay" role="presentation" onClick={() => { if (!savingCommentIds.includes(editingComment.comment.id)) { setEditingComment(null); setEditCommentDraft(""); } }}><form className="social-comment-edit-modal" role="dialog" aria-modal="true" aria-label="Edit comment" onClick={event => event.stopPropagation()} onSubmit={event => { event.preventDefault(); void saveCommentEdit(); }}><header><div><strong>Edit comment</strong></div></header><textarea value={editCommentDraft} onChange={event => setEditCommentDraft(event.target.value)} maxLength={2000} rows={5} autoFocus aria-label="Comment text" placeholder="Write your comment…"/><footer><button type="button" onClick={() => { setEditingComment(null); setEditCommentDraft(""); }} disabled={savingCommentIds.includes(editingComment.comment.id)}>Cancel</button><button type="submit" disabled={!editCommentDraft.trim() || editCommentDraft.trim() === editingComment.comment.content.trim() || savingCommentIds.includes(editingComment.comment.id)}>{savingCommentIds.includes(editingComment.comment.id) ? <LoadingDots/> : <Check size={15}/>} Save changes</button></footer></form></div>}
