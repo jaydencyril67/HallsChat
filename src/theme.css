@@ -57,3 +57,63 @@
 @media (prefers-reduced-motion: reduce) {
   .button { transition: none; }
 }
+
+/* Light appearance palette. The original dark tokens above remain unchanged. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --theme-bg: #f8f3f1;
+  --theme-surface: #fffdfc;
+  --theme-surface-raised: #f1e7e5;
+  --theme-line: rgba(83, 31, 42, 0.13);
+  --theme-text: #32151d;
+  --theme-muted: #795c63;
+  --theme-soft: #9a7c82;
+  --theme-primary: #a91f35;
+  --theme-primary-hover: #c02d45;
+  --theme-primary-contrast: #ffffff;
+  --theme-focus: #a91f35;
+  --theme-success: #168454;
+  --theme-shadow-primary: 0 5px 18px rgba(169, 31, 53, 0.15);
+  --theme-header-bg: rgba(255, 253, 252, 0.96);
+  --theme-header-border: rgba(83, 31, 42, 0.2);
+  --theme-header-shadow: 0 10px 28px rgba(61, 24, 33, 0.12);
+}
+:root[data-theme="light"] body { background: var(--theme-bg); color: var(--theme-text); }
+:root[data-theme="light"] .topbar .header-brand strong { color: var(--theme-text); }
+:root[data-theme="light"] .topbar .header-brand small { color: var(--theme-muted); }
+:root[data-theme="light"] .home-page,
+:root[data-theme="light"] .social-home,
+:root[data-theme="light"] .home-shell,
+:root[data-theme="light"] .social-shell { background-color: var(--theme-bg); color: var(--theme-text); }
+:root[data-theme="light"] .home-page h1,
+:root[data-theme="light"] .home-page h2,
+:root[data-theme="light"] .home-page h3,
+:root[data-theme="light"] .social-home h1,
+:root[data-theme="light"] .social-home h2,
+:root[data-theme="light"] .social-home h3 { color: var(--theme-text); }
+:root[data-theme="light"] input,
+:root[data-theme="light"] textarea,
+:root[data-theme="light"] select { background-color: var(--theme-surface); color: var(--theme-text); border-color: var(--theme-line); color-scheme: light; }
+:root[data-theme="light"] .settings-page { min-height: 100vh; background: var(--theme-bg); color: var(--theme-text); }
+:root[data-theme="light"] .settings-card,
+:root[data-theme="light"] .settings-theme-option { background: var(--theme-surface); border-color: var(--theme-line); color: var(--theme-text); }
+:root[data-theme="light"] .settings-theme-option.is-selected { background: #f9e9eb; border-color: rgba(169, 31, 53, .55); }
+:root[data-theme="light"] .settings-theme-icon,
+:root[data-theme="light"] .settings-section-icon { background: #f6e4e7; color: var(--theme-primary); }
+:root[data-theme="light"] .settings-theme-copy small,
+:root[data-theme="light"] .settings-card-heading p,
+:root[data-theme="light"] .settings-note,
+:root[data-theme="light"] .settings-heading p { color: var(--theme-muted); }
+:root[data-theme="light"] .settings-theme-check { color: var(--theme-primary); }
+:root[data-theme="light"] .social-post-card,
+:root[data-theme="light"] .social-comments-sheet,
+:root[data-theme="light"] .chat-conversation-card,
+:root[data-theme="light"] .hall-card,
+:root[data-theme="light"] .group-card,
+:root[data-theme="light"] .profile-card,
+:root[data-theme="light"] .call-card,
+:root[data-theme="light"] .notification-card { background-color: var(--theme-surface); color: var(--theme-text); border-color: var(--theme-line); }
+:root[data-theme="light"] .social-post-card p,
+:root[data-theme="light"] .chat-conversation-card p,
+:root[data-theme="light"] .hall-card p,
+:root[data-theme="light"] .group-card p { color: var(--theme-muted); }
