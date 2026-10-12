@@ -976,47 +976,14 @@ export default function HomePage() {
                 <strong>{story.isMine ? "Your story" : story.author?.name}</strong><small>{story.uploadState === "uploading" ? "Uploading…" : timeAgo(story.createdAt)}</small>
               </button>)}
             </section>
-            <form className={`social-composer ${composerMode === "poll" ? "social-composer-poll-mode" : ""} ${!composerExpanded && composerMode === "post" && !draft.trim() && selectedImages.length === 0 ? "social-composer-collapsed" : ""}`} onSubmit={publishPost}>
-              {composerMode === "post" && !composerExpanded && !draft.trim() && selectedImages.length === 0 ? <div className="social-composer-quick">
-                <div className="social-composer-quick-top"><span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span><button type="button" className="social-composer-open" onClick={() => setComposerExpanded(true)}>What's on your mind?</button></div>
-                <div className="social-composer-quick-tools">
-                  <button type="button" onClick={() => { setComposerExpanded(true); window.setTimeout(() => document.getElementById("social-post-content")?.focus(), 0); }}><ImagePlus size={17}/> Photo post</button>
-                  <button type="button" onClick={() => { setComposerExpanded(true); setComposerMode("poll"); }}><ChartNoAxesColumn size={17}/> Poll</button>
+            <div className="social-composer social-composer-collapsed">
+              <div className="social-composer-quick">
+                <div className="social-composer-quick-top">
+                  <span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span>
+                  <button type="button" className="social-composer-open" onClick={() => setComposerExpanded(true)}>What's on your mind?</button>
                 </div>
-              </div> : <>
-              {composerMode === "post" ? <>
-                <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind? Share something with your HallsChat community…" rows={4} />
-                {selectedImages.length > 0 && <div className="social-image-previews" aria-label="Images attached to your post">
-                {selectedImages.map((item, index) => <div className="social-image-preview" key={item.preview}>
-                  <button type="button" className="social-image-preview-open" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview ${item.file.name}`}><img src={item.preview} alt={item.file.name} /></button>
-                  <button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove ${item.file.name}`} disabled={publishing}><X size={14} /></button>
-                  <span>{item.file.name}</span>
-                </div>)}
-                </div>}
-              </> : <div className="social-poll-builder">
-                <div className="social-poll-builder-heading"><ChartNoAxesColumn size={19}/><div><strong>Create a poll</strong><span>Ask a question and let everyone vote.</span></div></div>
-                <label className="social-poll-field-label" htmlFor="social-poll-question">Poll question</label>
-                <textarea id="social-poll-question" className="social-poll-question" value={pollQuestion} onChange={event => setPollQuestion(event.target.value)} maxLength={240} placeholder="What do you want to ask?" rows={2} />
-                <div className="social-poll-options-label"><span>Answer options</span><small>{pollOptions.length}/4</small></div>
-                <div className="social-poll-option-fields">{pollOptions.map((option, index) => <div className="social-poll-option-field" key={index}><input aria-label={`Poll option ${index + 1}`} maxLength={120} value={option} onChange={event => setPollOptions(current => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} />{pollOptions.length > 2 && <button type="button" onClick={() => setPollOptions(current => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={`Remove option ${index + 1}`}><X size={15}/></button>}</div>)}</div>
-                {pollOptions.length < 4 && <button type="button" className="social-poll-add-option" onClick={() => setPollOptions(current => [...current, ""])}><Plus size={15}/> Add option</button>}
-                <p className="social-image-hint">Polls are public. Each person can vote once and change their vote.</p>
-              </div>}
-              <div className="social-composer-bottom">
-                <div className="social-composer-tools">
-                  {composerMode === "post" ? <>
-                    <label className={`social-add-image social-add-image-icon-only${selectedImages.length >= MAX_IMAGES || publishing ? " is-disabled" : ""}`} title="Add photos" aria-label="Add photos">
-                      <Camera size={19} />
-                      <input type="file" accept="image/*" multiple onChange={selectImages} disabled={selectedImages.length >= MAX_IMAGES || publishing || compressingImages} />
-                    </label>
-                    <button type="button" className="social-composer-mode-button" onClick={() => { setComposerMode("poll"); setSelectedImages(current => { current.forEach(item => URL.revokeObjectURL(item.preview)); return []; }); }} title="Create a poll" aria-label="Create a poll" disabled={publishing || compressingImages}><ChartNoAxesColumn size={19}/></button>
-                  </> : <button type="button" className="social-composer-mode-button" onClick={() => setComposerMode("post")} title="Back to post" aria-label="Back to post" disabled={publishing}><ImagePlus size={19}/></button>}
-                </div>
-                <button className="social-publish" type="submit" disabled={publishing || compressingImages || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{compressingImages ? <><LoadingDots /> Preparing images…</> : publishing ? <><LoadingDots /> Publishing…</> : composerMode === "poll" ? "Post poll" : "Publish"} {!publishing && !compressingImages && <Send size={15}/>}</button>
               </div>
-              {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /> {uploadStatus}</p>}
-              </>}
-            </form>
+            </div>
 
             <div className="social-feed-heading"><div><span className="signup-form-kicker">THE LATEST</span><h2>Your feed</h2></div><span className="social-feed-count">{posts.length} {posts.length === 1 ? "post" : "posts"}</span></div>
             {!feedLoading && posts.length > 0 && <div className="social-post-list">
@@ -1086,6 +1053,52 @@ export default function HomePage() {
     {(feedError || Object.values(commentErrors).find(Boolean) || notice) && <div className={`halls-toast ${(feedError || Object.values(commentErrors).some(Boolean)) ? "halls-toast-error" : "halls-toast-success"}`} role={(feedError || Object.values(commentErrors).some(Boolean)) ? "alert" : "status"}>
       <span>{feedError || Object.values(commentErrors).find(Boolean) || notice}</span>
       <button type="button" onClick={() => { setNotice(""); setFeedError(""); setCommentErrors(current => Object.fromEntries(Object.keys(current).map(id => [id, ""]))); }} aria-label="Dismiss notification">×</button>
+    </div>}
+    {composerExpanded && <div className="social-story-overlay social-post-composer-overlay" role="presentation" onClick={() => setComposerExpanded(false)}>
+      <form className="social-story-dialog social-post-composer-dialog" role="dialog" aria-modal="true" aria-label="Create post" onClick={event => event.stopPropagation()} onSubmit={publishPost}>
+        <div className="social-story-dialog-head social-post-composer-head">
+          <div><span className="signup-form-kicker">HALLSCHAT COMMUNITY</span><h2>{composerMode === "poll" ? "Create a poll" : "Create post"}</h2></div>
+          <button type="button" onClick={() => setComposerExpanded(false)} aria-label="Close post creator"><X size={20}/></button>
+        </div>
+        <div className="social-post-composer-user">
+          <span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span>
+          <div><strong>{user?.name || "Your profile"}</strong><span>Sharing with the HallsChat community</span></div>
+        </div>
+        <div className={`social-composer social-post-modal-form ${composerMode === "poll" ? "social-composer-poll-mode" : ""}`}>
+          {composerMode === "post" ? <>
+            <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind? Share something with your HallsChat community…" rows={5} autoFocus />
+            {selectedImages.length > 0 && <div className="social-image-previews" aria-label="Images attached to your post">
+              {selectedImages.map((item, index) => <div className="social-image-preview" key={item.preview}>
+                <button type="button" className="social-image-preview-open" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview ${item.file.name}`}><img src={item.preview} alt={item.file.name} /></button>
+                <button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove ${item.file.name}`} disabled={publishing}><X size={14} /></button>
+                <span>{item.file.name}</span>
+              </div>)}
+            </div>}
+          </> : <div className="social-poll-builder">
+            <div className="social-poll-builder-heading"><ChartNoAxesColumn size={19}/><div><strong>Ask your community</strong><span>People can vote on one of your answers.</span></div></div>
+            <label className="social-poll-field-label" htmlFor="social-poll-question">Poll question</label>
+            <textarea id="social-poll-question" className="social-poll-question" value={pollQuestion} onChange={event => setPollQuestion(event.target.value)} maxLength={240} placeholder="What do you want to ask?" rows={2} />
+            <div className="social-poll-options-label"><span>Answer options</span><small>{pollOptions.length}/4</small></div>
+            <div className="social-poll-option-fields">{pollOptions.map((option, index) => <div className="social-poll-option-field" key={index}><input aria-label={`Poll option ${index + 1}`} maxLength={120} value={option} onChange={event => setPollOptions(current => current.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`} />{pollOptions.length > 2 && <button type="button" onClick={() => setPollOptions(current => current.filter((_, itemIndex) => itemIndex !== index))} aria-label={`Remove option ${index + 1}`}><X size={15}/></button>}</div>)}</div>
+            {pollOptions.length < 4 && <button type="button" className="social-poll-add-option" onClick={() => setPollOptions(current => [...current, ""])}><Plus size={15}/> Add option</button>}
+            <p className="social-image-hint">Polls are public. Each person can vote once and change their vote.</p>
+          </div>}
+          <div className="social-composer-bottom social-post-composer-bottom">
+            <div className="social-composer-tools">
+              {composerMode === "post" ? <>
+                <label className={`social-add-image social-add-image-icon-only${selectedImages.length >= MAX_IMAGES || publishing ? " is-disabled" : ""}`} title="Add photos" aria-label="Add photos">
+                  <Camera size={19} />
+                  <input type="file" accept="image/*" multiple onChange={selectImages} disabled={selectedImages.length >= MAX_IMAGES || publishing || compressingImages} />
+                </label>
+                <span className="social-post-image-count">{selectedImages.length}/{MAX_IMAGES} photos</span>
+                <button type="button" className="social-composer-mode-button" onClick={() => { setComposerMode("poll"); setSelectedImages(current => { current.forEach(item => URL.revokeObjectURL(item.preview)); return []; }); }} title="Create a poll" aria-label="Create a poll" disabled={publishing || compressingImages}><ChartNoAxesColumn size={19}/><span>Poll</span></button>
+              </> : <button type="button" className="social-composer-mode-button" onClick={() => setComposerMode("post")} title="Back to post" aria-label="Back to post" disabled={publishing}><ImagePlus size={19}/><span>Post</span></button>}
+            </div>
+            <button className="social-publish" type="submit" disabled={publishing || compressingImages || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{compressingImages ? <><LoadingDots /> Preparing images…</> : publishing ? <><LoadingDots /> Publishing…</> : composerMode === "poll" ? "Post poll" : "Publish"} {!publishing && !compressingImages && <Send size={15}/>}</button>
+          </div>
+          {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots /> {uploadStatus}</p>}
+        </div>
+      </form>
     </div>}
     {storyComposerOpen && <div className="social-story-overlay" role="presentation" onClick={closeStoryComposer}>
       <form className="social-story-dialog social-story-snap-composer" role="dialog" aria-modal="true" aria-label="Create story" onClick={event => event.stopPropagation()} onSubmit={publishStory}>
