@@ -7,6 +7,7 @@ import ImagePreviewModal from "./components/ImagePreviewModal";
 import StoryImageCropModal from "./components/StoryImageCropModal";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
+import { getSocialPostPublishState, startSocialPostPublish, subscribeSocialPostPublishing } from "./utils/socialPostPublisher";
 
 type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string };
 type SocialPost = {
@@ -183,6 +184,44 @@ export default function HomePage() {
   const [editingComment, setEditingComment] = useState<{ postId: string; comment: SocialComment } | null>(null);
   const [editCommentDraft, setEditCommentDraft] = useState("");
   const [savingCommentIds, setSavingCommentIds] = useState<string[]>([]);
+
+  const handledPublishRevision = useRef(getSocialPostPublishState().revision);
+  const wasPublishingHere = useRef(false);
+
+  useEffect(() => subscribeSocialPostPublishing(next => {
+    setPublishing(next.phase === "uploading");
+    setUploadStatus(next.phase === "uploading" ? next.status : "");
+    if (next.phase === "uploading") wasPublishingHere.current = true;
+    if (next.phase === "success" && next.lastPost && next.revision > handledPublishRevision.current) {
+      handledPublishRevision.current = next.revision;
+      const publishedPost = next.lastPost as SocialPost;
+      setPosts(current => [publishedPost, ...current.filter(post => post.id !== publishedPost.id)]);
+      setDraft("");
+      setPostBackground("#8b1e35");
+      setPostBackgroundEnabled(false);
+      setPostTextColor("#ffffff");
+      setPostTextSize(27);
+      setPostBackgroundPickerOpen(false);
+      setPostTextColorPickerOpen(false);
+      setPostTextSizePickerOpen(false);
+      setComposerExpanded(false);
+      setComposerMode("post");
+      setPollQuestion("");
+      setPollOptions(["", ""]);
+      setSelectedImages(current => {
+        current.forEach(item => URL.revokeObjectURL(item.preview));
+        return [];
+      });
+      setNotice("Your post is live.");
+      wasPublishingHere.current = false;
+    } else if (next.phase === "error") {
+      setFeedError(next.message);
+      if (wasPublishingHere.current) setComposerExpanded(true);
+      wasPublishingHere.current = false;
+    }
+  }), []);
+
+
 
   useEffect(() => {
     if (!commentDeleteConfirmId && !postDeleteConfirmId && !postActionMenuId && !commentActionMenuId) return;
@@ -484,47 +523,6 @@ export default function HomePage() {
     setSelectedImageMenuIndex(current => current === index ? null : current !== null && current > index ? current - 1 : current);
   }
 
-  async function uploadImages(token: string): Promise<string[]> {
-    if (!selectedImages.length) return [];
-
-    const urls: string[] = [];
-    for (let index = 0; index < selectedImages.length; index += 1) {
-      const file = selectedImages[index].file;
-      setUploadStatus(`Preparing image ${index + 1} of ${selectedImages.length}…`);
-
-      // ImageKit upload tokens are single-use. Request fresh authentication for
-      // every image instead of reusing one token across a multi-image post.
-      const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const authPayload = await authResponse.json().catch(() => ({}));
-      if (!authResponse.ok) {
-        throw new Error(authPayload.message || `Image ${index + 1} upload could not be prepared.`);
-      }
-      const auth = authPayload as ImageKitAuth;
-      if (!auth.token || !auth.signature || !auth.publicKey || !auth.expire) {
-        throw new Error(`Image ${index + 1} upload authentication returned incomplete details.`);
-      }
-
-      setUploadStatus(`Uploading image ${index + 1} of ${selectedImages.length}…`);
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("fileName", file.name);
-      formData.append("publicKey", auth.publicKey);
-      formData.append("token", auth.token);
-      formData.append("signature", auth.signature);
-      formData.append("expire", String(auth.expire));
-      formData.append("useUniqueFileName", "true");
-      const response = await fetch("https://upload.imagekit.io/api/v1/files/upload", { method: "POST", body: formData });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok || typeof payload.url !== "string") {
-        throw new Error(payload.message || `Image ${index + 1} couldn't upload. Please try again.`);
-      }
-      urls.push(payload.url as string);
-    }
-    return urls;
-  }
-
   function selectStoryPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -696,7 +694,7 @@ export default function HomePage() {
     setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; });
   }
 
-  async function publishPost(event: FormEvent<HTMLFormElement>) {
+  function publishPost(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = draft.trim();
     const poll = composerMode === "poll" ? { question: pollQuestion.trim(), options: pollOptions.map(option => option.trim()) } : null;
@@ -707,46 +705,16 @@ export default function HomePage() {
     if ((!content && selectedImages.length === 0 && !poll) || publishing || compressingImages) return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
-    setPublishing(true);
     setFeedError("");
     setNotice("");
-    setUploadStatus(selectedImages.length ? "Preparing your post…" : "Publishing your post…");
     setComposerExpanded(false);
-    try {
-      const images = await uploadImages(token);
-      setUploadStatus("Publishing post…");
-      const response = await fetch(`${apiBase}/api/social/posts`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content: composerMode === "post" ? content : "", images, poll, backgroundColor: composerMode === "post" && !images.length && postBackgroundEnabled ? postBackground : undefined })
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok || !payload.post) throw new Error(payload.message || "Your post couldn't be published.");
-      setPosts(current => [payload.post as SocialPost, ...current]);
-      setDraft("");
-      setPostBackground("#8b1e35");
-      setPostBackgroundEnabled(false);
-      setPostTextColor("#ffffff");
-      setPostTextSize(27);
-      setPostBackgroundPickerOpen(false);
-      setPostTextColorPickerOpen(false);
-      setPostTextSizePickerOpen(false);
-      setComposerExpanded(false);
-      setComposerMode("post");
-      setPollQuestion("");
-      setPollOptions(["", ""]);
-      selectedImages.forEach(item => URL.revokeObjectURL(item.preview));
-      setSelectedImages([]);
-      setNotice("Your post is live.");
-    } catch (err) {
-      setFeedError(err instanceof Error ? err.message : "Your post couldn't be published.");
-      setComposerExpanded(true);
-    } finally {
-      setPublishing(false);
-      setUploadStatus("");
-    }
+    startSocialPostPublish({
+      content: composerMode === "post" ? content : "",
+      images: selectedImages.map(item => item.file),
+      poll,
+      backgroundColor: composerMode === "post" && selectedImages.length === 0 && postBackgroundEnabled ? postBackground : undefined
+    }, token);
   }
-
   async function votePoll(post: SocialPost, optionIndex: number) {
     if (votingIds.includes(post.id)) return;
     const token = localStorage.getItem("hallschat_token");
@@ -1132,11 +1100,6 @@ export default function HomePage() {
     {(feedError || Object.values(commentErrors).find(Boolean) || notice) && <div className={`halls-toast ${(feedError || Object.values(commentErrors).some(Boolean)) ? "halls-toast-error" : "halls-toast-success"}`} role={(feedError || Object.values(commentErrors).some(Boolean)) ? "alert" : "status"}>
       <span>{feedError || Object.values(commentErrors).find(Boolean) || notice}</span>
       <button type="button" onClick={() => { setNotice(""); setFeedError(""); setCommentErrors(current => Object.fromEntries(Object.keys(current).map(id => [id, ""]))); }} aria-label="Dismiss notification">×</button>
-    </div>}
-    {publishing && <style>{`@keyframes social-posting-progress { from { transform: translateX(-110%); } to { transform: translateX(280%); } }`}</style>}
-    {publishing && <div role="status" aria-live="polite" style={{ position: "fixed", left: 14, right: 14, bottom: "calc(16px + env(safe-area-inset-bottom, 0px))", zIndex: 1200, maxWidth: 440, margin: "0 auto", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: "1px solid rgba(255,210,219,.2)", borderRadius: 14, background: "linear-gradient(145deg,rgba(38,18,27,.98),rgba(18,12,20,.98))", boxShadow: "0 12px 34px rgba(0,0,0,.38)", color: "#fff0f3", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-      <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, flexShrink: 0, borderRadius: 10, background: "rgba(255,129,146,.12)", color: "#ff9bab" }}><LoadingDots/></span>
-      <span style={{ display: "grid", gap: 3, minWidth: 0, flex: 1 }}><strong style={{ fontSize: ".88rem", fontWeight: 650 }}>Posting in the background</strong><span style={{ fontSize: ".78rem", color: "#e5cbd2", overflowWrap: "anywhere" }}>{uploadStatus || "Getting your post ready…"}</span><span style={{ display: "block", height: 3, marginTop: 3, overflow: "hidden", borderRadius: 99, background: "rgba(255,255,255,.12)" }}><span style={{ display: "block", width: "36%", height: "100%", borderRadius: 99, background: "#ff8192", animation: "social-posting-progress 1.2s ease-in-out infinite alternate" }}/></span></span>
     </div>}
     {composerExpanded && <div className="social-story-overlay social-post-composer-overlay" role="presentation" onClick={() => setComposerExpanded(false)}>
       <form className="social-story-dialog social-story-snap-composer social-post-snap-composer" role="dialog" aria-modal="true" aria-label="Create post" onClick={event => event.stopPropagation()} onSubmit={publishPost}>
