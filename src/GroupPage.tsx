@@ -657,7 +657,7 @@ export default function GroupPage() {
 
   const isAdmin = detail?.role === "owner" || detail?.role === "admin";
 
-  return <main className={`home-page social-home ${activeId && detail ? "chat-page chat-page-conversation-open" : ""}`}>
+  return <main className={`home-page social-home halls-groups-page ${activeId && detail ? "chat-page chat-page-conversation-open" : ""}`}>
     <AppHeader homeHref="/home" />
     <section className={`home-shell social-shell ${activeId && detail ? "chat-shell" : ""}`} style={activeId && detail ? undefined : { paddingBottom: 112 }}>
       <div className={activeId && detail ? "chat-layout chat-layout-conversation-open" : ""} style={{ width: "100%", maxWidth: activeId && detail ? "none" : 820, margin: "0 auto", boxSizing: "border-box", height: activeId && detail ? "100%" : undefined, minHeight: activeId && detail ? 0 : undefined }}>
