@@ -29,6 +29,28 @@ function Avatar({ name, src, size = 44 }: { name: string; src?: string; size?: n
   return <span style={{ width: size, height: size, flexShrink: 0, borderRadius: size > 50 ? 16 : "50%", overflow: "hidden", display: "grid", placeItems: "center", border: "1px solid rgba(236,102,121,.28)", background: "linear-gradient(145deg,#713040,#35121d)", color: "#ffe4e9", fontSize: size > 50 ? "1.1rem" : ".78rem", fontWeight: 850 }}>{src ? <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials(name)}</span>;
 }
 
+async function compressGroupImage(file: File): Promise<File> {
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+      const element = new Image();
+      element.onload = () => resolve(element);
+      element.onerror = () => reject(new Error(`Couldn't read ${file.name}.`));
+      element.src = sourceUrl;
+    });
+    const scale = Math.min(1, 1600 / Math.max(image.naturalWidth, image.naturalHeight));
+    const width = Math.max(1, Math.round(image.naturalWidth * scale));
+    const height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Image compression isn't available in this browser.");
+    context.imageSmoothingEnabled = true; context.imageSmoothingQuality = "high"; context.drawImage(image, 0, 0, width, height);
+    const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error("This image couldn't be compressed.")), "image/webp", 0.82));
+    const type = blob.type === "image/webp" ? "image/webp" : "image/jpeg";
+    return new File([blob], `${file.name.replace(/\.[^.]+$/, "") || "group-image"}.${type === "image/webp" ? "webp" : "jpg"}`, { type, lastModified: Date.now() });
+  } finally { URL.revokeObjectURL(sourceUrl); }
+}
+
 function GroupVoiceNotePlayer({ src }: { src: string }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -71,6 +93,7 @@ export default function GroupPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [draft, setDraft] = useState("");
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [compressingImages, setCompressingImages] = useState(false);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
   const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
@@ -229,15 +252,19 @@ export default function GroupPage() {
     if (!response.ok || typeof uploaded.url !== "string") throw new Error(uploaded.message || "The attachment couldn't be uploaded.");
     return uploaded.url;
   }
-  function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
+  async function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(event.target.files || []); event.target.value = "";
     if (!picked.length) return;
     if (imageFiles.length + picked.length > 4) { setError("You can attach up to 4 images per message."); return; }
     if (picked.some(file => !file.type.startsWith("image/"))) { setError("Choose image files only."); return; }
-    if (picked.some(file => file.size > 10 * 1024 * 1024)) { setError("Each image must be 10 MB or smaller."); return; }
-    setImageFiles(current => [...current, ...picked]);
-    setImagePreviews(current => [...current, ...picked.map(file => URL.createObjectURL(file))]);
-    setAttachmentMenuOpen(false); setError("");
+    if (picked.some(file => file.size > 10 * 1024 * 1024)) { setError("Each original image must be 10 MB or smaller."); return; }
+    setCompressingImages(true); setAttachmentMenuOpen(false); setError("");
+    try {
+      const compressed = await Promise.all(picked.map(compressGroupImage));
+      setImageFiles(current => [...current, ...compressed]);
+      setImagePreviews(current => [...current, ...compressed.map(file => URL.createObjectURL(file))]);
+    } catch (err) { setError(err instanceof Error ? err.message : "One or more images couldn't be prepared."); }
+    finally { setCompressingImages(false); }
   }
   function removeSelectedImage(index: number) {
     if (imagePreviews[index]) URL.revokeObjectURL(imagePreviews[index]);
@@ -464,7 +491,7 @@ export default function GroupPage() {
               {attachmentMenuOpen && <div className="chat-attachment-menu" style={{ position: "absolute", zIndex: 35, bottom: 44, left: 0, display: "grid", gap: 5, minWidth: 160, padding: 7, border: "1px solid rgba(255,210,219,.15)", borderRadius: 11, background: "rgba(28,9,15,.98)", boxShadow: "0 12px 30px #0008" }}><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => imageInputRef.current?.click()}><ImageIcon size={15}/> Gallery</button><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => cameraInputRef.current?.click()}><Camera size={15}/> Camera</button><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => void recordVoiceNote()}><Mic size={15}/> Voice note</button></div>}
             </div>
             <textarea ref={draftInputRef} aria-label="Write a group message" value={draft} onChange={event => { setDraft(event.target.value); socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: true }); if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current); typingTimerRef.current = window.setTimeout(() => socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: false }), 1200); }} placeholder="Message the group…" maxLength={4000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }}/>
-            <button type="submit" disabled={busy || voiceBusy || (!draft.trim() && !imageFiles.length && !voiceDraft) || recording || recordingPaused} aria-label="Send group message" title="Send"><Send size={18}/></button>
+            <button type="submit" disabled={busy || voiceBusy || compressingImages || (!draft.trim() && !imageFiles.length && !voiceDraft) || recording || recordingPaused} aria-label="Send group message" title="Send"><Send size={18}/></button>
           </form>
         </section> : <>
           <div style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
