@@ -1059,7 +1059,7 @@ export default function HomePage() {
               <div className="social-composer-quick">
                 <div className="social-composer-quick-top">
                   <span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span>
-                  <button type="button" className="social-composer-open" onClick={() => setComposerExpanded(true)}>What's on your mind?</button>
+                  <button type="button" className="social-composer-open" onClick={() => { if (!publishing) setComposerExpanded(true); }} disabled={publishing}>What's on your mind?</button>
                 </div>
               </div>
             </div>
@@ -1133,6 +1133,7 @@ export default function HomePage() {
       <span>{feedError || Object.values(commentErrors).find(Boolean) || notice}</span>
       <button type="button" onClick={() => { setNotice(""); setFeedError(""); setCommentErrors(current => Object.fromEntries(Object.keys(current).map(id => [id, ""]))); }} aria-label="Dismiss notification">×</button>
     </div>}
+    {publishing && <style>{`@keyframes social-posting-progress { from { transform: translateX(-110%); } to { transform: translateX(280%); } }`}</style>}
     {publishing && <div role="status" aria-live="polite" style={{ position: "fixed", left: 14, right: 14, bottom: "calc(16px + env(safe-area-inset-bottom, 0px))", zIndex: 1200, maxWidth: 440, margin: "0 auto", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: "1px solid rgba(255,210,219,.2)", borderRadius: 14, background: "linear-gradient(145deg,rgba(38,18,27,.98),rgba(18,12,20,.98))", boxShadow: "0 12px 34px rgba(0,0,0,.38)", color: "#fff0f3", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
       <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, flexShrink: 0, borderRadius: 10, background: "rgba(255,129,146,.12)", color: "#ff9bab" }}><LoadingDots/></span>
       <span style={{ display: "grid", gap: 3, minWidth: 0, flex: 1 }}><strong style={{ fontSize: ".88rem", fontWeight: 650 }}>Posting in the background</strong><span style={{ fontSize: ".78rem", color: "#e5cbd2", overflowWrap: "anywhere" }}>{uploadStatus || "Getting your post ready…"}</span><span style={{ display: "block", height: 3, marginTop: 3, overflow: "hidden", borderRadius: 99, background: "rgba(255,255,255,.12)" }}><span style={{ display: "block", width: "36%", height: "100%", borderRadius: 99, background: "#ff8192", animation: "social-posting-progress 1.2s ease-in-out infinite alternate" }}/></span></span>
