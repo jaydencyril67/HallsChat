@@ -131,6 +131,8 @@ export default function HomePage() {
   const [storyBackground, setStoryBackground] = useState("#8b1e35");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
   const [storyEditingImageUrl, setStoryEditingImageUrl] = useState("");
+  const [postEditingImageUrl, setPostEditingImageUrl] = useState("");
+  const [postCropQueue, setPostCropQueue] = useState<File[]>([]);
   const [storyPublishing, setStoryPublishing] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
   const [postBackground, setPostBackground] = useState("#8b1e35");
@@ -417,17 +419,33 @@ export default function HomePage() {
       accepted.push(file);
     }
     if (!accepted.length) return;
+    setPostCropQueue(accepted.slice(1));
+    setPostEditingImageUrl(URL.createObjectURL(accepted[0]));
+  }
+
+  async function finishPostPhotoEdit(file: File) {
     setCompressingImages(true);
-    setUploadStatus("Compressing images…");
     try {
-      const compressed = await Promise.all(accepted.map(compressPostImage));
-      setSelectedImages(current => [...current, ...compressed.map(file => ({ file, preview: URL.createObjectURL(file) }))].slice(0, MAX_IMAGES));
+      const compressed = await compressPostImage(file);
+      setSelectedImages(current => [...current, { file: compressed, preview: URL.createObjectURL(compressed) }].slice(0, MAX_IMAGES));
+      setPostEditingImageUrl(current => { if (current) URL.revokeObjectURL(current); return ""; });
+      setPostCropQueue(current => {
+        if (!current.length) return current;
+        const [next, ...remaining] = current;
+        setPostEditingImageUrl(URL.createObjectURL(next));
+        return remaining;
+      });
+      setFeedError("");
     } catch (err) {
-      setFeedError(err instanceof Error ? err.message : "One or more images couldn't be prepared.");
+      setFeedError(err instanceof Error ? err.message : "This image couldn't be prepared.");
     } finally {
       setCompressingImages(false);
-      setUploadStatus("");
     }
+  }
+
+  function cancelPostPhotoEdit() {
+    setPostEditingImageUrl(current => { if (current) URL.revokeObjectURL(current); return ""; });
+    setPostCropQueue([]);
   }
 
   function removeSelectedImage(index: number) {
@@ -1096,7 +1114,7 @@ export default function HomePage() {
             <button type="button" onClick={() => { setPostBackgroundPickerOpen(value => !value); setPostTextColorPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postBackgroundPickerOpen} aria-label="Choose background color" title="Choose background color"><Palette size={20}/></button>
             <button type="button" onClick={() => { setPostTextColorPickerOpen(value => !value); setPostBackgroundPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postTextColorPickerOpen} aria-label="Change text color" title="Text color"><CaseSensitive size={21}/></button>
             <button type="button" onClick={() => { setPostTextSizePickerOpen(value => !value); setPostBackgroundPickerOpen(false); setPostTextColorPickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postTextSizePickerOpen} aria-label="Adjust text size" title="Text size"><Type size={20}/></button>
-            <label className="social-story-snap-tool" aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" hidden disabled={!!selectedImages.length || publishing || compressingImages} onChange={selectImages}/></label>
+            <label className="social-story-snap-tool" aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" multiple hidden disabled={selectedImages.length >= MAX_IMAGES || publishing || compressingImages || !!postEditingImageUrl} onChange={selectImages}/></label>
             <button type="button" onClick={() => { setPostAttachmentManagerOpen(value => !value); setPostBackgroundPickerOpen(false); setPostTextColorPickerOpen(false); setPostTextSizePickerOpen(false); }} aria-expanded={postAttachmentManagerOpen} aria-label="Manage post" title="Manage post"><MoreHorizontal size={21}/></button>
           </div>
           {postBackgroundPickerOpen && <div className="social-story-color-popout social-post-background-picker" role="dialog" aria-label="Choose post background color">
@@ -1167,6 +1185,7 @@ export default function HomePage() {
       </form>
     </div>}
     {storyEditingImageUrl && <StoryImageCropModal imageUrl={storyEditingImageUrl} onCancel={cancelStoryPhotoEdit} onDone={finishStoryPhotoEdit} />}
+    {postEditingImageUrl && <StoryImageCropModal imageUrl={postEditingImageUrl} title="Crop post photo" onCancel={cancelPostPhotoEdit} onDone={finishPostPhotoEdit} />}
     {storyViewer && <div className="social-story-overlay" role="presentation" onClick={closeStoryViewer}>
       <div className="social-story-viewer" role="dialog" aria-modal="true" aria-label={`Story by ${storyViewer.author?.name || "user"}`} onClick={event => event.stopPropagation()}>
         <div className="social-story-progress-list" aria-label="Story progress">{storyPlaybackQueue.filter(item => item.author?.id === storyViewer.author?.id).map(item => {
