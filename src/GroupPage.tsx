@@ -209,7 +209,15 @@ export default function GroupPage() {
     const socket = io(apiBase, { auth: { token }, transports: ["websocket", "polling"] });
     socketRef.current = socket;
     setGroupSocket(socket);
-    socket.on("connect", () => socket.emit("group:join", { groupId: activeId }, (result: { ok?: boolean }) => { if (!result?.ok) setError("Live group updates are unavailable. You can still refresh messages."); }));
+    let hasConnected = false;
+    socket.on("connect", () => {
+      const reconnecting = hasConnected;
+      hasConnected = true;
+      socket.emit("group:join", { groupId: activeId }, (result: { ok?: boolean }) => {
+        if (!result?.ok) setError("Live group updates are unavailable. You can still refresh messages.");
+        else if (reconnecting) void loadDetail(activeId, false);
+      });
+    });
     socket.on("group:message", (message: GroupMessage) => {
       setMessages(current => current.some(item => item.id === message.id) ? current : [...current, message].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
       setOtherTyping(false);
@@ -231,7 +239,7 @@ export default function GroupPage() {
       setOtherTyping(Boolean(event.isTyping));
     });
     return () => { socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; setGroupSocket(current => current === socket ? null : current); };
-  }, [activeId, currentUserId]);
+  }, [activeId, currentUserId, loadDetail]);
   useEffect(() => {
     const input = draftInputRef.current;
     if (!input) return;
