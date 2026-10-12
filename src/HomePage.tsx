@@ -1075,7 +1075,7 @@ export default function HomePage() {
           {draft.trim() && <p className="social-post-live-preview" style={{ color: postTextColor, fontSize: `clamp(18px, ${postTextSize / 5}vw, ${postTextSize}px)` }}>{draft}</p>}
           {!draft.trim() && !selectedImages.length && <span>What's on your mind?</span>}
           <button type="button" className="social-story-snap-close" onClick={() => setComposerExpanded(false)} aria-label="Close post creator"><X size={21}/></button>
-          <div className="social-post-snap-heading"><span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span><div><strong>{user?.name || "Your profile"}</strong><span>Create a post</span></div></div>
+          
           <div className="social-story-snap-tools" aria-label="Post editing tools">
             <button type="button" onClick={() => document.getElementById("social-post-content")?.focus()} aria-label="Add text" title="Add text"><Pencil size={20}/></button>
             <button type="button" onClick={() => { setPostBackgroundPickerOpen(value => !value); setPostTextColorPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postBackgroundPickerOpen} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
