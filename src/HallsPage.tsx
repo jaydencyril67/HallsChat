@@ -98,8 +98,8 @@ export default function HallsPage() {
 
 
         {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 36 }}><LoadingDots /></div> :
-          filteredUsers.length ? <div style={{ ...panel, overflow: "hidden" }}>
-            {filteredUsers.map((person, index) => <div key={person.id} style={{ display: "flex", alignItems: "center", gap: 11, padding: "13px 12px", borderBottom: index === filteredUsers.length - 1 ? 0 : "1px solid rgba(255,210,219,.075)" }}>
+          filteredUsers.length ? <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {filteredUsers.map((person) => <div key={person.id} style={{ ...panel, display: "flex", alignItems: "center", gap: 11, padding: "13px 12px", boxShadow: "0 5px 16px rgba(0,0,0,.12)" }}>
               <button type="button" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} aria-label={"View " + person.name + " profile"} style={{ width: 44, height: 44, flexShrink: 0, display: "grid", placeItems: "center", overflow: "hidden", borderRadius: "50%", border: "1px solid rgba(236,102,121,.3)", background: "linear-gradient(145deg,#713040,#35121d)", color: "#ffe4e9", fontSize: ".82rem", fontWeight: 800, padding: 0 }}>{person.profilePicture ? <img src={person.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : initials(person.name)}</button>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <button type="button" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} style={{ display: "block", maxWidth: "100%", padding: 0, border: 0, background: "transparent", color: "#fff0f3", fontSize: ".88rem", fontWeight: 750, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</button>
