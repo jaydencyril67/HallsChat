@@ -260,7 +260,7 @@ export default function GroupPage() {
         otherTypingTimerRef.current = null;
       }
     });
-    return () => { if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current); otherTypingTimerRef.current = null; setOtherTyping(false); socket.emit("group:typing", { groupId: activeId, isTyping: false }); socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; setGroupSocket(current => current === socket ? null : current); };
+    return () => { if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current); typingTimerRef.current = null; if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current); otherTypingTimerRef.current = null; setOtherTyping(false); socket.emit("group:typing", { groupId: activeId, isTyping: false }); socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; setGroupSocket(current => current === socket ? null : current); };
   }, [activeId, currentUserId, loadDetail]);
   useEffect(() => {
     const input = draftInputRef.current;
