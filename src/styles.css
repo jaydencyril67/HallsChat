@@ -7157,3 +7157,129 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     transition: none;
   }
 }
+
+
+/* Public profile polish: keep all visual changes isolated to light theme. */
+.public-profile-page > .social-shell > div {
+  min-width: 0;
+}
+.public-profile-page button {
+  touch-action: manipulation;
+}
+.public-profile-page button:focus-visible,
+.public-profile-page article[role="button"]:focus-visible {
+  outline: 2px solid var(--theme-focus, #d64a5b);
+  outline-offset: 3px;
+}
+:root[data-theme="light"] .public-profile-page {
+  color: #302329;
+  color-scheme: light;
+}
+:root[data-theme="light"] .public-profile-page section[style*="var(--theme-surface)"] {
+  background: #fffdfc !important;
+  border-color: #ead8da !important;
+  box-shadow: 0 5px 18px rgba(76, 32, 43, .065);
+}
+:root[data-theme="light"] .public-profile-page > .social-shell > div > button:first-child {
+  background: #fffdfc !important;
+  border-color: #ead8da !important;
+  color: #6f5059 !important;
+}
+:root[data-theme="light"] .public-profile-page h1,
+:root[data-theme="light"] .public-profile-page h2,
+:root[data-theme="light"] .public-profile-page [style*="color: #fff0f3"],
+:root[data-theme="light"] .public-profile-page [style*="color:#fff0f3"] {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .public-profile-page [style*="color: #fff6f7"],
+:root[data-theme="light"] .public-profile-page [style*="color:#fff6f7"] {
+  color: #fff9f8 !important;
+}
+:root[data-theme="light"] .public-profile-page [style*="color: rgba(246,220,225"],
+:root[data-theme="light"] .public-profile-page [style*="color: rgba(246, 220, 225"] {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .public-profile-page [style*="border-top: 1px solid rgba(255,210,219"],
+:root[data-theme="light"] .public-profile-page [style*="border-bottom: 1px solid rgba(255,255,255"] {
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .public-profile-page button[aria-label*="profile picture"] {
+  border-color: #fffdfc !important;
+  background: linear-gradient(145deg, #f1dce0, #e6c5cc) !important;
+  color: #86253a !important;
+  box-shadow: 0 4px 14px rgba(61, 24, 33, .14) !important;
+}
+:root[data-theme="light"] .public-profile-page button[aria-label*="profile picture"] img {
+  border-radius: 50%;
+}
+:root[data-theme="light"] .public-profile-page button[aria-label="Edit profile"],
+:root[data-theme="light"] .public-profile-page button[aria-label="Follow"] {
+  border-color: #a92c43 !important;
+  background: linear-gradient(135deg, #b63249, #92243a) !important;
+  color: #fff9f8 !important;
+}
+:root[data-theme="light"] .public-profile-page button[aria-label="Following"],
+:root[data-theme="light"] .public-profile-page button[aria-label="Message"] {
+  border-color: #e3c7cd !important;
+  background: #f9ecee !important;
+  color: #84273b !important;
+}
+:root[data-theme="light"] .public-profile-page button:disabled {
+  cursor: wait;
+  opacity: .78;
+}
+:root[data-theme="light"] .public-profile-page article {
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .public-profile-page article:not([role="button"]) {
+  background: #f8edef !important;
+}
+:root[data-theme="light"] .public-profile-page article p {
+  color: #3e2930 !important;
+}
+:root[data-theme="light"] .public-profile-page article > div[style*="linear-gradient(transparent"] {
+  color: #fff !important;
+}
+:root[data-theme="light"] .public-profile-page [role="alert"] {
+  border: 1px solid #e6b9c1 !important;
+  background: #fff0f1 !important;
+  color: #922a40 !important;
+  border-radius: 12px;
+}
+:root[data-theme="light"] .public-profile-page section > div[style*="text-align: center"] {
+  color: #302329;
+}
+:root[data-theme="light"] .public-profile-page section > div[style*="text-align: center"] strong {
+  color: #302329 !important;
+}
+@media (max-width: 560px) {
+  .public-profile-page .social-shell > div {
+    padding-bottom: 18px !important;
+  }
+  .public-profile-page section[style*="overflow: hidden"] > div[style*="padding: 0 17px"] {
+    padding-right: 13px !important;
+    padding-left: 13px !important;
+  }
+  .public-profile-page section[style*="overflow: hidden"] button {
+    max-width: 100%;
+  }
+  .public-profile-page section[style*="overflow: hidden"] > div[style*="display: flex; gap: 22px"] {
+    gap: 14px !important;
+    flex-wrap: wrap;
+  }
+  .public-profile-page section[style*="overflow: hidden"] > div[style*="display: flex; gap: 22px"] span {
+    overflow-wrap: anywhere;
+  }
+  .public-profile-page section[style*="var(--theme-surface)"] {
+    padding: 12px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .public-profile-page *,
+  .public-profile-page *::before,
+  .public-profile-page *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
