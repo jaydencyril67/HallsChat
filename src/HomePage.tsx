@@ -14,6 +14,7 @@ type SocialPost = {
   content: string;
   images?: string[];
   poll?: { question: string; options: { id: string; text: string; voteCount: number; votedByMe: boolean }[] } | null;
+  backgroundColor?: string;
   createdAt: string;
   author: { id: string; name: string; username: string; profilePicture?: string } | null;
   likeCount: number;
@@ -131,6 +132,8 @@ export default function HomePage() {
   const [storyEditingImageUrl, setStoryEditingImageUrl] = useState("");
   const [storyPublishing, setStoryPublishing] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
+  const [postBackground, setPostBackground] = useState("#8b1e35");
+  const [postBackgroundPickerOpen, setPostBackgroundPickerOpen] = useState(false);
   const [postAttachmentManagerOpen, setPostAttachmentManagerOpen] = useState(false);
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState(["", ""]);
@@ -648,12 +651,14 @@ export default function HomePage() {
       const response = await fetch(`${apiBase}/api/social/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ content: composerMode === "post" ? content : "", images, poll })
+        body: JSON.stringify({ content: composerMode === "post" ? content : "", images, poll, backgroundColor: composerMode === "post" && !images.length ? postBackground : undefined })
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.post) throw new Error(payload.message || "Your post couldn't be published.");
       setPosts(current => [payload.post as SocialPost, ...current]);
       setDraft("");
+      setPostBackground("#8b1e35");
+      setPostBackgroundPickerOpen(false);
       setComposerExpanded(false);
       setComposerMode("post");
       setPollQuestion("");
@@ -997,7 +1002,7 @@ export default function HomePage() {
 {post.author?.id === user?.id && <button type="button" role="menuitem" onClick={() => { setPostActionMenuId(null); setPostDeleteConfirmId(post.id); }} disabled={deletingIds.includes(post.id)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "transparent", color: "#ff8192", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}><Trash2 size={15} /> Delete post</button>}
 </div>}
 {post.author?.id === user?.id && postDeleteConfirmId === post.id && <div role="alertdialog" aria-label="Confirm post deletion" style={{ position: "absolute", right: "calc(100% + 8px)", top: "50%", transform: "translateY(-50%)", zIndex: 8, width: 188, boxSizing: "border-box", padding: 11, border: "1px solid rgba(255,210,219,.2)", borderRadius: 13, background: "linear-gradient(145deg,rgba(57,17,27,.98),rgba(28,9,15,.99))", boxShadow: "0 10px 28px rgba(0,0,0,.42)", color: "#fff0f3", textAlign: "left", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}><div style={{ fontSize: ".76rem", fontWeight: 750, lineHeight: 1.4 }}>Delete this post?</div><div style={{ fontSize: ".7rem", marginTop: 4, color: "#e8c6ce" }}>This action cannot be undone.</div><div style={{ display: "flex", gap: 6, marginTop: 9 }}><button type="button" onClick={() => setPostDeleteConfirmId(null)} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: "1px solid rgba(255,210,219,.15)", borderRadius: 8, background: "rgba(255,255,255,.06)", color: "#f5dce1", fontSize: ".7rem" }}>Cancel</button><button type="button" onClick={() => { setPostDeleteConfirmId(null); void deletePost(post); }} style={{ flex: 1, minHeight: 29, padding: "5px 7px", border: 0, borderRadius: 8, background: "#b92d45", color: "#fff", fontSize: ".7rem", fontWeight: 750 }}>Delete</button></div></div>}</div></div>
-                {editingPostId === post.id ? <form onSubmit={event => { event.preventDefault(); void savePostEdit(post); }} style={{ display: "grid", gap: 9, margin: "0 0 12px" }}><textarea value={editPostDraft} onChange={event => setEditPostDraft(event.target.value)} maxLength={5000} rows={Math.max(3, Math.min(8, editPostDraft.split("\n").length + 1))} aria-label="Edit post text" autoFocus style={{ width: "100%", boxSizing: "border-box", resize: "vertical", padding: 12, border: "1px solid rgba(255,210,219,.2)", borderRadius: 12, background: "rgba(0,0,0,.22)", color: "#f6e7ea", font: "inherit", lineHeight: 1.6 }} /><div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}><button type="button" onClick={() => { setEditingPostId(null); setEditPostDraft(""); }} disabled={savingPostIds.includes(post.id)} style={{ minHeight: 34, padding: "7px 12px", border: "1px solid rgba(255,210,219,.16)", borderRadius: 9, background: "rgba(255,255,255,.04)", color: "#f4dfe3", fontSize: ".78rem" }}>Cancel</button><button type="submit" disabled={savingPostIds.includes(post.id) || editPostDraft.trim() === (post.content || "").trim()} style={{ minHeight: 34, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "7px 12px", border: 0, borderRadius: 9, background: "#b92d45", color: "#fff", fontSize: ".78rem", fontWeight: 750 }}>{savingPostIds.includes(post.id) ? <LoadingDots /> : <Check size={14} />} Save changes</button></div></form> : post.content && <p className="social-post-content">{renderTextWithLinks(post.content)}</p>}
+                {editingPostId === post.id ? <form onSubmit={event => { event.preventDefault(); void savePostEdit(post); }} style={{ display: "grid", gap: 9, margin: "0 0 12px" }}><textarea value={editPostDraft} onChange={event => setEditPostDraft(event.target.value)} maxLength={5000} rows={Math.max(3, Math.min(8, editPostDraft.split("\n").length + 1))} aria-label="Edit post text" autoFocus style={{ width: "100%", boxSizing: "border-box", resize: "vertical", padding: 12, border: "1px solid rgba(255,210,219,.2)", borderRadius: 12, background: "rgba(0,0,0,.22)", color: "#f6e7ea", font: "inherit", lineHeight: 1.6 }} /><div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}><button type="button" onClick={() => { setEditingPostId(null); setEditPostDraft(""); }} disabled={savingPostIds.includes(post.id)} style={{ minHeight: 34, padding: "7px 12px", border: "1px solid rgba(255,210,219,.16)", borderRadius: 9, background: "rgba(255,255,255,.04)", color: "#f4dfe3", fontSize: ".78rem" }}>Cancel</button><button type="submit" disabled={savingPostIds.includes(post.id) || editPostDraft.trim() === (post.content || "").trim()} style={{ minHeight: 34, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "7px 12px", border: 0, borderRadius: 9, background: "#b92d45", color: "#fff", fontSize: ".78rem", fontWeight: 750 }}>{savingPostIds.includes(post.id) ? <LoadingDots /> : <Check size={14} />} Save changes</button></div></form> : post.content && <p className="social-post-content" style={post.backgroundColor && !post.images?.length ? { background: post.backgroundColor, color: "#ffffff", padding: "18px 14px", borderRadius: 12, minHeight: 150, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontSize: "clamp(18px, 5vw, 25px)", fontWeight: 750, lineHeight: 1.45 } : undefined}>{renderTextWithLinks(post.content)}</p>}
                 {post.poll && <div className="social-poll-card"><h3>{post.poll.question}</h3><div className="social-poll-results">{post.poll.options.map((option, index) => {
                   const totalVotes = post.poll!.options.reduce((sum, item) => sum + item.voteCount, 0);
                   const percent = totalVotes ? Math.round(option.voteCount / totalVotes * 100) : 0;
@@ -1056,41 +1061,33 @@ export default function HomePage() {
       <button type="button" onClick={() => { setNotice(""); setFeedError(""); setCommentErrors(current => Object.fromEntries(Object.keys(current).map(id => [id, ""]))); }} aria-label="Dismiss notification">×</button>
     </div>}
     {composerExpanded && <div className="social-story-overlay social-post-composer-overlay" role="presentation" onClick={() => setComposerExpanded(false)}>
-      <form className="social-story-dialog social-story-snap-composer social-post-snap-composer" role="dialog" aria-modal="true" aria-label={composerMode === "poll" ? "Create poll" : "Create post"} onClick={event => event.stopPropagation()} onSubmit={publishPost}>
-        <div className="social-post-snap-canvas">
+      <form className="social-story-dialog social-story-snap-composer social-post-snap-composer" role="dialog" aria-modal="true" aria-label="Create post" onClick={event => event.stopPropagation()} onSubmit={publishPost}>
+        <div className="social-story-preview social-story-snap-canvas social-post-snap-canvas" style={{ background: postBackground }}>
           <button type="button" className="social-story-snap-close" onClick={() => setComposerExpanded(false)} aria-label="Close post creator"><X size={21}/></button>
-          <div className="social-post-snap-heading"><span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span><div><strong>{user?.name || "Your profile"}</strong><span>{composerMode === "poll" ? "Ask your community" : "Create a post"}</span></div></div>
-          <div className="social-post-snap-tools" aria-label="Post creation tools">
-            <button type="button" onClick={() => { if (composerMode !== "post") setComposerMode("post"); document.getElementById("social-post-content")?.focus(); }} aria-label="Write post" title="Write post" aria-pressed={composerMode === "post"}><Pencil size={20}/></button>
-            <label className={`social-story-snap-tool${selectedImages.length >= MAX_IMAGES || publishing || composerMode === "poll" ? " is-disabled" : ""}`} aria-label="Add multiple photos" title={`Add photos (${selectedImages.length}/${MAX_IMAGES})`}><ImagePlus size={20}/><input type="file" accept="image/*" multiple hidden onChange={selectImages} disabled={selectedImages.length >= MAX_IMAGES || publishing || compressingImages || composerMode === "poll"}/></label>
-            <button type="button" onClick={() => { setComposerMode(value => value === "poll" ? "post" : "poll"); setPostAttachmentManagerOpen(false); if (composerMode !== "poll") setSelectedImages(current => { current.forEach(item => URL.revokeObjectURL(item.preview)); return []; }); }} aria-label={composerMode === "poll" ? "Return to post" : "Create poll"} title={composerMode === "poll" ? "Return to post" : "Create poll"} aria-pressed={composerMode === "poll"}><ChartNoAxesColumn size={20}/></button>
-            <button type="button" onClick={() => setPostAttachmentManagerOpen(value => !value)} aria-expanded={postAttachmentManagerOpen} aria-label="Manage attachments" title="Manage attachments"><MoreHorizontal size={21}/></button>
+          <div className="social-post-snap-heading"><span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span><div><strong>{user?.name || "Your profile"}</strong><span>Create a post</span></div></div>
+          <div className="social-story-snap-tools" aria-label="Post editing tools">
+            <button type="button" onClick={() => document.getElementById("social-post-content")?.focus()} aria-label="Add text" title="Add text"><Pencil size={20}/></button>
+            <button type="button" onClick={() => { setPostBackgroundPickerOpen(value => !value); setPostAttachmentManagerOpen(false); }} aria-expanded={postBackgroundPickerOpen} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
+            <label className={`social-story-snap-tool${selectedImages.length ? " is-disabled" : ""}`} aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" hidden disabled={!!selectedImages.length || publishing || compressingImages} onChange={event => { const file = event.target.files?.[0]; if (file) void selectImages({ target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>); event.currentTarget.value = ""; }}/></label>
+            <button type="button" onClick={() => setPostAttachmentManagerOpen(value => !value)} aria-expanded={postAttachmentManagerOpen} aria-label="Manage post" title="More options"><MoreHorizontal size={21}/></button>
           </div>
-          {postAttachmentManagerOpen && <div className="social-story-text-manager social-post-attachment-manager" role="dialog" aria-label="Manage post attachments">
-            <div className="social-story-text-manager-head"><strong>{composerMode === "poll" ? "Poll options" : `Photos · ${selectedImages.length}/${MAX_IMAGES}`}</strong><button type="button" onClick={() => setPostAttachmentManagerOpen(false)} aria-label="Close attachment manager"><X size={15}/></button></div>
-            {composerMode === "post" ? <div className="social-story-text-manager-list">{selectedImages.length ? selectedImages.map((item,index) => <div key={item.preview}><button type="button" className="social-story-manager-select" onClick={() => { setPreviewImage(item.preview); setPostAttachmentManagerOpen(false); }}><span>{index + 1}</span><span><strong>{item.file.name}</strong><small>Tap to preview</small></span></button><button type="button" className="social-story-manager-delete" disabled={publishing} onClick={() => removeSelectedImage(index)} aria-label={`Remove ${item.file.name}`}><Trash2 size={14}/></button></div>) : <p className="social-post-manager-empty">No photos added yet.</p>}</div> : <div className="social-post-manager-poll-summary"><strong>{pollQuestion.trim() || "Your poll question"}</strong><span>{pollOptions.filter(option => option.trim()).length} answer options added</span></div>}
+          {postBackgroundPickerOpen && <div className="social-story-color-popout social-post-background-picker" role="dialog" aria-label="Post background colors">
+            <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setPostBackgroundPickerOpen(false)} aria-label="Close background colors"><X size={15}/></button></div>
+            <div className="social-story-colors">{["#8b1e35","#b92d45","#e85d75","#f28b30","#d9a521","#238b72","#2676b8","#6554c0","#20242d","#111111"].map(color => <button key={color} type="button" className={postBackground === color ? "is-active" : ""} style={{ background: color }} onClick={() => setPostBackground(color)} aria-label={`Use ${color} background`} aria-pressed={postBackground === color}/>)}</div>
           </div>}
-          {composerMode === "post" ? <div className="social-post-snap-main">
-            <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind? Share something with your HallsChat community…" rows={5} autoFocus />
-            {selectedImages.length > 0 && <div className="social-image-previews social-post-snap-previews" aria-label="Images attached to your post">
-              {selectedImages.map((item, index) => <div className="social-image-preview" key={item.preview}>
-                <button type="button" className="social-image-preview-open" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview ${item.file.name}`}><img src={item.preview} alt={item.file.name} /></button>
-                <button type="button" onClick={() => removeSelectedImage(index)} aria-label={`Remove ${item.file.name}`} disabled={publishing}><X size={14}/></button>
-                <span>{item.file.name}</span>
-              </div>)}
+          {postAttachmentManagerOpen && <div className="social-story-text-manager" role="dialog" aria-label="Manage post attachment">
+            <div className="social-story-text-manager-head"><strong>Post attachment</strong><button type="button" onClick={() => setPostAttachmentManagerOpen(false)} aria-label="Close attachment manager"><X size={15}/></button></div>
+            {selectedImages.length ? <div className="social-story-text-manager-list"><div><button type="button" className="social-story-manager-select" onClick={() => { setPreviewImage(selectedImages[0].preview); setPostAttachmentManagerOpen(false); }}><span>1</span><span><strong>{selectedImages[0].file.name}</strong><small>Tap to preview</small></span></button><button type="button" className="social-story-manager-delete" disabled={publishing} onClick={() => removeSelectedImage(0)} aria-label="Remove photo"><Trash2 size={14}/></button></div></div> : <p className="social-post-manager-empty">No photo attached.</p>}
+          </div>}
+          <div className="social-post-snap-main">
+            <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind?" rows={5} autoFocus maxLength={5000}/>
+            {selectedImages.length > 0 && <div className="social-image-previews social-post-snap-previews" aria-label="Photo attached to your post">
+              {selectedImages.slice(0,1).map((item,index) => <div className="social-image-preview" key={item.preview}><button type="button" className="social-image-preview-open" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview ${item.file.name}`}><img src={item.preview} alt={item.file.name}/></button><button type="button" onClick={() => removeSelectedImage(index)} aria-label="Remove photo" disabled={publishing}><X size={14}/></button><span>{item.file.name}</span></div>)}
             </div>}
-          </div> : <div className="social-post-snap-poll">
-            <div className="social-poll-builder-heading"><ChartNoAxesColumn size={19}/><div><strong>Ask your community</strong><span>People can vote on one of your answers.</span></div></div>
-            <label className="social-poll-field-label" htmlFor="social-poll-question">Poll question</label>
-            <textarea id="social-poll-question" className="social-poll-question" value={pollQuestion} onChange={event => setPollQuestion(event.target.value)} maxLength={240} placeholder="What do you want to ask?" rows={2}/>
-            <div className="social-poll-options-label"><span>Answer options</span><small>{pollOptions.length}/4</small></div>
-            <div className="social-poll-option-fields">{pollOptions.map((option,index) => <div className="social-poll-option-field" key={index}><input aria-label={`Poll option ${index + 1}`} maxLength={120} value={option} onChange={event => setPollOptions(current => current.map((item,itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Option ${index + 1}`}/>{pollOptions.length > 2 && <button type="button" onClick={() => setPollOptions(current => current.filter((_,itemIndex) => itemIndex !== index))} aria-label={`Remove option ${index + 1}`}><X size={15}/></button>}</div>)}</div>
-            {pollOptions.length < 4 && <button type="button" className="social-poll-add-option" onClick={() => setPollOptions(current => [...current, ""])}><Plus size={15}/> Add option</button>}
-            <p className="social-image-hint">Each person can vote once and change their vote.</p>
-          </div>}
+          </div>
           <div className="social-story-snap-bottom social-post-snap-bottom">
             {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots/> {uploadStatus}</p>}
-            <div className="social-story-snap-bottom-row"><span>{composerMode === "poll" ? `${pollOptions.filter(option => option.trim()).length} poll options` : `${selectedImages.length}/${MAX_IMAGES} photos`}</span><button type="submit" disabled={publishing || compressingImages || (composerMode === "post" ? (!draft.trim() && selectedImages.length === 0) : (pollQuestion.trim().length < 3 || pollOptions.length < 2 || pollOptions.some(option => !option.trim())))}>{compressingImages ? <><LoadingDots/> Preparing…</> : publishing ? <><LoadingDots/> Publishing…</> : <><Send size={16}/>{composerMode === "poll" ? "Post poll" : "Publish post"}</>}</button></div>
+            <div className="social-story-snap-bottom-row"><span>{draft.length}/5000 characters</span><button type="submit" disabled={publishing || compressingImages || (!draft.trim() && selectedImages.length === 0)}>{compressingImages ? <><LoadingDots/> Preparing…</> : publishing ? <><LoadingDots/> Publishing…</> : <><Send size={16}/>Publish post</>}</button></div>
           </div>
         </div>
       </form>
