@@ -186,11 +186,27 @@ export default function HomePage() {
   const [savingCommentIds, setSavingCommentIds] = useState<string[]>([]);
 
   const handledPublishRevision = useRef(getSocialPostPublishState().revision);
+  const handledFailureRevision = useRef(0);
   const wasPublishingHere = useRef(false);
 
   useEffect(() => subscribeSocialPostPublishing(next => {
     setPublishing(next.phase === "uploading");
     setUploadStatus(next.phase === "uploading" ? next.status : "");
+    if (next.failureRevision > handledFailureRevision.current && next.failedInput) {
+      handledFailureRevision.current = next.failureRevision;
+      const failedInput = next.failedInput;
+      setDraft(failedInput.content);
+      setComposerMode(failedInput.poll ? "poll" : "post");
+      setPollQuestion(failedInput.poll?.question || "");
+      setPollOptions(failedInput.poll?.options?.length ? failedInput.poll.options : ["", ""]);
+      setPostBackground(failedInput.backgroundColor || "#8b1e35");
+      setPostBackgroundEnabled(Boolean(failedInput.backgroundColor));
+      setSelectedImages(current => {
+        current.forEach(item => URL.revokeObjectURL(item.preview));
+        return failedInput.images.map(file => ({ file, preview: URL.createObjectURL(file) }));
+      });
+      setComposerExpanded(true);
+    }
     if (next.phase === "success" && next.lastPost && next.revision > handledPublishRevision.current) {
       handledPublishRevision.current = next.revision;
       const publishedPost = next.lastPost as SocialPost;
