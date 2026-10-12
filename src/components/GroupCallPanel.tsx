@@ -143,6 +143,12 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
   }, [socket, groupId, busy, startLocalMedia, closePeers, stopLocal]);
 
   useEffect(() => {
+    if (!error) return;
+    const timer = window.setTimeout(() => setError(""), 5000);
+    return () => window.clearTimeout(timer);
+  }, [error]);
+
+  useEffect(() => {
     if (!socket) return;
     const onIncoming = (event: IncomingGroupCall) => {
       if (event.groupId !== groupId || event.caller?.id === currentUserId || callIdRef.current) return;
