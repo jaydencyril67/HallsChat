@@ -4,6 +4,7 @@ import SignupPage from "./SignupPage";
 import SigninPage from "./SigninPage";
 import HomePage from "./HomePage";
 import HallsPage from "./HallsPage";
+import GroupPage from "./GroupPage";
 import ChatPage from "./ChatPage";
 import CallsPage from "./CallsPage";
 import ProfilePage from "./ProfilePage";
@@ -257,6 +258,7 @@ export default function App() {
   else if (normalizedPath === "/signin" || normalizedPath === "/sign-in") page = <SigninPage />;
   else if (normalizedPath === "/home") page = <HomePage />;
   else if (normalizedPath === "/halls") page = <HallsPage />;
+  else if (normalizedPath === "/groups") page = <GroupPage />;
   else if (normalizedPath === "/chats") page = <ChatPage />;
   else if (normalizedPath === "/calls") page = <CallsPage />;
   else if (normalizedPath === "/profile") page = <ProfilePage />;
