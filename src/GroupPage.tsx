@@ -129,6 +129,9 @@ export default function GroupPage() {
   const [groupAvatarPreview, setGroupAvatarPreview] = useState("");
   const [groupAvatarCropSource, setGroupAvatarCropSource] = useState<string | null>(null);
   const groupAvatarInputRef = useRef<HTMLInputElement | null>(null);
+  const [groupLogoCropSource, setGroupLogoCropSource] = useState<string | null>(null);
+  const groupLogoInputRef = useRef<HTMLInputElement | null>(null);
+  const [groupLogoBusy, setGroupLogoBusy] = useState(false);
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [inviteCode, setInviteCode] = useState("");
   const [draft, setDraft] = useState("");
@@ -378,6 +381,57 @@ export default function GroupPage() {
     setError("");
   }
 
+  function selectGroupLogo(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setError("");
+    if (!file.type.startsWith("image/")) { setError("Choose an image file for the group logo."); return; }
+    if (file.size > 10 * 1024 * 1024) { setError("Group logo must be 10 MB or smaller."); return; }
+    if (groupLogoCropSource) URL.revokeObjectURL(groupLogoCropSource);
+    setGroupLogoCropSource(URL.createObjectURL(file));
+  }
+
+  function cancelGroupLogoCrop() {
+    if (groupLogoCropSource) URL.revokeObjectURL(groupLogoCropSource);
+    setGroupLogoCropSource(null);
+  }
+
+  async function confirmGroupLogoCrop(croppedFile: File) {
+    if (groupLogoCropSource) URL.revokeObjectURL(groupLogoCropSource);
+    setGroupLogoCropSource(null);
+    await new Promise<void>(resolve => window.setTimeout(resolve, 0));
+    await saveGroupLogo(croppedFile);
+  }
+
+  async function saveGroupLogo(croppedFile: File) {
+    if (!activeId || !detail || !["owner", "admin"].includes(detail.role || "") || groupLogoBusy) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { window.location.href = "/signin"; return; }
+    setGroupLogoBusy(true);
+    setError("");
+    const taskId = startBackgroundTask("Updating group logo", "Preparing group logo upload…");
+    try {
+      const avatar = await uploadGroupMedia(croppedFile, token);
+      updateBackgroundTask(taskId, "Saving group logo…");
+      const payload = await request("/api/groups/" + encodeURIComponent(activeId) + "/avatar", {
+        method: "PATCH",
+        body: JSON.stringify({ avatar })
+      });
+      const updated = payload.group || { ...detail, avatar };
+      setDetail(current => current && current.id === activeId ? { ...current, avatar: updated.avatar || avatar, updatedAt: updated.updatedAt || current.updatedAt } : current);
+      setGroups(current => current.map(group => group.id === activeId ? { ...group, avatar: updated.avatar || avatar, updatedAt: updated.updatedAt || group.updatedAt } : group));
+      setNotice("Group logo updated.");
+      finishBackgroundTask(taskId);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "The group logo couldn't be updated.";
+      setError(message);
+      finishBackgroundTask(taskId, message);
+    } finally {
+      setGroupLogoBusy(false);
+    }
+  }
+
   async function createGroup(event: React.FormEvent) {
     event.preventDefault();
     if (name.trim().length < 2) { setError("Group name must be at least 2 characters."); return; }
@@ -605,7 +659,7 @@ export default function GroupPage() {
           </header>
           {memberPanel && <div role="region" aria-label="Group details and members" style={{ position: "absolute", zIndex: 20, top: 64, right: 10, left: 10, maxHeight: "68%", overflowY: "auto", overscrollBehavior: "contain", padding: 14, border: "1px solid rgba(255,210,219,.16)", borderRadius: 15, background: "rgba(28,9,15,.98)", boxShadow: "0 16px 42px rgba(0,0,0,.45)", backdropFilter: "blur(16px)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}><strong>Group details</strong><button type="button" style={{ ...secondary, minHeight: 30, padding: "5px 10px" }} onClick={() => setMemberPanel(false)}>Done</button></div>
-             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}><span className="chat-avatar chat-avatar-large" style={{ width: 62, height: 62, flexBasis: 62, flexShrink: 0, borderRadius: 18, overflow: "hidden" }}>{detail.avatar ? <img src={detail.avatar} alt={detail.name + " group profile picture"} style={{ width: "100%", height: "100%", objectFit: "cover" }}/> : initials(detail.name)}</span><div style={{ minWidth: 0, flex: 1 }}><strong style={{ display: "block", overflowWrap: "anywhere" }}>{detail.name}</strong><span style={{ ...muted, display: "block", fontSize: ".72rem", marginTop: 4 }}>{detail.memberCount} members · {detail.visibility === "private" ? "Private group" : "Public group"}</span></div>{detail.role === "owner" && <button type="button" className="group-confirm-trigger" aria-label="Delete group" title="Delete group" disabled={busy} onClick={event => askConfirm("Delete this group and all its messages? This cannot be undone.", deleteGroup, event.currentTarget)} style={{ width: 38, height: 38, minWidth: 38, display: "grid", placeItems: "center", padding: 0, borderRadius: 10, border: "1px solid rgba(255,100,125,.32)", background: "rgba(184,32,50,.13)", color: "#ff9cab" }}><Trash2 size={18}/></button>}</div>
+             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}><button type="button" onClick={() => { if (isAdmin && !groupLogoBusy) groupLogoInputRef.current?.click(); }} disabled={!isAdmin || groupLogoBusy} aria-label={isAdmin ? "Change group logo" : "Group logo"} title={isAdmin ? "Change group logo" : "Group logo"} style={{ position: "relative", width: 62, height: 62, flexBasis: 62, flexShrink: 0, borderRadius: 18, overflow: "hidden", border: isAdmin ? "1px solid rgba(255,156,171,.55)" : "1px solid rgba(255,210,219,.12)", padding: 0, background: "linear-gradient(145deg,rgba(197,45,68,.2),rgba(53,18,29,.8))", color: "#ffe4e9", display: "grid", placeItems: "center", cursor: isAdmin ? "pointer" : "default" }}>{detail.avatar ? <img src={detail.avatar} alt={detail.name + " group logo"} style={{ width: "100%", height: "100%", objectFit: "cover" }}/> : initials(detail.name)}{isAdmin && <span style={{ position: "absolute", right: 3, bottom: 3, width: 21, height: 21, borderRadius: 7, display: "grid", placeItems: "center", background: "rgba(10,5,8,.88)", color: "#ffb3bf", border: "1px solid rgba(255,156,171,.4)" }}>{groupLogoBusy ? <LoadingDots/> : <Camera size={12}/>}</span>}</button><input ref={groupLogoInputRef} type="file" accept="image/*" hidden onChange={selectGroupLogo}/></span><div style={{ minWidth: 0, flex: 1 }}><strong style={{ display: "block", overflowWrap: "anywhere" }}>{detail.name}</strong><span style={{ ...muted, display: "block", fontSize: ".72rem", marginTop: 4 }}>{detail.memberCount} members · {detail.visibility === "private" ? "Private group" : "Public group"}</span></div>{detail.role === "owner" && <button type="button" className="group-confirm-trigger" aria-label="Delete group" title="Delete group" disabled={busy} onClick={event => askConfirm("Delete this group and all its messages? This cannot be undone.", deleteGroup, event.currentTarget)} style={{ width: 38, height: 38, minWidth: 38, display: "grid", placeItems: "center", padding: 0, borderRadius: 10, border: "1px solid rgba(255,100,125,.32)", background: "rgba(184,32,50,.13)", color: "#ff9cab" }}><Trash2 size={18}/></button>}</div>
             {detail.description && <p style={{ ...muted, margin: "0 0 12px", fontSize: ".8rem", lineHeight: 1.5 }}>{detail.description}</p>}
             {detail.inviteCode && <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: 10, border: "1px solid rgba(255,210,219,.1)", borderRadius: 10 }}><LockKeyhole size={15} color="#ff9cab"/><div style={{ flex: 1, minWidth: 0 }}><div style={{ ...muted, fontSize: ".7rem" }}>Group ID</div><strong style={{ overflowWrap: "anywhere", fontSize: ".8rem", letterSpacing: ".12em", fontVariantNumeric: "tabular-nums" }}>{detail.inviteCode}</strong></div><button type="button" style={{ ...secondary, padding: "7px 9px" }} onClick={() => { void navigator.clipboard?.writeText(detail.inviteCode || ""); setNotice("Group ID copied."); }}>Copy</button></div>}
             <strong style={{ display: "block", fontSize: ".8rem", marginBottom: 10 }}>Members · {detail.members.length}</strong>
@@ -755,6 +809,7 @@ export default function GroupPage() {
     {confirmAction && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label="Confirm group action"><strong>Are you sure?</strong><span>{confirmMessage}</span><div><button type="button" className="halls-call-confirm-cancel" onClick={closeConfirmation}>Cancel</button><button type="button" className="halls-call-confirm-start" disabled={busy} onClick={() => { const action = confirmAction; closeConfirmation(); if (action) void action(); }}><Check size={14}/> Confirm</button></div></div>}
     {(error || notice) && <div className={"halls-toast " + (error ? "halls-toast-error" : "halls-toast-success")} role={error ? "alert" : "status"}><span>{error || notice}</span><button type="button" aria-label="Dismiss notification" onClick={() => { setError(""); setNotice(""); }}>×</button></div>}
     {groupAvatarCropSource && <StoryImageCropModal imageUrl={groupAvatarCropSource} onCancel={cancelGroupAvatarCrop} onDone={confirmGroupAvatarCrop} title="Edit group picture" aspectRatio={1} />}
+    {groupLogoCropSource && <StoryImageCropModal imageUrl={groupLogoCropSource} onCancel={cancelGroupLogoCrop} onDone={confirmGroupLogoCrop} title="Edit group picture" aspectRatio={1} />}
     {viewingImageUrl && <ImagePreviewModal imageUrl={viewingImageUrl} onClose={() => setViewingImageUrl(null)} />}
     {!activeId && <NowBar />}
   </main>;
