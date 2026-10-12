@@ -75,21 +75,27 @@ function GlobalPostPublishingStatus() {
 function GlobalBackgroundTaskStatus() {
   const [taskState, setTaskState] = useState<BackgroundTaskSnapshot>(() => getBackgroundTaskState());
   useEffect(() => subscribeBackgroundTasks(setTaskState), []);
+
+  // Social posts already have their own global publishing toast. Hide the same
+  // operation here so one post (including a multi-image post) never renders twice.
+  const visibleTasks = taskState.tasks.filter(task => task.label !== "Publishing post");
+  const visibleResult = taskState.lastResult?.label === "Publishing post" ? null : taskState.lastResult;
+
   useEffect(() => {
-    if (taskState.tasks.length || !taskState.lastResult) return;
+    if (visibleTasks.length || !visibleResult) return;
     const timer = window.setTimeout(() => dismissBackgroundTaskResult(), 5500);
     return () => window.clearTimeout(timer);
-  }, [taskState.tasks.length, taskState.revision]);
+  }, [visibleTasks.length, visibleResult?.id, taskState.revision]);
 
-  const active = taskState.tasks[taskState.tasks.length - 1];
-  const result = !active ? taskState.lastResult : null;
+  const active = visibleTasks[visibleTasks.length - 1];
+  const result = !active ? visibleResult : null;
   if (!active && !result) return null;
   const failed = Boolean(result?.error);
   const title = active
-    ? (taskState.tasks.length > 1 ? `${taskState.tasks.length} tasks running` : active.label)
+    ? (visibleTasks.length > 1 ? `${visibleTasks.length} tasks running` : active.label)
     : failed ? `${result!.label} failed` : `${result!.label} complete`;
   const status = active
-    ? (taskState.tasks.length > 1 ? `${active.status} · ${taskState.tasks.length} operations in progress` : active.status)
+    ? (visibleTasks.length > 1 ? `${active.status} · ${visibleTasks.length} operations in progress` : active.status)
     : result!.status;
   return <>
     {active && <style>{`@keyframes hallschat-global-task-progress { from { transform: translateX(-110%); } to { transform: translateX(280%); } }`}</style>}
