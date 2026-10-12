@@ -3196,3 +3196,59 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .social-home button:disabled {
   cursor: not-allowed;
 }
+
+
+/* Home Stories tray — actual feed section (not the story editor/viewer).
+   Keep avatar photos and the ring's brand gradient intact in both themes. */
+:root[data-theme="light"] .social-home .social-stories {
+  background: linear-gradient(145deg, #fffdfc, #f5e9e8);
+  border-color: var(--theme-line);
+  box-shadow: 0 5px 18px rgba(83, 31, 42, .045);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+:root[data-theme="light"] .social-home .social-stories::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+:root[data-theme="light"] .social-home .social-story-add,
+:root[data-theme="light"] .social-home .social-story-item {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-story-add-media {
+  border-color: rgba(83, 31, 42, .12);
+  background: linear-gradient(145deg, #f2dfe2, #e7c9cf);
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-story-add-media i {
+  border-color: var(--theme-surface);
+  background: var(--theme-primary);
+  color: #fff;
+}
+:root[data-theme="light"] .social-home .social-story-add strong,
+:root[data-theme="light"] .social-home .social-story-item strong {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-story-add small,
+:root[data-theme="light"] .social-home .social-story-item small {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .social-home .social-story-ring > span {
+  border-color: #fffdfc;
+  background: #f1e4e5;
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-story-item:hover .social-story-ring,
+:root[data-theme="light"] .social-home .social-story-add:hover .social-story-add-media {
+  filter: brightness(1.035);
+}
+:root[data-theme="light"] .social-home .social-story-add:focus-visible,
+:root[data-theme="light"] .social-home .social-story-item:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+:root[data-theme="light"] .social-home .social-story-item-uploading small {
+  color: var(--theme-primary);
+}
