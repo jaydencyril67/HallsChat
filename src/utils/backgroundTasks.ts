@@ -33,3 +33,8 @@ export function finishBackgroundTask(id: string, error?: string) {
   });
 }
 export type BackgroundTaskSnapshot = BackgroundTaskState;
+
+export function dismissBackgroundTaskResult() {
+  if (!state.lastResult) return;
+  publish({ lastResult: null });
+}
