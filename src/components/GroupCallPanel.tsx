@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
-import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, Users, X } from "lucide-react";
+import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
 
 type Participant = { id: string; name?: string; username?: string; profilePicture?: string };
 type IncomingGroupCall = { callId: string; groupId: string; kind: "audio" | "video"; caller: Participant; startedAt: number };
@@ -24,7 +24,6 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
   const peersRef = useRef<Map<string, PeerState>>(new Map());
   const pendingIceRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
   const callIdRef = useRef("");
-  const kindRef = useRef<"audio" | "video">("audio");
   const socketRef = useRef<Socket | null>(socket);
   socketRef.current = socket;
 
@@ -98,7 +97,6 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
     });
     if (!result.ok) throw new Error(result.message || "Unable to join this group call.");
     callIdRef.current = id;
-    kindRef.current = callKind;
     setCallId(id);
     setKind(callKind);
     setIncoming(null);
@@ -126,7 +124,6 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
       });
       if (!result.ok || !result.callId) throw new Error(result.message || "Unable to start the group call.");
       callIdRef.current = result.callId;
-      kindRef.current = callKind;
       setCallId(result.callId); setKind(callKind);
       const joinResult = await new Promise<{ ok?: boolean; message?: string; participants?: Participant[] }>((resolve, reject) => {
         socket.timeout(10000).emit("group-call:join", { callId: result.callId }, (timeoutError: Error | null, response: { ok?: boolean; message?: string; participants?: Participant[] }) => {
@@ -222,8 +219,8 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
         <strong style={{ display: "block", fontSize: "1rem" }}>{incoming.caller?.name || "A group member"}</strong>
         <p style={{ margin: "7px 0 18px", color: "rgba(246,220,225,.7)", fontSize: ".8rem" }}>Incoming {incoming.kind} call in {groupName}</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-          <button type="button" disabled={busy} onClick={() => { setIncoming(null); setError(""); setBusy(true); void joinCall(incoming.callId, incoming.kind).catch(e => { setError(e instanceof Error ? e.message : "Unable to join call."); stopLocal(); }).finally(() => setBusy(false)); }} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#198754", color: "white", fontWeight: 750 }}><Phone size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Join</button>
-          <button type="button" onClick={() => setIncoming(null)} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#9d293c", color: "white", fontWeight: 750 }}><PhoneOff size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Dismiss</button>
+          <button type="button" disabled={busy} onClick={() => { setIncoming(null); setError(""); setBusy(true); void joinCall(incoming.callId, incoming.kind).catch(e => { resetCall(true); setError(e instanceof Error ? e.message : "Unable to join call."); }).finally(() => setBusy(false)); }} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#198754", color: "white", fontWeight: 750 }}><Phone size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Join</button>
+          <button type="button" onClick={() => setIncoming(null)} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#9d293c", color: "white", fontWeight: 750 }} onClick={() => { socket?.emit("group-call:dismiss", { callId: incoming.callId }); setIncoming(null); }}><PhoneOff size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Dismiss</button>
         </div>
       </div>
     </div>}
@@ -236,7 +233,7 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
         {kind === "video" && <div style={{ position: "relative", minHeight: 150, aspectRatio: "3 / 4", overflow: "hidden", borderRadius: 15, background: "#25141b" }}><video ref={localVideoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }}/><span style={{ position: "absolute", left: 8, bottom: 8, fontSize: ".75rem", textShadow: "0 1px 3px #000" }}>You</span></div>}
         {participants.map(person => <div key={person.id} style={{ position: "relative", minHeight: kind === "video" ? 150 : 110, aspectRatio: kind === "video" ? "3 / 4" : undefined, overflow: "hidden", borderRadius: 15, background: "#25141b", display: "grid", placeItems: "center" }}>
           {streams[person.id] && kind === "video" ? <video autoPlay playsInline ref={el => { if (el && el.srcObject !== streams[person.id]) { el.srcObject = streams[person.id]; void el.play().catch(() => {}); } }} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}/> : <div style={{ width: 50, height: 50, display: "grid", placeItems: "center", borderRadius: "50%", background: "#67283a", fontSize: "1.2rem", fontWeight: 800 }}>{(person.name || person.username || "P").slice(0,1).toUpperCase()}</div>}
-          {streams[person.id] && <video autoPlay playsInline ref={el => { if (el && el.srcObject !== streams[person.id]) { el.srcObject = streams[person.id]; void el.play().catch(() => {}); } }} style={kind === "video" ? { display: "none" } : { position: "absolute", width: 1, height: 1, opacity: 0 }}/> }
+          {streams[person.id] && kind === "audio" && <video autoPlay playsInline ref={el => { if (el && el.srcObject !== streams[person.id]) { el.srcObject = streams[person.id]; void el.play().catch(() => {}); } }} style={{ position: "absolute", width: 1, height: 1, opacity: 0 }}/>}
           <span style={{ position: "absolute", left: 8, bottom: 8, fontSize: ".75rem", textShadow: "0 1px 3px #000" }}>{person.name || person.username || "Participant"}</span>
         </div>)}
         {kind === "audio" && <video ref={localVideoRef} autoPlay playsInline muted style={{ display: "none" }}/>}
