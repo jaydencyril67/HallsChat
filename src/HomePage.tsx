@@ -173,6 +173,41 @@ export default function HomePage() {
     return () => cancelAnimationFrame(frame);
   }, [posts]);
   const [openComments, setOpenComments] = useState<string[]>([]);
+
+  // Keep the feed at its current position while the comments sheet is open.
+  useEffect(() => {
+    if (openComments.length === 0) return;
+    const body = document.body;
+    const html = document.documentElement;
+    const scrollY = window.scrollY;
+    const previous = {
+      bodyPosition: body.style.position,
+      bodyTop: body.style.top,
+      bodyLeft: body.style.left,
+      bodyRight: body.style.right,
+      bodyWidth: body.style.width,
+      bodyOverflow: body.style.overflow,
+      htmlOverflow: html.style.overflow,
+    };
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+    html.style.overflow = "hidden";
+
+    return () => {
+      body.style.position = previous.bodyPosition;
+      body.style.top = previous.bodyTop;
+      body.style.left = previous.bodyLeft;
+      body.style.right = previous.bodyRight;
+      body.style.width = previous.bodyWidth;
+      body.style.overflow = previous.bodyOverflow;
+      html.style.overflow = previous.htmlOverflow;
+      window.scrollTo(0, scrollY);
+    };
+  }, [openComments.length]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, SocialComment[]>>({});
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [commentsLoading, setCommentsLoading] = useState<string[]>([]);
@@ -1083,7 +1118,6 @@ export default function HomePage() {
                     <div className="social-comments-grabber" aria-hidden="true" />
                     <header className="social-comments-header">
                       <div><h3>Comments</h3><span>{post.commentCount || (commentsByPost[post.id] || []).length} comments</span></div>
-                      <button type="button" className="social-comments-close" onClick={() => { setOpenComments([]); setReplyTargets(current => ({ ...current, [post.id]: null })); }} aria-label="Close comments"><X size={19}/></button>
                     </header>
                     <div className="social-comments-list">
                       {commentsLoading.includes(post.id) ? <div className="social-comments-state"><LoadingDots /> Loading comments…</div> : (commentsByPost[post.id] || []).filter(comment => !comment.parentId).length ? (commentsByPost[post.id] || []).filter(comment => !comment.parentId).map(comment => <div className="social-comment-thread" key={comment.id}>
