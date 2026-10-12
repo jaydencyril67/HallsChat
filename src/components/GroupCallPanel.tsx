@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
+import LoadingDots from "./LoadingDots";
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
 
 type Participant = { id: string; name?: string; username?: string; profilePicture?: string };
