@@ -4589,3 +4589,140 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     background: #fffdfc !important;
   }
 }
+
+
+/* Chat light theme — completion pass.
+   Additive light-only overrides. Dark theme declarations and tokens remain untouched. */
+:root[data-theme="light"] .chat-page .chat-message-line,
+:root[data-theme="light"] .chat-page .chat-message-row,
+:root[data-theme="light"] .chat-page .chat-message-content,
+:root[data-theme="light"] .chat-page .chat-message-body {
+  color: #302329;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs :is(a,button,[role="button"],svg) {
+  color: #92263b;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine :is(a,button,[role="button"],svg) {
+  color: inherit;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-message-more {
+  color: #806b72 !important;
+  border-color: transparent !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-message-more {
+  color: rgba(255,248,248,.9) !important;
+  border-color: transparent !important;
+}
+:root[data-theme="light"] .chat-page .chat-voice-track,
+:root[data-theme="light"] .chat-page .chat-voice-player,
+:root[data-theme="light"] .chat-page .chat-voice-note,
+:root[data-theme="light"] .chat-page .chat-voice-draft-preview {
+  color: #302329;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-waveform {
+  background: transparent !important;
+  border-color: transparent !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-waveform span {
+  background: #d8bfc3 !important;
+  opacity: 1 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-waveform span.is-played {
+  background: #a92c43 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-voice-waveform span {
+  background: rgba(255,248,248,.48) !important;
+  opacity: 1 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-voice-waveform span.is-played {
+  background: #fff8f8 !important;
+}
+:root[data-theme="light"] .chat-page .chat-voice-play,
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-play {
+  background: #a92c43 !important;
+  color: #fff !important;
+  border-color: #a92c43 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-voice-play {
+  background: rgba(255,248,248,.18) !important;
+  color: #fff8f8 !important;
+  border-color: rgba(255,248,248,.25) !important;
+}
+:root[data-theme="light"] .chat-page .chat-voice-meta,
+:root[data-theme="light"] .chat-page .chat-voice-sending,
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-meta {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-voice-meta {
+  color: rgba(255,248,248,.82) !important;
+}
+:root[data-theme="light"] .chat-page .chat-attachment-menu,
+:root[data-theme="light"] .chat-page .chat-attachment-popout,
+:root[data-theme="light"] .chat-page .chat-image-preview,
+:root[data-theme="light"] .chat-page .chat-media-preview,
+:root[data-theme="light"] .chat-page .chat-edit-popout,
+:root[data-theme="light"] .chat-page .chat-reply-popout {
+  background: #fffdfc !important;
+  color: #302329 !important;
+  border-color: #ead8da !important;
+  box-shadow: 0 12px 32px rgba(61,24,33,.16) !important;
+}
+:root[data-theme="light"] .chat-page .chat-attachment-menu :is(button,a),
+:root[data-theme="light"] .chat-page .chat-attachment-popout :is(button,a),
+:root[data-theme="light"] .chat-page .chat-edit-popout :is(button,a),
+:root[data-theme="light"] .chat-page .chat-reply-popout :is(button,a) {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .chat-page .chat-attachment-menu :is(button,a):hover,
+:root[data-theme="light"] .chat-page .chat-attachment-popout :is(button,a):hover,
+:root[data-theme="light"] .chat-page .chat-edit-popout :is(button,a):hover,
+:root[data-theme="light"] .chat-page .chat-reply-popout :is(button,a):hover {
+  background: #f8ebed !important;
+}
+:root[data-theme="light"] .chat-page .chat-composer button:not([type="submit"]),
+:root[data-theme="light"] .chat-page .chat-reply-composer button,
+:root[data-theme="light"] .chat-page .chat-image-pending button,
+:root[data-theme="light"] .chat-page .chat-voice-draft-preview button {
+  color: #92263b;
+}
+:root[data-theme="light"] .chat-page .chat-composer button[type="submit"],
+:root[data-theme="light"] .chat-page .chat-stop-recording {
+  background: #a92c43 !important;
+  color: #fff !important;
+  border-color: #a92c43 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs :is(input,textarea,select),
+:root[data-theme="light"] .chat-page .chat-composer :is(input,textarea,select),
+:root[data-theme="light"] .chat-page .chat-reply-composer :is(input,textarea,select) {
+  background-color: #fffaf9 !important;
+  color: #302329 !important;
+  border-color: #e4cbd0 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs :is(input,textarea,select)::placeholder,
+:root[data-theme="light"] .chat-page .chat-composer :is(input,textarea,select)::placeholder,
+:root[data-theme="light"] .chat-page .chat-reply-composer :is(input,textarea,select)::placeholder {
+  color: #9a8188 !important;
+  opacity: 1;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs :is(.chat-call-body,.chat-call-copy,.chat-call-copy span),
+:root[data-theme="light"] .chat-page .chat-call-bubble {
+  color: #302329;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-call-status-alert {
+  color: #a92c43 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-call-status-alert {
+  color: #ffe2e6 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs img,
+:root[data-theme="light"] .chat-page .chat-message-content-theirs video,
+:root[data-theme="light"] .chat-page .chat-message-content-theirs audio {
+  color-scheme: light;
+}
+:root[data-theme="light"] .chat-page .chat-message-line :is(button,[role="button"],input,textarea,[tabindex]):focus-visible {
+  outline: 2px solid #a92c43 !important;
+  outline-offset: 2px;
+}
+:root[data-theme="light"] .chat-page :is(.chat-message-actions,.chat-delete-popout,.chat-reaction-picker,.chat-attachment-menu) {
+  color-scheme: light;
+}
