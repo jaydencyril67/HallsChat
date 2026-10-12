@@ -7283,3 +7283,19 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     animation-duration: .01ms !important;
   }
 }
+
+
+/* Cover the profile's inline-styled action buttons without affecting dark mode. */
+:root[data-theme="light"] .public-profile-page button[style*="linear-gradient(135deg,#c52d44"],
+:root[data-theme="light"] .public-profile-page button[style*="linear-gradient(135deg, #c52d44"] {
+  background: linear-gradient(135deg, #b63249, #92243a) !important;
+  border-color: #a92c43 !important;
+  color: #fff9f8 !important;
+}
+:root[data-theme="light"] .public-profile-page button[style*="background: rgba(255,255,255,.06)"],
+:root[data-theme="light"] .public-profile-page button[style*="background: rgba(255, 255, 255, .06)"],
+:root[data-theme="light"] .public-profile-page button[style*="background: rgba(255,255,255,.045)"] {
+  background: #f9ecee !important;
+  border-color: #e3c7cd !important;
+  color: #84273b !important;
+}
