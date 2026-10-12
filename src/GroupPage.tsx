@@ -132,7 +132,7 @@ export default function GroupPage() {
   const [memberPanel, setMemberPanel] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState<null | (() => Promise<void>)>(null);
-  const currentUserId = useMemo(() => { try { const token = localStorage.getItem("hallschat_token") || ""; const part = token.split(".")[1]; if (!part) return ""; const normalized = part.replace(/-/g, "+").replace(/_/g, "/"); return JSON.parse(atob(normalized + "=".repeat((4 - normalized.length % 4) % 4))).sub || ""; } catch { return ""; } }, []);
+  const [currentUserId, setCurrentUserId] = useState("");
   const askConfirm = (message: string, action: () => Promise<void>) => { setConfirmMessage(message); setConfirmAction(() => action); };
 
   const request = useCallback(async (path: string, init: RequestInit = {}) => {
@@ -144,7 +144,7 @@ export default function GroupPage() {
     return payload;
   }, []);
 
-  const loadGroups = useCallback(async (activeTab: Tab, showLoader = true) => {
+  useEffect(() => {\n    let cancelled = false;\n    void request("/api/auth/me").then(payload => {\n      if (!cancelled) setCurrentUserId(payload.user?.id || "");\n    }).catch(() => {\n      if (!cancelled) setCurrentUserId("");\n    });\n    return () => { cancelled = true; };\n  }, [request]);\n\n  const loadGroups = useCallback(async (activeTab: Tab, showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
       const payload = await request("/api/groups?view=" + activeTab);
@@ -435,7 +435,7 @@ export default function GroupPage() {
           <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" hidden onChange={handleImageSelection}/>
           <div ref={groupMessageListRef} className="chat-message-list" style={{ flex: "1 1 0", minHeight: 0, height: "auto", maxHeight: "none" }} onClick={() => { setReactionPickerFor(null); setActionMenuFor(null); }}>
             {detailLoading && !messages.length ? <div className="chat-message-loading"><LoadingDots/></div> : messages.length ? messages.map(message => {
-              const mine = message.sender?.id === currentUserId;
+              const mine = Boolean(currentUserId) && (message.sender?.id === currentUserId || (message as GroupMessage & { senderId?: string }).senderId === currentUserId);
               const imgs = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
               const quoted = message.replyTo;
               const canEdit = mine && !message.pending && !message.deletedForEveryone && Boolean(message.text.trim()) && !imgs.length && !message.audioUrl && Date.now() - new Date(message.createdAt).getTime() <= 24 * 60 * 60 * 1000;
