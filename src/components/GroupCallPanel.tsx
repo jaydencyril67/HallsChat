@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
-import LoadingDots from "./LoadingDots";
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
 
 type Participant = { id: string; name?: string; username?: string; profilePicture?: string };
@@ -21,6 +20,10 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
   const [busy, setBusy] = useState(false);
   const [confirmKind, setConfirmKind] = useState<"audio" | "video" | null>(null);
   const [error, setError] = useState("");
+  const audioTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const videoTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const confirmPopoutRef = useRef<HTMLDivElement | null>(null);
+  const [confirmPopoutPosition, setConfirmPopoutPosition] = useState({ left: 8, top: 8 });
   const localStreamRef = useRef<MediaStream | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const peersRef = useRef<Map<string, PeerState>>(new Map());
@@ -144,6 +147,41 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
     } finally { setBusy(false); }
   }, [socket, groupId, busy, startLocalMedia, closePeers, stopLocal]);
 
+  useLayoutEffect(() => {
+    if (!confirmKind) return;
+    const reposition = () => {
+      const anchor = (confirmKind === "audio" ? audioTriggerRef.current : videoTriggerRef.current)?.getBoundingClientRect();
+      const popout = confirmPopoutRef.current;
+      if (!anchor || !popout) return;
+      const margin = 8;
+      const gap = 8;
+      const width = popout.offsetWidth;
+      const height = popout.offsetHeight;
+      let left = anchor.left;
+      if (left + width > window.innerWidth - margin) left = anchor.right - width;
+      left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+      let top = anchor.bottom + gap;
+      if (top + height > window.innerHeight - margin) top = anchor.top - height - gap;
+      top = Math.max(margin, Math.min(top, window.innerHeight - height - margin));
+      setConfirmPopoutPosition({ left, top });
+    };
+    reposition();
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => { window.removeEventListener("resize", reposition); window.removeEventListener("scroll", reposition, true); };
+  }, [confirmKind, groupName]);
+
+  useEffect(() => {
+    if (!confirmKind) return;
+    const closeCallConfirmOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".halls-call-trigger-wrap, .halls-call-confirm-popout")) return;
+      setConfirmKind(null);
+    };
+    document.addEventListener("pointerdown", closeCallConfirmOutside);
+    return () => document.removeEventListener("pointerdown", closeCallConfirmOutside);
+  }, [confirmKind]);
+
   useEffect(() => {
     if (!error) return;
     const timer = window.setTimeout(() => setError(""), 5000);
@@ -222,21 +260,18 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
   const leave = () => resetCall(true);
   const active = Boolean(callId);
   return <>
-    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <button type="button" title="Start group audio call" aria-label="Start group audio call" disabled={!socket || busy || active} onClick={() => setConfirmKind("audio")} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: "1px solid rgba(255,210,219,.13)", borderRadius: 10, background: "rgba(255,255,255,.035)", color: "#ffe9ed", padding: 0 }}><Phone size={17}/></button>
-      <button type="button" title="Start group video call" aria-label="Start group video call" disabled={!socket || busy || active} onClick={() => setConfirmKind("video")} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: "1px solid rgba(255,210,219,.13)", borderRadius: 10, background: "rgba(255,255,255,.035)", color: "#ffe9ed", padding: 0 }}><Video size={17}/></button>
-    </div>
-    {confirmKind && !active && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label={`Confirm group ${confirmKind} call`} onClick={() => !busy && setConfirmKind(null)}>
-      <div className="halls-call-card" onClick={event => event.stopPropagation()}>
-        <div className="halls-call-avatar">{confirmKind === "video" ? <Video size={28} /> : <Phone size={28} />}</div>
-        <span className="halls-call-eyebrow">START GROUP {confirmKind.toUpperCase()} CALL</span>
-        <h2>{groupName}</h2>
-        <p>Start a {confirmKind} call with this group?</p>
-        <div className="halls-call-actions" style={{ width: "100%", marginTop: 12 }}>
-          <button className="halls-call-decline" type="button" disabled={busy} onClick={() => setConfirmKind(null)} aria-label="Cancel group call">Cancel</button>
-          <button className="halls-call-accept" type="button" disabled={busy} onClick={() => { const selectedKind = confirmKind; setConfirmKind(null); void startCall(selectedKind); }} aria-label={`Confirm group ${confirmKind} call`}>{busy ? <LoadingDots /> : <>{confirmKind === "video" ? <Video size={19} /> : <Phone size={19} />} Start call</>}</button>
-        </div>
+    <div className="halls-call-triggers">
+      <div className="halls-call-trigger-wrap">
+        <button ref={audioTriggerRef} className="halls-call-trigger-audio" type="button" title="Start group audio call" aria-label="Start group audio call" disabled={!socket || busy || active} onClick={() => setConfirmKind(current => current === "audio" ? null : "audio")}><Phone size={18} /><span>Audio call</span></button>
       </div>
+      <div className="halls-call-trigger-wrap">
+        <button ref={videoTriggerRef} className="halls-call-trigger-video" type="button" title="Start group video call" aria-label="Start group video call" disabled={!socket || busy || active} onClick={() => setConfirmKind(current => current === "video" ? null : "video")}><Video size={18} /><span>Video call</span></button>
+      </div>
+    </div>
+    {confirmKind && !active && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label={`Confirm group ${confirmKind} call`}>
+      <strong>Start group {confirmKind} call?</strong>
+      <span>Call <b>{groupName}</b> now?</span>
+      <div><button type="button" className="halls-call-confirm-cancel" onClick={() => setConfirmKind(null)}>Cancel</button><button type="button" className="halls-call-confirm-start" onClick={() => { const selectedKind = confirmKind; setConfirmKind(null); void startCall(selectedKind); }}>{confirmKind === "video" ? <Video size={14} /> : <Phone size={14} />} Start call</button></div>
     </div>}
     {error && <div role="status" style={{ position: "fixed", zIndex: 10020, left: 12, right: 12, bottom: 90, maxWidth: 420, margin: "0 auto", padding: "10px 12px", borderRadius: 10, background: "#32151d", color: "#ffe9ed", fontSize: ".78rem", border: "1px solid rgba(255,150,170,.25)" }}>{error}<button type="button" onClick={() => setError("")} style={{ float: "right", background: "none", border: 0, color: "inherit" }}><X size={14}/></button></div>}
     {incoming && !active && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label="Incoming group call">
