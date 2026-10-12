@@ -93,8 +93,8 @@ export default function HallsPage() {
 
   const filteredUsers = users;
 
-  const panel: CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
-  const muted: React.CSSProperties = { color: "rgba(246,220,225,.58)" };
+  const panel: React.CSSProperties = { border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)" };
+  const muted: React.CSSProperties = { color: "var(--theme-muted)" };
 
   return <main className="home-page social-home halls-page">
     <AppHeader homeHref="/home" />
