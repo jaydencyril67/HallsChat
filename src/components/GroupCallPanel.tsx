@@ -219,14 +219,16 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
       <button type="button" title="Start group video call" aria-label="Start group video call" disabled={!socket || busy || active} onClick={() => void startCall("video")} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: "1px solid rgba(255,210,219,.13)", borderRadius: 10, background: "rgba(255,255,255,.035)", color: "#ffe9ed", padding: 0 }}><Video size={17}/></button>
     </div>
     {error && <div role="status" style={{ position: "fixed", zIndex: 10020, left: 12, right: 12, bottom: 90, maxWidth: 420, margin: "0 auto", padding: "10px 12px", borderRadius: 10, background: "#32151d", color: "#ffe9ed", fontSize: ".78rem", border: "1px solid rgba(255,150,170,.25)" }}>{error}<button type="button" onClick={() => setError("")} style={{ float: "right", background: "none", border: 0, color: "inherit" }}><X size={14}/></button></div>}
-    {incoming && !active && <div role="dialog" aria-modal="true" aria-label="Incoming group call" style={{ position: "fixed", zIndex: 10030, inset: 0, display: "grid", placeItems: "center", padding: 18, background: "rgba(5,3,5,.78)", backdropFilter: "blur(12px)" }}>
-      <div style={{ width: "100%", maxWidth: 340, padding: 22, textAlign: "center", borderRadius: 20, border: "1px solid rgba(255,210,219,.16)", background: "#1d0b11", color: "#fff0f3" }}>
-        <div style={{ width: 62, height: 62, margin: "0 auto 12px", display: "grid", placeItems: "center", borderRadius: "50%", background: "rgba(190,35,58,.2)" }}>{incoming.kind === "video" ? <Video size={25}/> : <Phone size={25}/>}</div>
-        <strong style={{ display: "block", fontSize: "1rem" }}>{incoming.caller?.name || "A group member"}</strong>
-        <p style={{ margin: "7px 0 18px", color: "rgba(246,220,225,.7)", fontSize: ".8rem" }}>Incoming {incoming.kind} call in {groupName}</p>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-          <button type="button" disabled={busy} onClick={() => { setIncoming(null); setError(""); setBusy(true); void joinCall(incoming.callId, incoming.kind).catch(e => { resetCall(true); setError(e instanceof Error ? e.message : "Unable to join call."); }).finally(() => setBusy(false)); }} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#198754", color: "white", fontWeight: 750 }}><Phone size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Join</button>
-          <button type="button" onClick={() => { socket?.emit("group-call:dismiss", { callId: incoming.callId }); setIncoming(null); }} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#9d293c", color: "white", fontWeight: 750 }}><PhoneOff size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Dismiss</button>
+    {incoming && !active && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label="Incoming group call">
+      <div className="halls-call-card">
+        <div className="halls-call-avatar">{(incoming.caller?.name || incoming.caller?.username || groupName || "G").slice(0, 1).toUpperCase()}</div>
+        <span className="halls-call-eyebrow">INCOMING GROUP {incoming.kind.toUpperCase()} CALL</span>
+        <h2>{incoming.caller?.name || incoming.caller?.username || "A group member"}</h2>
+        <p>{groupName}</p>
+        <p className="halls-call-ring-time">Group call ringing…</p>
+        <div className="halls-call-actions">
+          <button className="halls-call-decline" type="button" onClick={() => { socket?.emit("group-call:dismiss", { callId: incoming.callId }); setIncoming(null); }} aria-label="Dismiss group call"><PhoneOff /></button>
+          <button className="halls-call-accept" type="button" disabled={busy} onClick={() => { setIncoming(null); setError(""); setBusy(true); void joinCall(incoming.callId, incoming.kind).catch(e => { resetCall(true); setError(e instanceof Error ? e.message : "Unable to join call."); }).finally(() => setBusy(false)); }} aria-label="Join group call"><Phone /></button>
         </div>
       </div>
     </div>}
