@@ -709,7 +709,7 @@ export default function GroupsPage() {
                 <button type="submit" className="groups-send-button" disabled={sending || (!draft.trim() && !imageFiles.length)} aria-label="Send group message" title="Send message">{sending ? <LoadingDots /> : <Send size={17} />}</button>
               </form>
             </> : <div className="groups-join-notice">You need to be a member to send messages.</div>}
-          </> : <div className="groups-welcome"><span><UsersRound size={29} /></span><h2>Better conversations happen together.</h2><p>Choose one of your groups to open its chat, or discover a public group and join in.</p><button type="button" onClick={() => setCreateOpen(true)}><Plus size={16} /> Create a group</button></div>}
+          </> : activeGroupId ? <div className="groups-welcome groups-welcome-loading"><span><LoadingDots /></span><h2>Opening group conversation</h2><p>If this group is unavailable or your access has changed, you can return to your groups.</p><button type="button" onClick={backToGroups}><ArrowLeft size={16} /> Back to groups</button></div> : <div className="groups-welcome"><span><UsersRound size={29} /></span><h2>Better conversations happen together.</h2><p>Choose one of your groups to open its chat, or discover a public group and join in.</p><button type="button" onClick={() => setCreateOpen(true)}><Plus size={16} /> Create a group</button></div>}
         </section>
       </div>
     </section>
