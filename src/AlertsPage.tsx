@@ -64,18 +64,21 @@ export default function AlertsPage() {
 
   useEffect(() => {
     void loadAlerts();
-    const timer = window.setInterval(() => { void loadAlerts(true); }, 15000);
     const token = localStorage.getItem("hallschat_token");
     const socket = token ? io(apiBase, { auth: { token }, transports: ["websocket", "polling"] }) : null;
+    let hasConnected = false;
+    socket?.on("connect", () => {
+      if (hasConnected) void loadAlerts();
+      hasConnected = true;
+    });
     socket?.on("alert:new", (incoming: AlertItem) => {
-      setAlerts(current => [incoming, ...current.filter(item => item.id !== incoming.id)].slice(0, 100));
-      setUnreadCount(current => current + (incoming.readAt ? 0 : 1));
+      setAlerts(current => current.some(item => item.id === incoming.id) ? current : [incoming, ...current].slice(0, 100));
     });
     socket?.on("alert:count", (payload: { unreadCount?: number }) => {
       if (typeof payload?.unreadCount === "number") setUnreadCount(payload.unreadCount);
     });
     return () => {
-      window.clearInterval(timer);
+      socket?.removeAllListeners();
       socket?.disconnect();
     };
   }, [loadAlerts]);
