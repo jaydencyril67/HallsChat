@@ -698,7 +698,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-readonly-notice{display:flex;align-items:center;gap:9px;padding:14px 15px;border-top:1px solid var(--chat-line);background:rgba(197,45,68,.07);color:#ffb7c2;font-size:.73rem;line-height:1.5}
 .chat-readonly-notice svg{flex-shrink:0}
 @media(max-width:680px){
-.chat-shell{width:calc(100% - 22px);padding:var(--app-top-gap) 0 106px}
+.chat-shell{width:calc(100% - 26px);padding:var(--app-top-gap) 0 106px}
 .chat-heading{margin-bottom:13px}
 .chat-heading-icon{width:40px;height:40px;flex-basis:40px}
 .chat-heading p{font-size:.72rem}
@@ -819,7 +819,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-people-list,.chat-message-list{min-height:0;overscroll-behavior:contain}
 .chat-message-list{flex:1 1 auto;overflow-y:auto;overflow-x:hidden}
 @media(max-width:680px){
-  .chat-shell{width:calc(100% - 22px);padding:var(--app-top-gap) 0 88px}
+  .chat-shell{width:calc(100% - 26px);padding:var(--app-top-gap) 0 88px}
   .chat-layout{height:auto;min-height:0;max-height:none}
   .chat-page-conversation-open .chat-shell{padding-top:var(--app-top-gap)}
 }
