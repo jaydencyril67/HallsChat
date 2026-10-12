@@ -103,6 +103,87 @@ function GlobalBackgroundTaskStatus() {
   </>;
 }
 
+function GlobalModalScrollLock() {
+  useEffect(() => {
+    let locked = false;
+    let savedScrollY = 0;
+    let previousBody: { position: string; top: string; left: string; right: string; width: string; overflow: string; touchAction: string } | null = null;
+    let previousHtmlOverflow = "";
+
+    const syncLock = () => {
+      // The comments sheet already has its own position-preserving scroll lock.
+      const commentsOpen = document.querySelector(".social-comments-sheet[aria-modal=\"true\"]");
+      const modalOpen = Boolean(document.querySelector('[role="dialog"][aria-modal="true"]'));
+      const shouldLock = modalOpen && !commentsOpen;
+
+      if (shouldLock && !locked) {
+        savedScrollY = window.scrollY || window.pageYOffset || 0;
+        const body = document.body;
+        const html = document.documentElement;
+        previousBody = {
+          position: body.style.position,
+          top: body.style.top,
+          left: body.style.left,
+          right: body.style.right,
+          width: body.style.width,
+          overflow: body.style.overflow,
+          touchAction: body.style.touchAction,
+        };
+        previousHtmlOverflow = html.style.overflow;
+        body.style.position = "fixed";
+        body.style.top = `-${savedScrollY}px`;
+        body.style.left = "0";
+        body.style.right = "0";
+        body.style.width = "100%";
+        body.style.overflow = "hidden";
+        body.style.touchAction = "none";
+        html.style.overflow = "hidden";
+        locked = true;
+      } else if (!shouldLock && locked) {
+        const body = document.body;
+        const html = document.documentElement;
+        if (previousBody) {
+          body.style.position = previousBody.position;
+          body.style.top = previousBody.top;
+          body.style.left = previousBody.left;
+          body.style.right = previousBody.right;
+          body.style.width = previousBody.width;
+          body.style.overflow = previousBody.overflow;
+          body.style.touchAction = previousBody.touchAction;
+        }
+        html.style.overflow = previousHtmlOverflow;
+        locked = false;
+        previousBody = null;
+        window.scrollTo(0, savedScrollY);
+      }
+    };
+
+    const observer = new MutationObserver(syncLock);
+    observer.observe(document.body, { childList: true, subtree: true });
+    syncLock();
+    return () => {
+      observer.disconnect();
+      if (locked) {
+        const body = document.body;
+        const html = document.documentElement;
+        if (previousBody) {
+          body.style.position = previousBody.position;
+          body.style.top = previousBody.top;
+          body.style.left = previousBody.left;
+          body.style.right = previousBody.right;
+          body.style.width = previousBody.width;
+          body.style.overflow = previousBody.overflow;
+          body.style.touchAction = previousBody.touchAction;
+        }
+        html.style.overflow = previousHtmlOverflow;
+        window.scrollTo(0, savedScrollY);
+      }
+    };
+  }, []);
+
+  return null;
+}
+
 export default function App() {
   const [path, setPath] = useState(() => window.location.pathname);
 
@@ -190,5 +271,5 @@ export default function App() {
     page = <NavigationSectionPage title={section.title} description={section.description} />;
   } else page = <LandingPage onSignup={() => navigate("/signup")} />;
 
-  return <>{page}<GlobalPostPublishingStatus /><GlobalBackgroundTaskStatus /></>;
+  return <>{page}<GlobalModalScrollLock /><GlobalPostPublishingStatus /><GlobalBackgroundTaskStatus /></>;
 }
