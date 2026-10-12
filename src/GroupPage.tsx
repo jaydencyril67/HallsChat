@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Square, Play, Pause, Reply, MoreVertical, Pencil, Smile, Paperclip } from "lucide-react";
+import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Reply, MoreVertical, Pencil, Smile, Paperclip } from "lucide-react";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import type { ChangeEvent } from "react";
@@ -95,6 +95,7 @@ export default function GroupPage() {
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
   const typingTimerRef = useRef<number | null>(null);
+  const messageGestureRef = useRef<{ id: string; startX: number; startY: number; longPressed: boolean; timer: number | null } | null>(null);
   const [memberPanel, setMemberPanel] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState<null | (() => Promise<void>)>(null);
@@ -164,6 +165,23 @@ export default function GroupPage() {
     });
     return () => { socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; };
   }, [activeId, currentUserId]);
+  useEffect(() => {
+    const input = draftInputRef.current;
+    if (!input) return;
+    input.style.height = "auto";
+    input.style.height = `${Math.min(input.scrollHeight, 144)}px`;
+  }, [draft]);
+  useEffect(() => {
+    const closePopoutsOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) { setReactionPickerFor(null); setActionMenuFor(null); setAttachmentMenuOpen(false); return; }
+      if (!target.closest(".chat-reaction-picker")) setReactionPickerFor(null);
+      if (!target.closest(".chat-message-actions, .chat-message-more")) setActionMenuFor(null);
+      if (!target.closest(".chat-attachment-menu, .chat-attachment-wrap")) setAttachmentMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closePopoutsOutside);
+    return () => document.removeEventListener("pointerdown", closePopoutsOutside);
+  }, []);
   useEffect(() => {
     if (!recording) return;
     const timer = window.setInterval(() => setRecordingSeconds(value => value + 1), 1000);
@@ -385,7 +403,31 @@ export default function GroupPage() {
               const quoted = message.replyTo;
               const canEdit = mine && !message.pending && !message.deletedForEveryone && Boolean(message.text.trim()) && !imgs.length && !message.audioUrl && Date.now() - new Date(message.createdAt).getTime() <= 24 * 60 * 60 * 1000;
               const reactionGroups = Array.from((message.reactions || []).reduce((groups, reaction) => groups.set(reaction.emoji, [...(groups.get(reaction.emoji) || []), reaction]), new Map<string, GroupReaction[]>()).entries());
-              return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "")} id={"chat-message-" + message.id}>
+              return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "")} id={"chat-message-" + message.id}
+                onContextMenu={event => { event.preventDefault(); setActionMenuFor(message.id); }}
+                onPointerDown={event => {
+                  if (event.pointerType === "mouse" && event.button !== 0) return;
+                  const gesture = { id: message.id, startX: event.clientX, startY: event.clientY, longPressed: false, timer: null as number | null };
+                  gesture.timer = window.setTimeout(() => { gesture.longPressed = true; setActionMenuFor(message.id); setReactionPickerFor(null); }, 520);
+                  messageGestureRef.current = gesture;
+                }}
+                onPointerMove={event => {
+                  const gesture = messageGestureRef.current; if (!gesture || gesture.id !== message.id) return;
+                  if (Math.abs(event.clientX - gesture.startX) > 12 || Math.abs(event.clientY - gesture.startY) > 12) {
+                    if (gesture.timer !== null) window.clearTimeout(gesture.timer);
+                    gesture.timer = null;
+                  }
+                }}
+                onPointerUp={event => {
+                  const gesture = messageGestureRef.current; if (!gesture || gesture.id !== message.id) return;
+                  if (gesture.timer !== null) window.clearTimeout(gesture.timer);
+                  const dx = event.clientX - gesture.startX; const dy = event.clientY - gesture.startY;
+                  if (!gesture.longPressed && Math.abs(dx) > 64 && Math.abs(dy) < 48 && !message.pending && !message.deletedForEveryone) {
+                    setReplyingTo(message); setActionMenuFor(null); draftInputRef.current?.focus();
+                  }
+                  messageGestureRef.current = null;
+                }}
+                onPointerCancel={() => { const gesture = messageGestureRef.current; if (gesture?.timer !== null && gesture?.timer !== undefined) window.clearTimeout(gesture.timer); messageGestureRef.current = null; }}>
                 <div className={"chat-message-content " + (mine ? "chat-message-content-mine" : "chat-message-content-theirs")} style={{ maxWidth: "88%", position: "relative" }}>
                   <div className="chat-message-body">
                     {!mine && <span style={{ display: "block", color: "#ff9cab", fontSize: ".69rem", fontWeight: 800, marginBottom: 3 }}>{message.sender?.name || "Group member"} <span style={{ color: "rgba(246,220,225,.52)", fontWeight: 500 }}>@{message.sender?.username || "member"}</span></span>}
