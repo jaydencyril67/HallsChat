@@ -399,11 +399,44 @@ export default function HomePage() {
         ? { ...post, likeCount: Number.isFinite(event.likeCount) ? Math.max(0, Number(event.likeCount)) : post.likeCount, ...(event.actorId === user.id ? { likedByMe: event.likedByActor === true } : {}) }
         : post));
     });
-    socket.on("social:comment-created", (event: { postId?: string; commentCount?: number }) => {
+    socket.on("social:comment-created", (event: { postId?: string; commentCount?: number; comment?: SocialComment }) => {
       if (!event.postId) return;
       setPosts(current => current.map(post => post.id === event.postId
         ? { ...post, commentCount: Number.isFinite(event.commentCount) ? Math.max(0, Number(event.commentCount)) : (post.commentCount || 0) + 1 }
         : post));
+      if (event.comment) setCommentsByPost(current => ({
+        ...current,
+        [event.postId!]: (current[event.postId!] || []).some(comment => comment.id === event.comment!.id)
+          ? current[event.postId!]
+          : [...(current[event.postId!] || []), event.comment!]
+      }));
+    });
+    socket.on("social:comment-updated", (event: { postId?: string; comment?: SocialComment }) => {
+      if (!event.postId || !event.comment?.id) return;
+      setCommentsByPost(current => ({
+        ...current,
+        [event.postId!]: (current[event.postId!] || []).map(comment => comment.id === event.comment!.id ? { ...comment, ...event.comment } : comment)
+      }));
+    });
+    socket.on("social:comment-deleted", (event: { postId?: string; commentIds?: string[]; commentCount?: number }) => {
+      if (!event.postId || !Array.isArray(event.commentIds)) return;
+      const deleted = new Set(event.commentIds);
+      setCommentsByPost(current => ({
+        ...current,
+        [event.postId!]: (current[event.postId!] || []).filter(comment => !deleted.has(comment.id))
+      }));
+      setPosts(current => current.map(post => post.id === event.postId
+        ? { ...post, commentCount: Number.isFinite(event.commentCount) ? Math.max(0, Number(event.commentCount)) : Math.max(0, (post.commentCount || 0) - deleted.size) }
+        : post));
+    });
+    socket.on("social:comment-liked", (event: { postId?: string; commentId?: string; actorId?: string; likedByActor?: boolean; likeCount?: number }) => {
+      if (!event.postId || !event.commentId) return;
+      setCommentsByPost(current => ({
+        ...current,
+        [event.postId!]: (current[event.postId!] || []).map(comment => comment.id === event.commentId
+          ? { ...comment, likeCount: Number.isFinite(event.likeCount) ? Math.max(0, Number(event.likeCount)) : comment.likeCount, ...(event.actorId === user.id ? { likedByMe: event.likedByActor === true } : {}) }
+          : comment)
+      }));
     });
     socket.on("social:poll-updated", (event: { postId?: string; options?: { id: string; text: string; voteCount: number }[] }) => {
       if (!event.postId || !Array.isArray(event.options)) return;
