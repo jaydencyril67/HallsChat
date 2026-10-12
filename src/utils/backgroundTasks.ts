@@ -38,3 +38,7 @@ export function dismissBackgroundTaskResult() {
   if (!state.lastResult) return;
   publish({ lastResult: null });
 }
+
+export function hasActiveBackgroundTask(label: string) {
+  return state.tasks.some(task => task.label === label);
+}
