@@ -16,6 +16,7 @@ import NowBar from "./NowBar";
 import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
 import { dismissSocialPostPublishStatus, getSocialPostPublishState, subscribeSocialPostPublishing, type SocialPostPublishState } from "./utils/socialPostPublisher";
+import { getBackgroundTaskState, subscribeBackgroundTasks, type BackgroundTaskSnapshot } from "./utils/backgroundTasks";
 
 const navigationSections: Record<string, { title: string; description: string }> = {
   "/chats": { title: "Chat", description: "Your conversations will live here." },
@@ -65,6 +66,41 @@ function GlobalPostPublishingStatus() {
         {uploading && <span style={{ display: "block", height: 3, marginTop: 3, overflow: "hidden", borderRadius: 99, background: "rgba(255,255,255,.12)" }}><span style={{ display: "block", width: "36%", height: "100%", borderRadius: 99, background: "#ff8192", animation: "hallschat-global-post-progress 1.2s ease-in-out infinite alternate" }}/></span>}
       </span>
       {!uploading && <button type="button" onClick={dismissSocialPostPublishStatus} aria-label="Dismiss post status" style={{ border: 0, background: "transparent", color: "#fff0f3", fontSize: 22, padding: "2px 4px", lineHeight: 1 }}>×</button>}
+    </div>
+  </>;
+}
+
+
+function GlobalBackgroundTaskStatus() {
+  const [taskState, setTaskState] = useState<BackgroundTaskSnapshot>(() => getBackgroundTaskState());
+  useEffect(() => subscribeBackgroundTasks(setTaskState), []);
+  useEffect(() => {
+    if (taskState.tasks.length || !taskState.lastResult) return;
+    const timer = window.setTimeout(() => {
+      // A fresh snapshot is published by the manager when another task starts.
+    }, 5500);
+    return () => window.clearTimeout(timer);
+  }, [taskState.tasks.length, taskState.revision]);
+
+  const active = taskState.tasks[taskState.tasks.length - 1];
+  const result = !active ? taskState.lastResult : null;
+  if (!active && !result) return null;
+  const failed = Boolean(result?.error);
+  const title = active
+    ? (taskState.tasks.length > 1 ? `${taskState.tasks.length} tasks running` : active.label)
+    : failed ? `${result!.label} failed` : `${result!.label} complete`;
+  const status = active
+    ? (taskState.tasks.length > 1 ? `${active.status} · ${taskState.tasks.length} operations in progress` : active.status)
+    : result!.status;
+  return <>
+    {active && <style>{`@keyframes hallschat-global-task-progress { from { transform: translateX(-110%); } to { transform: translateX(280%); } }`}</style>}
+    <div role={failed ? "alert" : "status"} aria-live="polite" style={{ position: "fixed", left: 14, right: 14, bottom: "calc(76px + env(safe-area-inset-bottom, 0px))", zIndex: 9998, maxWidth: 440, margin: "0 auto", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${failed ? "rgba(255,120,120,.28)" : "rgba(255,210,219,.2)"}`, borderRadius: 14, background: failed ? "linear-gradient(145deg,rgba(54,18,22,.98),rgba(22,12,15,.98))" : "linear-gradient(145deg,rgba(38,18,27,.98),rgba(18,12,20,.98))", boxShadow: "0 12px 34px rgba(0,0,0,.38)", color: "#fff0f3", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+      <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, flexShrink: 0, borderRadius: 10, background: "rgba(255,129,146,.12)", color: "#ff9bab" }}>{active ? <LoadingDots/> : failed ? "!" : "✓"}</span>
+      <span style={{ display: "grid", gap: 3, minWidth: 0, flex: 1 }}>
+        <strong style={{ fontSize: ".88rem", fontWeight: 650 }}>{title}</strong>
+        <span style={{ fontSize: ".78rem", color: "#e5cbd2", overflowWrap: "anywhere" }}>{status}</span>
+        {active && <span style={{ display: "block", height: 3, marginTop: 3, overflow: "hidden", borderRadius: 99, background: "rgba(255,255,255,.12)" }}><span style={{ display: "block", width: "36%", height: "100%", borderRadius: 99, background: "#ff8192", animation: "hallschat-global-task-progress 1.2s ease-in-out infinite alternate" }}/></span>}
+      </span>
     </div>
   </>;
 }
@@ -156,5 +192,5 @@ export default function App() {
     page = <NavigationSectionPage title={section.title} description={section.description} />;
   } else page = <LandingPage onSignup={() => navigate("/signup")} />;
 
-  return <>{page}<GlobalPostPublishingStatus /></>;
+  return <>{page}<GlobalPostPublishingStatus /><GlobalBackgroundTaskStatus /></>;
 }
