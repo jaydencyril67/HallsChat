@@ -2392,3 +2392,13 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .social-post-actions{gap:4px}
   .social-post-actions .social-post-action-muted,.social-like{gap:5px;font-size:11px}
 }
+
+
+/* Image preview modal actions */
+.social-image-modal-actions{display:flex;align-items:center;gap:10px;pointer-events:auto}
+.social-image-modal-actions>button{display:grid;place-items:center;width:42px;height:42px;min-width:42px;padding:0;border:1px solid rgba(255,255,255,.24);border-radius:50%;background:rgba(15,8,11,.62);color:#fff;box-shadow:0 4px 18px rgba(0,0,0,.24);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer}
+.social-image-modal-actions>button:disabled{opacity:.6;cursor:wait}
+.social-image-modal-actions .social-image-modal-close{display:grid;place-items:center;font-size:0;line-height:0}
+.social-image-modal-download-spinner{width:17px;height:17px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:social-image-download-spin .7s linear infinite}
+.social-image-modal-download-note{position:absolute;top:calc(62px + env(safe-area-inset-top));right:14px;z-index:3;max-width:min(300px,calc(100% - 28px));margin:0;padding:9px 12px;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:rgba(15,8,11,.82);color:#fff;font-size:12px;line-height:1.4;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+@keyframes social-image-download-spin{to{transform:rotate(360deg)}}
