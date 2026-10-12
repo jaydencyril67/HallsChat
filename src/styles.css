@@ -2402,3 +2402,14 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-image-modal-download-spinner{width:17px;height:17px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:social-image-download-spin .7s linear infinite}
 .social-image-modal-download-note{position:absolute;top:calc(62px + env(safe-area-inset-top));right:14px;z-index:3;max-width:min(300px,calc(100% - 28px));margin:0;padding:9px 12px;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:rgba(15,8,11,.82);color:#fff;font-size:12px;line-height:1.4;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 @keyframes social-image-download-spin{to{transform:rotate(360deg)}}
+
+
+/* Keep long post text readable while giving the composer scroll area more room. */
+.social-post-snap-canvas .social-post-live-preview{width:100%;max-width:none;box-sizing:border-box;padding-left:10px;padding-right:46px;}
+.social-post-snap-canvas .social-post-snap-main{padding-right:50px;}
+.social-post-snap-canvas .social-post-snap-poll{padding-right:50px;}
+@media(max-width:520px){
+  .social-post-snap-canvas .social-post-live-preview{padding-left:8px;padding-right:42px;}
+  .social-post-snap-canvas .social-post-snap-main{padding-right:46px;}
+  .social-post-snap-canvas .social-post-snap-poll{padding-right:46px;}
+}
