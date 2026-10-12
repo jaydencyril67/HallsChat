@@ -486,8 +486,7 @@ export default function ChatPage() {
       })
       .catch(err => { if (!cancelled) setError(err instanceof Error ? err.message : "Your account couldn't be loaded."); });
     void loadPeople(true);
-    const timer = window.setInterval(() => { void loadPeople(false); }, 15000);
-    return () => { cancelled = true; window.clearInterval(timer); };
+    return () => { cancelled = true; };
   }, [loadPeople]);
 
   useEffect(() => {
@@ -500,6 +499,15 @@ export default function ChatPage() {
     });
     socketRef.current = socket;
     setLiveSocket(socket);
+    let hasConnected = false;
+    socket.on("connect", () => {
+      if (hasConnected) void loadPeople(false);
+      hasConnected = true;
+    });
+    socket.on("presence:update", (payload: { userId?: string; isOnline?: boolean }) => {
+      if (!payload?.userId || typeof payload.isOnline !== "boolean") return;
+      setPeople(current => current.map(person => person.id === payload.userId ? { ...person, isOnline: payload.isOnline } : person));
+    });
     socket.on("connect_error", () => {
       // REST history remains available while the socket reconnects.
     });
@@ -598,7 +606,7 @@ export default function ChatPage() {
       setLiveSocket(null);
       if (socketRef.current === socket) socketRef.current = null;
     };
-  }, [currentUserId]);
+  }, [currentUserId, loadPeople]);
 
   useEffect(() => {
     setOtherTyping(false);
