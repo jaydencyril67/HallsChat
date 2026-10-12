@@ -2369,7 +2369,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* Facebook Lite-inspired compact feed presentation, preserving HallsChat branding. */
 .social-feed-heading{margin:18px 2px 10px}
-.social-post-list{gap:8px}
+.social-post-list{gap:11px}
 .social-post{padding:13px 14px 8px;border-radius:10px;box-shadow:none;background:var(--theme-surface,linear-gradient(150deg,rgba(42,13,21,.96),rgba(27,8,13,.98)))}
 .social-post-head{gap:9px}
 .social-post-author{gap:3px}
@@ -2385,7 +2385,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-post-actions .social-post-action-muted:hover,.social-post-actions .social-post-action-muted[aria-expanded="true"]{background:rgba(255,255,255,.045)}
 .social-poll-card{margin:10px 0 12px}
 @media(max-width:520px){
-  .social-post-list{gap:6px}
+  .social-post-list{gap:9px}
   .social-post{padding:12px 12px 7px;border-radius:8px}
   .social-post-content{font-size:14px;line-height:1.6}
   .social-post-images{margin-right:-12px;margin-left:-12px}
