@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
     } finally { setSubmitting(false); }
   }
 
-  return <main className="signup-page auth-page">
+  return <main className="signup-page auth-page forgot-password-page">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
     <AppHeader homeHref="/" />
