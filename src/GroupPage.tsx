@@ -143,52 +143,56 @@ export default function GroupPage() {
 
   const isAdmin = detail?.role === "owner" || detail?.role === "admin";
 
-  return <main className="home-page social-home">
+  return <main className={`home-page social-home chat-page ${activeId && detail ? "chat-page-conversation-open" : ""}`}>
     <AppHeader homeHref="/home" />
-    <section className="home-shell social-shell" style={{ paddingBottom: 112 }}>
-      <div style={{ width: "100%", maxWidth: 820, margin: "0 auto", boxSizing: "border-box" }}>
-        {activeId && detail ? <>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 13 }}>
-            <button type="button" onClick={() => { setActiveId(""); setMemberPanel(false); }} aria-label="Back to groups" style={{ ...secondary, width: 42, padding: 0 }}><ArrowLeft size={18}/></button>
-            <Avatar name={detail.name} src={detail.avatar} size={43}/>
-            <div style={{ minWidth: 0, flex: 1 }}><div style={{ color: "#fff0f3", fontSize: ".98rem", fontWeight: 850, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{detail.name}</div><div style={{ ...muted, fontSize: ".75rem", marginTop: 3 }}>{detail.memberCount} members · {detail.visibility === "private" ? "Private group" : "Public group"}</div></div>
-            <button type="button" onClick={() => setMemberPanel(value => !value)} aria-label="Group members" style={{ ...secondary, padding: "9px 10px" }}><UsersRound size={17}/></button>
-          </div>
-          {detail.description && <p style={{ ...muted, margin: "0 0 12px", fontSize: ".82rem", lineHeight: 1.5 }}>{detail.description}</p>}
-          {detail.inviteCode && <div style={{ ...panel, padding: 11, marginBottom: 12, display: "flex", alignItems: "center", gap: 9 }}><LockKeyhole size={16} color="#ff9cab"/><div style={{ minWidth: 0, flex: 1 }}><div style={{ fontSize: ".73rem", ...muted }}>Private invite code</div><strong style={{ letterSpacing: ".06em", overflowWrap: "anywhere" }}>{detail.inviteCode}</strong></div><button type="button" style={secondary} onClick={() => { void navigator.clipboard?.writeText(detail.inviteCode || ""); setNotice("Invite code copied."); }}>Copy</button></div>}
-          {memberPanel && <div style={{ ...panel, padding: 12, marginBottom: 12 }}><div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}><strong>Members · {detail.members.length}</strong><button type="button" aria-label="Close members" onClick={() => setMemberPanel(false)} style={{ ...secondary, minHeight: 30, padding: "4px 8px" }}><X size={15}/></button></div>
-            <div style={{ display: "grid", gap: 9 }}>{detail.members.map(member => <div key={member.id} style={{ display: "flex", alignItems: "center", gap: 9 }}><Avatar name={member.name} src={member.profilePicture} size={36}/><div style={{ minWidth: 0, flex: 1 }}><div style={{ fontSize: ".82rem", fontWeight: 750 }}>{member.name}</div><div style={{ ...muted, fontSize: ".72rem" }}>@{member.username} · {member.role}</div></div>{detail.role === "owner" && member.role !== "owner" && <button type="button" style={secondary} onClick={() => void changeRole(member, member.role === "admin" ? "member" : "admin")}>{member.role === "admin" ? "Make member" : "Make admin"}</button>}{isAdmin && member.role !== "owner" && member.id !== detail.ownerId && !(detail.role === "admin" && member.role === "admin") && <button type="button" aria-label={"Remove " + member.name} style={{ ...secondary, padding: "8px" }} onClick={() => askConfirm("Remove @" + member.username + " from this group?", () => removeMember(member))}><Trash2 size={15}/></button>}</div>)}</div>
-          </div>}
-          <section className="chat-conversation" aria-label="Group conversation" style={{ ...panel, height: "calc(100dvh - 250px)", minHeight: 360, maxHeight: 760, overflow: "hidden", borderRadius: 16 }}>
-            <header className="chat-conversation-header">
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <strong style={{ display: "block", color: "#fff0f3", fontSize: ".88rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Group chat</strong>
-                <span style={{ display: "block", color: "rgba(246,220,225,.58)", fontSize: ".72rem", marginTop: 3 }}>{detail.memberCount} members · Latest 100 messages</span>
-              </div>
-              <button type="button" onClick={() => { void loadDetail(activeId); }} aria-label="Refresh group messages" title="Refresh" style={{ ...secondary, width: 38, height: 38, minHeight: 38, padding: 0, flexShrink: 0 }}><RefreshCw size={16}/></button>
-            </header>
-            <div className="chat-message-list" style={{ flex: "1 1 auto", minHeight: 0, maxHeight: "none" }}>
-              {detailLoading && !messages.length ? <div className="chat-message-loading"><LoadingDots/></div> : messages.length ? messages.map(message => {
-                const mine = message.sender?.id === currentUserId;
-                return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "")}>
-                  <div className={"chat-message-content " + (mine ? "chat-message-content-mine" : "chat-message-content-theirs")} style={{ maxWidth: "88%" }}>
-                    <div className="chat-message-body">
-                      {!mine && <span style={{ color: "#ff9cab", fontSize: ".69rem", fontWeight: 800 }}>{message.sender?.name || "Group member"} <span style={{ color: "rgba(246,220,225,.52)", fontWeight: 500 }}>@{message.sender?.username || "member"}</span></span>}
-                      {message.text && <p className="chat-message-text">{message.text}</p>}
-                      {message.imageUrl && <button type="button" onClick={() => window.open(message.imageUrl, "_blank", "noopener,noreferrer")} aria-label="Open group image" style={{ display: "block", padding: 0, border: 0, background: "transparent", cursor: "pointer", maxWidth: "100%" }}><img src={message.imageUrl} alt="Group attachment" loading="lazy" style={{ display: "block", maxWidth: "100%", width: "100%", maxHeight: 340, objectFit: "contain", borderRadius: 10, marginTop: 4 }}/></button>}
-                    </div>
-                    <div className="chat-message-footer"><time>{message.editedAt ? "Edited · " : ""}{new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</time></div>
-                  </div>
-                </div>;
-              }) : <div className="chat-empty-conversation"><span><MessageCircle size={25}/></span><strong>Say hello</strong><p>Messages sent to this group will appear here.</p></div>}
+    <section className={`home-shell social-shell ${activeId && detail ? "chat-shell" : ""}`} style={activeId && detail ? undefined : { paddingBottom: 112 }}>
+      <div className={activeId && detail ? "chat-layout chat-layout-conversation-open" : ""} style={{ width: "100%", maxWidth: activeId && detail ? "none" : 820, margin: "0 auto", boxSizing: "border-box", height: activeId && detail ? "100%" : undefined, minHeight: activeId && detail ? 0 : undefined }}>
+        {activeId && detail ? <section className="chat-conversation" aria-label="Group conversation" style={{ position: "relative" }}>
+          <header className="chat-conversation-header">
+            <button className="chat-back-button" type="button" onClick={() => { setActiveId(""); setMemberPanel(false); }} aria-label="Back to groups"><ArrowLeft size={19}/></button>
+            <span className="chat-avatar chat-avatar-large">{detail.avatar ? <img src={detail.avatar} alt=""/> : initials(detail.name)}</span>
+            <div className="chat-conversation-person" style={{ flex: 1 }}>
+              <strong>{detail.name}</strong>
+              <span>{detail.memberCount} members · {detail.visibility === "private" ? "Private group" : "Public group"}</span>
             </div>
-            <form className="chat-composer" onSubmit={sendMessage}>
-              <textarea aria-label="Write a group message" value={draft} onChange={event => setDraft(event.target.value)} placeholder="Message the group…" maxLength={4000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }}/>
-              <button type="submit" disabled={!draft.trim() || busy} aria-label="Send group message" title="Send"><Send size={17}/></button>
-            </form>
-          </section>
-          <div style={{ display: "flex", gap: 8, marginTop: 10 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { void loadDetail(activeId); }}><RefreshCw size={15}/> Refresh</button>{detail.role === "owner" ? <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => askConfirm("Delete this group and all its messages? This cannot be undone.", deleteGroup)}><Trash2 size={15}/> Delete group</button> : <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => askConfirm("Leave this group? You will need to join again to read new messages.", leaveGroup)}><LogOut size={15}/> Leave group</button>}</div>
-        </> : <>
+            <button type="button" className="chat-back-button" onClick={() => setMemberPanel(value => !value)} aria-label="Group details" aria-expanded={memberPanel} title="Group details"><UsersRound size={18}/></button>
+          </header>
+          {memberPanel && <div role="region" aria-label="Group details and members" style={{ position: "absolute", zIndex: 20, top: 64, right: 10, left: 10, maxHeight: "68%", overflowY: "auto", overscrollBehavior: "contain", padding: 14, border: "1px solid rgba(255,210,219,.16)", borderRadius: 15, background: "rgba(28,9,15,.98)", boxShadow: "0 16px 42px rgba(0,0,0,.45)", backdropFilter: "blur(16px)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 10 }}><strong>Group details</strong><button type="button" style={{ ...secondary, minHeight: 30, padding: "5px 10px" }} onClick={() => setMemberPanel(false)}>Done</button></div>
+            {detail.description && <p style={{ ...muted, margin: "0 0 12px", fontSize: ".8rem", lineHeight: 1.5 }}>{detail.description}</p>}
+            {detail.inviteCode && <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: 10, border: "1px solid rgba(255,210,219,.1)", borderRadius: 10 }}><LockKeyhole size={15} color="#ff9cab"/><div style={{ flex: 1, minWidth: 0 }}><div style={{ ...muted, fontSize: ".7rem" }}>Private invite code</div><strong style={{ overflowWrap: "anywhere", fontSize: ".8rem" }}>{detail.inviteCode}</strong></div><button type="button" style={{ ...secondary, padding: "7px 9px" }} onClick={() => { void navigator.clipboard?.writeText(detail.inviteCode || ""); setNotice("Invite code copied."); }}>Copy</button></div>}
+            <strong style={{ display: "block", fontSize: ".8rem", marginBottom: 10 }}>Members · {detail.members.length}</strong>
+            <div style={{ display: "grid", gap: 10 }}>{detail.members.map(member => <div key={member.id} style={{ display: "flex", alignItems: "center", gap: 9 }}>
+              <span className="chat-avatar" style={{ width: 36, height: 36, flexBasis: 36 }}>{member.profilePicture ? <img src={member.profilePicture} alt=""/> : initials(member.name)}</span>
+              <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontSize: ".8rem", fontWeight: 750 }}>{member.name}</div><div style={{ ...muted, fontSize: ".7rem" }}>@{member.username} · {member.role}</div></div>
+              {detail.role === "owner" && member.role !== "owner" && <button type="button" style={{ ...secondary, padding: "7px 9px" }} onClick={() => void changeRole(member, member.role === "admin" ? "member" : "admin")}>{member.role === "admin" ? "Make member" : "Make admin"}</button>}
+              {isAdmin && member.role !== "owner" && member.id !== detail.ownerId && !(detail.role === "admin" && member.role === "admin") && <button type="button" aria-label={"Remove " + member.name} style={{ ...secondary, padding: 8 }} onClick={() => askConfirm("Remove @" + member.username + " from this group?", () => removeMember(member))}><Trash2 size={15}/></button>}
+            </div>)}</div>
+            <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+              <button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { void loadDetail(activeId); setMemberPanel(false); }}><RefreshCw size={15}/> Refresh</button>
+              {detail.role === "owner" ? <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => { setMemberPanel(false); askConfirm("Delete this group and all its messages? This cannot be undone.", deleteGroup); }}><Trash2 size={15}/> Delete</button> : <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => { setMemberPanel(false); askConfirm("Leave this group? You will need to join again to read new messages.", leaveGroup); }}><LogOut size={15}/> Leave</button>}
+            </div>
+          </div>}
+          <div className="chat-message-list" style={{ flex: "1 1 0", minHeight: 0, height: "auto", maxHeight: "none" }}>
+            {detailLoading && !messages.length ? <div className="chat-message-loading"><LoadingDots/></div> : messages.length ? messages.map(message => {
+              const mine = message.sender?.id === currentUserId;
+              return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "")}>
+                <div className={"chat-message-content " + (mine ? "chat-message-content-mine" : "chat-message-content-theirs")} style={{ maxWidth: "88%" }}>
+                  <div className="chat-message-body">
+                    {!mine && <span style={{ color: "#ff9cab", fontSize: ".69rem", fontWeight: 800 }}>{message.sender?.name || "Group member"} <span style={{ color: "rgba(246,220,225,.52)", fontWeight: 500 }}>@{message.sender?.username || "member"}</span></span>}
+                    {message.text && <p className="chat-message-text">{message.text}</p>}
+                    {message.imageUrl && <button type="button" onClick={() => window.open(message.imageUrl, "_blank", "noopener,noreferrer")} aria-label="Open group image" style={{ display: "block", padding: 0, border: 0, background: "transparent", cursor: "pointer", maxWidth: "100%" }}><img src={message.imageUrl} alt="Group attachment" loading="lazy" style={{ display: "block", maxWidth: "100%", width: "100%", maxHeight: 340, objectFit: "contain", borderRadius: 10, marginTop: 4 }}/></button>}
+                  </div>
+                  <div className="chat-message-footer"><time>{message.editedAt ? "Edited · " : ""}{new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</time></div>
+                </div>
+              </div>;
+            }) : <div className="chat-empty-conversation"><span><MessageCircle size={25}/></span><strong>Say hello</strong><p>Messages sent to this group will appear here.</p></div>}
+          </div>
+          <form className="chat-composer" onSubmit={sendMessage}>
+            <textarea aria-label="Write a group message" value={draft} onChange={event => setDraft(event.target.value)} placeholder="Message the group…" maxLength={4000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }}/>
+            <button type="submit" disabled={!draft.trim() || busy} aria-label="Send group message" title="Send"><Send size={18}/></button>
+          </form>
+        </section> : <>
           <div style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
             {([{ id: "mine", label: "My groups", icon: UsersRound }, { id: "discover", label: "Discover", icon: Compass }] as const).map(({ id, label, icon: Icon }) => <button key={id} type="button" onClick={() => setTab(id)} aria-pressed={tab === id} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "8px 10px", borderRadius: 9, border: tab === id ? "1px solid rgba(229,70,92,.7)" : "1px solid rgba(255,210,219,.11)", background: "rgba(255,255,255,.035)", color: tab === id ? "#ff9cab" : "rgba(246,220,225,.66)", fontSize: ".8rem", fontWeight: 750 }}><Icon size={16}/><span>{label}</span></button>)}
           </div>
@@ -211,6 +215,6 @@ export default function GroupPage() {
     </div>}
     {confirmAction && <div role="dialog" aria-modal="true" aria-label="Confirm group action" onClick={event => { if (event.target === event.currentTarget) { setConfirmAction(null); setConfirmMessage(""); } }} style={{ position: "fixed", inset: 0, zIndex: 4500, display: "grid", placeItems: "center", padding: 18, background: "rgba(7,3,6,.78)", backdropFilter: "blur(8px)" }}><div style={{ ...panel, width: "100%", maxWidth: 380, padding: 18, boxShadow: "0 20px 70px rgba(0,0,0,.5)" }}><div style={{ width: 42, height: 42, borderRadius: 13, display: "grid", placeItems: "center", background: "rgba(184,32,50,.16)", color: "#ff9cab", marginBottom: 12 }}><AlertTriangle size={20}/></div><strong style={{ display: "block", fontSize: ".98rem" }}>Are you sure?</strong><p style={{ ...muted, fontSize: ".82rem", lineHeight: 1.55, margin: "7px 0 17px" }}>{confirmMessage}</p><div style={{ display: "flex", gap: 9 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { setConfirmAction(null); setConfirmMessage(""); }}>Cancel</button><button type="button" style={{ ...primary, flex: 1 }} disabled={busy} onClick={() => { const action = confirmAction; setConfirmAction(null); setConfirmMessage(""); if (action) void action(); }}>Confirm</button></div></div></div>}
     {(error || notice) && <div role={error ? "alert" : "status"} style={{ position: "fixed", left: 14, right: 14, bottom: 90, zIndex: 5000, maxWidth: 520, margin: "0 auto", padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, borderRadius: 13, border: "1px solid " + (error ? "rgba(255,120,120,.3)" : "rgba(255,210,219,.16)"), background: "rgba(28,9,15,.97)", color: "#fff0f3", boxShadow: "0 12px 30px rgba(0,0,0,.35)", fontSize: ".8rem" }}><span style={{ flex: 1, overflowWrap: "anywhere" }}>{error || notice}</span><button type="button" aria-label="Dismiss" onClick={() => { setError(""); setNotice(""); }} style={{ ...secondary, minHeight: 28, padding: "3px 7px" }}><X size={15}/></button></div>}
-    <NowBar />
+    {!(activeId && detail) && <NowBar />}
   </main>;
 }
