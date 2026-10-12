@@ -211,6 +211,38 @@ export default function ChatPage() {
   currentUserIdRef.current = currentUserId;
 
   const token = () => localStorage.getItem("hallschat_token");
+
+  async function persistChatMessage(
+    recipientId: string,
+    savedToken: string,
+    input: { text?: string; images?: string[]; audioUrl?: string; replyToId?: string }
+  ): Promise<ChatMessage> {
+    const response = await fetch(`${apiBase}/api/chat/${encodeURIComponent(recipientId)}/messages`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${savedToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify(input)
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (response.status === 401) {
+      localStorage.removeItem("hallschat_token");
+      navigate("/signin", { replace: true });
+      throw new Error("Please sign in again.");
+    }
+    const saved = payload?.message;
+    if (!response.ok || !saved || typeof saved !== "object" || !saved.id) {
+      throw new Error(typeof saved === "string" ? saved : (payload?.message?.message || payload?.message || "Your message couldn't be saved."));
+    }
+    return {
+      ...saved,
+      id: String(saved.id),
+      senderId: String(saved.senderId || currentUserIdRef.current),
+      recipientId: String(saved.recipientId || recipientId),
+      text: typeof saved.text === "string" ? saved.text : "",
+      images: Array.isArray(saved.images) ? saved.images : (saved.imageUrl ? [saved.imageUrl] : []),
+      reactions: Array.isArray(saved.reactions) ? saved.reactions : [],
+      createdAt: saved.createdAt || new Date().toISOString()
+    } as ChatMessage;
+  }
   function messagePreview(message: Pick<ChatMessage, "text" | "images" | "imageUrl" | "audioUrl" | "deletedForEveryone">) {
     if (message.deletedForEveryone) return "This message was deleted";
     if (message.text?.trim()) return message.text;
@@ -592,10 +624,17 @@ export default function ChatPage() {
       if (response.status === 401) { localStorage.removeItem("hallschat_token"); navigate("/signin", { replace: true }); return; }
       if (!response.ok) throw new Error(payload.message || "This conversation couldn't be loaded.");
       const history = Array.isArray(payload.messages) ? payload.messages as ChatMessage[] : [];
-      // Merge history with any socket event that arrived while the history request was in flight.
+      // Keep only this conversation's live/optimistic items when history returns.
+      // Otherwise, messages from the previously opened chat can leak into this thread.
       setMessages(current => {
+        const me = currentUserIdRef.current;
+        const threadCurrent = current.filter(message =>
+          (String(message.senderId) === me && String(message.recipientId) === personId) ||
+          (String(message.senderId) === personId && String(message.recipientId) === me) ||
+          (Boolean(message.pending) && String(message.recipientId) === personId)
+        );
         const byId = new Map<string, ChatMessage>();
-        [...history, ...current].forEach(message => byId.set(message.id, message));
+        [...history, ...threadCurrent].forEach(message => byId.set(String(message.id), message));
         return Array.from(byId.values()).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
       });
       setPeople(current => current.map(person => person.id === personId ? { ...person, canMessage: Boolean(payload.canMessage) } : person));
@@ -790,16 +829,13 @@ export default function ChatPage() {
       updateBackgroundTask(backgroundTaskId, "Uploading voice note…");
       const audioUrl = await uploadChatImage(file, savedToken);
       updateBackgroundTask(backgroundTaskId, "Sending voice note to chat…");
-      const socket = socketRef.current;
-      if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending the voice note again.");
       const replyTarget = replyingTo;
-      const sent = await new Promise<ChatMessage>((resolve, reject) => socket.timeout(20000).emit("chat:send", { recipientId: person.id, text: "", images: [], audioUrl, ...(replyTarget ? { replyToId: replyTarget.id } : {}) }, (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
-        if (timeoutError) return reject(new Error("The live connection timed out while sending your voice note."));
-        if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your voice note couldn't be sent."));
-        const result = response.message as ChatMessage;
-        if (!result || typeof result !== "object" || !result.id) return reject(new Error("The server didn't confirm your voice note."));
-        resolve({ ...result, senderId: result.senderId || currentUserIdRef.current, recipientId: result.recipientId || person.id });
-      }));
+      const sent = await persistChatMessage(person.id, savedToken, {
+        text: "",
+        images: [],
+        audioUrl,
+        ...(replyTarget ? { replyToId: replyTarget.id } : {})
+      });
       setMessages(current => [...current.filter(item => item.id !== pendingId && item.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
       setPeople(current => current.map(item => item.id === person.id ? { ...item, lastMessage: "🎤 Voice note", lastMessageAt: sent.createdAt } : item));
       setReplyingTo(null);
@@ -889,22 +925,12 @@ export default function ChatPage() {
         images.push(await uploadChatImage(file, savedToken));
       }
       updateBackgroundTask(backgroundTaskId, "Sending message…");
-      const socket = socketRef.current;
-      if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending again in a moment.");
-
-      const sendOne = (messageText: string, imageUrl?: string, includeReply = false) => new Promise<ChatMessage>((resolve, reject) => {
-        socket.timeout(15000).emit(
-          "chat:send",
-          { recipientId, text: messageText, images: imageUrl ? [imageUrl] : [], ...(includeReply && replyTarget ? { replyToId: replyTarget.id } : {}) },
-          (timeoutError: Error | null, response: { ok?: boolean; message?: ChatMessage | string }) => {
-            if (timeoutError) return reject(new Error("The live connection timed out. Some items may already have been sent."));
-            if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your message couldn't be sent."));
-            const sent = response.message as ChatMessage;
-            if (!sent || typeof sent !== "object" || !sent.id) return reject(new Error("The server didn't confirm your message."));
-            resolve({ ...sent, senderId: sent.senderId || currentUserIdRef.current, recipientId: sent.recipientId || recipientId });
-          }
-        );
-      });
+      const sendOne = (messageText: string, imageUrl?: string, includeReply = false) =>
+        persistChatMessage(recipientId, savedToken, {
+          text: messageText,
+          images: imageUrl ? [imageUrl] : [],
+          ...(includeReply && replyTarget ? { replyToId: replyTarget.id } : {})
+        });
 
       let pendingIndex = 0;
       const sentMessages: ChatMessage[] = [];
