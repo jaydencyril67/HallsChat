@@ -791,12 +791,12 @@ export default function GroupPage() {
         </>}
       </div>
     </section>
-    {showCreate && <div role="dialog" aria-modal="true" aria-label="Create a group" style={{ position: "fixed", inset: 0, zIndex: 4000, display: "flex", flexDirection: "column", width: "100%", height: "100dvh", minHeight: 0, padding: 0, background: "#16080d", color: "#fff0f3", overflow: "hidden", border: 0, boxShadow: "none" }}>
+    {showCreate && <div className="halls-create-group-modal" role="dialog" aria-modal="true" aria-label="Create a group" style={{ position: "fixed", inset: 0, zIndex: 4000, display: "flex", flexDirection: "column", width: "100%", height: "100dvh", minHeight: 0, padding: 0, background: "#16080d", color: "#fff0f3", overflow: "hidden", border: 0, boxShadow: "none" }}>
       <header style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 8px", background: "transparent", border: 0, flexShrink: 0 }}>
         <button type="button" aria-label="Close create group" onClick={() => { setShowCreate(false); setError(""); }} style={{ ...secondary, width: 42, minWidth: 42, height: 42, padding: 0, border: 0, background: "transparent" }}><X size={23}/></button>
       </header>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "hidden", overscrollBehavior: "contain", padding: "8px 16px calc(12px + env(safe-area-inset-bottom, 0px))" }}>
-        <form onSubmit={createGroup} style={{ display: "grid", gap: 13, maxWidth: 560, margin: "0 auto" }}>
+      <div className="halls-create-group-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "8px 16px calc(18px + env(safe-area-inset-bottom, 0px))" }}>
+        <form className="halls-create-group-form" onSubmit={createGroup} style={{ display: "grid", gap: 13, maxWidth: 560, margin: "0 auto" }}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: "8px 0 4px", textAlign: "center" }}>
             <button type="button" onClick={() => groupAvatarInputRef.current?.click()} aria-label="Upload group profile picture" style={{ position: "relative", width: 104, height: 104, minWidth: 104, borderRadius: 22, overflow: "hidden", border: "1px dashed rgba(255,156,171,.65)", background: "linear-gradient(145deg,rgba(197,45,68,.2),rgba(53,18,29,.8))", color: "#ff9cab", display: "grid", placeItems: "center", padding: 0 }}>
               {groupAvatarPreview ? <img src={groupAvatarPreview} alt="Group profile preview" style={{ width: "100%", height: "100%", objectFit: "cover" }}/> : <div style={{ display: "grid", justifyItems: "center", gap: 7 }}><Camera size={28}/><span style={{ fontSize: ".9rem", fontWeight: 750 }}>Add photo</span></div>}
