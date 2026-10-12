@@ -114,8 +114,8 @@ export default function ProfilePage() {
 
   const posts = allPosts.filter(post => Boolean(user?.id) && post.author?.id === user?.id);
   const initials = user?.name?.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
-  const panel: React.CSSProperties = { border: "1px solid rgba(255,210,219,.11)", borderRadius: 17, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8))" };
-  const muted: React.CSSProperties = { color: "rgba(246,220,225,.58)" };
+  const panel: React.CSSProperties = { border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)" };
+  const muted: React.CSSProperties = { color: "var(--theme-muted)" };
 
   function selectCoverPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
