@@ -640,8 +640,8 @@ export default function GroupPage() {
       </div>
     </section>
     {showCreate && <div role="dialog" aria-modal="true" aria-label="Create a group" style={{ position: "fixed", inset: 0, zIndex: 4000, display: "flex", flexDirection: "column", width: "100%", height: "100dvh", minHeight: 0, padding: 0, background: "#16080d", color: "#fff0f3", overflow: "hidden" }}>
-      <header style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 13px", borderBottom: "1px solid rgba(255,210,219,.12)", background: "rgba(28,9,15,.98)", flexShrink: 0 }}>
-        <button type="button" aria-label="Close create group" onClick={() => { setShowCreate(false); setError(""); }} style={{ ...secondary, width: 40, minWidth: 40, height: 40, padding: 0 }}><ArrowLeft size={19}/></button>
+      <header style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 13px", background: "rgba(28,9,15,.98)", flexShrink: 0 }}>
+        <button type="button" aria-label="Close create group" onClick={() => { setShowCreate(false); setError(""); }} style={{ ...secondary, width: 40, minWidth: 40, height: 40, padding: 0 }}><X size={20}/></button>
         <div style={{ flex: 1, minWidth: 0 }}><strong style={{ display: "block", fontSize: "1.02rem" }}>Create a group</strong><span style={{ ...muted, display: "block", fontSize: ".75rem", marginTop: 3 }}>Set up your community on HallsChat</span></div>
       </header>
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "20px 16px calc(24px + env(safe-area-inset-bottom, 0px))" }}>
