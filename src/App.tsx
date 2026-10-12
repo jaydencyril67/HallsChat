@@ -107,7 +107,7 @@ function GlobalModalScrollLock() {
   useEffect(() => {
     let locked = false;
     let savedScrollY = 0;
-    let previousBody: { position: string; top: string; left: string; right: string; width: string; overflow: string; touchAction: string } | null = null;
+    let previousBody: { position: string; top: string; left: string; right: string; width: string; overflow: string } | null = null;
     let previousHtmlOverflow = "";
 
     const syncLock = () => {
@@ -127,7 +127,6 @@ function GlobalModalScrollLock() {
           right: body.style.right,
           width: body.style.width,
           overflow: body.style.overflow,
-          touchAction: body.style.touchAction,
         };
         previousHtmlOverflow = html.style.overflow;
         body.style.position = "fixed";
@@ -136,7 +135,6 @@ function GlobalModalScrollLock() {
         body.style.right = "0";
         body.style.width = "100%";
         body.style.overflow = "hidden";
-        body.style.touchAction = "none";
         html.style.overflow = "hidden";
         locked = true;
       } else if (!shouldLock && locked) {
@@ -149,7 +147,6 @@ function GlobalModalScrollLock() {
           body.style.right = previousBody.right;
           body.style.width = previousBody.width;
           body.style.overflow = previousBody.overflow;
-          body.style.touchAction = previousBody.touchAction;
         }
         html.style.overflow = previousHtmlOverflow;
         locked = false;
