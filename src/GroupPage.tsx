@@ -5,6 +5,7 @@ import type { Socket } from "socket.io-client";
 import type { ChangeEvent } from "react";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import AppHeader from "./AppHeader";
+import GroupCallPanel from "./components/GroupCallPanel";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
@@ -141,6 +142,7 @@ export default function GroupPage() {
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+  const [groupSocket, setGroupSocket] = useState<Socket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
@@ -201,11 +203,12 @@ export default function GroupPage() {
   useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); const timer = window.setInterval(() => void loadDetail(activeId, false), 5000); return () => window.clearInterval(timer); }, [activeId, loadDetail]);
   useEffect(() => { const list = groupMessageListRef.current; if (list) list.scrollTop = list.scrollHeight; }, [activeId, messages.length]);
   useEffect(() => {
-    if (!activeId) { socketRef.current?.disconnect(); socketRef.current = null; return; }
+    if (!activeId) { socketRef.current?.disconnect(); socketRef.current = null; setGroupSocket(null); return; }
     const token = localStorage.getItem("hallschat_token");
     if (!token) return;
     const socket = io(apiBase, { auth: { token }, transports: ["websocket", "polling"] });
     socketRef.current = socket;
+    setGroupSocket(socket);
     socket.on("connect", () => socket.emit("group:join", { groupId: activeId }, (result: { ok?: boolean }) => { if (!result?.ok) setError("Live group updates are unavailable. You can still refresh messages."); }));
     socket.on("group:message", (message: GroupMessage) => {
       setMessages(current => current.some(item => item.id === message.id) ? current : [...current, message].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
@@ -227,7 +230,7 @@ export default function GroupPage() {
       if (event.groupId !== activeId || event.senderId === currentUserId) return;
       setOtherTyping(Boolean(event.isTyping));
     });
-    return () => { socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; };
+    return () => { socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; setGroupSocket(current => current === socket ? null : current); };
   }, [activeId, currentUserId]);
   useEffect(() => {
     const input = draftInputRef.current;
@@ -473,6 +476,7 @@ export default function GroupPage() {
               <strong>{detail.name}</strong>
               <span>{detail.memberCount} members · {detail.visibility === "private" ? "Private group" : "Public group"}</span>
             </div>
+            <GroupCallPanel socket={groupSocket} groupId={activeId} groupName={detail.name} currentUserId={currentUserId}/>
             <button type="button" className="chat-back-button" onClick={() => setMemberPanel(value => !value)} aria-label="Group details" aria-expanded={memberPanel} title="Group details"><UsersRound size={18}/></button>
           </header>
           {memberPanel && <div role="region" aria-label="Group details and members" style={{ position: "absolute", zIndex: 20, top: 64, right: 10, left: 10, maxHeight: "68%", overflowY: "auto", overscrollBehavior: "contain", padding: 14, border: "1px solid rgba(255,210,219,.16)", borderRadius: 15, background: "rgba(28,9,15,.98)", boxShadow: "0 16px 42px rgba(0,0,0,.45)", backdropFilter: "blur(16px)" }}>
