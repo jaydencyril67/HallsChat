@@ -170,7 +170,6 @@ function GlobalModalScrollLock() {
           body.style.right = previousBody.right;
           body.style.width = previousBody.width;
           body.style.overflow = previousBody.overflow;
-          body.style.touchAction = previousBody.touchAction;
         }
         html.style.overflow = previousHtmlOverflow;
         window.scrollTo(0, savedScrollY);
