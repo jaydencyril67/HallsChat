@@ -5089,3 +5089,107 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     gap: clamp(16px, 7vw, 34px) !important;
   }
 }
+
+
+/* Profile page light-theme pass: refine hierarchy, compact mobile spacing and
+   consistent surfaces. Dark-theme styles are intentionally not modified. */
+:root[data-theme="light"] .profile-page .social-shell {
+  color: #302329;
+}
+:root[data-theme="light"] .profile-page .social-shell > div {
+  min-width: 0;
+}
+:root[data-theme="light"] .profile-page .social-shell > div > div:first-child {
+  border-color: #ead8da !important;
+  box-shadow: 0 8px 28px rgba(75, 27, 39, .055);
+}
+:root[data-theme="light"] .profile-page .profile-cover-popout-trigger {
+  background: rgba(255, 250, 249, .94) !important;
+  color: #81273b !important;
+  border-color: rgba(255, 255, 255, .88) !important;
+  box-shadow: 0 4px 16px rgba(37, 9, 17, .18);
+}
+:root[data-theme="light"] .profile-page .profile-picture-popout-trigger {
+  border-color: #fffaf9 !important;
+  box-shadow: 0 0 0 1px #e5cbd0, 0 5px 18px rgba(65, 24, 35, .14);
+}
+:root[data-theme="light"] .profile-page h1 {
+  color: #302329 !important;
+  line-height: 1.2;
+}
+:root[data-theme="light"] .profile-page .social-shell p {
+  overflow-wrap: anywhere;
+}
+:root[data-theme="light"] .profile-page .social-shell > div > div:nth-child(2) {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .profile-page .social-shell > div > div:nth-child(2) strong {
+  color: #81273b !important;
+  font-variant-numeric: tabular-nums;
+}
+:root[data-theme="light"] .profile-page .social-shell > div > div:nth-child(2) span {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .profile-page .social-shell [role="tablist"] {
+  border-bottom-color: #ead8da !important;
+}
+:root[data-theme="light"] .profile-page .social-shell [role="tablist"] button {
+  min-height: 44px;
+  border-radius: 8px 8px 0 0;
+}
+:root[data-theme="light"] .profile-page .social-shell [role="tablist"] button[aria-selected="true"] {
+  background: linear-gradient(180deg, rgba(169,44,67,.075), transparent) !important;
+}
+:root[data-theme="light"] .profile-page .social-shell [role="tablist"] button svg {
+  flex-shrink: 0;
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"] {
+  border-color: #ead8da !important;
+  box-shadow: 0 1px 3px rgba(61, 24, 33, .05);
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"] img {
+  transition: transform .2s ease;
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"]:hover img {
+  transform: scale(1.025);
+}
+:root[data-theme="light"] .profile-page .social-shell article:not([role="button"]) {
+  color: #302329;
+}
+:root[data-theme="light"] .profile-page .social-shell [role="alert"] {
+  background: #fff8f7;
+  border-color: #e8c6cd;
+  color: #81273b !important;
+}
+:root[data-theme="light"] .profile-page .social-shell [role="status"] {
+  color: #92263b !important;
+}
+:root[data-theme="light"] .profile-page .social-shell .button.button-secondary {
+  min-height: 46px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(75, 27, 39, .045);
+}
+:root[data-theme="light"] .profile-page .social-shell .button.button-secondary:focus-visible {
+  outline: 2px solid #a92c43 !important;
+  outline-offset: 3px;
+}
+@media (max-width: 520px) {
+  :root[data-theme="light"] .profile-page .social-shell > div {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  :root[data-theme="light"] .profile-page .social-shell > div > div:first-child > div:nth-child(2) {
+    padding-left: 13px !important;
+    padding-right: 13px !important;
+  }
+  :root[data-theme="light"] .profile-page .social-shell article[role="button"] {
+    border-radius: 3px;
+    padding: 6px !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-theme="light"] .profile-page .social-shell article[role="button"] img,
+  :root[data-theme="light"] .profile-page .social-shell [role="tablist"] button {
+    transition: none !important;
+  }
+}
