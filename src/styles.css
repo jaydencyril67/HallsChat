@@ -2337,3 +2337,16 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
  .social-post-snap-bottom .social-story-snap-bottom-row>button{min-width:125px}
  .social-post-attachment-manager{right:60px;width:min(280px,calc(100% - 130px))}
 }
+
+
+/* Post creation uses the same story canvas, icon rail and bottom pavement. */
+.social-post-snap-canvas{border:0;border-radius:0;color:#fff;}
+.social-post-snap-canvas .social-post-snap-main{padding-top:78px;padding-bottom:18px;}
+.social-post-snap-canvas .social-story-snap-tools{right:12px;}
+.social-post-background-picker{position:absolute;z-index:9;top:max(14px,calc(env(safe-area-inset-top) + 60px));right:62px;width:min(245px,calc(100% - 90px));margin:0;}
+.social-post-background-picker .social-story-colors{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;}
+.social-post-background-picker .social-story-colors button{width:30px;height:30px;border:2px solid rgba(255,255,255,.25);border-radius:50%;}
+.social-post-background-picker .social-story-colors button.is-active{outline:2px solid #fff;outline-offset:2px;}
+.social-post-snap-canvas .social-post-snap-heading{left:66px;right:66px;}
+.social-post-snap-canvas .social-story-snap-bottom{padding-top:36px;}
+@media(max-width:520px){.social-post-background-picker{right:60px;width:min(245px,calc(100% - 78px));}.social-post-snap-canvas .social-post-snap-main{padding-right:60px;padding-left:12px;}}
