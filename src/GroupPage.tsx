@@ -151,6 +151,7 @@ export default function GroupPage() {
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
   const typingTimerRef = useRef<number | null>(null);
+  const otherTypingTimerRef = useRef<number | null>(null);
   const messageGestureRef = useRef<{ id: string; startX: number; startY: number; longPressed: boolean; timer: number | null } | null>(null);
   const [memberPanel, setMemberPanel] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -248,9 +249,18 @@ export default function GroupPage() {
     });
     socket.on("group:typing", (event: { groupId?: string; senderId?: string; isTyping?: boolean }) => {
       if (event.groupId !== activeId || event.senderId === currentUserId) return;
+      if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current);
       setOtherTyping(Boolean(event.isTyping));
+      if (event.isTyping) {
+        otherTypingTimerRef.current = window.setTimeout(() => {
+          setOtherTyping(false);
+          otherTypingTimerRef.current = null;
+        }, 2500);
+      } else {
+        otherTypingTimerRef.current = null;
+      }
     });
-    return () => { socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; setGroupSocket(current => current === socket ? null : current); };
+    return () => { if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current); otherTypingTimerRef.current = null; setOtherTyping(false); socket.emit("group:typing", { groupId: activeId, isTyping: false }); socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; setGroupSocket(current => current === socket ? null : current); };
   }, [activeId, currentUserId, loadDetail]);
   useEffect(() => {
     const input = draftInputRef.current;
