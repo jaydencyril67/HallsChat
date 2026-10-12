@@ -98,7 +98,7 @@ export default function GroupPage() {
   const [memberPanel, setMemberPanel] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState<null | (() => Promise<void>)>(null);
-  const currentUserId = useMemo(() => { try { const token = localStorage.getItem("hallschat_token") || ""; const part = token.split(".")[0].replace(/-/g, "+").replace(/_/g, "/"); return JSON.parse(atob(part + "=".repeat((4 - part.length % 4) % 4))).sub || ""; } catch { return ""; } }, []);
+  const currentUserId = useMemo(() => { try { const token = localStorage.getItem("hallschat_token") || ""; const part = token.split(".")[1]; if (!part) return ""; const normalized = part.replace(/-/g, "+").replace(/_/g, "/"); return JSON.parse(atob(normalized + "=".repeat((4 - normalized.length % 4) % 4))).sub || ""; } catch { return ""; } }, []);
   const askConfirm = (message: string, action: () => Promise<void>) => { setConfirmMessage(message); setConfirmAction(() => action); };
 
   const request = useCallback(async (path: string, init: RequestInit = {}) => {
