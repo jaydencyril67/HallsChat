@@ -942,8 +942,8 @@ export default function ChatPage() {
     setImagePreviews([]);
     setError("");
 
+    const images: string[] = [];
     try {
-      const images: string[] = [];
       for (const [index, file] of filesToSend.entries()) {
         updateBackgroundTask(backgroundTaskId, `Uploading attachment ${index + 1} of ${filesToSend.length}…`);
         images.push(await uploadChatImage(file, savedToken));
@@ -987,9 +987,18 @@ export default function ChatPage() {
       releaseBackgroundChatSocketIfNeeded();
     } catch (err) {
       setMessages(current => current.filter(message => !pendingIds.includes(message.id)));
-      previewsToRelease.forEach(url => URL.revokeObjectURL(url));
+      const sentText = Boolean(text && sentMessages.some(message => message.text === text));
+      const sentImageUrls = new Set(sentMessages.flatMap(message => message.images?.length ? message.images : (message.imageUrl ? [message.imageUrl] : [])));
+      const failedImageIndexes = filesToSend.map((_, index) => index).filter(index => !images[index] || !sentImageUrls.has(images[index]));
+      const failedFiles = failedImageIndexes.map(index => filesToSend[index]);
+      const failedPreviews = failedImageIndexes.map(index => previewsToRelease[index]);
+      previewsToRelease.forEach((url, index) => { if (!failedImageIndexes.includes(index)) URL.revokeObjectURL(url); });
+      setDraft(sentText ? "" : text);
+      setImageFiles(failedFiles);
+      setImagePreviews(failedPreviews);
+      if ((text && !sentText) || (!text && sentMessages.length === 0)) setReplyingTo(replyTarget);
       const messageError = err instanceof Error ? err.message : "Your message couldn't be sent.";
-      setError(messageError);
+      setError(`${messageError} Your unsent text and attachments have been restored so you can retry.`);
       finishBackgroundTask(backgroundTaskId, messageError);
       releaseBackgroundChatSocketIfNeeded();
     } finally {
