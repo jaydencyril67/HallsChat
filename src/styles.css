@@ -635,7 +635,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* HallsChat direct messaging */
 .chat-page{--chat-line:rgba(255,210,219,.105);--chat-muted:rgba(246,220,225,.58);--chat-text:#fff0f3}
-.chat-shell{width:min(1120px,calc(100% - 28px));margin:0 auto;padding:var(--app-top-gap) 0 112px}
+.chat-shell{width:min(1120px,calc(100% - 16px));margin:0 auto;padding:var(--app-top-gap) 0 112px}
 .chat-heading{display:flex;align-items:center;gap:12px;margin:0 0 18px}
 .chat-heading-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border:1px solid rgba(230,76,98,.25);border-radius:14px;background:rgba(184,32,50,.14);color:#ff9cab}
 .chat-heading h1{margin:0;color:var(--chat-text);font-size:clamp(1.35rem,4vw,1.75rem);letter-spacing:-.04em}
