@@ -7,6 +7,7 @@ import ImagePreviewModal from "./components/ImagePreviewModal";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
+import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 type GroupSummary = { id: string; name: string; description: string; visibility: "public" | "private"; avatar?: string; ownerId: string; memberCount: number; role: string | null; inviteCode?: string; createdAt: string; updatedAt: string; lastMessage?: { text: string; createdAt: string; senderName: string } | null };
@@ -349,30 +350,40 @@ export default function GroupPage() {
     if (!activeId || busy || voiceBusy) return;
     const savedToken = localStorage.getItem("hallschat_token");
     if (!savedToken) { window.location.href = "/signin"; return; }
+    const groupId = activeId;
     const text = draft.trim();
     if (!text && !imageFiles.length && !voiceDraft) return;
     setBusy(true); setError("");
     const pendingId = "pending-" + Date.now();
-    const pending: GroupMessage = { id: pendingId, text, images: [...imagePreviews], audioUrl: voiceDraftUrl, imageUrl: imagePreviews[0], replyTo: replyingTo ? { id: replyingTo.id, senderId: replyingTo.sender?.id || "", text: replyingTo.text, imageUrl: replyingTo.images?.[0] || replyingTo.imageUrl, audioUrl: replyingTo.audioUrl, deleted: Boolean(replyingTo.deletedForEveryone) } : null, reactions: [], createdAt: new Date().toISOString(), pending: true, sender: { id: currentUserId, name: "You", username: "" } };
+    const replyTarget = replyingTo;
+    const pending: GroupMessage = { id: pendingId, text, images: [...imagePreviews], audioUrl: voiceDraftUrl, imageUrl: imagePreviews[0], replyTo: replyTarget ? { id: replyTarget.id, senderId: replyTarget.sender?.id || "", text: replyTarget.text, imageUrl: replyTarget.images?.[0] || replyTarget.imageUrl, audioUrl: replyTarget.audioUrl, deleted: Boolean(replyTarget.deletedForEveryone) } : null, reactions: [], createdAt: new Date().toISOString(), pending: true, sender: { id: currentUserId, name: "You", username: "" } };
     setMessages(current => [...current, pending]); setDraft(""); setReplyingTo(null); setAttachmentMenuOpen(false);
     const files = [...imageFiles]; const previews = [...imagePreviews]; const voiceFile = voiceDraft;
     setImageFiles([]); setImagePreviews([]); setVoiceDraft(null); setVoiceDraftUrl(""); setRecordingSeconds(0);
+    const backgroundTaskId = startBackgroundTask("Sending group message", files.length || voiceFile ? "Preparing group message attachments…" : "Sending message to group…");
     try {
       const images: string[] = [];
-      for (const file of files) images.push(await uploadGroupMedia(file, savedToken));
-      const audioUrl = voiceFile ? await uploadGroupMedia(voiceFile, savedToken) : "";
-      const payload = await request(`/api/groups/${encodeURIComponent(activeId)}/messages`, { method: "POST", body: JSON.stringify({ text, images, audioUrl, ...(replyingTo ? { replyToId: replyingTo.id } : {}) }) });
+      for (const [index, file] of files.entries()) {
+        updateBackgroundTask(backgroundTaskId, `Uploading group attachment ${index + 1} of ${files.length}…`);
+        images.push(await uploadGroupMedia(file, savedToken));
+      }
+      const audioUrl = voiceFile ? (updateBackgroundTask(backgroundTaskId, "Uploading group voice note…"), await uploadGroupMedia(voiceFile, savedToken)) : "";
+      updateBackgroundTask(backgroundTaskId, "Sending message to group…");
+      const payload = await request(`/api/groups/${encodeURIComponent(groupId)}/messages`, { method: "POST", body: JSON.stringify({ text, images, audioUrl, ...(replyTarget ? { replyToId: replyTarget.id } : {}) }) });
       const sent = payload.message as GroupMessage;
       if (!sent?.id) throw new Error("The server didn't confirm your message.");
       setMessages(current => [...current.filter(message => message.id !== pendingId && message.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
       await loadGroups("mine", false);
       previews.forEach(url => URL.revokeObjectURL(url));
-      if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
       setNotice("");
+      finishBackgroundTask(backgroundTaskId);
     } catch (err) {
       setMessages(current => current.filter(message => message.id !== pendingId));
-      setDraft(text); setImageFiles(files); setImagePreviews(previews); if (voiceFile) { setVoiceDraft(voiceFile); setVoiceDraftUrl(URL.createObjectURL(voiceFile)); }
-      setError(err instanceof Error ? err.message : "Message wasn't sent.");
+      setDraft(text); setImageFiles(files); setImagePreviews(previews);
+      if (voiceFile) { setVoiceDraft(voiceFile); setVoiceDraftUrl(URL.createObjectURL(voiceFile)); }
+      const messageError = err instanceof Error ? err.message : "Message wasn't sent.";
+      setError(messageError);
+      finishBackgroundTask(backgroundTaskId, messageError);
     } finally { setBusy(false); }
   }
   useEffect(() => {
