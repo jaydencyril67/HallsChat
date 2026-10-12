@@ -2413,3 +2413,16 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .social-post-snap-canvas .social-post-snap-main{padding-right:46px;}
   .social-post-snap-canvas .social-post-snap-poll{padding-right:46px;}
 }
+
+
+/* Let the post text use the full canvas width beneath the floating icon rail. */
+.social-post-snap-canvas .social-post-live-preview{width:100%;max-width:none;padding-left:10px;padding-right:8px;}
+.social-post-snap-canvas .social-post-snap-main{padding-right:10px;}
+.social-post-snap-canvas .social-post-snap-poll{padding-right:10px;}
+.social-post-snap-canvas .social-story-snap-tools{z-index:20;}
+.social-post-snap-canvas .social-story-snap-tools>button,.social-post-snap-canvas .social-story-snap-tools>.social-story-snap-tool{position:relative;z-index:21;}
+@media(max-width:520px){
+  .social-post-snap-canvas .social-post-live-preview{padding-left:8px;padding-right:6px;}
+  .social-post-snap-canvas .social-post-snap-main{padding-right:8px;}
+  .social-post-snap-canvas .social-post-snap-poll{padding-right:8px;}
+}
