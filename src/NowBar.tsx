@@ -5,6 +5,24 @@ import { navigate } from "./utils/navigate";
 type View = "title" | "actions";
 type Mode = "compact" | "expanded";
 
+const NOWBAR_ACTION_STORAGE_KEY = "hallschat-nowbar-action";
+
+function readSavedNowBarAction() {
+  try {
+    return window.localStorage.getItem(NOWBAR_ACTION_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveNowBarAction(label: string) {
+  try {
+    window.localStorage.setItem(NOWBAR_ACTION_STORAGE_KEY, label.trim().toUpperCase());
+  } catch {
+    // Keep the NowBar usable when storage is unavailable.
+  }
+}
+
 const actions = [
   { label: "HOME", icon: Home },
   { label: "CHAT", icon: MessageCircle },
@@ -70,6 +88,29 @@ export default function NowBar() {
     if (idleTimer.current) clearTimeout(idleTimer.current);
   }, []);
 
+  // Match CryBots: remember the last compact NowBar action and center it when
+  // the navigation buttons are opened again.
+  useEffect(() => {
+    if (mode === "expanded" || view !== "actions" || !barRef.current) return;
+    const targetLabel = readSavedNowBarAction();
+    if (!targetLabel) return;
+
+    const target = Array.from(barRef.current.querySelectorAll<HTMLButtonElement>("button[aria-label]"))
+      .find(button => button.getAttribute("aria-label") === targetLabel);
+    if (!target) return;
+
+    const centerTarget = () => {
+      if (!barRef.current) return;
+      const maxScrollLeft = barRef.current.scrollWidth - barRef.current.clientWidth;
+      const nextScrollLeft = target.offsetLeft - (barRef.current.clientWidth - target.offsetWidth) / 2;
+      barRef.current.scrollLeft = Math.max(0, Math.min(nextScrollLeft, maxScrollLeft));
+    };
+
+    centerTarget();
+    const frame = window.requestAnimationFrame(centerTarget);
+    return () => window.cancelAnimationFrame(frame);
+  }, [pageTitle, mode, view]);
+
   const resetIdleTimer = () => {
     if (idleTimer.current) clearTimeout(idleTimer.current);
     idleTimer.current = setTimeout(() => setView("title"), 10000);
@@ -103,6 +144,7 @@ export default function NowBar() {
   };
 
   const chooseAction = (label: string) => {
+    if (mode !== "expanded") saveNowBarAction(label);
     if (mode === "expanded" && label === pageTitle) {
       setView("title");
       setMode("compact");
