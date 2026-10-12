@@ -71,8 +71,8 @@ export default function ProfilePage() {
 
     async function loadOwnProfileAndPosts() {
       try {
-        const accountResponse = await fetch(\`\${apiBase}/api/auth/me\`, {
-          headers: { Authorization: \`Bearer \${token}\` }
+        const accountResponse = await fetch(`${apiBase}/api/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         const accountPayload = await accountResponse.json().catch(() => ({}));
         if (!accountResponse.ok || !accountPayload.user) {
@@ -83,8 +83,8 @@ export default function ProfilePage() {
         setUser(account);
         setLoading(false);
 
-        const postsResponse = await fetch(\`\${apiBase}/api/social/users/\${encodeURIComponent(account.id)}\`, {
-          headers: { Authorization: \`Bearer \${token}\` }
+        const postsResponse = await fetch(`${apiBase}/api/social/users/${encodeURIComponent(account.id)}`, {
+          headers: { Authorization: `Bearer ${token}` }
         });
         const postsPayload = await postsResponse.json().catch(() => ({}));
         if (!postsResponse.ok) throw new Error(postsPayload.message || "Your posts couldn't be loaded.");
