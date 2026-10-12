@@ -4294,3 +4294,118 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     background: #f8e9ec !important;
   }
 }
+
+
+/* Chat section pass 6 — light-theme coverage for message controls and inline-authored surfaces.
+   Every rule is scoped to light mode; the dark theme and its tokens are not modified. */
+:root[data-theme="light"] .chat-page .chat-message-content-theirs {
+  background: #fffdfc !important;
+  border: 1px solid #eedfe0 !important;
+  color: #302329 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine {
+  background: linear-gradient(145deg, #b72c43, #962039) !important;
+  border: 1px solid rgba(169, 31, 53, .22) !important;
+  color: #fff8f8 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-message-text,
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-reply-quote,
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-message-footer {
+  color: #fff8f8 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-message-text,
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-message-footer {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-reply-quote {
+  background: #f8ebed !important;
+  border-left-color: #a92c43 !important;
+  color: #302329 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-reply-quote strong {
+  color: #92263b !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-reply-quote span {
+  color: #6f5960 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-footer time {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-message-footer time,
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-message-footer > span {
+  color: rgba(255, 248, 248, .82) !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-more {
+  color: inherit !important;
+  background: transparent !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-actions,
+:root[data-theme="light"] .chat-page .chat-reaction-picker,
+:root[data-theme="light"] .chat-page .chat-delete-popout {
+  background: #fffdfc !important;
+  color: #302329 !important;
+  border: 1px solid #ead8da !important;
+  box-shadow: 0 12px 32px rgba(61, 24, 33, .16) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+:root[data-theme="light"] .chat-page .chat-message-actions button,
+:root[data-theme="light"] .chat-page .chat-delete-popout button {
+  color: #302329 !important;
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-actions button:hover,
+:root[data-theme="light"] .chat-page .chat-delete-popout button:first-child {
+  background: #f8ebed !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-actions .chat-message-action-delete,
+:root[data-theme="light"] .chat-page .chat-delete-popout button:last-child {
+  color: #fff !important;
+  background: #a92c43 !important;
+}
+:root[data-theme="light"] .chat-page .chat-delete-popout > div:nth-child(2) {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .chat-page .chat-reaction-picker button {
+  color: #302329 !important;
+  background: transparent !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs ~ .chat-reaction-picker button,
+:root[data-theme="light"] .chat-page .chat-message-line:not(.chat-message-line-mine) .chat-reaction-picker button {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-play {
+  background: #a92c43 !important;
+  color: #fff !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-waveform span {
+  background: #d8bfc3 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-waveform span.is-played {
+  background: #a92c43 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-voice-mic {
+  background: #f5e0e4 !important;
+  color: #92263b !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-message-body > form textarea {
+  background: #fffaf9 !important;
+  color: #302329 !important;
+  border-color: #e4cbd0 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-message-body > form button {
+  color: #302329 !important;
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs .chat-message-body > form button[type="submit"] {
+  color: #fff !important;
+  background: #a92c43 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-reactions button {
+  border-color: #ead8da !important;
+  color: #6f5960 !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-line:not(.chat-message-line-mine) .chat-message-reaction,
+:root[data-theme="light"] .chat-page .chat-message-line:not(.chat-message-line-mine) [aria-label*="reactions"] {
+  color: #302329 !important;
+}
