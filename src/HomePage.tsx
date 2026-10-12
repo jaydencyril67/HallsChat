@@ -191,7 +191,6 @@ export default function HomePage() {
   useEffect(() => subscribeSocialPostPublishing(next => {
     setPublishing(next.phase === "uploading");
     setUploadStatus(next.phase === "uploading" ? next.status : "");
-    if (next.phase === "uploading") wasPublishingHere.current = true;
     if (next.phase === "success" && next.lastPost && next.revision > handledPublishRevision.current) {
       handledPublishRevision.current = next.revision;
       const publishedPost = next.lastPost as SocialPost;
@@ -708,6 +707,7 @@ export default function HomePage() {
     setFeedError("");
     setNotice("");
     setComposerExpanded(false);
+    wasPublishingHere.current = true;
     startSocialPostPublish({
       content: composerMode === "post" ? content : "",
       images: selectedImages.map(item => item.file),
