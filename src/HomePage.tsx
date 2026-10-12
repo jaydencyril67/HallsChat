@@ -938,7 +938,7 @@ export default function HomePage() {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || !payload.comment) throw new Error(payload.message || "Your comment couldn't be published.");
-      setCommentsByPost(current => ({ ...current, [post.id]: [...(current[post.id] || []), payload.comment as SocialComment] }));
+      setCommentsByPost(current => ({ ...current, [post.id]: (current[post.id] || []).some(comment => comment.id === (payload.comment as SocialComment).id) ? current[post.id] : [...(current[post.id] || []), payload.comment as SocialComment] }));
       setCommentDrafts(current => ({ ...current, [post.id]: "" }));
       setPosts(current => current.map(item => item.id === post.id ? { ...item, commentCount: Number(payload.commentCount) || (item.commentCount || 0) + 1 } : item));
     } catch (err) {
