@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Square, Reply, MoreVertical, Pencil, Smile, Paperclip } from "lucide-react";
+import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Square, Reply, MoreVertical, Pencil, Smile, Paperclip, Phone, Video } from "lucide-react";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import type { ChangeEvent } from "react";
@@ -15,7 +15,7 @@ type GroupSummary = { id: string; name: string; description: string; visibility:
 type Member = { id: string; name: string; username: string; profilePicture?: string; role: "owner" | "admin" | "member"; joinedAt?: string };
 type GroupReply = { id: string; senderId: string; text?: string; imageUrl?: string; audioUrl?: string; deleted?: boolean };
 type GroupReaction = { userId: string; emoji: string };
-type GroupMessage = { id: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: GroupReply | null; reactions?: GroupReaction[]; deletedForEveryone?: boolean; createdAt: string; editedAt?: string | null; pending?: boolean; sender: { id: string; name: string; username: string; profilePicture?: string } | null };
+type GroupMessage = { id: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: GroupReply | null; reactions?: GroupReaction[]; deletedForEveryone?: boolean; createdAt: string; editedAt?: string | null; pending?: boolean; callLog?: { kind: "audio" | "video"; status: "ringing" | "missed" | "declined" | "cancelled" | "completed" | "failed"; durationSeconds: number; callerId: string; startedAt?: string; endedAt?: string } | null; sender: { id: string; name: string; username: string; profilePicture?: string } | null };
 type GroupDetail = GroupSummary & { members: Member[] };
 type Tab = "mine" | "discover";
 
@@ -232,8 +232,11 @@ export default function GroupPage() {
       });
     });
     socket.on("group:message", (message: GroupMessage) => {
-      setMessages(current => current.some(item => item.id === message.id) ? current : [...current, message].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+      setMessages(current => current.some(item => item.id === message.id) ? current.map(item => item.id === message.id ? { ...item, ...message } : item) : [...current, message].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
       setOtherTyping(false);
+    });
+    socket.on("group:call-log:update", (event: { id: string; callLog: NonNullable<GroupMessage["callLog"]> }) => {
+      setMessages(current => current.map(item => item.id === event.id ? { ...item, callLog: event.callLog } : item));
     });
     socket.on("group:reaction", (event: { groupId?: string; id?: string; reactions?: GroupReaction[] }) => {
       if (event.groupId !== activeId || !event.id || !Array.isArray(event.reactions)) return;
@@ -534,7 +537,21 @@ export default function GroupPage() {
               const quoted = message.replyTo;
               const canEdit = mine && !message.pending && !message.deletedForEveryone && Boolean(message.text.trim()) && !imgs.length && !message.audioUrl && Date.now() - new Date(message.createdAt).getTime() <= 24 * 60 * 60 * 1000;
               const reactionGroups = Array.from((message.reactions || []).reduce((groups, reaction) => groups.set(reaction.emoji, [...(groups.get(reaction.emoji) || []), reaction]), new Map<string, GroupReaction[]>()).entries());
-              return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "")} id={"chat-message-" + message.id}
+              if (message.callLog) {
+                 const call = message.callLog;
+                 const outgoing = call.callerId === currentUserId;
+                 const missed = call.status === "missed";
+                 const failed = call.status === "failed";
+                 const statusText = missed ? "Missed call" : failed ? "Call failed" : call.status === "declined" ? "Call declined" : call.status === "cancelled" ? "Call cancelled" : call.status === "ringing" ? "Calling…" : "Call ended";
+                 const duration = call.durationSeconds > 0 ? ` · ${Math.floor(call.durationSeconds / 60)}:${String(call.durationSeconds % 60).padStart(2, "0")}` : "";
+                 return <div key={message.id} id={"chat-message-" + message.id} className={"chat-message-line " + (outgoing ? "chat-message-line-mine" : "")}>
+                   <div className={"chat-message-content " + (outgoing ? "chat-message-content-mine" : "chat-message-content-theirs") + " chat-call-bubble" + (missed || failed ? " chat-call-bubble-alert" : "")}>
+                     <div className="chat-call-body"><span className="chat-call-icon">{call.kind === "video" ? <Video size={19}/> : <Phone size={19}/>}</span><div className="chat-call-copy"><strong>{call.kind === "video" ? "Group video call" : "Group audio call"}</strong><span className={missed || failed ? "chat-call-status-alert" : ""}>{statusText}{duration}</span></div></div>
+                     <div className="chat-message-footer"><time>{new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</time></div>
+                   </div>
+                 </div>;
+               }
+               return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "")} id={"chat-message-" + message.id}
                 onContextMenu={event => { event.preventDefault(); setActionMenuFor(message.id); }}
                 onPointerDown={event => {
                   if (event.pointerType === "mouse" && event.button !== 0) return;
