@@ -1105,7 +1105,7 @@ export default function HomePage() {
               <img src={item.preview} alt={`Post photo preview ${index + 1}`} style={{ width: "100%", height: "100%", maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}/>
               <span style={{ position: "absolute", right: 5, top: 5, padding: "3px 6px", borderRadius: 999, background: "rgba(0,0,0,.7)", color: "#fff", fontSize: 11 }}>{index + 1}/${MAX_IMAGES}</span>
             </button>)}
-          </div>
+          </div>}
           {draft.trim() && !selectedImages.length && <p className="social-post-live-preview" style={{ color: postTextColor, fontSize: `${Math.max(18, postTextSize - Math.max(0, Math.ceil(draft.trim().length / 120) - 1) * 2)}px` }}>{draft}</p>}
           {!draft.trim() && !selectedImages.length && <span>What's on your mind?</span>}
           <button type="button" className="social-story-snap-close" onClick={() => setComposerExpanded(false)} aria-label="Close post creator"><X size={21}/></button>
