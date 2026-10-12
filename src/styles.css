@@ -570,10 +570,9 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-comments-backdrop{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;border-radius:0;background:rgba(0,0,0,.68);backdrop-filter:blur(3px)}
 .social-comments-sheet{position:relative;z-index:1;display:flex;flex-direction:column;width:min(100%,680px);height:min(78dvh,760px);min-height:300px;max-height:calc(100dvh - 18px);overflow:hidden;border:1px solid rgba(255,183,196,.16);border-bottom:0;border-radius:22px 22px 0 0;background:linear-gradient(160deg,#260c14 0%,#17070d 65%,#10060a 100%);box-shadow:0 -16px 60px rgba(0,0,0,.45);padding-bottom:env(safe-area-inset-bottom)}
 .social-comments-grabber{width:38px;height:4px;flex:0 0 4px;margin:9px auto 4px;border-radius:99px;background:rgba(255,220,226,.35)}
-.social-comments-header{display:flex;align-items:center;justify-content:center;position:relative;min-height:58px;padding:10px 52px;border-bottom:1px solid rgba(255,210,219,.09);text-align:center}
+.social-comments-header{display:flex;align-items:center;justify-content:center;position:relative;min-height:58px;padding:10px;border-bottom:1px solid rgba(255,210,219,.09);text-align:center}
 .social-comments-header h3{margin:0;color:#fff0f3;font-size:14px;font-weight:800}
 .social-comments-header span{display:block;margin-top:3px;color:rgba(246,220,225,.56);font-size:10px}
-.social-comments-close{position:absolute;right:14px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:34px;height:34px;border:1px solid rgba(255,210,219,.12);border-radius:50%;background:rgba(255,255,255,.045);color:#f9e7eb}
 .social-comments-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:17px;padding:16px 15px 20px;scrollbar-width:thin;scrollbar-color:rgba(205,74,96,.4) transparent}
 .social-comment-thread{display:grid;gap:12px}
 .social-comment{display:flex;align-items:flex-start;gap:10px;min-width:0}
