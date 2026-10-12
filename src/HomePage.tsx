@@ -488,7 +488,9 @@ export default function HomePage() {
         .then(items => {
           if (cancelled || !items) return;
           setStories(items);
-          setStoryViewer(current => current?.isMine ? items.find(item => item.id === current.id) || current : current);
+          const visibleStoryIds = new Set(items.map(item => item.id));
+          setStoryPlaybackQueue(current => current.filter(item => visibleStoryIds.has(item.id)));
+          setStoryViewer(current => current ? items.find(item => item.id === current.id) || null : null);
         }).catch(() => {});
     };
     const timer = window.setInterval(refreshStories, 12000);
