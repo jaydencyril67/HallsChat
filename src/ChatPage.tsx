@@ -6,6 +6,7 @@ import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
+import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import CallsPanel from "./components/CallsPanel";
@@ -766,12 +767,15 @@ export default function ChatPage() {
     const pendingId = "pending-audio-" + Date.now();
     const pending: ChatMessage = { id: pendingId, senderId: currentUserIdRef.current, recipientId: person.id, text: "", audioUrl: previewUrl, createdAt: new Date().toISOString(), pending: true };
     setMessages(current => [...current, pending]);
+    const backgroundTaskId = startBackgroundTask("Sending voice note", "Uploading voice note…");
     // Clear the composer immediately; the chat-list pending bubble now owns the sending preview.
     setVoiceDraft(null);
     setVoiceDraftUrl("");
     setRecordingSeconds(0);
     try {
+      updateBackgroundTask(backgroundTaskId, "Uploading voice note…");
       const audioUrl = await uploadChatImage(file, savedToken);
+      updateBackgroundTask(backgroundTaskId, "Sending voice note to chat…");
       const socket = socketRef.current;
       if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending the voice note again.");
       const replyTarget = replyingTo;
@@ -789,12 +793,15 @@ export default function ChatPage() {
       setVoiceDraft(null);
       setVoiceDraftUrl("");
       setRecordingSeconds(0);
+      finishBackgroundTask(backgroundTaskId);
     } catch (err) {
       setMessages(current => current.filter(item => item.id !== pendingId));
       // If sending fails, put the recording back so the user can retry it.
       setVoiceDraft(file);
       setVoiceDraftUrl(previewUrl);
-      setError(err instanceof Error ? err.message : "Your voice note couldn't be sent.");
+      const voiceError = err instanceof Error ? err.message : "Your voice note couldn't be sent.";
+      setError(voiceError);
+      finishBackgroundTask(backgroundTaskId, voiceError);
     } finally { setVoiceBusy(false); }
   }
 
@@ -852,6 +859,7 @@ export default function ChatPage() {
 
     // Show the messages in the conversation immediately, before image upload/network sending.
     setMessages(current => [...current, ...pendingItems]);
+    const backgroundTaskId = startBackgroundTask("Sending chat message", filesToSend.length ? "Preparing message attachments…" : "Sending message…");
     setDraft("");
     setReplyingTo(null);
     setImageFiles([]);
@@ -860,7 +868,11 @@ export default function ChatPage() {
 
     try {
       const images: string[] = [];
-      for (const file of filesToSend) images.push(await uploadChatImage(file, savedToken));
+      for (const [index, file] of filesToSend.entries()) {
+        updateBackgroundTask(backgroundTaskId, `Uploading attachment ${index + 1} of ${filesToSend.length}…`);
+        images.push(await uploadChatImage(file, savedToken));
+      }
+      updateBackgroundTask(backgroundTaskId, "Sending message…");
       const socket = socketRef.current;
       if (!socket?.connected) throw new Error("Reconnecting to live chat. Please try sending again in a moment.");
 
@@ -905,10 +917,13 @@ export default function ChatPage() {
         const bTime = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
         return bTime - aTime || a.name.localeCompare(b.name);
       }));
+      finishBackgroundTask(backgroundTaskId);
     } catch (err) {
       setMessages(current => current.filter(message => !pendingIds.includes(message.id)));
       previewsToRelease.forEach(url => URL.revokeObjectURL(url));
-      setError(err instanceof Error ? err.message : "Your message couldn't be sent.");
+      const messageError = err instanceof Error ? err.message : "Your message couldn't be sent.";
+      setError(messageError);
+      finishBackgroundTask(backgroundTaskId, messageError);
     } finally {
     }
   }
