@@ -621,7 +621,9 @@ export default function ChatPage() {
       setLiveSocket(null);
       if (socketRef.current === socket) socketRef.current = null;
     };
-  }, [currentUserId, loadMessages, loadPeople]);
+  // loadMessages is a stable useCallback declared below; omit it here to avoid
+  // evaluating its lexical binding before initialization during render.
+  }, [currentUserId, loadPeople]);
 
   useEffect(() => {
     setOtherTyping(false);
