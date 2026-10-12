@@ -2435,3 +2435,27 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 /* Toasts dismiss themselves after a short, readable pause. */
 .halls-toast{animation:halls-toast-in .18s ease-out,halls-toast-auto-dismiss .35s ease 5s forwards}
 @keyframes halls-toast-auto-dismiss{to{opacity:0;visibility:hidden;transform:translate(-50%,-6px);pointer-events:none}}
+
+/* HallsChat Settings page — shared card language, compact and responsive. */
+.settings-shell{width:min(720px,calc(100% - 28px));margin:0 auto;padding-top:calc(var(--app-top-gap) + 18px);padding-bottom:110px;color:var(--theme-text);}
+.settings-heading{margin:0 0 20px;padding:0 2px;}
+.settings-eyebrow{display:block;margin-bottom:7px;color:#d16b7a;font-size:9px;font-weight:800;letter-spacing:1.6px;}
+.settings-heading h1{margin:0;font-size:24px;line-height:1.25;font-weight:750;letter-spacing:-.4px;}
+.settings-heading p{margin:6px 0 0;color:var(--theme-muted);font-size:12px;line-height:1.6;}
+.settings-card{padding:16px;border:1px solid var(--theme-line);border-radius:var(--theme-radius-lg);background:var(--theme-surface);box-shadow:0 10px 28px rgba(0,0,0,.08);}
+.settings-card-heading{display:flex;align-items:center;gap:11px;margin-bottom:15px;}
+.settings-section-icon{display:grid;place-items:center;width:38px;height:38px;flex-shrink:0;border-radius:12px;background:rgba(184,32,50,.13);color:#f07889;}
+.settings-card-heading h2{margin:0;font-size:14px;font-weight:750;color:var(--theme-text);}
+.settings-card-heading p{margin:4px 0 0;font-size:11px;line-height:1.5;color:var(--theme-muted);}
+.settings-theme-options{display:grid;gap:8px;}
+.settings-theme-option{display:flex;align-items:center;gap:11px;width:100%;min-height:65px;padding:11px 12px;border:1px solid var(--theme-line);border-radius:12px;background:var(--theme-surface-raised);color:var(--theme-text);text-align:left;cursor:pointer;transition:border-color .15s ease,background .15s ease;}
+.settings-theme-option.is-selected{border-color:rgba(210,59,78,.65);background:rgba(184,32,50,.09);}
+.settings-theme-option:focus-visible{outline:2px solid var(--theme-focus);outline-offset:2px;}
+.settings-theme-icon{display:grid;place-items:center;width:36px;height:36px;flex-shrink:0;border-radius:11px;background:rgba(255,255,255,.06);color:#e77b8b;}
+.settings-theme-copy{display:grid;gap:4px;flex:1;min-width:0;}
+.settings-theme-copy strong{font-size:12px;font-weight:750;}
+.settings-theme-copy small{font-size:10px;line-height:1.45;color:var(--theme-muted);}
+.settings-theme-check{display:grid;place-items:center;width:22px;height:22px;flex-shrink:0;border:1px solid var(--theme-line);border-radius:50%;color:#f07889;}
+.settings-theme-option.is-selected .settings-theme-check{border-color:var(--theme-primary);background:var(--theme-primary);color:white;}
+.settings-note{margin:13px 1px 0;font-size:10px;line-height:1.55;color:var(--theme-muted);}
+@media(max-width:420px){.settings-shell{width:calc(100% - 22px)}.settings-card{padding:13px}.settings-heading h1{font-size:22px}}
