@@ -542,7 +542,7 @@ export default function GroupPage() {
                  const outgoing = call.callerId === currentUserId;
                  const missed = call.status === "missed";
                  const failed = call.status === "failed";
-                 const statusText = missed ? "Missed call" : failed ? "Call failed" : call.status === "declined" ? "Call declined" : call.status === "cancelled" ? "Call cancelled" : call.status === "ringing" ? "Calling…" : "Call ended";
+                 const statusText = missed || (call.status === "cancelled" && !outgoing) ? "Missed call" : failed ? "Call failed" : call.status === "declined" ? "Call declined" : call.status === "cancelled" ? "Call cancelled" : call.status === "ringing" ? "Calling…" : "Call ended";
                  const duration = call.durationSeconds > 0 ? ` · ${Math.floor(call.durationSeconds / 60)}:${String(call.durationSeconds % 60).padStart(2, "0")}` : "";
                  return <div key={message.id} id={"chat-message-" + message.id} className={"chat-message-line " + (outgoing ? "chat-message-line-mine" : "")}>
                    <div className={"chat-message-content " + (outgoing ? "chat-message-content-mine" : "chat-message-content-theirs") + " chat-call-bubble" + (missed || failed ? " chat-call-bubble-alert" : "")}>
