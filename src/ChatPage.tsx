@@ -943,6 +943,7 @@ export default function ChatPage() {
     setError("");
 
     const images: string[] = [];
+    const sentMessages: ChatMessage[] = [];
     try {
       for (const [index, file] of filesToSend.entries()) {
         updateBackgroundTask(backgroundTaskId, `Uploading attachment ${index + 1} of ${filesToSend.length}…`);
@@ -957,7 +958,6 @@ export default function ChatPage() {
         });
 
       let pendingIndex = 0;
-      const sentMessages: ChatMessage[] = [];
       if (text) {
         const sent = await sendOne(text, undefined, true);
         sentMessages.push(sent);
