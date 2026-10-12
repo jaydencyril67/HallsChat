@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Square, Play, Pause, Reply, MoreVertical, Pencil, Smile, Paperclip } from "lucide-react";
+import { io } from "socket.io-client";
+import type { Socket } from "socket.io-client";
+import type { ChangeEvent } from "react";
+import ImagePreviewModal from "./components/ImagePreviewModal";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -7,7 +11,9 @@ import LoadingDots from "./components/LoadingDots";
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 type GroupSummary = { id: string; name: string; description: string; visibility: "public" | "private"; avatar?: string; ownerId: string; memberCount: number; role: string | null; inviteCode?: string; createdAt: string; updatedAt: string; lastMessage?: { text: string; createdAt: string; senderName: string } | null };
 type Member = { id: string; name: string; username: string; profilePicture?: string; role: "owner" | "admin" | "member"; joinedAt?: string };
-type GroupMessage = { id: string; text: string; imageUrl?: string; createdAt: string; editedAt?: string | null; sender: { id: string; name: string; username: string; profilePicture?: string } | null };
+type GroupReply = { id: string; senderId: string; text?: string; imageUrl?: string; audioUrl?: string; deleted?: boolean };
+type GroupReaction = { userId: string; emoji: string };
+type GroupMessage = { id: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: GroupReply | null; reactions?: GroupReaction[]; deletedForEveryone?: boolean; createdAt: string; editedAt?: string | null; pending?: boolean; sender: { id: string; name: string; username: string; profilePicture?: string } | null };
 type GroupDetail = GroupSummary & { members: Member[] };
 type Tab = "mine" | "discover";
 
@@ -43,6 +49,31 @@ export default function GroupPage() {
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [inviteCode, setInviteCode] = useState("");
   const [draft, setDraft] = useState("");
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
+  const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<GroupMessage | null>(null);
+  const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
+  const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editMessageDraft, setEditMessageDraft] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [recordingPaused, setRecordingPaused] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [voiceDraft, setVoiceDraft] = useState<File | null>(null);
+  const [voiceDraftUrl, setVoiceDraftUrl] = useState("");
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
+  const socketRef = useRef<Socket | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingChunksRef = useRef<Blob[]>([]);
+  const recordingStreamRef = useRef<MediaStream | null>(null);
+  const discardRecordingRef = useRef(false);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const draftInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const typingTimerRef = useRef<number | null>(null);
   const [memberPanel, setMemberPanel] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState<null | (() => Promise<void>)>(null);
@@ -83,6 +114,47 @@ export default function GroupPage() {
   useEffect(() => { void loadGroups(tab); const timer = window.setInterval(() => void loadGroups(tab, false), 15000); return () => window.clearInterval(timer); }, [tab, loadGroups]);
   useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); const timer = window.setInterval(() => void loadDetail(activeId, false), 5000); return () => window.clearInterval(timer); }, [activeId, loadDetail]);
   useEffect(() => { const list = groupMessageListRef.current; if (list) list.scrollTop = list.scrollHeight; }, [activeId, messages.length]);
+  useEffect(() => {
+    if (!activeId) { socketRef.current?.disconnect(); socketRef.current = null; return; }
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    const socket = io(apiBase, { auth: { token }, transports: ["websocket", "polling"] });
+    socketRef.current = socket;
+    socket.on("connect", () => socket.emit("group:join", { groupId: activeId }, (result: { ok?: boolean }) => { if (!result?.ok) setError("Live group updates are unavailable. You can still refresh messages."); }));
+    socket.on("group:message", (message: GroupMessage) => {
+      setMessages(current => current.some(item => item.id === message.id) ? current : [...current, message].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+      setOtherTyping(false);
+    });
+    socket.on("group:reaction", (event: { groupId?: string; id?: string; reactions?: GroupReaction[] }) => {
+      if (event.groupId !== activeId || !event.id || !Array.isArray(event.reactions)) return;
+      setMessages(current => current.map(message => message.id === event.id ? { ...message, reactions: event.reactions } : message));
+    });
+    socket.on("group:edited", (event: { groupId?: string; id?: string; text?: string; editedAt?: string | null }) => {
+      if (event.groupId !== activeId || !event.id) return;
+      setMessages(current => current.map(message => message.id === event.id ? { ...message, text: event.text || "", editedAt: event.editedAt } : message));
+    });
+    socket.on("group:deleted", (event: { groupId?: string; id?: string }) => {
+      if (event.groupId !== activeId || !event.id) return;
+      setMessages(current => current.map(message => message.id === event.id ? { ...message, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true } : message));
+    });
+    socket.on("group:typing", (event: { groupId?: string; senderId?: string; isTyping?: boolean }) => {
+      if (event.groupId !== activeId || event.senderId === currentUserId) return;
+      setOtherTyping(Boolean(event.isTyping));
+    });
+    return () => { socket.emit("group:leave", { groupId: activeId }); socket.removeAllListeners(); socket.disconnect(); if (socketRef.current === socket) socketRef.current = null; };
+  }, [activeId, currentUserId]);
+  useEffect(() => {
+    if (!recording) return;
+    const timer = window.setInterval(() => setRecordingSeconds(value => value + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [recording]);
+  useEffect(() => () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") { discardRecordingRef.current = true; mediaRecorderRef.current.stop(); }
+    recordingStreamRef.current?.getTracks().forEach(track => track.stop());
+    imagePreviews.forEach(url => URL.revokeObjectURL(url));
+    if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
+    if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
+  }, [imagePreviews, voiceDraftUrl]);
 
   const filteredGroups = useMemo(() => groups.filter(group => (group.name + " " + group.description).toLowerCase().includes(search.trim().toLowerCase())), [groups, search]);
 
@@ -107,13 +179,122 @@ export default function GroupPage() {
     finally { setBusy(false); }
   }
 
-  async function sendMessage(event: React.FormEvent) {
-    event.preventDefault(); if (!activeId || !draft.trim() || busy) return;
-    const text = draft.trim(); setDraft(""); setBusy(true);
-    try { await request("/api/groups/" + encodeURIComponent(activeId) + "/messages", { method: "POST", body: JSON.stringify({ text }) }); await loadDetail(activeId, false); }
-    catch (err) { setDraft(text); setError(err instanceof Error ? err.message : "Message wasn't sent."); }
-    finally { setBusy(false); }
+  async function uploadGroupMedia(file: File, savedToken: string): Promise<string> {
+    const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${savedToken}` } });
+    const auth = await authResponse.json().catch(() => ({}));
+    if (!authResponse.ok) throw new Error(auth.message || "Media uploads are not configured yet.");
+    const form = new FormData();
+    form.append("file", file);
+    form.append("fileName", `hallschat-group-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
+    form.append("publicKey", auth.publicKey); form.append("token", auth.token); form.append("expire", String(auth.expire)); form.append("signature", auth.signature);
+    const response = await fetch("https://upload.imagekit.io/api/v1/files/upload", { method: "POST", body: form });
+    const uploaded = await response.json().catch(() => ({}));
+    if (!response.ok || typeof uploaded.url !== "string") throw new Error(uploaded.message || "The attachment couldn't be uploaded.");
+    return uploaded.url;
   }
+  function handleImageSelection(event: ChangeEvent<HTMLInputElement>) {
+    const picked = Array.from(event.target.files || []); event.target.value = "";
+    if (!picked.length) return;
+    if (imageFiles.length + picked.length > 4) { setError("You can attach up to 4 images per message."); return; }
+    if (picked.some(file => !file.type.startsWith("image/"))) { setError("Choose image files only."); return; }
+    if (picked.some(file => file.size > 10 * 1024 * 1024)) { setError("Each image must be 10 MB or smaller."); return; }
+    setImageFiles(current => [...current, ...picked]);
+    setImagePreviews(current => [...current, ...picked.map(file => URL.createObjectURL(file))]);
+    setAttachmentMenuOpen(false); setError("");
+  }
+  function removeSelectedImage(index: number) {
+    if (imagePreviews[index]) URL.revokeObjectURL(imagePreviews[index]);
+    setImageFiles(current => current.filter((_, i) => i !== index));
+    setImagePreviews(current => current.filter((_, i) => i !== index));
+  }
+  async function recordVoiceNote() {
+    if (recording) { mediaRecorderRef.current?.pause(); setRecording(false); setRecordingPaused(true); return; }
+    if (recordingPaused) { mediaRecorderRef.current?.resume(); setRecording(true); setRecordingPaused(false); return; }
+    if (voiceBusy || voiceDraft) return;
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") { setError("Voice recording is not supported by this browser or app."); return; }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); recordingStreamRef.current = stream; recordingChunksRef.current = []; discardRecordingRef.current = false;
+      const mime = ["audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"].find(type => MediaRecorder.isTypeSupported(type));
+      const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream); mediaRecorderRef.current = recorder;
+      setRecordingSeconds(0); setRecording(true); setRecordingPaused(false); setAttachmentMenuOpen(false);
+      recorder.ondataavailable = event => { if (event.data.size) recordingChunksRef.current.push(event.data); };
+      recorder.onerror = () => { setError("Recording failed. Please try again."); setRecording(false); setRecordingPaused(false); stream.getTracks().forEach(track => track.stop()); };
+      recorder.onstop = () => {
+        setRecording(false); setRecordingPaused(false); stream.getTracks().forEach(track => track.stop()); recordingStreamRef.current = null;
+        const chunks = recordingChunksRef.current; recordingChunksRef.current = [];
+        if (discardRecordingRef.current) { discardRecordingRef.current = false; return; }
+        if (!chunks.length) return;
+        const type = recorder.mimeType || "audio/webm"; const blob = new Blob(chunks, { type });
+        if (blob.size > 12 * 1024 * 1024) { setError("That voice note is too large. Record a shorter one."); return; }
+        const ext = type.includes("ogg") ? "ogg" : type.includes("mp4") ? "m4a" : "webm";
+        setVoiceDraft(new File([blob], `group-voice-${Date.now()}.${ext}`, { type })); setVoiceDraftUrl(URL.createObjectURL(blob));
+      };
+      recorder.start(250);
+    } catch (err) { setError(err instanceof Error ? err.message : "Microphone access was denied."); setRecording(false); setRecordingPaused(false); }
+  }
+  function discardVoiceDraft() {
+    if (recording || recordingPaused) { discardRecordingRef.current = true; const recorder = mediaRecorderRef.current; if (recorder && recorder.state !== "inactive") recorder.stop(); }
+    if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
+    setVoiceDraft(null); setVoiceDraftUrl(""); setRecordingSeconds(0); setRecording(false); setRecordingPaused(false);
+  }
+  async function sendGroupMessage() {
+    if (!activeId || busy || voiceBusy) return;
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken) { window.location.href = "/signin"; return; }
+    const text = draft.trim();
+    if (!text && !imageFiles.length && !voiceDraft) return;
+    setBusy(true); setError("");
+    const pendingId = "pending-" + Date.now();
+    const pending: GroupMessage = { id: pendingId, text, images: [...imagePreviews], audioUrl: voiceDraftUrl, imageUrl: imagePreviews[0], replyTo: replyingTo ? { id: replyingTo.id, senderId: replyingTo.sender?.id || "", text: replyingTo.text, imageUrl: replyingTo.images?.[0] || replyingTo.imageUrl, audioUrl: replyingTo.audioUrl, deleted: Boolean(replyingTo.deletedForEveryone) } : null, reactions: [], createdAt: new Date().toISOString(), pending: true, sender: { id: currentUserId, name: "You", username: "" } };
+    setMessages(current => [...current, pending]); setDraft(""); setReplyingTo(null); setAttachmentMenuOpen(false);
+    const files = [...imageFiles]; const previews = [...imagePreviews]; const voiceFile = voiceDraft;
+    setImageFiles([]); setImagePreviews([]); setVoiceDraft(null); setVoiceDraftUrl(""); setRecordingSeconds(0);
+    try {
+      const images: string[] = [];
+      for (const file of files) images.push(await uploadGroupMedia(file, savedToken));
+      const audioUrl = voiceFile ? await uploadGroupMedia(voiceFile, savedToken) : "";
+      const payload = await request(`/api/groups/${encodeURIComponent(activeId)}/messages`, { method: "POST", body: JSON.stringify({ text, images, audioUrl, ...(replyingTo ? { replyToId: replyingTo.id } : {}) }) });
+      const sent = payload.message as GroupMessage;
+      if (!sent?.id) throw new Error("The server didn't confirm your message.");
+      setMessages(current => [...current.filter(message => message.id !== pendingId && message.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+      await loadGroups("mine", false);
+      previews.forEach(url => URL.revokeObjectURL(url));
+      setNotice("");
+    } catch (err) {
+      setMessages(current => current.filter(message => message.id !== pendingId));
+      setDraft(text); setImageFiles(files); setImagePreviews(previews); if (voiceFile) { setVoiceDraft(voiceFile); setVoiceDraftUrl(URL.createObjectURL(voiceFile)); }
+      setError(err instanceof Error ? err.message : "Message wasn't sent.");
+    } finally { setBusy(false); }
+  }
+  async function reactToMessage(message: GroupMessage, emoji: string) {
+    const socket = socketRef.current;
+    if (!socket?.connected || message.pending || message.deletedForEveryone) { setError("Reconnect to group chat before reacting."); return; }
+    socket.timeout(10000).emit("group:react", { groupId: activeId, messageId: message.id, emoji }, (timeoutError: Error | null, response: { ok?: boolean; message?: string; reactions?: GroupReaction[] }) => {
+      if (timeoutError || !response?.ok) { setError(response?.message || "That reaction couldn't be saved."); return; }
+      if (Array.isArray(response.reactions)) setMessages(current => current.map(item => item.id === message.id ? { ...item, reactions: response.reactions } : item));
+    });
+    setReactionPickerFor(null);
+  }
+  async function saveMessageEdit(message: GroupMessage) {
+    const text = editMessageDraft.trim(); if (!text || !activeId) { setError("A message cannot be empty."); return; }
+    try {
+      const payload = await request(`/api/groups/${encodeURIComponent(activeId)}/messages/${encodeURIComponent(message.id)}`, { method: "PATCH", body: JSON.stringify({ text }) });
+      const edited = payload.message;
+      setMessages(current => current.map(item => item.id === message.id ? { ...item, text: edited.text, editedAt: edited.editedAt } : item));
+      setEditingMessageId(null); setEditMessageDraft(""); setActionMenuFor(null);
+    } catch (err) { setError(err instanceof Error ? err.message : "Unable to edit this message."); }
+  }
+  async function deleteGroupMessage(message: GroupMessage, scope: "me" | "everyone") {
+    if (!activeId) return;
+    try {
+      await request(`/api/groups/${encodeURIComponent(activeId)}/messages/${encodeURIComponent(message.id)}?scope=${scope}`, { method: "DELETE" });
+      if (scope === "everyone") setMessages(current => current.map(item => item.id === message.id ? { ...item, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true } : item));
+      else setMessages(current => current.filter(item => item.id !== message.id));
+      setActionMenuFor(null);
+    } catch (err) { setError(err instanceof Error ? err.message : "Unable to delete this message."); }
+  }
+
+  async function sendMessage(event: React.FormEvent) { event.preventDefault(); if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current); socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: false }); await sendGroupMessage(); }
 
   async function leaveGroup() {
     if (!activeId) return;
