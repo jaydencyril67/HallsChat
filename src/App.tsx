@@ -98,14 +98,15 @@ function GlobalBackgroundTaskStatus() {
     ? (visibleTasks.length > 1 ? `${active.status} · ${visibleTasks.length} operations in progress` : active.status)
     : result!.status;
   return <>
-    {active && <style>{`@keyframes hallschat-global-task-progress { from { transform: translateX(-110%); } to { transform: translateX(280%); } }`}</style>}
-    <div role={failed ? "alert" : "status"} aria-live="polite" style={{ position: "fixed", left: 14, right: 14, top: "calc(env(safe-area-inset-top, 0px) + 88px)", zIndex: 9998, maxWidth: 440, margin: "0 auto", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${failed ? "rgba(255,120,120,.28)" : "rgba(255,210,219,.2)"}`, borderRadius: 14, background: failed ? "linear-gradient(145deg,rgba(54,18,22,.98),rgba(22,12,15,.98))" : "linear-gradient(145deg,rgba(38,18,27,.98),rgba(18,12,20,.98))", boxShadow: "0 12px 34px rgba(0,0,0,.38)", color: "#fff0f3", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-      <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, flexShrink: 0, borderRadius: 10, background: "rgba(255,129,146,.12)", color: "#ff9bab" }}>{active ? <LoadingDots/> : failed ? "!" : "✓"}</span>
-      <span style={{ display: "grid", gap: 3, minWidth: 0, flex: 1 }}>
-        <strong style={{ fontSize: ".88rem", fontWeight: 650 }}>{title}</strong>
-        <span style={{ fontSize: ".78rem", color: "#e5cbd2", overflowWrap: "anywhere" }}>{status}</span>
-        {active && <span style={{ display: "block", height: 3, marginTop: 3, overflow: "hidden", borderRadius: 99, background: "rgba(255,255,255,.12)" }}><span style={{ display: "block", width: "36%", height: "100%", borderRadius: 99, background: "#ff8192", animation: "hallschat-global-task-progress 1.2s ease-in-out infinite alternate" }}/></span>}
-      </span>
+    {active && <style>{`@keyframes hallschat-global-task-progress { from { transform: translateX(-100%); } to { transform: translateX(300%); } }`}</style>}
+    <div role={failed ? "alert" : "status"} aria-live="polite" style={{ position: "fixed", left: 12, right: 12, top: "calc(env(safe-area-inset-top, 0px) + 78px)", zIndex: 9998, maxWidth: 360, margin: "0 auto", boxSizing: "border-box", padding: "9px 12px", border: "1px solid rgba(255,255,255,.12)", borderRadius: 9, background: failed ? "#351d20" : "#202024", color: "#fff", boxShadow: "0 4px 14px rgba(0,0,0,.2)", fontSize: ".8rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {active && <LoadingDots />}
+        {!active && <span>{failed ? "!" : "✓"}</span>}
+        <strong style={{ fontWeight: 600, flex: 1, minWidth: 0 }}>{title}</strong>
+        <span style={{ color: "#c9c9ce", overflowWrap: "anywhere", textAlign: "right" }}>{status}</span>
+      </div>
+      {active && <div style={{ height: 2, marginTop: 7, overflow: "hidden", borderRadius: 2, background: "rgba(255,255,255,.12)" }}><div style={{ width: "35%", height: "100%", background: "#c5c5cc", animation: "hallschat-global-task-progress 1.2s ease-in-out infinite alternate" }} /></div>}
     </div>
   </>;
 }
