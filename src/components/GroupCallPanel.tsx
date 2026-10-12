@@ -18,6 +18,7 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
   const [muted, setMuted] = useState(false);
   const [cameraOff, setCameraOff] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [confirmKind, setConfirmKind] = useState<"audio" | "video" | null>(null);
   const [error, setError] = useState("");
   const localStreamRef = useRef<MediaStream | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -221,9 +222,21 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
   const active = Boolean(callId);
   return <>
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <button type="button" title="Start group audio call" aria-label="Start group audio call" disabled={!socket || busy || active} onClick={() => void startCall("audio")} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: "1px solid rgba(255,210,219,.13)", borderRadius: 10, background: "rgba(255,255,255,.035)", color: "#ffe9ed", padding: 0 }}><Phone size={17}/></button>
-      <button type="button" title="Start group video call" aria-label="Start group video call" disabled={!socket || busy || active} onClick={() => void startCall("video")} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: "1px solid rgba(255,210,219,.13)", borderRadius: 10, background: "rgba(255,255,255,.035)", color: "#ffe9ed", padding: 0 }}><Video size={17}/></button>
+      <button type="button" title="Start group audio call" aria-label="Start group audio call" disabled={!socket || busy || active} onClick={() => setConfirmKind("audio")} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: "1px solid rgba(255,210,219,.13)", borderRadius: 10, background: "rgba(255,255,255,.035)", color: "#ffe9ed", padding: 0 }}><Phone size={17}/></button>
+      <button type="button" title="Start group video call" aria-label="Start group video call" disabled={!socket || busy || active} onClick={() => setConfirmKind("video")} style={{ width: 34, height: 34, display: "grid", placeItems: "center", border: "1px solid rgba(255,210,219,.13)", borderRadius: 10, background: "rgba(255,255,255,.035)", color: "#ffe9ed", padding: 0 }}><Video size={17}/></button>
     </div>
+    {confirmKind && !active && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label={`Confirm group ${confirmKind} call`} onClick={() => !busy && setConfirmKind(null)}>
+      <div className="halls-call-card" onClick={event => event.stopPropagation()}>
+        <div className="halls-call-avatar">{confirmKind === "video" ? <Video size={28} /> : <Phone size={28} />}</div>
+        <span className="halls-call-eyebrow">START GROUP {confirmKind.toUpperCase()} CALL</span>
+        <h2>{groupName}</h2>
+        <p>Start a {confirmKind} call with this group?</p>
+        <div className="halls-call-actions" style={{ width: "100%", marginTop: 12 }}>
+          <button className="halls-call-decline" type="button" disabled={busy} onClick={() => setConfirmKind(null)} aria-label="Cancel group call">Cancel</button>
+          <button className="halls-call-accept" type="button" disabled={busy} onClick={() => { const selectedKind = confirmKind; setConfirmKind(null); void startCall(selectedKind); }} aria-label={`Confirm group ${confirmKind} call`}>{busy ? <LoadingDots /> : <>{confirmKind === "video" ? <Video size={19} /> : <Phone size={19} />} Start call</>}</button>
+        </div>
+      </div>
+    </div>}
     {error && <div role="status" style={{ position: "fixed", zIndex: 10020, left: 12, right: 12, bottom: 90, maxWidth: 420, margin: "0 auto", padding: "10px 12px", borderRadius: 10, background: "#32151d", color: "#ffe9ed", fontSize: ".78rem", border: "1px solid rgba(255,150,170,.25)" }}>{error}<button type="button" onClick={() => setError("")} style={{ float: "right", background: "none", border: 0, color: "inherit" }}><X size={14}/></button></div>}
     {incoming && !active && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label="Incoming group call">
       <div className="halls-call-card">
