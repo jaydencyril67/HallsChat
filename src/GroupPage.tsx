@@ -302,7 +302,7 @@ export default function GroupPage() {
   async function createGroup(event: React.FormEvent) {
     event.preventDefault();
     if (name.trim().length < 2) { setError("Group name must be at least 2 characters."); return; }
-    if (!/^\\d{8}$/.test(groupCode)) { setError("Choose a Group ID made of exactly 8 digits."); return; }
+    if (!/^\d{8}$/.test(groupCode)) { setError("Choose a Group ID made of exactly 8 digits."); return; }
     setBusy(true); setError(""); setNotice("");
     try {
       let avatar = "";
@@ -657,7 +657,7 @@ export default function GroupPage() {
           </div>
           <label style={{ display: "grid", gap: 7, fontSize: ".82rem", fontWeight: 750 }}>Group name <span style={{ ...muted, fontWeight: 500 }}>Required</span><input required minLength={2} maxLength={80} value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Weekend Football Crew" style={field}/><span style={{ ...muted, fontSize: ".7rem", fontWeight: 500 }}>{name.trim().length}/80 characters</span></label>
           <label style={{ display: "grid", gap: 7, fontSize: ".82rem", fontWeight: 750 }}>Description <span style={{ ...muted, fontWeight: 500 }}>Optional</span><textarea maxLength={500} value={description} onChange={event => setDescription(event.target.value)} placeholder="Tell people what your group is about…" rows={4} style={{ ...field, resize: "vertical", minHeight: 100 }}/><span style={{ ...muted, fontSize: ".7rem", fontWeight: 500 }}>{description.length}/500 characters</span></label>
-          <label style={{ display: "grid", gap: 7, fontSize: ".82rem", fontWeight: 750 }}>Group ID <span style={{ ...muted, fontWeight: 500 }}>Choose your own unique 8-digit code</span><input required type="text" inputMode="numeric" autoComplete="off" pattern="[0-9]{8}" minLength={8} maxLength={8} value={groupCode} onChange={event => setGroupCode(event.target.value.replace(/\\D/g, "").slice(0, 8))} placeholder="e.g. 48271630" style={{ ...field, letterSpacing: ".18em", fontVariantNumeric: "tabular-nums" }}/><span style={{ ...muted, fontSize: ".7rem", fontWeight: 500 }}>This is the code people can use to find or join your group. It must be unique.</span></label>
+          <label style={{ display: "grid", gap: 7, fontSize: ".82rem", fontWeight: 750 }}>Group ID <span style={{ ...muted, fontWeight: 500 }}>Choose your own unique 8-digit code</span><input required type="text" inputMode="numeric" autoComplete="off" pattern="[0-9]{8}" minLength={8} maxLength={8} value={groupCode} onChange={event => setGroupCode(event.target.value.replace(/\D/g, "").slice(0, 8))} placeholder="e.g. 48271630" style={{ ...field, letterSpacing: ".18em", fontVariantNumeric: "tabular-nums" }}/><span style={{ ...muted, fontSize: ".7rem", fontWeight: 500 }}>This is the code people can use to find or join your group. It must be unique.</span></label>
           <section style={{ display: "grid", gap: 9 }}>
             <strong style={{ fontSize: ".82rem" }}>Group privacy</strong>
             <span style={{ ...muted, fontSize: ".75rem", lineHeight: 1.5 }}>Choose who can discover and join your group.</span>
@@ -665,7 +665,7 @@ export default function GroupPage() {
               {([{ id: "public", label: "Public", detail: "Anyone can discover it", icon: Compass }, { id: "private", label: "Private", detail: "Invite code required", icon: LockKeyhole }] as const).map(option => <button key={option.id} type="button" onClick={() => setVisibility(option.id)} aria-pressed={visibility === option.id} style={{ ...secondary, minHeight: 94, padding: 13, flexDirection: "column", alignItems: "flex-start", justifyContent: "center", gap: 8, borderColor: visibility === option.id ? "rgba(229,70,92,.85)" : "rgba(255,210,219,.16)", background: visibility === option.id ? "rgba(184,32,50,.15)" : "rgba(255,255,255,.03)", textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: visibility === option.id ? "#ff9cab" : "#fff0f3", fontWeight: 800 }}><option.icon size={16}/>{option.label}{visibility === option.id ? <span style={{ fontSize: ".65rem" }}>✓</span> : null}</span><span style={{ ...muted, fontSize: ".72rem", fontWeight: 500, lineHeight: 1.4 }}>{option.detail}</span></button>)}
             </div>
           </section>
-          <button type="submit" disabled={busy || name.trim().length < 2 || !/^\\d{8}$/.test(groupCode)} style={{ ...primary, width: "100%", minHeight: 48, position: "sticky", bottom: 0, boxShadow: "0 -8px 24px rgba(22,8,13,.45)", opacity: busy || name.trim().length < 2 ? .6 : 1 }}>{busy ? <LoadingDots/> : <><Plus size={17}/> Create group</>}</button>
+          <button type="submit" disabled={busy || name.trim().length < 2 || !/^\d{8}$/.test(groupCode)} style={{ ...primary, width: "100%", minHeight: 48, position: "sticky", bottom: 0, boxShadow: "0 -8px 24px rgba(22,8,13,.45)", opacity: busy || name.trim().length < 2 || !/^\d{8}$/.test(groupCode) ? .6 : 1 }}>{busy ? <LoadingDots/> : <><Plus size={17}/> Create group</>}</button>
         </form>
       </div>
     </div>}
