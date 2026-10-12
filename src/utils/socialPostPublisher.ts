@@ -30,6 +30,7 @@ export type SocialPostPublishInput = {
 };
 
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string; message?: string };
+import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./backgroundTasks";
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 let state: SocialPostPublishState = { phase: "idle", status: "", message: "", lastPost: null, revision: 0, failureRevision: 0, failedInput: null };
@@ -62,12 +63,15 @@ export function startSocialPostPublish(input: SocialPostPublishInput, token: str
     message: "",
     failedInput: null,
   });
+  const backgroundTaskId = startBackgroundTask("Publishing post", input.images.length ? "Preparing your post…" : "Publishing your post…");
   void (async () => {
     try {
       const urls: string[] = [];
       for (let index = 0; index < input.images.length; index += 1) {
         const file = input.images[index];
-        updateState({ status: `Preparing image ${index + 1} of ${input.images.length}…` });
+        const preparingStatus = `Preparing image ${index + 1} of ${input.images.length}…`;
+        updateState({ status: preparingStatus });
+        updateBackgroundTask(backgroundTaskId, preparingStatus);
         const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -78,7 +82,9 @@ export function startSocialPostPublish(input: SocialPostPublishInput, token: str
           throw new Error(`Image ${index + 1} upload authentication returned incomplete details.`);
         }
 
-        updateState({ status: `Uploading image ${index + 1} of ${input.images.length}…` });
+        const uploadingStatus = `Uploading image ${index + 1} of ${input.images.length}…`;
+        updateState({ status: uploadingStatus });
+        updateBackgroundTask(backgroundTaskId, uploadingStatus);
         const formData = new FormData();
         formData.append("file", file);
         formData.append("fileName", file.name);
@@ -96,6 +102,7 @@ export function startSocialPostPublish(input: SocialPostPublishInput, token: str
       }
 
       updateState({ status: "Publishing post…" });
+      updateBackgroundTask(backgroundTaskId, "Publishing post to feed…");
       const response = await fetch(`${apiBase}/api/social/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -116,6 +123,7 @@ export function startSocialPostPublish(input: SocialPostPublishInput, token: str
         failedInput: null,
         revision: state.revision + 1
       });
+      finishBackgroundTask(backgroundTaskId);
     } catch (error) {
       updateState({
         phase: "error",
@@ -124,6 +132,7 @@ export function startSocialPostPublish(input: SocialPostPublishInput, token: str
         failedInput: input,
         failureRevision: state.failureRevision + 1
       });
+      finishBackgroundTask(backgroundTaskId, error instanceof Error ? error.message : "Your post couldn't be published.");
     }
   })();
 }
