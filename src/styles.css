@@ -3818,3 +3818,188 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .chat-page :is(button,input,textarea,[role="button"]):focus-visible {
   outline-color: var(--theme-focus);
 }
+
+
+/* Chat page light-token pass 2.
+   These tokens exist only beneath the light-theme chat page. Dark-mode tokens
+   and their original declarations are intentionally not edited. */
+:root[data-theme="light"] .chat-page {
+  --chat-bg: var(--theme-bg);
+  --chat-surface: var(--theme-surface);
+  --chat-surface-raised: var(--theme-surface-raised);
+  --chat-line: var(--theme-line);
+  --chat-border: var(--theme-line);
+  --chat-text: var(--theme-text);
+  --chat-muted: var(--theme-muted);
+  --chat-soft: var(--theme-soft);
+  --chat-accent: var(--theme-primary);
+  --chat-accent-hover: var(--theme-primary-hover);
+  --chat-accent-contrast: var(--theme-primary-contrast);
+  --chat-focus: var(--theme-focus);
+  --chat-incoming-bg: #fffdfc;
+  --chat-incoming-border: rgba(83,31,42,.13);
+  --chat-outgoing-bg: linear-gradient(145deg,#b72c43,#962039);
+  --chat-outgoing-border: rgba(169,31,53,.22);
+  --chat-composer-bg: #fffdfc;
+  --chat-list-bg: #fbf7f5;
+  --chat-hover-bg: #f5e5e7;
+  --chat-selected-bg: #f8ebed;
+  --chat-overlay-bg: rgba(49,21,29,.42);
+  --chat-shadow: 0 10px 28px rgba(61,24,33,.12);
+  color: var(--chat-text);
+  background: var(--chat-bg);
+  color-scheme: light;
+}
+:root[data-theme="light"] .chat-page .chat-layout,
+:root[data-theme="light"] .chat-page .chat-sidebar,
+:root[data-theme="light"] .chat-page .chat-conversation,
+:root[data-theme="light"] .chat-page .chat-conversation-header,
+:root[data-theme="light"] .chat-page .chat-sidebar-heading {
+  color: var(--chat-text);
+  background-color: var(--chat-surface);
+  border-color: var(--chat-border);
+}
+:root[data-theme="light"] .chat-page .chat-people-list,
+:root[data-theme="light"] .chat-page .chat-message-list {
+  color: var(--chat-text);
+  scrollbar-color: #d8bfc3 transparent;
+}
+:root[data-theme="light"] .chat-page .chat-person-row {
+  background: var(--chat-surface);
+  color: var(--chat-text);
+  border-color: var(--chat-border);
+  box-shadow: 0 3px 12px rgba(61,24,33,.05);
+}
+:root[data-theme="light"] .chat-page .chat-person-row:hover,
+:root[data-theme="light"] .chat-page .chat-person-row-active {
+  background: var(--chat-selected-bg);
+  border-color: rgba(169,31,53,.28);
+}
+:root[data-theme="light"] .chat-page .chat-person-select strong,
+:root[data-theme="light"] .chat-page .chat-person-select,
+:root[data-theme="light"] .chat-page .chat-person-meta,
+:root[data-theme="light"] .chat-page .chat-conversation-person strong,
+:root[data-theme="light"] .chat-page .chat-message-text,
+:root[data-theme="light"] .chat-page .chat-reply-quote,
+:root[data-theme="light"] .chat-page .chat-reply-composer {
+  color: var(--chat-text);
+}
+:root[data-theme="light"] .chat-page .chat-person-select small,
+:root[data-theme="light"] .chat-page .chat-last-message,
+:root[data-theme="light"] .chat-page .chat-conversation-person span,
+:root[data-theme="light"] .chat-page .presence-label.presence-offline,
+:root[data-theme="light"] .chat-page .chat-character-count,
+:root[data-theme="light"] .chat-page .chat-image-count,
+:root[data-theme="light"] .chat-page .chat-voice-track,
+:root[data-theme="light"] .chat-page .chat-reply-composer-copy,
+:root[data-theme="light"] .chat-page .chat-reply-quote small {
+  color: var(--chat-muted);
+}
+:root[data-theme="light"] .chat-page .chat-message-content-theirs {
+  background: var(--chat-incoming-bg) !important;
+  border-color: var(--chat-incoming-border) !important;
+  color: var(--chat-text) !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine {
+  background: var(--chat-outgoing-bg) !important;
+  border-color: var(--chat-outgoing-border) !important;
+  color: var(--chat-accent-contrast) !important;
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine time {
+  color: rgba(255,248,248,.78) !important;
+}
+:root[data-theme="light"] .chat-page .chat-composer {
+  background: var(--chat-composer-bg);
+  border-color: var(--chat-border);
+  box-shadow: 0 3px 12px rgba(83,31,42,.06);
+}
+:root[data-theme="light"] .chat-page .chat-composer textarea,
+:root[data-theme="light"] .chat-page .chat-composer input {
+  background: transparent !important;
+  color: var(--chat-text) !important;
+  border-color: transparent !important;
+  caret-color: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page .chat-composer textarea::placeholder,
+:root[data-theme="light"] .chat-page .chat-composer input::placeholder {
+  color: var(--chat-soft) !important;
+}
+:root[data-theme="light"] .chat-page .chat-composer > button:not(.chat-attach-button),
+:root[data-theme="light"] .chat-page .chat-voice-mic,
+:root[data-theme="light"] .chat-page .chat-stop-recording,
+:root[data-theme="light"] .chat-page .chat-voice-play {
+  background: var(--chat-accent);
+  color: var(--chat-accent-contrast);
+  border-color: transparent;
+}
+:root[data-theme="light"] .chat-page .chat-open-button,
+:root[data-theme="light"] .chat-page .chat-back-button,
+:root[data-theme="light"] .chat-page .chat-message-more,
+:root[data-theme="light"] .chat-page .chat-message-action-delete,
+:root[data-theme="light"] .chat-page .chat-attach-button,
+:root[data-theme="light"] .chat-page .chat-attachment-wrap > button,
+:root[data-theme="light"] .chat-page .chat-image-pending button,
+:root[data-theme="light"] .chat-page .chat-image-viewer > button {
+  color: var(--chat-accent);
+  background: var(--chat-surface-raised);
+  border-color: var(--chat-border);
+}
+:root[data-theme="light"] .chat-page .chat-open-button:hover,
+:root[data-theme="light"] .chat-page .chat-back-button:hover,
+:root[data-theme="light"] .chat-page .chat-attach-button:hover,
+:root[data-theme="light"] .chat-page .chat-attachment-wrap > button:hover {
+  background: var(--chat-hover-bg);
+}
+:root[data-theme="light"] .chat-page .chat-attachment-menu,
+:root[data-theme="light"] .chat-page .chat-message-actions,
+:root[data-theme="light"] .chat-page .chat-reaction-picker,
+:root[data-theme="light"] .chat-page .chat-delete-popout {
+  background: var(--chat-surface) !important;
+  color: var(--chat-text) !important;
+  border-color: var(--chat-border) !important;
+  box-shadow: var(--chat-shadow);
+}
+:root[data-theme="light"] .chat-page .chat-message-actions button,
+:root[data-theme="light"] .chat-page .chat-attachment-menu button {
+  color: var(--chat-text);
+}
+:root[data-theme="light"] .chat-page .chat-message-actions button:hover,
+:root[data-theme="light"] .chat-page .chat-attachment-menu button:hover {
+  background: var(--chat-hover-bg);
+}
+:root[data-theme="light"] .chat-page .chat-reply-quote,
+:root[data-theme="light"] .chat-page .chat-reply-composer,
+:root[data-theme="light"] .chat-page .chat-voice-draft-preview,
+:root[data-theme="light"] .chat-page .chat-image-pending {
+  background: var(--chat-surface-raised);
+  border-color: var(--chat-border);
+}
+:root[data-theme="light"] .chat-page .chat-voice-waveform span {
+  background: #d8bfc3;
+}
+:root[data-theme="light"] .chat-page .chat-voice-waveform span.is-played {
+  background: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page .chat-status-offline {
+  background: var(--chat-surface-raised);
+  color: var(--chat-muted);
+  border-color: var(--chat-border);
+}
+:root[data-theme="light"] .chat-page .chat-readonly-notice {
+  background: #f8ebed;
+  color: #7f2435;
+  border-color: var(--chat-border);
+}
+:root[data-theme="light"] .chat-page .chat-rule-note {
+  color: var(--chat-muted);
+  border-color: var(--chat-border);
+}
+:root[data-theme="light"] .chat-page .chat-rule-note svg,
+:root[data-theme="light"] .chat-page .chat-list-empty svg,
+:root[data-theme="light"] .chat-page .chat-empty-conversation > span,
+:root[data-theme="light"] .chat-page .chat-welcome > span {
+  color: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page :is(button,input,textarea,[role="button"]):focus-visible {
+  outline-color: var(--chat-focus);
+}
