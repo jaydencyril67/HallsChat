@@ -121,6 +121,14 @@ export default function GroupPage() {
     finally { setBusy(false); }
   }
 
+  async function deleteGroup() {
+    if (!activeId) return;
+    setBusy(true);
+    try { await request("/api/groups/" + encodeURIComponent(activeId), { method: "DELETE" }); setActiveId(""); setDetail(null); await loadGroups("mine"); setNotice("Group deleted."); }
+    catch (err) { setError(err instanceof Error ? err.message : "Unable to delete this group."); }
+    finally { setBusy(false); }
+  }
+
   async function removeMember(member: Member) {
     if (!activeId) return;
     try { await request("/api/groups/" + encodeURIComponent(activeId) + "/members/" + encodeURIComponent(member.id), { method: "DELETE" }); await loadDetail(activeId, false); setNotice("Member removed."); }
@@ -158,7 +166,7 @@ export default function GroupPage() {
             </div>
             <form onSubmit={sendMessage} style={{ display: "flex", gap: 8, padding: 10, borderTop: "1px solid rgba(255,210,219,.1)" }}><input aria-label="Write a group message" value={draft} onChange={event => setDraft(event.target.value)} placeholder="Message the group…" maxLength={4000} style={{ ...field, minWidth: 0, flex: 1 }}/><button type="submit" disabled={!draft.trim() || busy} aria-label="Send group message" style={{ ...primary, width: 46, padding: 0, flexShrink: 0, opacity: !draft.trim() || busy ? .55 : 1 }}><Send size={17}/></button></form>
           </div>
-          <div style={{ display: "flex", gap: 8, marginTop: 10 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { void loadDetail(activeId); }}><RefreshCw size={15}/> Refresh</button>{detail.role !== "owner" && <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => askConfirm("Leave this group? You will need to join again to read new messages.", leaveGroup)}><LogOut size={15}/> Leave group</button>}</div>
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { void loadDetail(activeId); }}><RefreshCw size={15}/> Refresh</button>{detail.role === "owner" ? <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => askConfirm("Delete this group and all its messages? This cannot be undone.", deleteGroup)}><Trash2 size={15}/> Delete group</button> : <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => askConfirm("Leave this group? You will need to join again to read new messages.", leaveGroup)}><LogOut size={15}/> Leave group</button>}</div>
         </> : <>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}><div style={{ minWidth: 0, flex: 1 }}><h1 style={{ margin: 0, fontSize: "1.25rem", color: "#fff0f3" }}>Groups</h1><p style={{ ...muted, margin: "5px 0 0", fontSize: ".8rem" }}>Build your circle. Keep the conversation together.</p></div><button type="button" onClick={() => setShowCreate(true)} style={primary}><Plus size={17}/> Create</button></div>
           <div style={{ ...panel, padding: 5, display: "flex", gap: 7, marginBottom: 12 }}>
