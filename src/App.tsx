@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import LandingPage from "./LandingPage";
 import SignupPage from "./SignupPage";
 import SigninPage from "./SigninPage";
@@ -138,7 +138,7 @@ export default function App() {
 
 
   const normalizedPath = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
-  let page;
+  let page: ReactNode;
   if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />;
   else if (normalizedPath === "/verify-email") page = <EmailVerificationPage />;
   else if (normalizedPath === "/signup") page = <SignupPage />;
