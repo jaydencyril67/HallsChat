@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { ArrowLeft, ArrowUp, Plus, Pencil, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical, Phone, Video } from "lucide-react";
 import AppHeader from "./AppHeader";
@@ -1001,7 +1001,34 @@ export default function ChatPage() {
               <CallsPanel socket={liveSocket} person={activePerson} />
             </header>
             <div className="chat-message-list" ref={chatMessageListRef}>
-              {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : (messages.length || conversationCalls.length) ? <>{messages.map(message => {
+              {messagesLoading ? <div className="chat-message-loading"><LoadingDots /></div> : (messages.length || conversationCalls.length) ? <>{messages.map((message, messageIndex) => {
+                const previousMessageTime = messageIndex > 0 ? new Date(messages[messageIndex - 1].createdAt).getTime() : -Infinity;
+                const messageTime = new Date(message.createdAt).getTime();
+                const callsBeforeMessage = conversationCalls.filter(call => {
+                  const callTime = new Date(call.createdAt).getTime();
+                  return Number.isFinite(callTime) && callTime > previousMessageTime && callTime <= messageTime;
+                });
+                const renderCall = (call: ChatCall) => {
+                  const missed = call.status === "missed";
+                  const declined = call.status === "declined";
+                  const failed = call.status === "failed";
+                  const outgoing = call.direction === "outgoing";
+                  const statusText = missed ? (outgoing ? "No answer" : "Missed call") : declined ? (outgoing ? "Call declined" : "Declined call") : failed ? "Call failed" : call.status === "cancelled" ? "Call cancelled" : call.status === "completed" ? "Call ended" : "Call";
+                  const duration = call.durationSeconds > 0 ? ` · ${Math.floor(call.durationSeconds / 60)}:${String(call.durationSeconds % 60).padStart(2, "0")}` : "";
+                  return <div className={`chat-message-line ${outgoing ? "chat-message-line-mine" : ""}`} key={`call-${call.id}`}>
+                    <div className={`chat-message-content ${outgoing ? "chat-message-content-mine" : "chat-message-content-theirs"} chat-call-bubble${missed || failed ? " chat-call-bubble-alert" : ""}`}>
+                      <div className="chat-call-body">
+                        <span className="chat-call-icon">{call.kind === "video" ? <Video size={19} /> : <Phone size={19} />}</span>
+                        <div className="chat-call-copy">
+                          <strong>{call.kind === "video" ? "Video call" : "Audio call"}</strong>
+                          <span className={missed || failed ? "chat-call-status-alert" : ""}>{statusText}{duration}</span>
+                        </div>
+                      </div>
+                      <div className="chat-message-footer"><time>{new Date(call.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</time></div>
+                    </div>
+                  </div>;
+                };
+                return <Fragment key={message.id}>{callsBeforeMessage.map(renderCall)} {(() => {
                 const mine = message.senderId === currentUserId;
                 const quotedMessage = message.replyTo;
                 const messageImages = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
@@ -1081,9 +1108,13 @@ export default function ChatPage() {
                     </div>}
 
                   </div>
-                </div>;
+                </div>; })()}</Fragment>;
               })}
-                {conversationCalls.map(call => {
+                {conversationCalls.filter(call => !messages.some(message => {
+                  const callTime = new Date(call.createdAt).getTime();
+                  const messageTime = new Date(message.createdAt).getTime();
+                  return Number.isFinite(callTime) && Number.isFinite(messageTime) && callTime <= messageTime;
+                })).map(call => {
                   const missed = call.status === "missed";
                   const declined = call.status === "declined";
                   const failed = call.status === "failed";
