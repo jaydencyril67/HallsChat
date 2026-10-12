@@ -8,6 +8,43 @@ type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; creat
 type Props = { socket: Socket | null; person: Person | null };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
+function startCallTone(kind: "incoming" | "outgoing") {
+  const AudioContextClass = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AudioContextClass) return () => {};
+  let context: AudioContext;
+  try { context = new AudioContextClass(); } catch { return () => {}; }
+  let stopped = false;
+  const playBurst = () => {
+    if (stopped || context.state === "closed") return;
+    const now = context.currentTime;
+    const notes = kind === "incoming"
+      ? [{ at: 0, duration: 0.32, frequency: 440 }, { at: 0.42, duration: 0.32, frequency: 480 }, { at: 0.9, duration: 0.32, frequency: 440 }]
+      : [{ at: 0, duration: 1.15, frequency: 440 }, { at: 0, duration: 1.15, frequency: 480 }];
+    notes.forEach(note => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.value = note.frequency;
+      gain.gain.setValueAtTime(0.0001, now + note.at);
+      gain.gain.exponentialRampToValueAtTime(0.075, now + note.at + 0.025);
+      gain.gain.setValueAtTime(0.075, now + note.at + note.duration - 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + note.at + note.duration);
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(now + note.at);
+      oscillator.stop(now + note.at + note.duration);
+      oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+    });
+  };
+  void context.resume().then(() => { if (!stopped) playBurst(); }).catch(() => {});
+  const interval = window.setInterval(playBurst, kind === "incoming" ? 2600 : 5000);
+  return () => {
+    stopped = true;
+    window.clearInterval(interval);
+    void context.close().catch(() => {});
+  };
+}
+
 export default function CallsPanel({ socket, person }: Props) {
   const [incoming, setIncoming] = useState<Incoming | null>(null);
   const [callId, setCallId] = useState("");
@@ -277,6 +314,12 @@ export default function CallsPanel({ socket, person }: Props) {
       socket.off("call:ice", onIce); socket.off("call:declined", onDeclined); socket.off("call:ended", onEnded);
     };
   }, [socket, incoming?.callId, cleanup]);
+
+  useEffect(() => {
+    const toneKind = phase === "incoming" && incoming ? "incoming" : phase === "outgoing" ? "outgoing" : null;
+    if (!toneKind) return;
+    return startCallTone(toneKind);
+  }, [phase, incoming?.callId]);
 
   useEffect(() => {
     if (phase !== "connected") return;
