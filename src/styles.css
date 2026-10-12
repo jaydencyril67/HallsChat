@@ -7299,3 +7299,149 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   border-color: #e3c7cd !important;
   color: #84273b !important;
 }
+
+
+/* Call modal refinement: explicit light-theme surfaces, clearer hierarchy, and comfortable touch targets. */
+.halls-call-backdrop {
+  box-sizing: border-box;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.halls-call-card,
+.halls-call-stage {
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+.halls-call-card h2,
+.halls-call-stage h2 {
+  max-width: 100%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.halls-call-actions button,
+.halls-call-controls button,
+.halls-call-close {
+  flex: 0 0 auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.halls-call-actions button:focus-visible,
+.halls-call-controls button:focus-visible,
+.halls-call-close:focus-visible {
+  outline: 2px solid #f09aa8;
+  outline-offset: 4px;
+}
+.halls-call-ring-time {
+  min-height: 1.5em;
+  text-align: center;
+}
+:root[data-theme="light"] .halls-call-backdrop {
+  background: rgba(34, 14, 21, .78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+:root[data-theme="light"] .halls-call-card,
+:root[data-theme="light"] .halls-call-stage:not(.halls-call-stage-video) {
+  background: linear-gradient(160deg, #fff9f8, #f5e8eb 78%);
+  color: #35212a;
+}
+:root[data-theme="light"] .halls-call-card h2,
+:root[data-theme="light"] .halls-call-stage h2 {
+  color: #35212a;
+}
+:root[data-theme="light"] .halls-call-card p,
+:root[data-theme="light"] .halls-call-stage:not(.halls-call-stage-video) p {
+  color: #785c65;
+}
+:root[data-theme="light"] .halls-call-eyebrow {
+  color: #a12c43;
+}
+:root[data-theme="light"] .halls-call-avatar {
+  border: 3px solid rgba(169, 31, 53, .12);
+  box-shadow: 0 8px 24px rgba(105, 35, 51, .14);
+}
+:root[data-theme="light"] .halls-call-actions button:not(.halls-call-decline):not(.halls-call-accept),
+:root[data-theme="light"] .halls-call-controls button:not(.halls-call-hangup) {
+  background: #f1dfe3;
+  color: #76263a;
+  border: 1px solid #e4c4cb;
+}
+:root[data-theme="light"] .halls-call-actions .halls-call-decline,
+:root[data-theme="light"] .halls-call-controls .halls-call-hangup {
+  background: #c82f49;
+  color: #fff;
+}
+:root[data-theme="light"] .halls-call-actions .halls-call-accept {
+  background: #218657;
+  color: #fff;
+}
+:root[data-theme="light"] .halls-call-close {
+  background: #f5e5e8;
+  color: #76263a;
+  border: 1px solid #e4c4cb;
+}
+:root[data-theme="light"] .halls-call-controls button.is-active {
+  background: #e5c5cc;
+  color: #652035;
+}
+:root[data-theme="light"] .halls-call-error {
+  color: #a1263c !important;
+}
+:root[data-theme="light"] .halls-call-toast {
+  background: #fff8f7;
+  border-color: #e6c6cd;
+  color: #492a34;
+  box-shadow: 0 12px 34px rgba(61, 24, 33, .16);
+}
+:root[data-theme="light"] .halls-call-toast button {
+  color: #922a40;
+}
+:root[data-theme="light"] .halls-call-confirm-popout {
+  background: #fffaf9;
+  border-color: #e7cbd0;
+  color: #38212a;
+  box-shadow: 0 12px 34px rgba(61, 24, 33, .18);
+}
+:root[data-theme="light"] .halls-call-confirm-popout > span {
+  color: #80636b;
+}
+:root[data-theme="light"] .halls-call-confirm-popout .halls-call-confirm-cancel {
+  background: #f8e8eb;
+  border-color: #e7c6cd;
+  color: #84273b;
+}
+:root[data-theme="light"] .halls-call-confirm-popout .halls-call-confirm-start {
+  background: #a92c43;
+  border-color: #a92c43;
+  color: #fff9f8;
+}
+@media (max-width: 520px) {
+  .halls-call-card {
+    gap: 9px;
+    padding-right: 20px !important;
+    padding-left: 20px !important;
+  }
+  .halls-call-card h2,
+  .halls-call-stage h2 {
+    font-size: clamp(21px, 6vw, 24px);
+  }
+  .halls-call-actions,
+  .halls-call-controls {
+    gap: clamp(18px, 6vw, 25px);
+  }
+  .halls-call-actions button,
+  .halls-call-controls button {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .halls-call-backdrop,
+  .halls-call-card,
+  .halls-call-stage,
+  .halls-call-actions button,
+  .halls-call-controls button {
+    animation: none !important;
+    transition: none !important;
+  }
+}
