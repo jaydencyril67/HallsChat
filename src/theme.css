@@ -117,3 +117,148 @@
 :root[data-theme="light"] .chat-conversation-card p,
 :root[data-theme="light"] .hall-card p,
 :root[data-theme="light"] .group-card p { color: var(--theme-muted); }
+
+
+/* Home-only light theme repair. All rules are gated to light mode so the dark
+   palette and the existing dark-mode rendering remain untouched. */
+:root[data-theme="light"] .social-home {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .home-shell,
+:root[data-theme="light"] .social-home .social-shell,
+:root[data-theme="light"] .social-home .social-feed-column,
+:root[data-theme="light"] .social-home .social-post-list {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .home-state,
+:root[data-theme="light"] .social-home .home-error,
+:root[data-theme="light"] .social-home .social-feed-heading,
+:root[data-theme="light"] .social-home .social-feed-count,
+:root[data-theme="light"] .social-home .social-empty-feed,
+:root[data-theme="light"] .social-home .social-comments-state,
+:root[data-theme="light"] .social-home .social-comments-empty {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .social-home .social-composer,
+:root[data-theme="light"] .social-home .social-post,
+:root[data-theme="light"] .social-home .social-comments-sheet,
+:root[data-theme="light"] .social-home .social-comment,
+:root[data-theme="light"] .social-home .social-comment-bubble,
+:root[data-theme="light"] .social-home .social-comment-edit-modal,
+:root[data-theme="light"] .social-home .social-post-manager-empty,
+:root[data-theme="light"] .social-home .social-poll-card {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-composer-collapsed,
+:root[data-theme="light"] .social-home .social-composer-quick,
+:root[data-theme="light"] .social-home .social-composer-quick-top,
+:root[data-theme="light"] .social-home .social-post-actions,
+:root[data-theme="light"] .social-home .social-comments-header,
+:root[data-theme="light"] .social-home .social-comments-composer-wrap,
+:root[data-theme="light"] .social-home .social-comment-form {
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-post-author strong,
+:root[data-theme="light"] .social-home .social-post h3,
+:root[data-theme="light"] .social-home .social-comments-header strong,
+:root[data-theme="light"] .social-home .social-comment-body strong,
+:root[data-theme="light"] .social-home .social-comment-meta strong,
+:root[data-theme="light"] .social-home .social-poll-result-top,
+:root[data-theme="light"] .social-home .social-poll-result-top strong {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-post-author span,
+:root[data-theme="light"] .social-home .social-post-audience,
+:root[data-theme="light"] .social-home .social-comment-meta,
+:root[data-theme="light"] .social-home .social-comment-reply,
+:root[data-theme="light"] .social-home .social-poll-total,
+:root[data-theme="light"] .social-home .social-comments-header small,
+:root[data-theme="light"] .social-home .social-comments-grabber {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .social-home .social-post-action-muted,
+:root[data-theme="light"] .social-home .social-comment-delete,
+:root[data-theme="light"] .social-home .social-comments-header button,
+:root[data-theme="light"] .social-home .social-comment-form button,
+:root[data-theme="light"] .social-home .social-comment-edit-modal button:not([type="submit"]) {
+  color: var(--theme-text);
+  background: var(--theme-surface-raised);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-post-action-muted:hover,
+:root[data-theme="light"] .social-home .social-comment-form button:hover {
+  background: #f4e4e5;
+}
+:root[data-theme="light"] .social-home .social-poll-result-track {
+  background: #eadbdd;
+}
+:root[data-theme="light"] .social-home .social-poll-result-track > span {
+  background: var(--theme-primary);
+}
+:root[data-theme="light"] .social-home .social-text-link,
+:root[data-theme="light"] .social-home .social-comment-reply {
+  color: var(--theme-primary);
+}
+:root[data-theme="light"] .social-home .social-composer textarea,
+:root[data-theme="light"] .social-home .social-comment-form textarea,
+:root[data-theme="light"] .social-home .social-comment-edit-modal textarea,
+:root[data-theme="light"] .social-home .social-post-content:not([data-colored-feed-post]),
+:root[data-theme="light"] .social-home .social-comment-edit-modal input {
+  color: var(--theme-text);
+  background: var(--theme-surface);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-composer textarea::placeholder,
+:root[data-theme="light"] .social-home .social-comment-form textarea::placeholder,
+:root[data-theme="light"] .social-home .social-comment-edit-modal textarea::placeholder {
+  color: var(--theme-soft);
+}
+:root[data-theme="light"] .social-home .social-avatar,
+:root[data-theme="light"] .social-home .social-comment-avatar {
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-story-ring {
+  border-color: #d9b5bc;
+}
+:root[data-theme="light"] .social-home .social-story-add {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"],
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"],
+:root[data-theme="light"] .social-home .social-comment-action-menu,
+:root[data-theme="light"] .social-home .social-comment-delete-confirm {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 10px 28px rgba(61,24,33,.16) !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"] button,
+:root[data-theme="light"] .social-home .social-comment-action-menu button,
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"] button,
+:root[data-theme="light"] .social-home .social-comment-delete-confirm button {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"] div:nth-child(2) {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-home .social-comments-overlay,
+:root[data-theme="light"] .social-home .social-comment-edit-overlay,
+:root[data-theme="light"] .social-home .social-story-delete-overlay {
+  background: rgba(49,21,29,.38);
+}
+:root[data-theme="light"] .social-home .social-story-delete-dialog {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-story-delete-dialog > p {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .social-home .social-comment-edit-modal > header,
+:root[data-theme="light"] .social-home .social-comment-edit-modal > footer {
+  color: var(--theme-text);
+}
+/* Story/post creation canvases deliberately keep their chosen creative colors. */
