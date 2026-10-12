@@ -5193,3 +5193,66 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     transition: none !important;
   }
 }
+
+
+/* Profile posts-display pass: clearer light-theme post tiles, text and poll cards. */
+:root[data-theme="light"] .profile-page .social-shell article[role="button"] {
+  background-color: #fffaf9 !important;
+  border-color: #e8d2d6 !important;
+  box-shadow: 0 2px 7px rgba(70, 24, 36, .07);
+  isolation: isolate;
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"] > p {
+  color: #302329 !important;
+  font-size: clamp(.72rem, 2.6vw, .88rem) !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere;
+  text-shadow: none;
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"]:not(:has(img)) {
+  background: linear-gradient(145deg, #fffaf9 0%, #f5e7ea 100%) !important;
+}
+:root[data-theme="light"] .profile-page .social-shell article:not([role="button"]) {
+  background: linear-gradient(145deg, #fffaf9 0%, #f4e4e8 100%) !important;
+  border: 1px solid #e8d2d6 !important;
+  box-shadow: 0 2px 7px rgba(70, 24, 36, .07);
+  color: #302329 !important;
+}
+:root[data-theme="light"] .profile-page .social-shell article:not([role="button"]) > p {
+  color: #302329 !important;
+  font-size: clamp(.72rem, 2.6vw, .88rem) !important;
+  line-height: 1.45 !important;
+  overflow-wrap: anywhere;
+}
+:root[data-theme="light"] .profile-page .social-shell article:not([role="button"]) > div[style*="linear-gradient(145deg,#5b1b2c"] {
+  background: linear-gradient(145deg, #f7e7ea, #ead0d6) !important;
+  color: #54202d !important;
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"] > div[style*="linear-gradient(145deg,#5b1b2c"] {
+  background: linear-gradient(145deg, #f7e7ea, #ead0d6) !important;
+  color: #54202d !important;
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"] > div[style*="rgba(0,0,0,.78)"] {
+  color: #fff !important;
+  background: linear-gradient(transparent, rgba(35, 12, 20, .82)) !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,.4);
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"]:focus-visible {
+  outline: 2px solid #a92c43 !important;
+  outline-offset: 3px;
+}
+:root[data-theme="light"] .profile-page .social-shell article[role="button"]:active {
+  transform: scale(.99);
+}
+@media (max-width: 520px) {
+  :root[data-theme="light"] .profile-page .social-shell article[role="button"],
+  :root[data-theme="light"] .profile-page .social-shell article:not([role="button"]) {
+    min-width: 0;
+  }
+  :root[data-theme="light"] .profile-page .social-shell article[role="button"] > p,
+  :root[data-theme="light"] .profile-page .social-shell article:not([role="button"]) > p {
+    -webkit-line-clamp: 6;
+    font-size: .72rem !important;
+    line-height: 1.38 !important;
+  }
+}
