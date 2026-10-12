@@ -6,7 +6,7 @@ import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
-import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
+import { finishBackgroundTask, hasActiveBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import CallsPanel from "./components/CallsPanel";
@@ -185,6 +185,20 @@ export default function ChatPage() {
   const activeIdRef = useRef(activeId);
   const currentUserIdRef = useRef(currentUserId);
   const socketRef = useRef<ReturnType<typeof io> | null>(null);
+  const chatPageActiveRef = useRef(true);
+  useEffect(() => {
+    chatPageActiveRef.current = true;
+    return () => { chatPageActiveRef.current = false; };
+  }, []);
+
+  function releaseBackgroundChatSocketIfNeeded() {
+    if (chatPageActiveRef.current) return;
+    const socket = socketRef.current;
+    if (!socket) return;
+    socket.removeAllListeners();
+    socket.disconnect();
+    socketRef.current = null;
+  }
   const typingRecipientRef = useRef("");
   const typingStopTimerRef = useRef<number | null>(null);
   const otherTypingTimerRef = useRef<number | null>(null);
@@ -545,6 +559,8 @@ export default function ChatPage() {
     return () => {
       stopTyping();
       if (otherTypingTimerRef.current !== null) window.clearTimeout(otherTypingTimerRef.current);
+      const sendStillRunning = hasActiveBackgroundTask("Sending chat message") || hasActiveBackgroundTask("Sending voice note");
+      if (sendStillRunning) return;
       socket.removeAllListeners();
       socket.disconnect();
       setLiveSocket(null);
@@ -794,6 +810,7 @@ export default function ChatPage() {
       setVoiceDraftUrl("");
       setRecordingSeconds(0);
       finishBackgroundTask(backgroundTaskId);
+      releaseBackgroundChatSocketIfNeeded();
     } catch (err) {
       setMessages(current => current.filter(item => item.id !== pendingId));
       // If sending fails, put the recording back so the user can retry it.
@@ -802,6 +819,7 @@ export default function ChatPage() {
       const voiceError = err instanceof Error ? err.message : "Your voice note couldn't be sent.";
       setError(voiceError);
       finishBackgroundTask(backgroundTaskId, voiceError);
+      releaseBackgroundChatSocketIfNeeded();
     } finally { setVoiceBusy(false); }
   }
 
@@ -918,12 +936,14 @@ export default function ChatPage() {
         return bTime - aTime || a.name.localeCompare(b.name);
       }));
       finishBackgroundTask(backgroundTaskId);
+      releaseBackgroundChatSocketIfNeeded();
     } catch (err) {
       setMessages(current => current.filter(message => !pendingIds.includes(message.id)));
       previewsToRelease.forEach(url => URL.revokeObjectURL(url));
       const messageError = err instanceof Error ? err.message : "Your message couldn't be sent.";
       setError(messageError);
       finishBackgroundTask(backgroundTaskId, messageError);
+      releaseBackgroundChatSocketIfNeeded();
     } finally {
     }
   }
