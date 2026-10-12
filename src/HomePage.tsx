@@ -133,6 +133,10 @@ export default function HomePage() {
   const [storyPublishing, setStoryPublishing] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
   const [postBackground, setPostBackground] = useState("#8b1e35");
+  const [postTextColor, setPostTextColor] = useState("#ffffff");
+  const [postTextSize, setPostTextSize] = useState(27);
+  const [postTextColorPickerOpen, setPostTextColorPickerOpen] = useState(false);
+  const [postTextSizePickerOpen, setPostTextSizePickerOpen] = useState(false);
   const [postBackgroundPickerOpen, setPostBackgroundPickerOpen] = useState(false);
   const [postAttachmentManagerOpen, setPostAttachmentManagerOpen] = useState(false);
   const [pollQuestion, setPollQuestion] = useState("");
@@ -658,7 +662,11 @@ export default function HomePage() {
       setPosts(current => [payload.post as SocialPost, ...current]);
       setDraft("");
       setPostBackground("#8b1e35");
+      setPostTextColor("#ffffff");
+      setPostTextSize(27);
       setPostBackgroundPickerOpen(false);
+      setPostTextColorPickerOpen(false);
+      setPostTextSizePickerOpen(false);
       setComposerExpanded(false);
       setComposerMode("post");
       setPollQuestion("");
@@ -1062,30 +1070,38 @@ export default function HomePage() {
     </div>}
     {composerExpanded && <div className="social-story-overlay social-post-composer-overlay" role="presentation" onClick={() => setComposerExpanded(false)}>
       <form className="social-story-dialog social-story-snap-composer social-post-snap-composer" role="dialog" aria-modal="true" aria-label="Create post" onClick={event => event.stopPropagation()} onSubmit={publishPost}>
-        <div className="social-story-preview social-story-snap-canvas social-post-snap-canvas" style={{ background: postBackground }}>
+        <div className={`social-story-preview social-story-snap-canvas social-post-snap-canvas ${selectedImages.length ? "has-photo" : ""}`} style={{ background: selectedImages.length ? "#16090d" : postBackground }}>
+          {selectedImages[0] && <img src={selectedImages[0].preview} alt="Post photo preview"/>}
+          {draft.trim() && <p className="social-post-live-preview" style={{ color: postTextColor, fontSize: `clamp(18px, ${postTextSize / 5}vw, ${postTextSize}px)` }}>{draft}</p>}
+          {!draft.trim() && !selectedImages.length && <span>What's on your mind?</span>}
           <button type="button" className="social-story-snap-close" onClick={() => setComposerExpanded(false)} aria-label="Close post creator"><X size={21}/></button>
           <div className="social-post-snap-heading"><span className="social-avatar social-avatar-self">{user?.profilePicture ? <img src={user.profilePicture} alt="" /> : initials(user?.name || "H")}</span><div><strong>{user?.name || "Your profile"}</strong><span>Create a post</span></div></div>
           <div className="social-story-snap-tools" aria-label="Post editing tools">
             <button type="button" onClick={() => document.getElementById("social-post-content")?.focus()} aria-label="Add text" title="Add text"><Pencil size={20}/></button>
-            <button type="button" onClick={() => { setPostBackgroundPickerOpen(value => !value); setPostAttachmentManagerOpen(false); }} aria-expanded={postBackgroundPickerOpen} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
-            <label className={`social-story-snap-tool${selectedImages.length ? " is-disabled" : ""}`} aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" hidden disabled={!!selectedImages.length || publishing || compressingImages} onChange={event => { const file = event.target.files?.[0]; if (file) void selectImages({ target: { files: [file] } } as unknown as React.ChangeEvent<HTMLInputElement>); event.currentTarget.value = ""; }}/></label>
-            <button type="button" onClick={() => setPostAttachmentManagerOpen(value => !value)} aria-expanded={postAttachmentManagerOpen} aria-label="Manage post" title="More options"><MoreHorizontal size={21}/></button>
+            <button type="button" onClick={() => { setPostBackgroundPickerOpen(value => !value); setPostTextColorPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postBackgroundPickerOpen} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
+            <button type="button" onClick={() => { setPostTextColorPickerOpen(value => !value); setPostBackgroundPickerOpen(false); setPostTextSizePickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postTextColorPickerOpen} aria-label="Change text color" title="Text color"><CaseSensitive size={21}/></button>
+            <button type="button" onClick={() => { setPostTextSizePickerOpen(value => !value); setPostBackgroundPickerOpen(false); setPostTextColorPickerOpen(false); setPostAttachmentManagerOpen(false); }} aria-expanded={postTextSizePickerOpen} aria-label="Adjust text size" title="Text size"><Type size={20}/></button>
+            <label className="social-story-snap-tool" aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" hidden disabled={!!selectedImages.length || publishing || compressingImages} onChange={selectImages}/></label>
+            <button type="button" onClick={() => { setPostAttachmentManagerOpen(value => !value); setPostBackgroundPickerOpen(false); setPostTextColorPickerOpen(false); setPostTextSizePickerOpen(false); }} aria-expanded={postAttachmentManagerOpen} aria-label="Manage post" title="Manage post"><MoreHorizontal size={21}/></button>
           </div>
-          {postBackgroundPickerOpen && <div className="social-story-color-popout social-post-background-picker" role="dialog" aria-label="Post background colors">
-            <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setPostBackgroundPickerOpen(false)} aria-label="Close background colors"><X size={15}/></button></div>
-            <div className="social-story-colors">{["#8b1e35","#b92d45","#e85d75","#f28b30","#d9a521","#238b72","#2676b8","#6554c0","#20242d","#111111"].map(color => <button key={color} type="button" className={postBackground === color ? "is-active" : ""} style={{ background: color }} onClick={() => setPostBackground(color)} aria-label={`Use ${color} background`} aria-pressed={postBackground === color}/>)}</div>
+          {postBackgroundPickerOpen && <div className="social-story-color-popout social-post-background-picker" role="dialog" aria-label="Choose post background color">
+            <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setPostBackgroundPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
+            <div className="social-story-colors" aria-label="Post background colors">{["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e","#9333ea"].map(color => <button key={color} type="button" className={postBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => setPostBackground(color)} aria-label={`Choose ${color} background`} />)}</div>
+          </div>}
+          {postTextColorPickerOpen && <div className="social-story-color-popout social-story-text-color-popout social-post-text-color-picker" role="dialog" aria-label="Choose post text color">
+            <div className="social-story-color-popout-head"><strong>Text color</strong><button type="button" onClick={() => setPostTextColorPickerOpen(false)} aria-label="Close text colors"><X size={14}/></button></div>
+            <div className="social-story-colors" aria-label="Post text colors">{["#ffffff","#111111","#ff4d6d","#ffb703","#70e000","#00d4ff","#8b5cf6","#ff7ac6","#d1d5db","#f97316","#22c55e","#3b82f6"].map(color => <button key={color} type="button" className={postTextColor === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setPostTextColor(color); setPostTextColorPickerOpen(false); }} aria-label={`Choose ${color} text`} />)}</div>
+          </div>}
+          {postTextSizePickerOpen && <div className="social-story-color-popout social-story-text-size-popout social-post-text-size-picker" role="dialog" aria-label="Adjust post text size">
+            <div className="social-story-color-popout-head"><strong>Text size</strong><button type="button" onClick={() => setPostTextSizePickerOpen(false)} aria-label="Close text size"><X size={14}/></button></div>
+            <div className="social-story-text-size-control"><label htmlFor="social-post-text-size">Size</label><input id="social-post-text-size" type="range" min="12" max="64" step="1" value={postTextSize} onChange={event => setPostTextSize(Number(event.target.value))} aria-label="Adjust post text size"/><output>{postTextSize}px</output></div>
           </div>}
           {postAttachmentManagerOpen && <div className="social-story-text-manager" role="dialog" aria-label="Manage post attachment">
             <div className="social-story-text-manager-head"><strong>Post attachment</strong><button type="button" onClick={() => setPostAttachmentManagerOpen(false)} aria-label="Close attachment manager"><X size={15}/></button></div>
             {selectedImages.length ? <div className="social-story-text-manager-list"><div><button type="button" className="social-story-manager-select" onClick={() => { setPreviewImage(selectedImages[0].preview); setPostAttachmentManagerOpen(false); }}><span>1</span><span><strong>{selectedImages[0].file.name}</strong><small>Tap to preview</small></span></button><button type="button" className="social-story-manager-delete" disabled={publishing} onClick={() => removeSelectedImage(0)} aria-label="Remove photo"><Trash2 size={14}/></button></div></div> : <p className="social-post-manager-empty">No photo attached.</p>}
           </div>}
-          <div className="social-post-snap-main">
-            <textarea id="social-post-content" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind?" rows={5} autoFocus maxLength={5000}/>
-            {selectedImages.length > 0 && <div className="social-image-previews social-post-snap-previews" aria-label="Photo attached to your post">
-              {selectedImages.slice(0,1).map((item,index) => <div className="social-image-preview" key={item.preview}><button type="button" className="social-image-preview-open" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview ${item.file.name}`}><img src={item.preview} alt={item.file.name}/></button><button type="button" onClick={() => removeSelectedImage(index)} aria-label="Remove photo" disabled={publishing}><X size={14}/></button><span>{item.file.name}</span></div>)}
-            </div>}
-          </div>
           <div className="social-story-snap-bottom social-post-snap-bottom">
+            <textarea id="social-post-content" className="social-story-active-text-input" value={draft} onChange={event => setDraft(event.target.value)} placeholder="What's on your mind?" rows={2} autoFocus maxLength={5000}/>
             {uploadStatus && <p className="social-upload-status" role="status"><LoadingDots/> {uploadStatus}</p>}
             <div className="social-story-snap-bottom-row"><span>{draft.length}/5000 characters</span><button type="submit" disabled={publishing || compressingImages || (!draft.trim() && selectedImages.length === 0)}>{compressingImages ? <><LoadingDots/> Preparing…</> : publishing ? <><LoadingDots/> Publishing…</> : <><Send size={16}/>Publish post</>}</button></div>
           </div>
