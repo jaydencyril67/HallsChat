@@ -20,11 +20,11 @@ type GroupMessage = { id: string; text: string; imageUrl?: string; images?: stri
 type GroupDetail = GroupSummary & { members: Member[] };
 type Tab = "mine" | "discover";
 
-const panel: React.CSSProperties = { border: "1px solid rgba(255,210,219,.12)", borderRadius: 16, background: "linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.84))" };
+const panel: React.CSSProperties = { border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)" };
 const muted: React.CSSProperties = { color: "rgba(246,220,225,.62)" };
-const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", padding: "12px 13px", borderRadius: 11, border: "1px solid rgba(255,210,219,.15)", background: "rgba(10,5,8,.42)", color: "#fff0f3", outline: "none", font: "inherit", fontSize: ".86rem" };
+const field: React.CSSProperties = { width: "100%", boxSizing: "border-box", padding: "12px 13px", borderRadius: 11, border: "1px solid rgba(255,210,219,.15)", background: "var(--theme-surface-raised)", color: "var(--theme-text)", outline: "none", font: "inherit", fontSize: ".86rem" };
 const primary: React.CSSProperties = { minHeight: 40, border: "1px solid rgba(222,68,89,.65)", borderRadius: 11, padding: "10px 14px", background: "linear-gradient(135deg,#c52d44,#8f172c)", color: "#fff6f7", fontSize: ".82rem", fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 };
-const secondary: React.CSSProperties = { minHeight: 38, border: "1px solid rgba(255,210,219,.16)", borderRadius: 10, padding: "9px 12px", background: "rgba(255,255,255,.04)", color: "#f8e8eb", fontSize: ".8rem", fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 };
+const secondary: React.CSSProperties = { minHeight: 38, border: "1px solid rgba(255,210,219,.16)", borderRadius: 10, padding: "9px 12px", background: "var(--theme-surface)", color: "var(--theme-text)", fontSize: ".8rem", fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7 };
 
 function initials(value: string) { return value.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H"; }
 function formatTime(value: string) { const date = new Date(value); if (!Number.isFinite(date.getTime())) return ""; return date.toLocaleDateString() === new Date().toLocaleDateString() ? date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : date.toLocaleDateString([], { month: "short", day: "numeric" }); }
