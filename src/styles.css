@@ -2540,3 +2540,45 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .settings-system-option{background:var(--theme-surface);border-color:var(--theme-line);color:var(--theme-text);}
 :root[data-theme="light"] .settings-system-option.is-selected{background:#f9e9eb;border-color:rgba(169,31,53,.55);}
 :root[data-theme="light"] .settings-system-option .settings-theme-icon{background:#f6e4e7;color:var(--theme-primary);}
+
+
+/* Page-by-page light theme pass: social pages use semantic theme tokens, not dark-only panel colors. */
+:root[data-theme="light"] .halls-page [style*="linear-gradient(145deg,rgba(57,17,27"],
+:root[data-theme="light"] .public-profile-page [style*="linear-gradient(145deg,rgba(57,17,27"],
+:root[data-theme="light"] .chat-page [style*="linear-gradient(145deg,rgba(57,17,27"] {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home [style*="color: #fff0f3"],
+:root[data-theme="light"] .social-home [style*="color:#fff0f3"],
+:root[data-theme="light"] .social-home [style*="color: rgb(255, 240, 243)"] {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-home [style*="color: rgba(246,220,225"],
+:root[data-theme="light"] .social-home [style*="color:rgba(246,220,225"],
+:root[data-theme="light"] .social-home [style*="color: rgb(246, 220, 225)"] {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .halls-page [style*="border: 1px solid rgba(255,210,219"],
+:root[data-theme="light"] .public-profile-page [style*="border: 1px solid rgba(255,210,219"],
+:root[data-theme="light"] .chat-page [style*="border: 1px solid rgba(255,210,219"] {
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home input,
+:root[data-theme="light"] .social-home textarea,
+:root[data-theme="light"] .social-home select {
+  background-color: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home input::placeholder,
+:root[data-theme="light"] .social-home textarea::placeholder {
+  color: var(--theme-muted) !important;
+  opacity: 1;
+}
+:root[data-theme="light"] .halls-page .settings-card,
+:root[data-theme="light"] .public-profile-page .settings-card,
+:root[data-theme="light"] .halls-page [role="tablist"] button,
+:root[data-theme="light"] .public-profile-page [role="tablist"] button {
+  color: var(--theme-text);
+}
