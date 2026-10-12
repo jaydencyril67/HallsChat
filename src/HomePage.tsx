@@ -132,7 +132,8 @@ export default function HomePage() {
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
   const [storyEditingImageUrl, setStoryEditingImageUrl] = useState("");
   const [postEditingImageUrl, setPostEditingImageUrl] = useState("");
-  const [postCropQueue, setPostCropQueue] = useState<File[]>([]);
+  const [postEditingImageIndex, setPostEditingImageIndex] = useState<number | null>(null);
+  const [selectedImageMenuIndex, setSelectedImageMenuIndex] = useState<number | null>(null);
   const [storyPublishing, setStoryPublishing] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
   const [postBackground, setPostBackground] = useState("#8b1e35");
@@ -419,20 +420,43 @@ export default function HomePage() {
       accepted.push(file);
     }
     if (!accepted.length) return;
-    setPostCropQueue(accepted.slice(1));
-    setPostEditingImageUrl(URL.createObjectURL(accepted[0]));
+
+    // Attach photos immediately without forcing a crop. Each image can be cropped later on demand.
+    setCompressingImages(true);
+    try {
+      const prepared: SelectedImage[] = [];
+      for (const file of accepted) {
+        const compressed = await compressPostImage(file);
+        prepared.push({ file: compressed, preview: URL.createObjectURL(compressed) });
+      }
+      setSelectedImages(current => [...current, ...prepared].slice(0, MAX_IMAGES));
+      setSelectedImageMenuIndex(null);
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "This image couldn't be prepared.");
+    } finally {
+      setCompressingImages(false);
+    }
   }
 
   async function finishPostPhotoEdit(file: File) {
+    const index = postEditingImageIndex;
+    if (index === null) return;
     setCompressingImages(true);
     try {
       const compressed = await compressPostImage(file);
-      setSelectedImages(current => [...current, { file: compressed, preview: URL.createObjectURL(compressed) }].slice(0, MAX_IMAGES));
-      if (postEditingImageUrl) URL.revokeObjectURL(postEditingImageUrl);
-      const nextFile = postCropQueue[0];
-      setPostEditingImageUrl(nextFile ? URL.createObjectURL(nextFile) : "");
-      setPostCropQueue(current => current.slice(1));
+      const preview = URL.createObjectURL(compressed);
+      setSelectedImages(current => {
+        const existing = current[index];
+        if (existing) URL.revokeObjectURL(existing.preview);
+        return current.map((item, itemIndex) => itemIndex === index ? { file: compressed, preview } : item);
+      });
       setFeedError("");
+      setSelectedImageMenuIndex(null);
+      setPostEditingImageIndex(null);
+      setPostEditingImageUrl(current => {
+        if (current) URL.revokeObjectURL(current);
+        return "";
+      });
     } catch (err) {
       setFeedError(err instanceof Error ? err.message : "This image couldn't be prepared.");
     } finally {
@@ -442,13 +466,22 @@ export default function HomePage() {
 
   function cancelPostPhotoEdit() {
     setPostEditingImageUrl(current => { if (current) URL.revokeObjectURL(current); return ""; });
-    setPostCropQueue([]);
+    setPostEditingImageIndex(null);
+  }
+
+  function cropSelectedImage(index: number) {
+    const item = selectedImages[index];
+    if (!item || publishing || compressingImages) return;
+    setSelectedImageMenuIndex(null);
+    setPostEditingImageIndex(index);
+    setPostEditingImageUrl(URL.createObjectURL(item.file));
   }
 
   function removeSelectedImage(index: number) {
     const item = selectedImages[index];
     if (item) URL.revokeObjectURL(item.preview);
     setSelectedImages(current => current.filter((_, itemIndex) => itemIndex !== index));
+    setSelectedImageMenuIndex(current => current === index ? null : current !== null && current > index ? current - 1 : current);
   }
 
   async function uploadImages(token: string): Promise<string[]> {
@@ -1101,10 +1134,16 @@ export default function HomePage() {
       <form className="social-story-dialog social-story-snap-composer social-post-snap-composer" role="dialog" aria-modal="true" aria-label="Create post" onClick={event => event.stopPropagation()} onSubmit={publishPost}>
         <div className={`social-story-preview social-story-snap-canvas social-post-snap-canvas ${selectedImages.length ? "has-photo" : ""}`} style={{ background: selectedImages.length ? "#16090d" : postBackgroundEnabled ? postBackground : "#10070b" }}>
           {selectedImages.length > 0 && <div className={`social-post-composer-image-grid social-post-composer-image-grid-${selectedImages.length}`} aria-label={`${selectedImages.length} attached image${selectedImages.length === 1 ? "" : "s"}`} style={{ position: "absolute", inset: "12% 8% 18%", display: "grid", gridTemplateColumns: selectedImages.length === 1 ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))", gridTemplateRows: selectedImages.length <= 2 ? "minmax(0, 1fr)" : "repeat(2, minmax(0, 1fr))", gap: 6, minHeight: 0, zIndex: 1 }}>
-            {selectedImages.map((item, index) => <button key={item.preview} type="button" onClick={() => setPreviewImage(item.preview)} aria-label={`Preview attached image ${index + 1}`} style={{ position: "relative", display: "grid", placeItems: "center", minWidth: 0, minHeight: 0, overflow: "hidden", padding: 0, border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, background: "#090609" }}>
-              <img src={item.preview} alt={`Post photo preview ${index + 1}`} style={{ width: "100%", height: "100%", maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}/>
-              <span style={{ position: "absolute", right: 5, top: 5, padding: "3px 6px", borderRadius: 999, background: "rgba(0,0,0,.7)", color: "#fff", fontSize: 11 }}>{index + 1}/${MAX_IMAGES}</span>
-            </button>)}
+            {selectedImages.map((item, index) => <div key={item.preview} style={{ position: "relative", minWidth: 0, minHeight: 0 }}>
+              <button type="button" onClick={() => setSelectedImageMenuIndex(current => current === index ? null : index)} aria-label={`Image ${index + 1} options`} aria-expanded={selectedImageMenuIndex === index} style={{ position: "relative", width: "100%", height: "100%", display: "grid", placeItems: "center", minWidth: 0, minHeight: 0, overflow: "hidden", padding: 0, border: "1px solid rgba(255,255,255,.18)", borderRadius: 10, background: "#090609" }}>
+                <img src={item.preview} alt={`Post photo preview ${index + 1}`} style={{ width: "100%", height: "100%", maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}/>
+                <span style={{ position: "absolute", right: 5, top: 5, padding: "3px 6px", borderRadius: 999, background: "rgba(0,0,0,.7)", color: "#fff", fontSize: 11 }}>{index + 1}/{MAX_IMAGES}</span>
+              </button>
+              {selectedImageMenuIndex === index && <div role="menu" aria-label={`Actions for image ${index + 1}`} style={{ position: "absolute", right: 7, top: 7, zIndex: 5, minWidth: 116, padding: 6, display: "grid", gap: 3, border: "1px solid rgba(255,210,219,.2)", borderRadius: 12, background: "linear-gradient(145deg,rgba(57,17,27,.98),rgba(28,9,15,.99))", boxShadow: "0 10px 28px rgba(0,0,0,.42)", color: "#fff0f3", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+                <button type="button" role="menuitem" onClick={() => cropSelectedImage(index)} disabled={publishing || compressingImages} style={{ minHeight: 34, display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", border: 0, borderRadius: 8, background: "transparent", color: "#f2dce1", textAlign: "left", cursor: "pointer", fontSize: ".78rem" }}><Pencil size={14}/> Crop</button>
+                <button type="button" role="menuitem" onClick={() => removeSelectedImage(index)} disabled={publishing || compressingImages} style={{ minHeight: 34, display: "flex", alignItems: "center", gap: 8, padding: "7px 9px", border: 0, borderRadius: 8, background: "transparent", color: "#ff8192", textAlign: "left", cursor: "pointer", fontSize: ".78rem" }}><Trash2 size={14}/> Remove</button>
+              </div>}
+            </div>)}
           </div>}
           {draft.trim() && !selectedImages.length && <p className="social-post-live-preview" style={{ color: postTextColor, fontSize: `${Math.max(18, postTextSize - Math.max(0, Math.ceil(draft.trim().length / 120) - 1) * 2)}px` }}>{draft}</p>}
           {!draft.trim() && !selectedImages.length && <span>What's on your mind?</span>}
@@ -1187,7 +1226,7 @@ export default function HomePage() {
       </form>
     </div>}
     {storyEditingImageUrl && <StoryImageCropModal imageUrl={storyEditingImageUrl} onCancel={cancelStoryPhotoEdit} onDone={finishStoryPhotoEdit} />}
-    {postEditingImageUrl && <StoryImageCropModal key={postEditingImageUrl} imageUrl={postEditingImageUrl} title={`Crop post photo ${selectedImages.length + 1}${postCropQueue.length ? ` of ${selectedImages.length + postCropQueue.length + 1}` : ""}`} onCancel={cancelPostPhotoEdit} onDone={finishPostPhotoEdit} />}
+    {postEditingImageUrl && <StoryImageCropModal key={postEditingImageUrl} imageUrl={postEditingImageUrl} title={`Crop post photo ${(postEditingImageIndex ?? 0) + 1}`} onCancel={cancelPostPhotoEdit} onDone={finishPostPhotoEdit} />}
     {storyViewer && <div className="social-story-overlay" role="presentation" onClick={closeStoryViewer}>
       <div className="social-story-viewer" role="dialog" aria-modal="true" aria-label={`Story by ${storyViewer.author?.name || "user"}`} onClick={event => event.stopPropagation()}>
         <div className="social-story-progress-list" aria-label="Story progress">{storyPlaybackQueue.filter(item => item.author?.id === storyViewer.author?.id).map(item => {
