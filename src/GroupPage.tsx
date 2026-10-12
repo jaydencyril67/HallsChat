@@ -302,6 +302,11 @@ export default function GroupPage() {
         else if (reconnecting) void loadDetail(activeId, false);
       });
     });
+    socket.on("group:avatar:update", (event: { groupId?: string; avatar?: string; updatedAt?: string }) => {
+      if (event.groupId !== activeId || typeof event.avatar !== "string") return;
+      setDetail(current => current && current.id === activeId ? { ...current, avatar: event.avatar, updatedAt: event.updatedAt || current.updatedAt } : current);
+      setGroups(current => current.map(group => group.id === activeId ? { ...group, avatar: event.avatar, updatedAt: event.updatedAt || group.updatedAt } : group));
+    });
     socket.on("group:message", (message: GroupMessage) => {
       setMessages(current => current.some(item => item.id === message.id) ? current.map(item => item.id === message.id ? { ...item, ...message } : item) : [...current, message].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
       setOtherTyping(false);
