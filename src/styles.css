@@ -2459,3 +2459,68 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .settings-theme-option.is-selected .settings-theme-check{border-color:var(--theme-primary);background:var(--theme-primary);color:white;}
 .settings-note{margin:13px 1px 0;font-size:10px;line-height:1.55;color:var(--theme-muted);}
 @media(max-width:420px){.settings-shell{width:calc(100% - 22px)}.settings-card{padding:13px}.settings-heading h1{font-size:22px}}
+
+/* Light-theme compatibility for legacy components that still carry dark-only colors. */
+:root[data-theme="light"] .chat-page {
+  --chat-line: var(--theme-line);
+  --chat-muted: var(--theme-muted);
+  --chat-text: var(--theme-text);
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .nowbar-title { color: var(--theme-text); }
+:root[data-theme="light"] .social-composer,
+:root[data-theme="light"] .social-post,
+:root[data-theme="light"] .social-empty,
+:root[data-theme="light"] .social-profile-card,
+:root[data-theme="light"] .social-side-card,
+:root[data-theme="light"] .social-side-note {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+  box-shadow: 0 8px 24px rgba(61,24,33,.06);
+}
+:root[data-theme="light"] .social-post-author strong,
+:root[data-theme="light"] .social-composer-label,
+:root[data-theme="light"] .social-post-content,
+:root[data-theme="light"] .social-post h2,
+:root[data-theme="light"] .social-post h3 { color: var(--theme-text); }
+:root[data-theme="light"] .social-post-author span,
+:root[data-theme="light"] .social-post time,
+:root[data-theme="light"] .social-post-audience { color: var(--theme-muted); }
+:root[data-theme="light"] .chat-bubble-theirs {
+  background: #fffdfc;
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-bubble-mine {
+  background: linear-gradient(145deg, #b72c43, #962039);
+  color: #fff8f8;
+}
+:root[data-theme="light"] .chat-bubble time { color: var(--theme-muted); }
+:root[data-theme="light"] .chat-composer {
+  background: rgba(248,243,241,.96);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-composer textarea {
+  background: var(--theme-surface);
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .chat-composer textarea::placeholder { color: #987c83; }
+:root[data-theme="light"] .social-image-modal {
+  background: rgba(248,243,241,.98);
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-image-modal-header,
+:root[data-theme="light"] .social-image-modal-controls {
+  background: rgba(255,253,252,.96);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-image-modal-title { color: var(--theme-text); }
+:root[data-theme="light"] .social-image-modal-subtitle { color: var(--theme-muted); }
+:root[data-theme="light"] .social-image-modal-close {
+  background: #f6e4e7;
+  border-color: var(--theme-line);
+  color: var(--theme-primary);
+}
