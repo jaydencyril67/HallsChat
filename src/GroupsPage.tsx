@@ -335,7 +335,7 @@ export default function GroupsPage() {
     if (imageFiles.length + picked.length > MAX_GROUP_IMAGES) { setError("You can attach up to 4 images per group message."); return; }
     if (picked.some(file => !file.type.startsWith("image/"))) { setError("Choose image files only."); return; }
     if (picked.some(file => file.size > MAX_GROUP_IMAGE_SIZE)) { setError("Each image must be 10 MB or smaller."); return; }
-    setImagePreviews(current => { current.forEach(url => URL.revokeObjectURL(url)); return [...current, ...picked.map(file => URL.createObjectURL(file))]; });
+    setImagePreviews(current => [...current, ...picked.map(file => URL.createObjectURL(file))]);
     setImageFiles(current => [...current, ...picked]);
     setError("");
   }
