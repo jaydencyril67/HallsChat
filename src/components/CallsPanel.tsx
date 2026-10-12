@@ -337,7 +337,7 @@ export default function CallsPanel({ socket, person }: Props) {
         <button className="halls-call-close" type="button" onClick={endCall} aria-label="Close call"><X /></button>
         {kind === "audio" && <div className="halls-call-avatar halls-call-avatar-large">{peerName.slice(0,1).toUpperCase()}</div>}
         <span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2>{peerName}</h2>
-        <p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? <><LoadingDots /> Connecting…</> : formatDuration(seconds)}</p>
+        <p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? <LoadingDots /> : formatDuration(seconds)}</p>
         {callError && <p className="halls-call-error">{callError}</p>}
         <div className="halls-call-controls">
           <button type="button" className={muted ? "is-active" : ""} onClick={toggleMute} aria-label={muted ? "Unmute microphone" : "Mute microphone"}>{muted ? <MicOff /> : <Mic />}</button>
