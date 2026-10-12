@@ -629,9 +629,8 @@ export default function ChatPage() {
       setMessages(current => {
         const me = currentUserIdRef.current;
         const threadCurrent = current.filter(message =>
-          (String(message.senderId) === me && String(message.recipientId) === personId) ||
-          (String(message.senderId) === personId && String(message.recipientId) === me) ||
-          (Boolean(message.pending) && String(message.recipientId) === personId)
+          (String(message.senderId) === personId && (!me || String(message.recipientId) === me)) ||
+          (String(message.recipientId) === personId && (!me || String(message.senderId) === me || Boolean(message.pending)))
         );
         const byId = new Map<string, ChatMessage>();
         [...history, ...threadCurrent].forEach(message => byId.set(String(message.id), message));
@@ -649,6 +648,8 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!activeId) { setMessages([]); setMessagesLoading(false); setHistoryLoadedFor(""); return; }
+    // Never leave the previous conversation's rows visible while this thread loads.
+    setMessages([]);
     // Fetch history once when a conversation opens; new messages arrive over Socket.IO.
     void loadMessages(activeId, true);
   }, [activeId, loadMessages]);
