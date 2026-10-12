@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { io } from "socket.io-client";
 import type { CSSProperties } from "react";
 import { UsersRound, UserRoundCheck, UserPlus } from "lucide-react";
 import AppHeader from "./AppHeader";
@@ -49,8 +50,19 @@ export default function HallsPage() {
 
   useEffect(() => {
     void loadUsers(tab);
-    const timer = window.setInterval(() => { void loadUsers(tab, false); }, 20000);
-    return () => window.clearInterval(timer);
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    let hasConnected = false;
+    const socket = io(apiBase, { auth: { token }, transports: ["websocket", "polling"] });
+    socket.on("connect", () => {
+      if (hasConnected) void loadUsers(tab, false);
+      hasConnected = true;
+    });
+    socket.on("presence:update", (event: { userId?: string; isOnline?: boolean }) => {
+      if (!event.userId || typeof event.isOnline !== "boolean") return;
+      setUsers(current => current.map(person => person.id === event.userId ? { ...person, isOnline: event.isOnline } : person));
+    });
+    return () => { socket.removeAllListeners(); socket.disconnect(); };
   }, [tab, loadUsers]);
 
   async function toggleFollow(person: HallUser) {
