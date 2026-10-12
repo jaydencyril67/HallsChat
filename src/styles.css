@@ -3463,3 +3463,127 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   color: #fff !important;
   border-color: transparent !important;
 }
+
+
+/* Modal pass 3 — light-theme finishing touches for chat, comments, story editing,
+   and crop controls. Story/image canvases and the permanent dark theme stay intact. */
+:root[data-theme="light"] .chat-delete-overlay {
+  background: rgba(49, 21, 29, .42) !important;
+}
+:root[data-theme="light"] .chat-delete-dialog {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 22px 65px rgba(61,24,33,.2) !important;
+}
+:root[data-theme="light"] .chat-delete-dialog p {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .chat-delete-dialog>div button:not(.chat-delete-confirm) {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .chat-delete-dialog>div .chat-delete-confirm {
+  background: var(--theme-primary) !important;
+  color: #fff !important;
+}
+:root[data-theme="light"] .social-comment-delete-confirm {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 10px 28px rgba(61,24,33,.16) !important;
+}
+:root[data-theme="light"] .social-comment-delete-confirm span {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-comment-delete-confirm button:first-child {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-comment-delete-confirm button:last-child {
+  background: var(--theme-primary) !important;
+  color: #fff !important;
+}
+:root[data-theme="light"] .social-story-crop-overlay {
+  background: linear-gradient(160deg, #fbf5f3, #f0e4e3) !important;
+  color: var(--theme-text) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+:root[data-theme="light"] .social-story-crop-header {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-story-crop-header strong {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-story-crop-header span {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-story-crop-header>button:first-child {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-story-crop-header>button:last-child {
+  background: var(--theme-primary) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
+:root[data-theme="light"] .social-story-crop-error {
+  background: #fff7f6 !important;
+  color: #8c1d31 !important;
+  border-color: #e6a8b0 !important;
+  box-shadow: 0 8px 28px rgba(61,24,33,.14) !important;
+}
+:root[data-theme="light"] .social-story-dialog-head {
+  background: var(--theme-surface) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-story-dialog-head h2,
+:root[data-theme="light"] .social-story-text-editor-head {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-story-dialog-head>button {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-story-text-section {
+  background: var(--theme-surface-raised) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-story-text-section label,
+:root[data-theme="light"] .social-story-text-editor>small {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-story-text-section label button {
+  color: var(--theme-primary) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-story-text-section textarea,
+:root[data-theme="light"] .social-story-dialog>textarea {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-story-text-section textarea::placeholder,
+:root[data-theme="light"] .social-story-dialog>textarea::placeholder {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-story-dialog-actions {
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-story-dialog-actions>span,
+:root[data-theme="light"] .social-story-expiry {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-story-photo-button {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-primary) !important;
+  border-color: var(--theme-line) !important;
+}
+/* The story preview, image crop frame, and story viewer remain media-first
+   dark canvases so selected photos and user-picked story colors are preserved. */
