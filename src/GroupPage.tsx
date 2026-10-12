@@ -369,7 +369,7 @@ export default function GroupPage() {
     if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
   }, []);
 
-  const filteredGroups = useMemo(() => groups.filter(group => (group.name + " " + group.description).toLowerCase().includes(search.trim().toLowerCase())), [groups, search]);
+  const filteredGroups = useMemo(() => { const query = search.trim().toLowerCase(); if (!query) return groups; return groups.filter(group => [group.name, group.description, group.lastMessage?.text || "", group.lastMessage?.senderName || ""].join(" ").toLowerCase().includes(query)); }, [groups, search]);
 
   function cancelGroupAvatarCrop() {
     if (groupAvatarCropSource) URL.revokeObjectURL(groupAvatarCropSource);
