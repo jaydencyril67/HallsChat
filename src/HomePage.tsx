@@ -428,13 +428,10 @@ export default function HomePage() {
     try {
       const compressed = await compressPostImage(file);
       setSelectedImages(current => [...current, { file: compressed, preview: URL.createObjectURL(compressed) }].slice(0, MAX_IMAGES));
-      setPostEditingImageUrl(current => { if (current) URL.revokeObjectURL(current); return ""; });
-      setPostCropQueue(current => {
-        if (!current.length) return current;
-        const [next, ...remaining] = current;
-        setPostEditingImageUrl(URL.createObjectURL(next));
-        return remaining;
-      });
+      if (postEditingImageUrl) URL.revokeObjectURL(postEditingImageUrl);
+      const nextFile = postCropQueue[0];
+      setPostEditingImageUrl(nextFile ? URL.createObjectURL(nextFile) : "");
+      setPostCropQueue(current => current.slice(1));
       setFeedError("");
     } catch (err) {
       setFeedError(err instanceof Error ? err.message : "This image couldn't be prepared.");
