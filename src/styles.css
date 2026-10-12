@@ -3397,3 +3397,69 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
 }
 
+
+
+/* Modal pass 2 — repair hard-coded modal chrome only in light mode.
+   Dark-theme rules, media previews, crop surfaces, and creative canvases stay untouched. */
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Create a group"],
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Group details and members"] {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Join a group using Group ID"] {
+  background: rgba(49, 21, 29, .38) !important;
+}
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Join a group using Group ID"] > div {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Create a group"] :is(label,strong,h1,h2,h3,p),
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Group details and members"] :is(label,strong,h1,h2,h3,p),
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Join a group using Group ID"] :is(label,strong,h1,h2,h3,p) {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Create a group"] :is(label > span:not([id]),label > span:not([id]) span),
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Group details and members"] :is(small,p),
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Join a group using Group ID"] p {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Create a group"] :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select),
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Join a group using Group ID"] :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select) {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  color-scheme: light;
+}
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Create a group"] :is(input,textarea)::placeholder,
+:root[data-theme="light"] [role="dialog"][aria-modal="true"][aria-label="Join a group using Group ID"] :is(input,textarea)::placeholder {
+  color: var(--theme-soft) !important;
+}
+:root[data-theme="light"] .halls-call-confirm-popout,
+:root[data-theme="light"] .chat-delete-popout {
+  background: linear-gradient(145deg, #fffdfc, #f6eeec) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 10px 28px rgba(61,24,33,.18) !important;
+}
+:root[data-theme="light"] .halls-call-confirm-popout > strong,
+:root[data-theme="light"] .chat-delete-popout > div:first-child {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .halls-call-confirm-popout > span,
+:root[data-theme="light"] .chat-delete-popout > div:nth-child(2) {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .halls-call-confirm-popout .halls-call-confirm-cancel,
+:root[data-theme="light"] .chat-delete-popout button:not(:last-child) {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .halls-call-confirm-popout .halls-call-confirm-start,
+:root[data-theme="light"] .chat-delete-popout button:last-child {
+  background: var(--theme-primary) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+}
