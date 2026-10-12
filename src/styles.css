@@ -7487,3 +7487,165 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     max-width: calc(100vw - 24px);
   }
 }
+
+
+/* Video-call stage pass: protect the live picture, self-view, and controls on mobile screens. */
+.halls-call-stage-video {
+  isolation: isolate;
+  min-width: 0;
+  min-height: 0;
+  overscroll-behavior: contain;
+  touch-action: manipulation;
+}
+.halls-call-stage-video .halls-call-remote-video {
+  z-index: 0;
+  display: block;
+  object-position: center;
+}
+.halls-call-stage-video .halls-call-local-video {
+  box-sizing: border-box;
+  top: calc(16px + env(safe-area-inset-top, 0px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  width: clamp(88px, 24vw, 176px);
+  max-width: 32%;
+  aspect-ratio: 3 / 4;
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.36);
+  background: #191519;
+}
+.halls-call-stage-video > .halls-call-eyebrow,
+.halls-call-stage-video > h2,
+.halls-call-stage-video > p:not(.halls-call-error) {
+  max-width: min(72vw, 420px);
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-shadow: 0 2px 10px #000, 0 1px 3px #000;
+  background: rgba(8,5,8,.58);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 12px;
+  padding: 6px 11px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.halls-call-stage-video > .halls-call-eyebrow {
+  margin-top: max(10px, env(safe-area-inset-top, 0px));
+  font-size: 10px;
+  letter-spacing: .14em;
+}
+.halls-call-stage-video > h2 {
+  font-size: clamp(20px, 4vw, 27px);
+  line-height: 1.25;
+}
+.halls-call-stage-video > p {
+  min-height: 1.5em;
+}
+.halls-call-stage-video > .halls-call-error {
+  position: relative;
+  z-index: 4;
+  max-width: min(88vw, 460px);
+  margin: 0 16px 110px;
+  padding: 10px 13px;
+  border: 1px solid rgba(255,130,145,.45);
+  border-radius: 12px;
+  background: rgba(67,10,22,.88);
+  color: #ffe7eb !important;
+  text-align: center;
+}
+.halls-call-stage-video > .halls-call-controls {
+  left: 50%;
+  width: max-content;
+  max-width: calc(100vw - 28px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+  box-sizing: border-box;
+  gap: clamp(14px, 4vw, 24px);
+  padding: 10px 16px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background: rgba(17,12,16,.76);
+  box-shadow: 0 10px 34px rgba(0,0,0,.32);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transform: translateX(-50%);
+}
+.halls-call-stage-video > .halls-call-controls button {
+  width: 52px;
+  height: 52px;
+  min-width: 48px;
+  min-height: 48px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.16);
+}
+.halls-call-stage-video > .halls-call-close {
+  top: calc(15px + env(safe-area-inset-top, 0px)) !important;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(17,12,16,.72);
+  box-shadow: 0 5px 18px rgba(0,0,0,.22);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.halls-call-stage-video > .halls-call-close svg {
+  width: 20px;
+  height: 20px;
+}
+.halls-call-stage-video :is(button):focus-visible {
+  outline: 2px solid #ffb2be;
+  outline-offset: 3px;
+}
+@media (max-width: 520px) {
+  .halls-call-stage-video .halls-call-local-video {
+    top: calc(72px + env(safe-area-inset-top, 0px));
+    width: clamp(82px, 27vw, 118px);
+    max-width: 34%;
+    border-radius: 13px;
+  }
+  .halls-call-stage-video > .halls-call-eyebrow,
+  .halls-call-stage-video > h2,
+  .halls-call-stage-video > p:not(.halls-call-error) {
+    max-width: min(76vw, 320px);
+    padding: 5px 9px;
+  }
+  .halls-call-stage-video > .halls-call-controls {
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 14px;
+    padding: 8px 12px;
+  }
+  .halls-call-stage-video > .halls-call-controls button {
+    width: 50px;
+    height: 50px;
+  }
+}
+@media (max-height: 480px) and (orientation: landscape) {
+  .halls-call-stage-video .halls-call-local-video {
+    top: calc(10px + env(safe-area-inset-top, 0px));
+    right: max(64px, calc(14px + env(safe-area-inset-right, 0px)));
+    width: auto;
+    height: min(38dvh, 132px);
+    max-width: 24%;
+    aspect-ratio: 4 / 3;
+  }
+  .halls-call-stage-video > .halls-call-eyebrow {
+    margin-top: 4px;
+  }
+  .halls-call-stage-video > .halls-call-controls {
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+    padding: 5px 10px;
+  }
+  .halls-call-stage-video > .halls-call-controls button {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .halls-call-stage-video .halls-call-local-video,
+  .halls-call-stage-video > .halls-call-controls,
+  .halls-call-stage-video > .halls-call-close {
+    transition: none !important;
+    animation: none !important;
+  }
+}
