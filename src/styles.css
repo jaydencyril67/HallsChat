@@ -3098,3 +3098,101 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .social-home select:focus-visible {
   outline-color: var(--theme-primary);
 }
+
+
+/* Home audit pass: catch remaining dark-authored inline UI chrome without
+   recoloring user content, selected swatches, feed artwork, or media canvases. */
+:root[data-theme="light"] .social-home [role="menu"]:not(.social-story-viewer),
+:root[data-theme="light"] .social-home [role="alertdialog"]:not(.social-story-viewer),
+:root[data-theme="light"] .social-home .social-comment-action-menu,
+:root[data-theme="light"] .social-home .social-comment-delete-confirm {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 10px 28px rgba(61,24,33,.13) !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root[data-theme="light"] .social-home [role="menu"] button,
+:root[data-theme="light"] .social-home [role="alertdialog"] button {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home [role="menu"] button:hover,
+:root[data-theme="light"] .social-home [role="alertdialog"] button:not(.danger):hover {
+  background-color: var(--theme-surface-raised) !important;
+}
+:root[data-theme="light"] .social-home [role="menu"] button[style*="color: #ff8192"],
+:root[data-theme="light"] .social-home [role="menu"] button[style*="color:#ff8192"] {
+  color: #a51f35 !important;
+}
+:root[data-theme="light"] .social-home .social-post form[style] textarea,
+:root[data-theme="light"] .social-home textarea[style*="background: rgba(0,0,0"],
+:root[data-theme="light"] .social-home textarea[style*="background:rgba(0,0,0"] {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post form[style] button[type="button"],
+:root[data-theme="light"] .social-home .social-post-composer-overlay [role="menu"] button {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-post-composer-head {
+  background: color-mix(in srgb, var(--theme-surface) 96%, transparent) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-head h2,
+:root[data-theme="light"] .social-home .social-post-composer-user strong,
+:root[data-theme="light"] .social-home .social-post-snap-heading strong {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-user span:not(.social-avatar),
+:root[data-theme="light"] .social-home .social-post-snap-heading span,
+:root[data-theme="light"] .social-home .social-post-manager-poll-summary span {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-bottom .social-add-image,
+:root[data-theme="light"] .social-home .social-post-composer-bottom .social-composer-mode-button {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-primary) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post-snap-tools > button,
+:root[data-theme="light"] .social-home .social-post-snap-tools > .social-story-snap-tool {
+  background: rgba(255,253,252,.94) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 3px 12px rgba(61,24,33,.12);
+}
+:root[data-theme="light"] .social-home .social-post-snap-tools > button[aria-pressed="true"] {
+  background: #f9e9eb !important;
+  border-color: var(--theme-primary) !important;
+  color: var(--theme-primary) !important;
+}
+:root[data-theme="light"] .social-home .social-post-snap-main > textarea {
+  background: transparent !important;
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-home .social-post-snap-main > textarea::placeholder {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-home .social-post-snap-bottom .social-upload-status {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-home .social-post-snap-bottom .social-story-snap-bottom-row > button {
+  color: #fff !important;
+  background: var(--theme-primary) !important;
+}
+:root[data-theme="light"] .social-home .social-post-manager-poll-summary {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-home .social-post-snap-canvas:not(.has-photo) {
+  border-color: var(--theme-line);
+}
+/* Light-mode focus/hover states should remain visible on all Home controls. */
+:root[data-theme="light"] .social-home button:hover:not(:disabled),
+:root[data-theme="light"] .social-home label[role="button"]:hover {
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home button:disabled {
+  cursor: not-allowed;
+}
