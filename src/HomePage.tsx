@@ -1187,7 +1187,7 @@ export default function HomePage() {
       </form>
     </div>}
     {storyEditingImageUrl && <StoryImageCropModal imageUrl={storyEditingImageUrl} onCancel={cancelStoryPhotoEdit} onDone={finishStoryPhotoEdit} />}
-    {postEditingImageUrl && <StoryImageCropModal imageUrl={postEditingImageUrl} title="Crop post photo" onCancel={cancelPostPhotoEdit} onDone={finishPostPhotoEdit} />}
+    {postEditingImageUrl && <StoryImageCropModal key={postEditingImageUrl} imageUrl={postEditingImageUrl} title={`Crop post photo ${selectedImages.length + 1}${postCropQueue.length ? ` of ${selectedImages.length + postCropQueue.length + 1}` : ""}`} onCancel={cancelPostPhotoEdit} onDone={finishPostPhotoEdit} />}
     {storyViewer && <div className="social-story-overlay" role="presentation" onClick={closeStoryViewer}>
       <div className="social-story-viewer" role="dialog" aria-modal="true" aria-label={`Story by ${storyViewer.author?.name || "user"}`} onClick={event => event.stopPropagation()}>
         <div className="social-story-progress-list" aria-label="Story progress">{storyPlaybackQueue.filter(item => item.author?.id === storyViewer.author?.id).map(item => {
