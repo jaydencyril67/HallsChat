@@ -2290,3 +2290,50 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-post-composer-bottom .social-composer-mode-button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:37px;padding:0 10px;border:1px solid var(--theme-line);border-radius:10px;background:rgba(255,255,255,.035);color:#e8cbd1;font-size:11px}
 .social-post-composer-bottom .social-publish{margin-left:auto}
 @media(max-width:520px){.social-post-composer-dialog{padding-left:14px;padding-right:14px}.social-post-composer-head{margin-left:-14px;margin-right:-14px;padding-left:14px;padding-right:14px}.social-post-modal-form .social-composer-bottom{align-items:stretch;gap:9px}.social-post-composer-bottom .social-publish{min-width:105px}.social-composer.social-post-modal-form textarea{font-size:15px}}
+
+
+/* The post creator mirrors the story composer canvas, floating icon rail and bottom pavement. */
+.social-post-composer-overlay{z-index:10010}
+.social-story-snap-composer.social-post-snap-composer{background:#10070b}
+.social-post-snap-canvas{position:relative;display:flex;flex:1 1 auto;flex-direction:column;width:100%;height:100%;min-height:0;overflow:hidden;background:linear-gradient(160deg,#2b0d17,#10070b);color:#fff0f3}
+.social-post-snap-heading{position:absolute;z-index:5;top:max(14px,env(safe-area-inset-top));left:66px;right:66px;display:flex;align-items:center;gap:10px;min-width:0;min-height:42px}
+.social-post-snap-heading .social-avatar{flex:0 0 40px;width:40px;height:40px;overflow:hidden;border-radius:50%}
+.social-post-snap-heading .social-avatar img{width:100%;height:100%;object-fit:cover}
+.social-post-snap-heading>div{display:grid;gap:3px;min-width:0}
+.social-post-snap-heading strong{overflow:hidden;color:#fff0f3;font-size:12px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
+.social-post-snap-heading span{color:#c7a8b0;font-size:10px}
+.social-post-snap-tools{position:absolute;z-index:7;top:max(14px,env(safe-area-inset-top));right:12px;display:flex;flex-direction:column;align-items:center;gap:11px}
+.social-post-snap-tools>button,.social-post-snap-tools>.social-story-snap-tool{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;box-sizing:border-box;padding:0;border:1px solid rgba(255,255,255,.2);border-radius:50%;background:rgba(15,8,11,.54);color:#fff;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer}
+.social-post-snap-tools>button[aria-pressed=true]{border-color:#f07889;background:#b92d454d;color:#ffb6c2}
+.social-post-snap-tools>.social-story-snap-tool.is-disabled{opacity:.35;cursor:not-allowed}
+.social-post-snap-tools input{display:none}
+.social-post-snap-main{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;overflow-y:auto;padding:78px 66px 18px 16px}
+.social-post-snap-main>textarea{width:100%;min-height:140px;flex:0 0 auto;resize:vertical;box-sizing:border-box;padding:14px 0;border:0;outline:0;background:transparent;color:#fff0f3;font:16px/1.6 'DM Sans',sans-serif}
+.social-post-snap-main>textarea::placeholder{color:#c4a5ad}
+.social-post-snap-previews{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:8px 0 14px}
+.social-post-snap-previews .social-image-preview{min-width:0}
+.social-post-snap-previews .social-image-preview-open{height:clamp(100px,22vh,220px)}
+.social-post-snap-poll{display:flex;flex:1 1 auto;flex-direction:column;gap:10px;min-height:0;overflow-y:auto;padding:82px 66px 20px 16px}
+.social-post-snap-poll .social-poll-builder-heading{margin-bottom:6px}
+.social-post-snap-poll .social-poll-question{min-height:76px}
+.social-post-snap-bottom{padding:30px 14px calc(12px + env(safe-area-inset-bottom));}
+.social-post-snap-bottom .social-upload-status{margin:0 0 10px;color:#e5c2ca;font-size:11px;overflow-wrap:anywhere}
+.social-post-snap-bottom .social-story-snap-bottom-row>span{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.social-post-snap-bottom .social-story-snap-bottom-row>button{min-width:145px;background:#fff;color:#241015}
+.social-post-attachment-manager{position:absolute;z-index:10;top:max(64px,calc(env(safe-area-inset-top) + 60px));right:64px;width:min(290px,calc(100% - 140px));max-height:min(40dvh,320px);overflow:hidden}
+.social-post-attachment-manager .social-story-text-manager-list{max-height:min(31dvh,250px);overflow-y:auto;overscroll-behavior:contain}
+.social-post-manager-empty{margin:12px 4px;color:#c9aab2;font-size:11px}
+.social-post-manager-poll-summary{display:grid;gap:6px;padding:12px 4px;color:#fff0f3;overflow-wrap:anywhere}
+.social-post-manager-poll-summary span{color:#c9aab2;font-size:11px}
+@media(max-width:520px){
+ .social-post-snap-heading{left:60px;right:60px}
+ .social-post-snap-tools{right:10px;gap:9px}
+ .social-post-snap-tools>button,.social-post-snap-tools>.social-story-snap-tool{flex-basis:40px;width:40px;height:40px}
+ .social-post-snap-main{padding:74px 60px 14px 12px}
+ .social-post-snap-main>textarea{font-size:15px}
+ .social-post-snap-poll{padding:76px 60px 14px 12px}
+ .social-post-snap-previews{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .social-post-snap-bottom{padding-right:12px;padding-left:12px}
+ .social-post-snap-bottom .social-story-snap-bottom-row>button{min-width:125px}
+ .social-post-attachment-manager{right:60px;width:min(280px,calc(100% - 130px))}
+}
