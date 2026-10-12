@@ -4197,3 +4197,100 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   }
 }
 
+
+
+/* Chat light-theme pass 5 — hard override dark-only conversation-list remnants.
+   Keep this block light-only; dark theme rules and tokens are intentionally untouched. */
+:root[data-theme="light"] .chat-page .chat-sidebar,
+:root[data-theme="light"] .chat-page .chat-sidebar-heading,
+:root[data-theme="light"] .chat-page .chat-people-list {
+  background: #fffaf9 !important;
+  color: #302329 !important;
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .chat-page .chat-sidebar-heading strong {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-row,
+:root[data-theme="light"] .chat-page .chat-person-row:focus-within {
+  background: #fffdfc !important;
+  color: #302329 !important;
+  border: 1px solid #eedfe0 !important;
+  box-shadow: 0 2px 8px rgba(83, 31, 42, .045) !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-row:hover {
+  background: #fff5f5 !important;
+  border-color: #e4c3c8 !important;
+  box-shadow: 0 3px 10px rgba(83, 31, 42, .07) !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-row-active,
+:root[data-theme="light"] .chat-page .chat-person-row-active:hover {
+  background: #f8e9ec !important;
+  border-color: #dfb4bd !important;
+  box-shadow: inset 3px 0 #a92c43, 0 3px 10px rgba(83, 31, 42, .055) !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-avatar-link {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-copy,
+:root[data-theme="light"] .chat-page .chat-person-copy strong,
+:root[data-theme="light"] .chat-page .chat-person-copy small,
+:root[data-theme="light"] .chat-page .chat-person-copy .chat-last-message,
+:root[data-theme="light"] .chat-page .chat-person-meta {
+  background: transparent !important;
+  text-shadow: none !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-copy strong {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-copy small {
+  color: #85666e !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-copy .chat-last-message {
+  color: #746067 !important;
+}
+:root[data-theme="light"] .chat-page .chat-person-meta {
+  color: #856c73 !important;
+}
+:root[data-theme="light"] .chat-page .chat-lock-dot {
+  color: #a92c43 !important;
+}
+:root[data-theme="light"] .chat-page .chat-open-button {
+  background: #f8ebed !important;
+  color: #8f263d !important;
+  border: 1px solid #ead0d5 !important;
+  box-shadow: none !important;
+}
+:root[data-theme="light"] .chat-page .chat-open-button:hover {
+  background: #f1dfe3 !important;
+  color: #782037 !important;
+  border-color: #dcb1ba !important;
+}
+:root[data-theme="light"] .chat-page .chat-list-state,
+:root[data-theme="light"] .chat-page .chat-list-empty {
+  background: #fffaf9 !important;
+  color: #302329 !important;
+  border-color: #ead8da !important;
+  box-shadow: none !important;
+}
+:root[data-theme="light"] .chat-page .chat-list-empty strong {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .chat-page .chat-list-empty p {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .chat-page .chat-people-list::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  background: transparent !important;
+}
+@media (max-width: 560px) {
+  :root[data-theme="light"] .chat-page .chat-person-row {
+    background: #fffdfc !important;
+  }
+  :root[data-theme="light"] .chat-page .chat-person-row-active {
+    background: #f8e9ec !important;
+  }
+}
