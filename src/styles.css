@@ -2863,3 +2863,96 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 /* The story viewer and media/crop canvases stay dark by design; their authored
    images and user-selected text/background colors are intentionally preserved. */
+
+
+/* Final Home light-theme coverage: controls authored with inline dark-mode
+   styles need explicit light overrides. Creative media canvases and the
+   colors selected for post/story content remain untouched. */
+:root[data-theme="light"] .social-home .social-post-head > .social-post-action-muted {
+  color: var(--theme-text) !important;
+  background: var(--theme-surface-raised) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"],
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"],
+:root[data-theme="light"] .social-home .social-post-composer-overlay [role="menu"] {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 12px 32px rgba(61, 24, 33, .16) !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"] button,
+:root[data-theme="light"] .social-home .social-post-composer-overlay [role="menu"] button {
+  color: var(--theme-text) !important;
+  background: transparent !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"] button:hover,
+:root[data-theme="light"] .social-home .social-post-composer-overlay [role="menu"] button:hover {
+  background: var(--theme-surface-raised) !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"] button:last-child,
+:root[data-theme="light"] .social-home .social-post-composer-overlay [role="menu"] button:last-child {
+  color: #a51f35 !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"] > div:nth-child(2) {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"] button:first-child {
+  color: var(--theme-text) !important;
+  background: var(--theme-surface-raised) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"] button:last-child {
+  color: #fff !important;
+  background: var(--theme-primary) !important;
+}
+:root[data-theme="light"] .social-home .social-post form[style] textarea,
+:root[data-theme="light"] .social-home .social-post form[style] textarea:focus {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post form[style] button[type="button"] {
+  color: var(--theme-text) !important;
+  background: var(--theme-surface-raised) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post form[style] button[type="submit"] {
+  color: #fff !important;
+  background: var(--theme-primary) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-text-manager,
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-color-popout {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+  box-shadow: 0 12px 32px rgba(61, 24, 33, .18) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-text-manager-head,
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-color-popout-head {
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-text-manager-head button,
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-color-popout-head button,
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-manager-select,
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-manager-delete {
+  color: var(--theme-text) !important;
+  background: var(--theme-surface-raised) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-post-manager-empty,
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-manager-select small {
+  color: var(--theme-muted) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-text-size-control {
+  color: var(--theme-text) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-text-size-control input {
+  accent-color: var(--theme-primary) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-story-snap-bottom-row > span,
+:root[data-theme="light"] .social-home .social-post-composer-overlay .social-upload-status {
+  color: #fff7f7;
+}
+/* Keep text/background swatches exactly as selected by the user. */
