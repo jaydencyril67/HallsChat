@@ -47,7 +47,7 @@ export function getSocialPostPublishState() {
 export function subscribeSocialPostPublishing(listener: (next: SocialPostPublishState) => void) {
   listeners.add(listener);
   listener(state);
-  return () => listeners.delete(listener);
+  return () => { listeners.delete(listener); };
 }
 
 export function dismissSocialPostPublishStatus() {
