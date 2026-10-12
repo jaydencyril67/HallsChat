@@ -682,7 +682,7 @@ export default function GroupPage() {
                         <button type="button" role="menuitem" onClick={() => { setReactionPickerFor(message.id); setActionMenuFor(null); }}><Smile size={14}/> React</button>
                         {canEdit && <button type="button" role="menuitem" onClick={() => { setEditingMessageId(message.id); setEditMessageDraft(message.text); setActionMenuFor(null); }}><Pencil size={14}/> Edit</button>}
                         <button type="button" role="menuitem" onClick={() => void deleteGroupMessage(message, "me")}><Trash2 size={14}/> Delete for me</button>
-                        {mine && <button type="button" role="menuitem" onClick={() => askConfirm("Delete this message for everyone in the group?", async () => deleteGroupMessage(message, "everyone"))}><Trash2 size={14}/> Delete for everyone</button>}
+                        {mine && <button type="button" role="menuitem" onClick={event => askConfirm("Delete this message for everyone in the group?", async () => deleteGroupMessage(message, "everyone"), event.currentTarget)}><Trash2 size={14}/> Delete for everyone</button>}
                       </div>}
                     </div>}
                   </div>
