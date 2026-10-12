@@ -2428,7 +2428,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 
 
-/* Keep feed post photos a consistent size regardless of their original dimensions. */
-.social-post-image-link{display:block;position:relative;width:100%;aspect-ratio:4/3;overflow:hidden;}
-.social-post-image-link img{display:block;width:100%;height:100%;max-height:none;aspect-ratio:4/3;object-fit:cover;object-position:center;}
-.social-post-images-1 .social-post-image-link img{width:100%;height:100%;max-height:none;aspect-ratio:4/3;object-fit:cover;}
+/* Keep feed post photos square regardless of their original dimensions. */
+.social-post-image-link{display:block;position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;}
+.social-post-image-link img{display:block;width:100%;height:100%;max-height:none;aspect-ratio:1/1;object-fit:cover;object-position:center;}
+.social-post-images-1 .social-post-image-link img{width:100%;height:100%;max-height:none;aspect-ratio:1/1;object-fit:cover;}
