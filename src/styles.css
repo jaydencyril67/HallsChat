@@ -6107,3 +6107,123 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     transition: none !important;
   }
 }
+
+
+/* Landing page refinement: responsive controls, accessible focus and a true light-theme surface.
+   The conversation preview remains intentionally dark as a product mockup. */
+.landing-page .landing-hero-actions {
+  min-width: 0;
+}
+.landing-page .landing-cta {
+  -webkit-tap-highlight-color: transparent;
+  white-space: normal;
+  text-align: center;
+}
+.landing-page .landing-cta:active {
+  transform: translateY(0) scale(.985);
+}
+.landing-page :is(a, button):focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 3px;
+}
+.landing-page .landing-text-link,
+.landing-page .landing-scroll-hint,
+.landing-page .landing-back-top {
+  transition: color .16s ease;
+}
+.landing-page .landing-feature-card {
+  overflow-wrap: anywhere;
+}
+.landing-page .landing-preview-window {
+  max-width: 100%;
+}
+@media (max-width: 700px) {
+  .landing-page .landing-hero-actions {
+    align-items: flex-start;
+    row-gap: 10px;
+  }
+  .landing-page .landing-hero-actions > .landing-cta {
+    max-width: 100%;
+  }
+  .landing-page .landing-signin-note {
+    margin-top: 10px;
+  }
+  .landing-page .landing-social-proof {
+    min-width: 0;
+  }
+  .landing-page .landing-social-proof > div:last-child {
+    min-width: 0;
+  }
+  .landing-page .landing-social-proof small {
+    line-height: 1.5;
+  }
+  .landing-page .landing-visual {
+    min-width: 0;
+  }
+}
+:root[data-theme="light"] .landing-page .landing-hero h1 > span {
+  color: #5e454d;
+}
+:root[data-theme="light"] .landing-page .landing-hero-description,
+:root[data-theme="light"] .landing-page .landing-values-heading p,
+:root[data-theme="light"] .landing-page .landing-values-note p,
+:root[data-theme="light"] .landing-page .landing-section-heading > p,
+:root[data-theme="light"] .landing-page .landing-feature-card p,
+:root[data-theme="light"] .landing-page .landing-final-cta > p {
+  color: #795c63;
+}
+:root[data-theme="light"] .landing-page .landing-social-proof strong,
+:root[data-theme="light"] .landing-page .landing-values-heading p strong,
+:root[data-theme="light"] .landing-page .landing-feature-card h3,
+:root[data-theme="light"] .landing-page .landing-final-cta h2 {
+  color: #32151d;
+}
+:root[data-theme="light"] .landing-page .landing-social-proof small,
+:root[data-theme="light"] .landing-page .landing-footer > span,
+:root[data-theme="light"] .landing-page .landing-footer > small {
+  color: #795c63;
+}
+:root[data-theme="light"] .landing-page .landing-text-link,
+:root[data-theme="light"] .landing-page .landing-back-top {
+  color: #5e303d;
+}
+:root[data-theme="light"] .landing-page .landing-scroll-hint {
+  color: #795c63;
+}
+:root[data-theme="light"] .landing-page .landing-values,
+:root[data-theme="light"] .landing-page .landing-features,
+:root[data-theme="light"] .landing-page .landing-final-cta {
+  border-color: rgba(83, 31, 42, .14);
+}
+:root[data-theme="light"] .landing-page .landing-feature-card {
+  background: linear-gradient(145deg, #fffdfc, #f4e9e8);
+  border-color: #e5d0d3;
+  box-shadow: 0 8px 24px rgba(61, 24, 33, .045);
+}
+:root[data-theme="light"] .landing-page .landing-feature-card-top > span:last-child {
+  color: #8a6c73;
+}
+:root[data-theme="light"] .landing-page .landing-final-cta {
+  background: radial-gradient(ellipse at 50% 90%, rgba(169, 31, 53, .09), transparent 65%);
+}
+:root[data-theme="light"] .landing-page .landing-footer .landing-brand-word {
+  color: #32151d;
+}
+@media (hover: hover) {
+  .landing-page .landing-feature-card:hover {
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .landing-text-link,
+  .landing-page .landing-scroll-hint,
+  .landing-page .landing-back-top,
+  .landing-page .landing-feature-card {
+    transition: none !important;
+  }
+  .landing-page .landing-feature-card:hover,
+  .landing-page .landing-cta:hover,
+  .landing-page .landing-cta:active {
+    transform: none !important;
+  }
+}
