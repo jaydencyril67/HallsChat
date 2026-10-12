@@ -379,15 +379,17 @@ export default function HomePage() {
         .catch(() => { /* Keep the current feed visible if reconnect reconciliation fails. */ });
     });
 
-    socket.on("social:post-created", (post: SocialPost) => {
-      if (!post?.id) return;
-      setPosts(current => [post, ...current.filter(item => item.id !== post.id)].slice(0, 30));
+    socket.on("social:post-created", () => {
+      fetch(apiBase + "/api/social/feed?limit=20", { headers: { Authorization: "Bearer " + token } })
+        .then(async response => { const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.message || "The feed could not refresh."); return Array.isArray(payload.posts) ? payload.posts as SocialPost[] : []; })
+        .then(items => { if (!disposed) setPosts(current => { const pending = current.filter(post => (post as SocialPost & { uploadState?: string }).uploadState === "uploading"); const pendingIds = new Set(pending.map(post => post.id)); return [...pending, ...items.filter(post => !pendingIds.has(post.id))]; }); })
+        .catch(() => { /* Keep the current feed if a live refresh fails. */ });
     });
-    socket.on("social:post-updated", (event: { id?: string; content?: string; images?: string[] }) => {
-      if (!event.id) return;
-      setPosts(current => current.map(post => post.id === event.id
-        ? { ...post, ...(typeof event.content === "string" ? { content: event.content } : {}), ...(Array.isArray(event.images) ? { images: event.images } : {}) }
-        : post));
+    socket.on("social:post-updated", () => {
+      fetch(apiBase + "/api/social/feed?limit=20", { headers: { Authorization: "Bearer " + token } })
+        .then(async response => { const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.message || "The feed could not refresh."); return Array.isArray(payload.posts) ? payload.posts as SocialPost[] : []; })
+        .then(items => { if (!disposed) setPosts(current => { const pending = current.filter(post => (post as SocialPost & { uploadState?: string }).uploadState === "uploading"); const pendingIds = new Set(pending.map(post => post.id)); return [...pending, ...items.filter(post => !pendingIds.has(post.id))]; }); })
+        .catch(() => { /* Keep the current feed if a live refresh fails. */ });
     });
     socket.on("social:post-deleted", (event: { id?: string }) => {
       if (!event.id) return;
