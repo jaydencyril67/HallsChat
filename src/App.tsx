@@ -5,6 +5,7 @@ import SigninPage from "./SigninPage";
 import HomePage from "./HomePage";
 import HallsPage from "./HallsPage";
 import ChatPage from "./ChatPage";
+import GroupsPage from "./GroupsPage";
 import CallsPage from "./CallsPage";
 import ProfilePage from "./ProfilePage";
 import AlertsPage from "./AlertsPage";
@@ -259,6 +260,7 @@ export default function App() {
   else if (normalizedPath === "/halls") page = <HallsPage />;
   else if (normalizedPath === "/chats") page = <ChatPage />;
   else if (normalizedPath === "/calls") page = <CallsPage />;
+  else if (normalizedPath === "/groups" || normalizedPath.startsWith("/groups/")) page = <GroupsPage key={normalizedPath} />;
   else if (normalizedPath === "/profile") page = <ProfilePage />;
   else if (normalizedPath === "/notifications" || normalizedPath === "/alerts") page = <AlertsPage />;
   else if (publicProfileMatch) page = <PublicProfilePage userId={decodeURIComponent(publicProfileMatch[1])} />;
