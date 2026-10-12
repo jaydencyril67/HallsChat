@@ -21,10 +21,7 @@ function applySavedTheme() {
 }
 applySavedTheme();
 try {
-  const saved = window.localStorage.getItem(HALLSCHAT_THEME_KEY);
-  if (saved === "system") {
-    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", applySavedTheme);
-  }
+  window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", applySavedTheme);
 } catch {}
 
 if ("serviceWorker" in navigator) {
