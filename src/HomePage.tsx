@@ -1,6 +1,6 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { ReactNode } from "react";
-import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, CaseSensitive } from "lucide-react";
+import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, CaseSensitive, Type } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -124,6 +124,7 @@ export default function HomePage() {
   const [storyTextManagerOpen, setStoryTextManagerOpen] = useState(false);
   const [storyColorPickerOpen, setStoryColorPickerOpen] = useState(false);
   const [storyTextColorPickerOpen, setStoryTextColorPickerOpen] = useState(false);
+  const [storyTextSizePickerOpen, setStoryTextSizePickerOpen] = useState(false);
   const storyTextDragRef = useRef<{ pointerId: number; sectionId: string; startX: number; startY: number; originX: number; originY: number; nextX: number; nextY: number; element: HTMLParagraphElement } | null>(null);
   const [storyBackground, setStoryBackground] = useState("#8b1e35");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
@@ -1109,6 +1110,7 @@ export default function HomePage() {
               </div>)}
             </div>
           </div>}
+          {storyTextSizePickerOpen && <div className="social-story-color-popout social-story-text-size-popout" role="dialog" aria-label="Adjust text size"><div className="social-story-color-popout-head"><strong>Text size</strong><button type="button" onClick={() => setStoryTextSizePickerOpen(false)} aria-label="Close text size"><X size={14}/></button></div><div className="social-story-text-size-control"><label htmlFor="story-text-size">Size</label><input id="story-text-size" type="range" min="12" max="64" step="1" value={storyTextSections.find(section => section.id === activeStoryTextId)?.fontSize || 24} onChange={event => { const fontSize = Number(event.target.value); setStoryTextSections(current => current.map(section => section.id === activeStoryTextId ? {...section,fontSize} : section)); }} aria-label="Adjust text size" /><output>{storyTextSections.find(section => section.id === activeStoryTextId)?.fontSize || 24}px</output></div></div>}
           {storyTextColorPickerOpen && <div className="social-story-color-popout social-story-text-color-popout" role="dialog" aria-label="Choose text color"><div className="social-story-color-popout-head"><strong>Text color</strong><button type="button" onClick={() => setStoryTextColorPickerOpen(false)} aria-label="Close text colors"><X size={14}/></button></div><div className="social-story-colors" aria-label="Story text color">{["#ffffff","#111111","#ff4d6d","#ffb703","#70e000","#00d4ff","#8b5cf6","#ff7ac6","#d1d5db","#f97316"].map(color => <button key={color} type="button" className={(storyTextSections.find(section => section.id === activeStoryTextId)?.color || "#ffffff") === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryTextSections(current => current.map(section => section.id === activeStoryTextId ? {...section,color} : section)); setStoryTextColorPickerOpen(false); }} aria-label={`Choose ${color} text`} />)}</div></div>}
           {storyColorPickerOpen && <div className="social-story-color-popout" role="dialog" aria-label="Choose story background color">
             <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setStoryColorPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
@@ -1118,7 +1120,6 @@ export default function HomePage() {
           </div>}
           <div className="social-story-snap-bottom">
             {storyTextSections.filter(section => section.id === activeStoryTextId).map((section, index) => <textarea key={section.id} className="social-story-active-text-input" value={section.text} onFocus={() => setActiveStoryTextId(section.id)} onChange={event => updateStoryTextSection(section.id, event.target.value)} maxLength={500} rows={2} placeholder="Write story text…" aria-label={`Edit story text section ${index + 1}`} />)}
-            <div className="social-story-text-size-control"><label htmlFor="story-text-size">Text size</label><input id="story-text-size" type="range" min="12" max="64" step="1" value={storyTextSections.find(section => section.id === activeStoryTextId)?.fontSize || 24} onChange={event => { const fontSize = Number(event.target.value); setStoryTextSections(current => current.map(section => section.id === activeStoryTextId ? {...section,fontSize} : section)); }} aria-label="Adjust text size" /><output>{storyTextSections.find(section => section.id === activeStoryTextId)?.fontSize || 24}px</output></div>
             <div className="social-story-snap-bottom-row">
               <span>{storyTextSections.reduce((total, section) => total + section.text.length, 0)} characters</span>
               <button type="submit" disabled={storyPublishing || (!storyTextSections.some(section => section.text.trim()) && !storyPhoto)}>{storyPublishing ? <><LoadingDots/> Posting…</> : <><Send size={16}/> Post story</>}</button>
