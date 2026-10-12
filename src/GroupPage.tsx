@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, Check, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Square, Reply, MoreVertical, Pencil, Smile, Paperclip, Phone, Video } from "lucide-react";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
@@ -164,8 +164,12 @@ export default function GroupPage() {
   const [memberPanel, setMemberPanel] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState<null | (() => Promise<void>)>(null);
+  const [confirmAnchor, setConfirmAnchor] = useState<HTMLElement | null>(null);
+  const [confirmPopoutPosition, setConfirmPopoutPosition] = useState({ left: 8, top: 8 });
+  const confirmPopoutRef = useRef<HTMLDivElement | null>(null);
   const [currentUserId, setCurrentUserId] = useState("");
-  const askConfirm = (message: string, action: () => Promise<void>) => { setConfirmMessage(message); setConfirmAction(() => action); };
+  const closeConfirmation = () => { setConfirmAction(null); setConfirmMessage(""); setConfirmAnchor(null); };
+  const askConfirm = (message: string, action: () => Promise<void>, anchor: HTMLElement) => { setConfirmMessage(message); setConfirmAction(() => action); setConfirmAnchor(anchor); };
 
   const request = useCallback(async (path: string, init: RequestInit = {}) => {
     const token = localStorage.getItem("hallschat_token");
@@ -200,6 +204,37 @@ export default function GroupPage() {
     }, 450);
     return () => { window.clearTimeout(timer); controller.abort(); };
   }, [groupCode]);
+
+  useLayoutEffect(() => {
+    if (!confirmAction || !confirmAnchor) return;
+    const reposition = () => {
+      const anchor = confirmAnchor.getBoundingClientRect();
+      const popout = confirmPopoutRef.current;
+      if (!popout) return;
+      const margin = 8, gap = 8, width = popout.offsetWidth, height = popout.offsetHeight;
+      let left = anchor.left;
+      if (left + width > window.innerWidth - margin) left = anchor.right - width;
+      left = Math.max(margin, Math.min(left, window.innerWidth - width - margin));
+      let top = anchor.bottom + gap;
+      if (top + height > window.innerHeight - margin) top = anchor.top - height - gap;
+      top = Math.max(margin, Math.min(top, window.innerHeight - height - margin));
+      setConfirmPopoutPosition({ left, top });
+    };
+    reposition();
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
+    return () => { window.removeEventListener("resize", reposition); window.removeEventListener("scroll", reposition, true); };
+  }, [confirmAction, confirmAnchor, confirmMessage]);
+  useEffect(() => {
+    if (!confirmAction) return;
+    const closeOutside = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".group-confirm-trigger, .halls-call-confirm-popout")) return;
+      closeConfirmation();
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, [confirmAction]);
 
   useEffect(() => {
     let cancelled = false;
@@ -578,11 +613,11 @@ export default function GroupPage() {
               <span className="chat-avatar" style={{ width: 36, height: 36, flexBasis: 36 }}>{member.profilePicture ? <img src={member.profilePicture} alt=""/> : initials(member.name)}</span>
               <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontSize: ".8rem", fontWeight: 750 }}>{member.name}</div><div style={{ ...muted, fontSize: ".7rem" }}>@{member.username} · {member.role}</div></div>
               {detail.role === "owner" && member.role !== "owner" && <button type="button" style={{ ...secondary, padding: "7px 9px" }} onClick={() => void changeRole(member, member.role === "admin" ? "member" : "admin")}>{member.role === "admin" ? "Make member" : "Make admin"}</button>}
-              {isAdmin && member.role !== "owner" && member.id !== detail.ownerId && !(detail.role === "admin" && member.role === "admin") && <button type="button" aria-label={"Remove " + member.name} style={{ ...secondary, padding: 8 }} onClick={() => askConfirm("Remove @" + member.username + " from this group?", () => removeMember(member))}><Trash2 size={15}/></button>}
+              {isAdmin && member.role !== "owner" && member.id !== detail.ownerId && !(detail.role === "admin" && member.role === "admin") && <button type="button" aria-label={"Remove " + member.name} style={{ ...secondary, padding: 8 }} className="group-confirm-trigger" onClick={event => askConfirm("Remove @" + member.username + " from this group?", () => removeMember(member), event.currentTarget)}><Trash2 size={15}/></button>}
             </div>)}</div>
             <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
               <button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { void loadDetail(activeId); setMemberPanel(false); }}><RefreshCw size={15}/> Refresh</button>
-              {detail.role === "owner" ? <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => { setMemberPanel(false); askConfirm("Delete this group and all its messages? This cannot be undone.", deleteGroup); }}><Trash2 size={15}/> Delete</button> : <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} onClick={() => { setMemberPanel(false); askConfirm("Leave this group? You will need to join again to read new messages.", leaveGroup); }}><LogOut size={15}/> Leave</button>}
+              {detail.role === "owner" ? <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} className="group-confirm-trigger" onClick={event => { setMemberPanel(false); askConfirm("Delete this group and all its messages? This cannot be undone.", deleteGroup, event.currentTarget); }}><Trash2 size={15}/> Delete</button> : <button type="button" style={{ ...secondary, flex: 1, color: "#ffabb7" }} disabled={busy} className="group-confirm-trigger" onClick={event => { setMemberPanel(false); askConfirm("Leave this group? You will need to join again to read new messages.", leaveGroup, event.currentTarget); }}><LogOut size={15}/> Leave</button>}
             </div>
           </div>}
           <input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelection}/>
@@ -720,7 +755,7 @@ export default function GroupPage() {
         <form onSubmit={event => { event.preventDefault(); void joinGroup(undefined, inviteCode); }} style={{ display: "grid", gap: 12 }}><p style={{ ...muted, margin: 0, fontSize: ".82rem", lineHeight: 1.55 }}>Enter the 8-digit Group ID shared by the group owner or an admin.</p><input required value={inviteCode} onChange={event => setInviteCode(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" maxLength={8} placeholder="Enter 8-digit Group ID" style={field}/><button type="submit" disabled={busy || inviteCode.length !== 8} style={{ ...primary, width: "100%" }}>{busy ? <LoadingDots/> : <><UserPlus size={16}/> Join group</>}</button></form>
       </div>
     </div>}
-    {confirmAction && <div role="dialog" aria-modal="true" aria-label="Confirm group action" onClick={event => { if (event.target === event.currentTarget) { setConfirmAction(null); setConfirmMessage(""); } }} style={{ position: "fixed", inset: 0, zIndex: 4500, display: "grid", placeItems: "center", padding: 18, background: "rgba(7,3,6,.78)", backdropFilter: "blur(8px)" }}><div style={{ ...panel, width: "100%", maxWidth: 380, padding: 18, boxShadow: "0 20px 70px rgba(0,0,0,.5)" }}><div style={{ width: 42, height: 42, borderRadius: 13, display: "grid", placeItems: "center", background: "rgba(184,32,50,.16)", color: "#ff9cab", marginBottom: 12 }}><AlertTriangle size={20}/></div><strong style={{ display: "block", fontSize: ".98rem" }}>Are you sure?</strong><p style={{ ...muted, fontSize: ".82rem", lineHeight: 1.55, margin: "7px 0 17px" }}>{confirmMessage}</p><div style={{ display: "flex", gap: 9 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { setConfirmAction(null); setConfirmMessage(""); }}>Cancel</button><button type="button" style={{ ...primary, flex: 1 }} disabled={busy} onClick={() => { const action = confirmAction; setConfirmAction(null); setConfirmMessage(""); if (action) void action(); }}>Confirm</button></div></div></div>}
+    {confirmAction && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label="Confirm group action"><strong>Are you sure?</strong><span>{confirmMessage}</span><div><button type="button" className="halls-call-confirm-cancel" onClick={closeConfirmation}>Cancel</button><button type="button" className="halls-call-confirm-start" disabled={busy} onClick={() => { const action = confirmAction; closeConfirmation(); if (action) void action(); }}><Check size={14}/> Confirm</button></div></div>}
     {(error || notice) && <div className={"halls-toast " + (error ? "halls-toast-error" : "halls-toast-success")} role={error ? "alert" : "status"}><span>{error || notice}</span><button type="button" aria-label="Dismiss notification" onClick={() => { setError(""); setNotice(""); }}>×</button></div>}
     {groupAvatarCropSource && <StoryImageCropModal imageUrl={groupAvatarCropSource} onCancel={cancelGroupAvatarCrop} onDone={confirmGroupAvatarCrop} title="Edit group picture" aspectRatio={1} />}
     {viewingImageUrl && <ImagePreviewModal imageUrl={viewingImageUrl} onClose={() => setViewingImageUrl(null)} />}
