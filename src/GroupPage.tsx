@@ -199,7 +199,19 @@ export default function GroupPage() {
     finally { if (showLoader) setDetailLoading(false); }
   }, [request]);
 
-  useEffect(() => { void loadGroups(tab); const timer = window.setInterval(() => void loadGroups(tab, false), 15000); return () => window.clearInterval(timer); }, [tab, loadGroups]);
+  useEffect(() => {
+    void loadGroups(tab);
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    let hasConnected = false;
+    const socket = io(apiBase, { auth: { token }, transports: ["websocket", "polling"] });
+    socket.on("connect", () => {
+      if (hasConnected) void loadGroups(tab, false);
+      hasConnected = true;
+    });
+    socket.on("groups:list:update", () => { void loadGroups(tab, false); });
+    return () => { socket.removeAllListeners(); socket.disconnect(); };
+  }, [tab, loadGroups]);
   useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); }, [activeId, loadDetail]);
   useEffect(() => { const list = groupMessageListRef.current; if (list) list.scrollTop = list.scrollHeight; }, [activeId, messages.length]);
   useEffect(() => {
