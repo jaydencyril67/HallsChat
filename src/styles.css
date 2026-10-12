@@ -2350,3 +2350,18 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-post-snap-canvas .social-post-snap-heading{left:66px;right:66px;}
 .social-post-snap-canvas .social-story-snap-bottom{padding-top:36px;}
 @media(max-width:520px){.social-post-background-picker{right:60px;width:min(245px,calc(100% - 78px));}.social-post-snap-canvas .social-post-snap-main{padding-right:60px;padding-left:12px;}}
+
+
+/* Match the story composer preview, floating tool rail and bottom input exactly. */
+.social-post-snap-canvas .social-post-live-preview{position:relative;z-index:2;max-width:78%;max-height:52%;overflow-y:auto;margin:0;padding:12px 8px;font-weight:800;line-height:1.35;overflow-wrap:anywhere;white-space:pre-wrap;text-shadow:0 2px 12px #0009;}
+.social-post-snap-canvas .social-post-snap-heading{position:absolute;z-index:5;top:max(14px,env(safe-area-inset-top));left:66px;right:66px;}
+.social-post-snap-canvas .social-story-snap-tools{right:12px;}
+.social-post-snap-canvas .social-story-snap-bottom{padding:36px 14px calc(12px + env(safe-area-inset-bottom));}
+.social-post-snap-canvas .social-story-active-text-input{min-height:58px;max-height:20dvh;resize:vertical;}
+.social-post-background-picker,.social-post-text-color-picker,.social-post-text-size-picker{position:absolute;z-index:10;top:max(64px,calc(env(safe-area-inset-top) + 60px));right:64px;width:min(290px,calc(100% - 90px));margin:0;}
+.social-post-snap-canvas .social-story-colors{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;}
+.social-post-snap-canvas .social-story-colors button{width:30px;height:30px;border:2px solid rgba(255,255,255,.25);border-radius:50%;}
+.social-post-snap-canvas .social-story-colors button.is-selected{outline:2px solid #fff;outline-offset:2px;}
+.social-post-snap-canvas .social-post-text-size-picker .social-story-text-size-control{display:flex;align-items:center;gap:8px;padding:6px 0;color:#f8e9ec;font-size:11px;}
+.social-post-snap-canvas .social-post-text-size-picker input{flex:1;min-width:0;accent-color:#f07889;}
+@media(max-width:520px){.social-post-background-picker,.social-post-text-color-picker,.social-post-text-size-picker{right:60px;width:min(290px,calc(100% - 78px));}}
