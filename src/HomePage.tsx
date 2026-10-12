@@ -1,5 +1,6 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { ReactNode } from "react";
+import { io } from "socket.io-client";
 import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, PaintBucket, CaseSensitive, Type } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -347,6 +348,78 @@ export default function HomePage() {
       .catch(err => { if (!cancelled) setFeedError(err instanceof Error ? err.message : "The feed couldn't load."); })
       .finally(() => { if (!cancelled) setFeedLoading(false); });
     return () => { cancelled = true; };
+  }, [user]);
+
+  // Keep the public feed live while this page is open. REST remains the source
+  // of truth; Socket.IO carries small change events and reconnects reconcile from REST.
+  useEffect(() => {
+    if (!user) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    let hasConnected = false;
+    let disposed = false;
+    const socket = io(apiBase, { auth: { token }, transports: ["websocket", "polling"] });
+
+    socket.on("connect", () => {
+      if (!hasConnected) { hasConnected = true; return; }
+      fetch(`${apiBase}/api/social/feed?limit=20`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(async response => {
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.message || "The feed couldn't refresh.");
+          return Array.isArray(payload.posts) ? payload.posts as SocialPost[] : [];
+        })
+        .then(items => {
+          if (disposed) return;
+          setPosts(current => {
+            const pending = current.filter(post => (post as SocialPost & { uploadState?: string }).uploadState === "uploading");
+            const pendingIds = new Set(pending.map(post => post.id));
+            return [...pending, ...items.filter(post => !pendingIds.has(post.id))];
+          });
+        })
+        .catch(() => { /* Keep the current feed visible if reconnect reconciliation fails. */ });
+    });
+
+    socket.on("social:post-created", (post: SocialPost) => {
+      if (!post?.id) return;
+      setPosts(current => [post, ...current.filter(item => item.id !== post.id)].slice(0, 30));
+    });
+    socket.on("social:post-updated", (event: { id?: string; content?: string; images?: string[] }) => {
+      if (!event.id) return;
+      setPosts(current => current.map(post => post.id === event.id
+        ? { ...post, ...(typeof event.content === "string" ? { content: event.content } : {}), ...(Array.isArray(event.images) ? { images: event.images } : {}) }
+        : post));
+    });
+    socket.on("social:post-deleted", (event: { id?: string }) => {
+      if (!event.id) return;
+      setPosts(current => current.filter(post => post.id !== event.id));
+    });
+    socket.on("social:post-liked", (event: { postId?: string; actorId?: string; likedByActor?: boolean; likeCount?: number }) => {
+      if (!event.postId) return;
+      setPosts(current => current.map(post => post.id === event.postId
+        ? { ...post, likeCount: Number.isFinite(event.likeCount) ? Math.max(0, Number(event.likeCount)) : post.likeCount, ...(event.actorId === user.id ? { likedByMe: event.likedByActor === true } : {}) }
+        : post));
+    });
+    socket.on("social:comment-created", (event: { postId?: string; commentCount?: number }) => {
+      if (!event.postId) return;
+      setPosts(current => current.map(post => post.id === event.postId
+        ? { ...post, commentCount: Number.isFinite(event.commentCount) ? Math.max(0, Number(event.commentCount)) : (post.commentCount || 0) + 1 }
+        : post));
+    });
+    socket.on("social:poll-updated", (event: { postId?: string; options?: { id: string; text: string; voteCount: number }[] }) => {
+      if (!event.postId || !Array.isArray(event.options)) return;
+      setPosts(current => current.map(post => post.id === event.postId && post.poll
+        ? { ...post, poll: { ...post.poll, options: event.options!.map(option => {
+            const previous = post.poll!.options.find(item => item.id === option.id);
+            return { ...option, votedByMe: previous?.votedByMe || false };
+          }) } }
+        : post));
+    });
+
+    return () => {
+      disposed = true;
+      socket.removeAllListeners();
+      socket.disconnect();
+    };
   }, [user]);
 
   useEffect(() => {
