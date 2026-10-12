@@ -198,6 +198,12 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
     };
   }, [socket, groupId, currentUserId, ensurePeer, resetCall]);
 
+  useEffect(() => () => {
+    if (callIdRef.current) socketRef.current?.emit("group-call:leave", { callId: callIdRef.current });
+    peersRef.current.forEach(({ pc }) => pc.close()); peersRef.current.clear();
+    localStreamRef.current?.getTracks().forEach(track => track.stop()); localStreamRef.current = null;
+  }, []);
+
   useEffect(() => {
     if (localVideoRef.current && localStreamRef.current) {
       localVideoRef.current.srcObject = localStreamRef.current;
@@ -220,7 +226,7 @@ export default function GroupCallPanel({ socket, groupId, groupName, currentUser
         <p style={{ margin: "7px 0 18px", color: "rgba(246,220,225,.7)", fontSize: ".8rem" }}>Incoming {incoming.kind} call in {groupName}</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
           <button type="button" disabled={busy} onClick={() => { setIncoming(null); setError(""); setBusy(true); void joinCall(incoming.callId, incoming.kind).catch(e => { resetCall(true); setError(e instanceof Error ? e.message : "Unable to join call."); }).finally(() => setBusy(false)); }} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#198754", color: "white", fontWeight: 750 }}><Phone size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Join</button>
-          <button type="button" onClick={() => setIncoming(null)} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#9d293c", color: "white", fontWeight: 750 }} onClick={() => { socket?.emit("group-call:dismiss", { callId: incoming.callId }); setIncoming(null); }}><PhoneOff size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Dismiss</button>
+          <button type="button" onClick={() => { socket?.emit("group-call:dismiss", { callId: incoming.callId }); setIncoming(null); }} style={{ flex: 1, minHeight: 42, border: 0, borderRadius: 11, background: "#9d293c", color: "white", fontWeight: 750 }}><PhoneOff size={16} style={{ verticalAlign: "middle", marginRight: 6 }}/>Dismiss</button>
         </div>
       </div>
     </div>}
