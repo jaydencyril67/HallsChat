@@ -5847,3 +5847,131 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     transition-duration: 0s !important;
   }
 }
+
+
+/* Group list refinement: compact rows, clear hierarchy and phone-safe controls.
+   Theme colors are overridden only in light mode; dark colors remain untouched. */
+.halls-groups-page .halls-group-list {
+  min-width: 0;
+}
+.halls-groups-page .halls-group-list-row {
+  min-width: 0;
+  border-radius: 15px !important;
+  transition: border-color .16s ease, background-color .16s ease;
+}
+.halls-groups-page .halls-group-list-row > div {
+  min-width: 0;
+}
+.halls-groups-page .halls-group-list-row > div > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.halls-groups-page .halls-group-list-row > div > span:nth-child(2) {
+  line-height: 1.45;
+}
+.halls-groups-page .halls-group-list-row > button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.halls-groups-page .halls-group-list-tabs button {
+  min-height: 39px;
+  -webkit-tap-highlight-color: transparent;
+}
+.halls-groups-page .halls-group-list-search {
+  min-width: 0;
+}
+.halls-groups-page .halls-group-list-search input {
+  margin-bottom: 12px;
+}
+.halls-groups-page .halls-group-list-actions button {
+  min-height: 40px;
+  white-space: nowrap;
+}
+@media (hover: hover) {
+  .halls-groups-page .halls-group-list-row:hover {
+    border-color: rgba(229, 70, 92, .42) !important;
+  }
+}
+@media (max-width: 420px) {
+  .halls-groups-page .halls-group-list-row {
+    gap: 9px !important;
+    padding: 11px 10px !important;
+  }
+  .halls-groups-page .halls-group-list-row .chat-avatar,
+  .halls-groups-page .halls-group-list-row > span:first-child {
+    flex-shrink: 0;
+  }
+  .halls-groups-page .halls-group-list-row > div > span:first-child {
+    font-size: .84rem !important;
+    line-height: 1.35;
+  }
+  .halls-groups-page .halls-group-list-row > div > span:nth-child(2) {
+    font-size: .72rem !important;
+  }
+  .halls-groups-page .halls-group-list-row > div > span:nth-child(3) {
+    font-size: .67rem !important;
+    line-height: 1.4;
+  }
+  .halls-groups-page .halls-group-list-row > button {
+    min-height: 36px;
+  }
+  .halls-groups-page .halls-group-list-actions {
+    gap: 7px !important;
+  }
+  .halls-groups-page .halls-group-list-actions button {
+    gap: 5px !important;
+    padding: 9px 8px !important;
+    font-size: .75rem !important;
+  }
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-row {
+  background: #fffdfc !important;
+  border-color: #ead8da !important;
+  color: #302329 !important;
+  box-shadow: 0 2px 8px rgba(61, 24, 33, .035);
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-row:hover {
+  background: #fff9f8 !important;
+  border-color: #d9b4bd !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-row > div > span:first-child {
+  color: #302329 !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-row > div > span:nth-child(2) {
+  color: #806b72 !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-row > div > span:nth-child(3) {
+  color: #8b7077 !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-row > button:not([style*="linear-gradient"]) {
+  background: #fff8f8 !important;
+  border-color: #e7cfd4 !important;
+  color: #81273b !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-tabs {
+  background: #fffdfc !important;
+  border-color: #ead8da !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-tabs button {
+  background: #f8eff0 !important;
+  border-color: #ead8da !important;
+  color: #755b63 !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-tabs button[aria-pressed="true"] {
+  background: #f8e6e9 !important;
+  border-color: #b54a5e !important;
+  color: #84263a !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-actions button {
+  background: #fffdfc !important;
+  border-color: #e7cfd4 !important;
+  color: #81273b !important;
+}
+:root[data-theme="light"] .halls-groups-page .halls-group-list-actions button:hover:not(:disabled) {
+  background: #f8eff0 !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .halls-groups-page .halls-group-list-row {
+    transition: none;
+  }
+}
