@@ -29,6 +29,27 @@ function Avatar({ name, src, size = 44 }: { name: string; src?: string; size?: n
   return <span style={{ width: size, height: size, flexShrink: 0, borderRadius: size > 50 ? 16 : "50%", overflow: "hidden", display: "grid", placeItems: "center", border: "1px solid rgba(236,102,121,.28)", background: "linear-gradient(145deg,#713040,#35121d)", color: "#ffe4e9", fontSize: size > 50 ? "1.1rem" : ".78rem", fontWeight: 850 }}>{src ? <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : initials(name)}</span>;
 }
 
+function GroupVoiceNotePlayer({ src }: { src: string }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const bars = [3,5,8,12,7,15,10,18,13,6,11,16,8,20,12,7,15,10,22,13,6,17,11,8,19,12,5,14,9,18,7,12,20,9,5,15,11,7,17,10,4,13];
+  const progress = duration > 0 ? currentTime / duration : 0;
+  const format = (seconds: number) => Math.floor(Math.max(0, seconds) / 60) + ":" + String(Math.floor(Math.max(0, seconds) % 60)).padStart(2, "0");
+  function seek(clientX: number, waveform: HTMLDivElement) {
+    const audio = audioRef.current; if (!audio || !Number.isFinite(audio.duration) || audio.duration <= 0) return;
+    const rect = waveform.getBoundingClientRect(); if (rect.width <= 0) return;
+    audio.currentTime = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)) * audio.duration; setCurrentTime(audio.currentTime);
+  }
+  return <div className="chat-voice-note">
+    <audio ref={audioRef} src={src} preload="metadata" onLoadedMetadata={event => setDuration(event.currentTarget.duration || 0)} onTimeUpdate={event => setCurrentTime(event.currentTarget.currentTime)} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => { setPlaying(false); setCurrentTime(0); }}/>
+    <button type="button" className="chat-voice-play" onClick={async () => { const audio = audioRef.current; if (!audio) return; if (audio.paused) { try { await audio.play(); } catch { setPlaying(false); } } else audio.pause(); }} aria-label={playing ? "Pause voice note" : "Play voice note"}>{playing ? <Pause size={17} fill="currentColor"/> : <Play size={17} fill="currentColor"/>}</button>
+    <div className="chat-voice-track"><div className="chat-voice-waveform" role="slider" aria-label="Voice note playback position" aria-valuemin={0} aria-valuemax={Math.floor(duration || 0)} aria-valuenow={Math.floor(currentTime)} tabIndex={0} onClick={event => seek(event.clientX, event.currentTarget)} onKeyDown={event => { if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); const audio = audioRef.current; if (audio && Number.isFinite(audio.duration)) { audio.currentTime = Math.max(0, Math.min(audio.duration, audio.currentTime + (event.key === "ArrowRight" ? 5 : -5))); setCurrentTime(audio.currentTime); } } }}>{bars.map((height,index) => <span key={index} className={index / bars.length <= progress ? "is-played" : ""} style={{ height: height + "px" }}/>)}</div><div className="chat-voice-meta"><span>{playing || currentTime > 0 ? format(currentTime) : format(duration)}</span></div></div>
+    <span className="chat-voice-mic"><Mic size={13}/></span>
+  </div>;
+}
+
 export default function GroupPage() {
   const [tab, setTab] = useState<Tab>("mine");
   const [groups, setGroups] = useState<GroupSummary[]>([]);
@@ -151,10 +172,8 @@ export default function GroupPage() {
   useEffect(() => () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") { discardRecordingRef.current = true; mediaRecorderRef.current.stop(); }
     recordingStreamRef.current?.getTracks().forEach(track => track.stop());
-    imagePreviews.forEach(url => URL.revokeObjectURL(url));
-    if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
     if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
-  }, [imagePreviews, voiceDraftUrl]);
+  }, []);
 
   const filteredGroups = useMemo(() => groups.filter(group => (group.name + " " + group.description).toLowerCase().includes(search.trim().toLowerCase())), [groups, search]);
 
@@ -259,6 +278,7 @@ export default function GroupPage() {
       setMessages(current => [...current.filter(message => message.id !== pendingId && message.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
       await loadGroups("mine", false);
       previews.forEach(url => URL.revokeObjectURL(url));
+      if (voiceDraftUrl) URL.revokeObjectURL(voiceDraftUrl);
       setNotice("");
     } catch (err) {
       setMessages(current => current.filter(message => message.id !== pendingId));
@@ -373,7 +393,7 @@ export default function GroupPage() {
                       {quoted && <button type="button" onClick={() => { const node = document.getElementById("chat-message-" + quoted.id); const list = groupMessageListRef.current; if (node && list) { list.scrollTo({ top: Math.max(0, list.scrollTop + node.getBoundingClientRect().top - list.getBoundingClientRect().top - 80), behavior: "smooth" }); node.style.outline = "2px solid #f07889"; window.setTimeout(() => { node.style.outline = ""; }, 1300); } }} style={{ display: "grid", width: "100%", gap: 3, textAlign: "left", padding: "7px 9px", marginBottom: 6, border: 0, borderLeft: "3px solid #f07889", borderRadius: "5px 8px 8px 5px", background: "rgba(240,120,137,.09)", color: "inherit" }}><strong style={{ fontSize: ".68rem", color: "#ff9cab" }}>{quoted.senderId === currentUserId ? "You" : (detail.members.find(member => member.id === quoted.senderId)?.name || "Group member")}</strong><span style={{ fontSize: ".75rem", opacity: .78, overflowWrap: "anywhere" }}>{quoted.deleted ? "This message was deleted" : quoted.text || (quoted.audioUrl ? "🎤 Voice note" : quoted.imageUrl ? "📷 Photo" : "Message")}</span></button>}
                       {editingMessageId === message.id ? <form onSubmit={event => { event.preventDefault(); void saveMessageEdit(message); }} style={{ display: "grid", gap: 7 }}><textarea value={editMessageDraft} onChange={event => setEditMessageDraft(event.target.value)} maxLength={4000} autoFocus rows={3} style={{ ...field, resize: "vertical" }}/><div style={{ display: "flex", gap: 7 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { setEditingMessageId(null); setEditMessageDraft(""); }}>Cancel</button><button type="submit" style={{ ...primary, flex: 1 }} disabled={!editMessageDraft.trim()}>Save</button></div></form> : message.text && <p className="chat-message-text">{message.text}</p>}
                       {imgs.length > 0 && <div style={{ display: "grid", gridTemplateColumns: imgs.length === 1 ? "minmax(0,1fr)" : "repeat(2,minmax(0,1fr))", gap: 3, marginTop: message.text ? 5 : 0 }}>{imgs.map((url,index) => <button key={url + index} type="button" onClick={() => setViewingImageUrl(url)} aria-label="Preview group image" style={{ display: "block", minWidth: 0, padding: 0, border: 0, background: "transparent", overflow: "hidden", borderRadius: 8 }}><img src={url} alt="Group attachment" loading="lazy" style={{ display: "block", width: "100%", maxHeight: 320, aspectRatio: imgs.length > 1 ? "1 / 1" : "auto", objectFit: imgs.length > 1 ? "cover" : "contain" }}/></button>)}</div>}
-                      {message.audioUrl && <audio controls preload="metadata" src={message.audioUrl} style={{ display: "block", width: "min(270px,100%)", height: 42, marginTop: 5 }}/>}
+                      {message.audioUrl && <GroupVoiceNotePlayer src={message.audioUrl}/>}
                     </>}
                   </div>
                   <div className="chat-message-footer"><time>{message.editedAt && !message.deletedForEveryone ? "Edited · " : ""}{new Date(message.createdAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}{message.pending ? " · Sending…" : ""}</time>
