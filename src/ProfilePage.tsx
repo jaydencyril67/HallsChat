@@ -292,7 +292,7 @@ export default function ProfilePage() {
     } finally { setPictureBusy(false); }
   }
 
-  return <main className="home-page social-home halls-page">
+  return <main className="home-page social-home halls-page profile-page">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell" style={{ paddingBottom: 112 }}>
       <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "0 0 24px", boxSizing: "border-box" }}>
