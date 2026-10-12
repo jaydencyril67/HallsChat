@@ -145,9 +145,9 @@ export default function AlertsPage() {
           {unreadCount > 0 ? <button type="button" className="halls-alerts-mark-all" onClick={() => void markAllRead()} disabled={markingAll}>{markingAll ? <LoadingDots /> : <><CheckCheck size={15} /> Mark all read</>}</button> : null}
         </div>
         {error ? <div className="halls-alerts-error" role="alert">{error}<button type="button" onClick={() => void loadAlerts()}>Retry</button></div> : null}
-        {refreshing ? <p className="halls-alerts-refreshing"><LoadingDots /> Checking for new alerts…</p> : null}
+        {refreshing ? <p className="halls-alerts-refreshing"><LoadingDots /></p> : null}
         <section className="halls-alerts-list" aria-live="polite">
-          {loading ? <div className="halls-alerts-empty"><LoadingDots /><p>Loading your alerts…</p></div> : null}
+          {loading ? <div className="halls-alerts-empty"><LoadingDots /></div> : null}
           {!loading && !error && visibleAlerts.length === 0 ? <div className="halls-alerts-empty"><div className="halls-alerts-empty-icon">{filter === "unread" ? <CheckCheck size={26} /> : <Inbox size={27} />}</div><h2>{filter === "unread" ? "You're all caught up" : "No alerts yet"}</h2><p>{filter === "unread" ? "There are no unread alerts to show." : "New messages, calls, followers and social activity will appear here."}</p></div> : null}
           {visibleAlerts.map(item => (
             <article key={item.id} className={`halls-alert-item ${item.readAt ? "" : "unread"}`}>
