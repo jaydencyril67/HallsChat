@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Square, Reply, MoreVertical, Pencil, Smile, Paperclip, Phone, Video } from "lucide-react";
+import { ArrowLeft, Compass, LockKeyhole, MessageCircle, Plus, Send, UsersRound, UserPlus, X, Check, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Square, Reply, MoreVertical, Pencil, Smile, Paperclip, Phone, Video } from "lucide-react";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import type { ChangeEvent } from "react";
@@ -123,6 +123,8 @@ export default function GroupPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [groupCode, setGroupCode] = useState("");
+  const [groupCodeStatus, setGroupCodeStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid" | "error">("idle");
+  const [groupCodeMessage, setGroupCodeMessage] = useState("");
   const [groupAvatarFile, setGroupAvatarFile] = useState<File | null>(null);
   const [groupAvatarPreview, setGroupAvatarPreview] = useState("");
   const [groupAvatarCropSource, setGroupAvatarCropSource] = useState<string | null>(null);
@@ -173,6 +175,31 @@ export default function GroupPage() {
     if (!response.ok) throw new Error(payload.message || "That action couldn't be completed.");
     return payload;
   }, []);
+
+  useEffect(() => {
+    const value = groupCode.trim();
+    if (!value) { setGroupCodeStatus("idle"); setGroupCodeMessage(""); return; }
+    if (!/^\d{8}$/.test(value)) { setGroupCodeStatus("invalid"); setGroupCodeMessage("Enter exactly 8 digits to check availability."); return; }
+    const controller = new AbortController();
+    setGroupCodeStatus("checking");
+    setGroupCodeMessage("Checking Group ID…");
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(apiBase + "/api/groups/id-availability?inviteCode=" + encodeURIComponent(value), { signal: controller.signal });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || "Group ID availability could not be checked.");
+        if (controller.signal.aborted) return;
+        if (payload.valid === false) { setGroupCodeStatus("invalid"); setGroupCodeMessage(payload.message || "Enter a valid Group ID."); }
+        else if (payload.available) { setGroupCodeStatus("available"); setGroupCodeMessage("Group ID is available."); }
+        else { setGroupCodeStatus("taken"); setGroupCodeMessage(payload.message || "That Group ID is already taken."); }
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        setGroupCodeStatus("error");
+        setGroupCodeMessage(err instanceof Error ? err.message : "Group ID availability could not be checked.");
+      }
+    }, 450);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [groupCode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -320,13 +347,14 @@ export default function GroupPage() {
     event.preventDefault();
     if (name.trim().length < 2) { setError("Group name must be at least 2 characters."); return; }
     if (!/^\d{8}$/.test(groupCode)) { setError("Choose a Group ID made of exactly 8 digits."); return; }
+    if (groupCodeStatus !== "available") { setError(groupCodeStatus === "checking" ? "Please wait while we check your Group ID." : groupCodeStatus === "taken" ? "That Group ID is already taken. Choose another one." : groupCodeStatus === "error" ? "We couldn’t check Group ID availability. Please try again." : "Please enter a valid, available Group ID."); return; }
     setBusy(true); setError(""); setNotice("");
     try {
       let avatar = "";
       const token = localStorage.getItem("hallschat_token");
       if (groupAvatarFile && token) avatar = await uploadGroupMedia(groupAvatarFile, token);
       const payload = await request("/api/groups", { method: "POST", body: JSON.stringify({ name: name.trim(), description: description.trim(), visibility, inviteCode: groupCode, ...(avatar ? { avatar } : {}) }) });
-      setShowCreate(false); setName(""); setDescription(""); setGroupCode(""); setVisibility("public"); setGroupAvatarFile(null); setGroupAvatarPreview("");
+      setShowCreate(false); setName(""); setDescription(""); setGroupCode(""); setGroupCodeStatus("idle"); setGroupCodeMessage(""); setVisibility("public"); setGroupAvatarFile(null); setGroupAvatarPreview("");
       setTab("mine");
       await loadGroups("mine"); if (payload.group?.id) setActiveId(payload.group.id);
       setNotice(payload.group?.inviteCode ? "Group created. Your 8-digit Group ID is " + payload.group.inviteCode + ". Save it to share with people." : "Your group is ready.");
@@ -673,7 +701,7 @@ export default function GroupPage() {
           </div>
           <label style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Group name <span style={{ ...muted, fontWeight: 500 }}>Required</span><input required minLength={2} maxLength={80} value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Weekend Football Crew" style={field}/></label>
           <label style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Description <span style={{ ...muted, fontWeight: 500 }}>Optional</span><textarea maxLength={500} value={description} onChange={event => setDescription(event.target.value)} placeholder="Tell people what your group is about…" rows={2} style={{ ...field, resize: "none", minHeight: 76, padding: "11px 13px" }}/></label>
-          <label style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Group ID <span style={{ ...muted, fontWeight: 500 }}>Choose your own unique 8-digit code</span><input required type="text" inputMode="numeric" autoComplete="off" pattern="[0-9]{8}" minLength={8} maxLength={8} value={groupCode} onChange={event => setGroupCode(event.target.value.replace(/\D/g, "").slice(0, 8))} placeholder="e.g. 48271630" style={{ ...field, letterSpacing: ".18em", fontVariantNumeric: "tabular-nums" }}/><span style={{ ...muted, fontSize: ".72rem", fontWeight: 500 }}>Unique 8-digit code used to find or join your group.</span></label>
+          <label style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Group ID <span style={{ ...muted, fontWeight: 500 }}>Choose your own unique 8-digit code</span><span style={{ position: "relative", display: "flex", alignItems: "center", width: "100%", minWidth: 0 }}><input required type="text" inputMode="numeric" autoComplete="off" pattern="[0-9]{8}" minLength={8} maxLength={8} value={groupCode} aria-describedby="group-id-availability" aria-invalid={groupCodeStatus === "taken" || groupCodeStatus === "invalid"} onChange={event => { setGroupCode(event.target.value.replace(/\D/g, "").slice(0, 8)); setError(""); }} placeholder="e.g. 48271630" style={{ ...field, paddingRight: 42, letterSpacing: ".18em", fontVariantNumeric: "tabular-nums" }}/>{groupCodeStatus === "checking" ? <span aria-label="Checking Group ID" style={{ position: "absolute", right: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", color: "#f07889", lineHeight: 0 }}><LoadingDots /></span> : groupCodeStatus === "available" ? <Check size={16} aria-label="Group ID available" style={{ position: "absolute", right: 12, color: "#83ddb0", pointerEvents: "none" }} /> : null}</span><span id="group-id-availability" aria-live="polite" style={{ minHeight: 13, lineHeight: 1.45, fontSize: ".72rem", fontWeight: 500, color: groupCodeStatus === "available" ? "#83ddb0" : groupCodeStatus === "checking" || groupCodeStatus === "idle" ? "rgba(246,220,225,.62)" : "#ff929f" }}>{groupCodeMessage || "Unique 8-digit code used to find or join your group."}</span></label>
           <section style={{ display: "grid", gap: 9 }}>
             <strong style={{ fontSize: ".82rem" }}>Group privacy</strong>
             <span style={{ ...muted, fontSize: ".76rem", lineHeight: 1.35 }}>Choose who can discover and join your group.</span>
@@ -681,7 +709,7 @@ export default function GroupPage() {
               {([{ id: "public", label: "Public", detail: "Anyone can discover it", icon: Compass }, { id: "private", label: "Private", detail: "Invite code required", icon: LockKeyhole }] as const).map(option => <button key={option.id} type="button" onClick={() => setVisibility(option.id)} aria-pressed={visibility === option.id} style={{ ...secondary, minHeight: 68, padding: "10px 11px", flexDirection: "row", alignItems: "center", justifyContent: "flex-start", gap: 7, borderColor: visibility === option.id ? "rgba(229,70,92,.85)" : "rgba(255,210,219,.16)", background: visibility === option.id ? "rgba(184,32,50,.15)" : "rgba(255,255,255,.03)", textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: visibility === option.id ? "#ff9cab" : "#fff0f3", fontWeight: 800 }}><option.icon size={16}/>{option.label}{visibility === option.id ? <span style={{ fontSize: ".65rem" }}>✓</span> : null}</span><span style={{ ...muted, fontSize: ".72rem", fontWeight: 500, lineHeight: 1.3 }}>{option.detail}</span></button>)}
             </div>
           </section>
-          <button type="submit" disabled={busy || name.trim().length < 2 || !/^\d{8}$/.test(groupCode)} style={{ ...primary, width: "100%", minHeight: 50, position: "static", boxShadow: "none", opacity: busy || name.trim().length < 2 || !/^\d{8}$/.test(groupCode) ? .6 : 1 }}>{busy ? <LoadingDots/> : <><Plus size={17}/> Create group</>}</button>
+          <button type="submit" disabled={busy || name.trim().length < 2 || !/^\d{8}$/.test(groupCode) || groupCodeStatus !== "available"} style={{ ...primary, width: "100%", minHeight: 50, position: "static", boxShadow: "none", opacity: busy || name.trim().length < 2 || !/^\d{8}$/.test(groupCode) ? .6 : 1 }}>{busy ? <LoadingDots/> : <><Plus size={17}/> Create group</>}</button>
         </form>
       </div>
     </div>}
