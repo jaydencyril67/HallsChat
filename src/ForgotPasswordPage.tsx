@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
           </>}
           {error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
           {notice && <div className="signup-feedback signup-feedback-success" role="status">{notice}</div>}
-          <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? <><LoadingDots /> {token ? "Resetting password…" : "Sending reset link…"}</> : token ? "Save new password" : "Email me a reset link"} {!submitting && <ArrowRight size={17} />}</button>
+          <button className="button button-primary signup-submit" type="submit" disabled={submitting}>{submitting ? <LoadingDots /> : <>{token ? "Save new password" : "Email me a reset link"} <ArrowRight size={17} /></>}</button>
         </form>}
         <div className="signup-bottom-note"><a href="/signin"><ArrowLeft size={14} /> Back to sign in</a></div>
       </section>
