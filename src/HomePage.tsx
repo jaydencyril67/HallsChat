@@ -8,6 +8,7 @@ import StoryImageCropModal from "./components/StoryImageCropModal";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 import { getSocialPostPublishState, startSocialPostPublish, subscribeSocialPostPublishing } from "./utils/socialPostPublisher";
+import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
 
 type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string };
 type SocialPost = {
@@ -660,9 +661,11 @@ export default function HomePage() {
       return "";
     });
 
+    const backgroundTaskId = startBackgroundTask("Publishing story", photoToUpload ? "Preparing story photo…" : "Publishing story…");
     try {
       let mediaUrl = "";
       if (photoToUpload) {
+        updateBackgroundTask(backgroundTaskId, "Uploading story photo…");
         const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${token}` } });
         const auth = await authResponse.json().catch(() => ({})) as ImageKitAuth;
         if (!authResponse.ok || !auth.token || !auth.signature || !auth.publicKey || !auth.expire) throw new Error(auth.message || "Photo upload couldn't be prepared.");
@@ -679,6 +682,7 @@ export default function HomePage() {
         if (!upload.ok || typeof uploaded.url !== "string") throw new Error(uploaded.message || "The story photo couldn't upload.");
         mediaUrl = uploaded.url;
       }
+      updateBackgroundTask(backgroundTaskId, "Saving story…");
       const response = await fetch(`${apiBase}/api/social/stories`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
@@ -688,9 +692,12 @@ export default function HomePage() {
       if (!response.ok || !payload.story) throw new Error(payload.message || "Your story couldn't be published.");
       setStories(current => [...current.filter(item => item.id !== temporaryId && item.id !== payload.story.id), payload.story as SocialStory]);
       setNotice("Your story is live for 24 hours.");
+      finishBackgroundTask(backgroundTaskId);
     } catch (err) {
       setStories(current => current.filter(item => item.id !== temporaryId));
-      setFeedError(err instanceof Error ? err.message : "Your story couldn't be published.");
+      const storyError = err instanceof Error ? err.message : "Your story couldn't be published.";
+      setFeedError(storyError);
+      finishBackgroundTask(backgroundTaskId, storyError);
     } finally {
       if (photoToUpload) URL.revokeObjectURL(photoToUpload.preview);
       setStoryPublishing(false);
