@@ -639,12 +639,12 @@ export default function GroupPage() {
         </>}
       </div>
     </section>
-    {showCreate && <div role="dialog" aria-modal="true" aria-label="Create a group" style={{ position: "fixed", inset: 0, zIndex: 4000, display: "flex", flexDirection: "column", width: "100%", height: "100dvh", minHeight: 0, padding: 0, background: "#16080d", color: "#fff0f3", overflow: "hidden" }}>
-      <header style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top, 0px) + 10px) 16px 10px", background: "rgba(28,9,15,.98)", flexShrink: 0 }}>
-        <button type="button" aria-label="Close create group" onClick={() => { setShowCreate(false); setError(""); }} style={{ ...secondary, width: 42, minWidth: 42, height: 42, padding: 0 }}><X size={20}/></button>
-        <div style={{ flex: 1, minWidth: 0 }}><strong style={{ display: "block", fontSize: "1.08rem" }}>Create a group</strong><span style={{ ...muted, display: "block", fontSize: ".78rem", marginTop: 3 }}>Set up your community on HallsChat</span></div>
+    {showCreate && <div role="dialog" aria-modal="true" aria-label="Create a group" style={{ position: "fixed", inset: 0, zIndex: 4000, display: "flex", flexDirection: "column", width: "100%", height: "100dvh", minHeight: 0, padding: 0, background: "#16080d", color: "#fff0f3", overflow: "hidden", border: 0, boxShadow: "none" }}>
+      <header style={{ display: "flex", alignItems: "center", gap: 14, padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 8px", background: "transparent", border: 0, flexShrink: 0 }}>
+        <button type="button" aria-label="Close create group" onClick={() => { setShowCreate(false); setError(""); }} style={{ ...secondary, width: 42, minWidth: 42, height: 42, padding: 0, border: 0, background: "transparent" }}><X size={23}/></button>
+        <strong style={{ display: "block", fontSize: "1.08rem", fontWeight: 800 }}>Create a group</strong>
       </header>
-      <div style={{ flex: 1, minHeight: 0, overflowY: "hidden", overscrollBehavior: "contain", padding: "12px 16px calc(12px + env(safe-area-inset-bottom, 0px))" }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "hidden", overscrollBehavior: "contain", padding: "8px 16px calc(12px + env(safe-area-inset-bottom, 0px))" }}>
         <form onSubmit={createGroup} style={{ display: "grid", gap: 13, maxWidth: 560, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "0" }}>
             <button type="button" onClick={() => groupAvatarInputRef.current?.click()} aria-label="Upload group profile picture" style={{ position: "relative", width: 58, height: 58, minWidth: 58, borderRadius: 16, overflow: "hidden", border: "1px dashed rgba(255,156,171,.65)", background: "linear-gradient(145deg,rgba(197,45,68,.2),rgba(53,18,29,.8))", color: "#ff9cab", display: "grid", placeItems: "center", padding: 0 }}>
