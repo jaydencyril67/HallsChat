@@ -617,11 +617,9 @@ export default function ChatPage() {
 
 
   useEffect(() => {
-    if (!scrollOnOpenRef.current || !activeId || messagesLoading || historyLoadedFor !== activeId) return;
-    // Wait until the fetched history has rendered before moving to the latest message.
+    if (!activeId || messagesLoading || historyLoadedFor !== activeId) return;
+    // Keep the newest sent or received message visible without scrolling the page itself.
     const frame = window.requestAnimationFrame(() => {
-      // Keep initial positioning inside the chat viewport. scrollIntoView() can
-      // also scroll ancestor containers, including the full app page.
       const list = chatMessageListRef.current;
       if (list) list.scrollTop = list.scrollHeight;
       scrollOnOpenRef.current = false;
@@ -800,7 +798,7 @@ export default function ChatPage() {
         if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your voice note couldn't be sent."));
         const result = response.message as ChatMessage;
         if (!result || typeof result !== "object" || !result.id) return reject(new Error("The server didn't confirm your voice note."));
-        resolve(result);
+        resolve({ ...result, senderId: result.senderId || currentUserIdRef.current, recipientId: result.recipientId || person.id });
       }));
       setMessages(current => [...current.filter(item => item.id !== pendingId && item.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
       setPeople(current => current.map(item => item.id === person.id ? { ...item, lastMessage: "🎤 Voice note", lastMessageAt: sent.createdAt } : item));
@@ -903,7 +901,7 @@ export default function ChatPage() {
             if (!response?.ok) return reject(new Error(typeof response?.message === "string" ? response.message : "Your message couldn't be sent."));
             const sent = response.message as ChatMessage;
             if (!sent || typeof sent !== "object" || !sent.id) return reject(new Error("The server didn't confirm your message."));
-            resolve(sent);
+            resolve({ ...sent, senderId: sent.senderId || currentUserIdRef.current, recipientId: sent.recipientId || recipientId });
           }
         );
       });
