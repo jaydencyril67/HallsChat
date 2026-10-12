@@ -1101,7 +1101,7 @@ export default function HomePage() {
       <form className="social-story-dialog social-story-snap-composer social-post-snap-composer" role="dialog" aria-modal="true" aria-label="Create post" onClick={event => event.stopPropagation()} onSubmit={publishPost}>
         <div className={`social-story-preview social-story-snap-canvas social-post-snap-canvas ${selectedImages.length ? "has-photo" : ""}`} style={{ background: selectedImages.length ? "#16090d" : postBackgroundEnabled ? postBackground : "#10070b" }}>
           {selectedImages[0] && <img src={selectedImages[0].preview} alt="Post photo preview"/>}
-          {draft.trim() && <p className="social-post-live-preview" style={{ color: postTextColor, fontSize: `${Math.max(18, postTextSize - Math.max(0, Math.ceil(draft.trim().length / 120) - 1) * 2)}px` }}>{draft}</p>}
+          {draft.trim() && !selectedImages.length && <p className="social-post-live-preview" style={{ color: postTextColor, fontSize: `${Math.max(18, postTextSize - Math.max(0, Math.ceil(draft.trim().length / 120) - 1) * 2)}px` }}>{draft}</p>}
           {!draft.trim() && !selectedImages.length && <span>What's on your mind?</span>}
           <button type="button" className="social-story-snap-close" onClick={() => setComposerExpanded(false)} aria-label="Close post creator"><X size={21}/></button>
           
