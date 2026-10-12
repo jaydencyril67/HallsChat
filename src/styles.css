@@ -5629,25 +5629,25 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .halls-groups-page .chat-voice-sending {
   color: #806b72 !important;
 }
-:root[data-theme="light"] .halls-groups-page [role="dialog"][aria-modal="true"] {
+:root[data-theme="light"] .halls-groups-page :is([aria-label="Create a group"], [aria-label="Join a group using Group ID"], [aria-label="Group details and members"]) {
   background-color: #fffaf9 !important;
   color: #302329 !important;
   border-color: #ead8da !important;
 }
-:root[data-theme="light"] .halls-groups-page [role="dialog"][aria-modal="true"] :is(h1, h2, h3, h4, strong, label, legend) {
+:root[data-theme="light"] .halls-groups-page :is([aria-label="Create a group"], [aria-label="Join a group using Group ID"], [aria-label="Group details and members"]) :is(h1, h2, h3, h4, strong, label, legend) {
   color: #302329 !important;
 }
-:root[data-theme="light"] .halls-groups-page [role="dialog"][aria-modal="true"] p,
-:root[data-theme="light"] .halls-groups-page [role="dialog"][aria-modal="true"] small {
+:root[data-theme="light"] .halls-groups-page :is([aria-label="Create a group"], [aria-label="Join a group using Group ID"], [aria-label="Group details and members"]) p,
+:root[data-theme="light"] .halls-groups-page :is([aria-label="Create a group"], [aria-label="Join a group using Group ID"], [aria-label="Group details and members"]) small {
   color: #806b72 !important;
 }
-:root[data-theme="light"] .halls-groups-page [role="dialog"][aria-modal="true"] :is(button, [role="button"]):not(.halls-call-confirm-start):not(.danger):not([type="submit"]) {
+:root[data-theme="light"] .halls-groups-page :is([aria-label="Create a group"], [aria-label="Join a group using Group ID"], [aria-label="Group details and members"]) :is(button, [role="button"]):not(.halls-call-confirm-start):not(.danger):not([type="submit"]) {
   border-color: #ead8da;
 }
-:root[data-theme="light"] .halls-groups-page [role="dialog"][aria-modal="true"] :is(button, [role="button"]):not(.halls-call-confirm-start):not(.danger):not([type="submit"]):hover:not(:disabled) {
+:root[data-theme="light"] .halls-groups-page :is([aria-label="Create a group"], [aria-label="Join a group using Group ID"], [aria-label="Group details and members"]) :is(button, [role="button"]):not(.halls-call-confirm-start):not(.danger):not([type="submit"]):hover:not(:disabled) {
   background-color: #f8eff0 !important;
 }
-:root[data-theme="light"] .halls-groups-page [role="dialog"][aria-modal="true"] .group-confirm-trigger {
+:root[data-theme="light"] .halls-groups-page :is([aria-label="Create a group"], [aria-label="Join a group using Group ID"], [aria-label="Group details and members"]) .group-confirm-trigger {
   background: #f8e9eb !important;
   border-color: #e6c3ca !important;
   color: #a92c43 !important;
@@ -5685,7 +5685,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   :root[data-theme="light"] .halls-groups-page .chat-conversation-person strong {
     overflow-wrap: anywhere;
   }
-  :root[data-theme="light"] .halls-groups-page [role="dialog"][aria-modal="true"] {
+  :root[data-theme="light"] .halls-groups-page :is([aria-label="Create a group"], [aria-label="Join a group using Group ID"], [aria-label="Group details and members"]) {
     overscroll-behavior: contain;
   }
 }
