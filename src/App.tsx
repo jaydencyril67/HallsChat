@@ -64,7 +64,7 @@ function GlobalPostPublishingStatus() {
       <span style={{ display: "grid", gap: 3, minWidth: 0, flex: 1 }}>
         <strong style={{ fontSize: ".88rem", fontWeight: 650 }}>{uploading ? "Posting in the background" : failed ? "Post couldn't be published" : "Post published"}</strong>
         <span style={{ fontSize: ".78rem", color: "#e5cbd2", overflowWrap: "anywhere" }}>{publishState.status || publishState.message}</span>
-        {uploading && <span style={{ display: "block", height: 3, marginTop: 3, overflow: "hidden", borderRadius: 99, background: "rgba(255,255,255,.12)" }}><span style={{ display: "block", width: "36%", height: "100%", borderRadius: 99, background: "#ff8192", animation: "hallschat-global-post-progress 1.2s ease-in-out infinite alternate" }}/></span>}
+        {uploading && <span style={{ display: "block", height: 3, marginTop: 3, overflow: "hidden", borderRadius: 99, background: "rgba(255,240,243,.12)" }}><span style={{ display: "block", width: "36%", height: "100%", borderRadius: 99, background: "#ff8192", animation: "hallschat-global-post-progress 1.2s ease-in-out infinite alternate" }}/></span>}
       </span>
       {!uploading && <button type="button" onClick={dismissSocialPostPublishStatus} aria-label="Dismiss post status" style={{ border: 0, background: "transparent", color: "#fff0f3", fontSize: 22, padding: "2px 4px", lineHeight: 1 }}>×</button>}
     </div>
@@ -99,12 +99,12 @@ function GlobalBackgroundTaskStatus() {
     : result!.status;
   return <>
     {active && <style>{`@keyframes hallschat-global-task-progress { from { transform: translateX(-100%); } to { transform: translateX(300%); } }`}</style>}
-    <div role={failed ? "alert" : "status"} aria-live="polite" style={{ position: "fixed", left: 12, right: 12, top: "calc(env(safe-area-inset-top, 0px) + 78px)", zIndex: 9998, maxWidth: 360, margin: "0 auto", boxSizing: "border-box", padding: "9px 12px", border: "1px solid rgba(255,255,255,.12)", borderRadius: 9, background: failed ? "#351d20" : "#202024", color: "#fff", boxShadow: "0 4px 14px rgba(0,0,0,.2)", fontSize: ".8rem" }}>
+    <div role={failed ? "alert" : "status"} aria-live="polite" style={{ position: "fixed", left: 12, right: 12, top: "calc(env(safe-area-inset-top, 0px) + 78px)", zIndex: 9998, maxWidth: 360, margin: "0 auto", boxSizing: "border-box", padding: "9px 12px", border: "1px solid rgba(255,129,146,.18)", borderRadius: 9, background: failed ? "#35151f" : "#241018", color: "#fff0f3", boxShadow: "0 4px 14px rgba(0,0,0,.28)", fontSize: ".8rem" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         {active && <LoadingDots />}
         {!active && <span>{failed ? "!" : "✓"}</span>}
         <strong style={{ fontWeight: 600, flex: 1, minWidth: 0 }}>{title}</strong>
-        <span style={{ color: "#c9c9ce", overflowWrap: "anywhere", textAlign: "right" }}>{status}</span>
+        <span style={{ color: "rgba(255,240,243,.72)", overflowWrap: "anywhere", textAlign: "right" }}>{status}</span>
       </div>
       {active && <div style={{ height: 2, marginTop: 7, overflow: "hidden", borderRadius: 2, background: "rgba(255,255,255,.12)" }}><div style={{ width: "35%", height: "100%", background: "#c5c5cc", animation: "hallschat-global-task-progress 1.2s ease-in-out infinite alternate" }} /></div>}
     </div>
