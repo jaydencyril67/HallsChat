@@ -43,16 +43,16 @@ export default function EmailVerificationPage() {
     return () => { cancelled = true; };
   }, []);
 
-  return <main className="signup-page">
+  return <main className="signup-page email-verification-page">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
     <AppHeader homeHref="/" />
-    <section className="signup-confirmation-panel" aria-live="polite">
+    <section className={`signup-confirmation-panel email-verification-panel email-verification-${state}`} aria-live="polite" aria-labelledby="email-verification-heading">
       <div className={`signup-confirmation-icon ${state === "error" ? "signup-confirmation-icon-error" : ""}`}>
         {state === "loading" ? <LoadingDots /> : state === "success" ? <CheckCircle2 size={30} /> : <CircleAlert size={30} />}
       </div>
       <span className="signup-form-kicker">{state === "loading" ? "SECURE EMAIL CONFIRMATION" : state === "success" ? "CONFIRMATION COMPLETE" : "CONFIRMATION NEEDS ATTENTION"}</span>
-      <h1>{state === "loading" ? "Confirming your email" : state === "success" ? "You're confirmed" : "We couldn't confirm that link"}</h1>
+      <h1 id="email-verification-heading">{state === "loading" ? "Confirming your email" : state === "success" ? "You're confirmed" : "We couldn't confirm that link"}</h1>
       <p>{message}</p>
       {state === "success" && <div className="signup-confirmation-tip">Your email address is now confirmed. Keep an eye out for the next HallsChat account steps.</div>}
       {state === "error" && <div className="signup-confirmation-tip">Confirmation links expire after 15 minutes and can only be used once. Return to signup to request a fresh link if needed.</div>}
