@@ -6562,3 +6562,79 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     transition-duration: 0s !important;
   }
 }
+
+
+/* Password recovery refinement: keep request/reset states clear and compact without changing auth behavior. */
+.forgot-password-page .auth-shell {
+  align-items: center;
+  gap: clamp(24px, 5vw, 64px);
+}
+.forgot-password-page .auth-story h1 {
+  max-width: 10ch;
+  text-wrap: balance;
+}
+.forgot-password-page .auth-form-panel .signup-form {
+  gap: 15px;
+}
+.forgot-password-page .auth-form-panel .signup-field {
+  gap: 8px;
+}
+.forgot-password-page .auth-form-panel .signup-password-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.forgot-password-page .auth-form-panel .signup-password-wrap > svg {
+  flex: 0 0 auto;
+  color: #d77b89;
+}
+.forgot-password-page .auth-form-panel .signup-password-wrap input {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.forgot-password-page .auth-form-panel .signup-form-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  line-height: 1.65;
+}
+.forgot-password-page .auth-form-panel .signup-form-note svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.forgot-password-page .auth-form-panel .signup-feedback {
+  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+.forgot-password-page .auth-form-panel .signup-submit {
+  min-height: 46px;
+}
+.forgot-password-page .signup-bottom-note a {
+  gap: 6px;
+}
+:root[data-theme="light"] .forgot-password-page .auth-form-panel .signup-password-wrap > svg {
+  color: #922a40;
+}
+:root[data-theme="light"] .forgot-password-page .auth-form-panel .signup-form-note svg {
+  color: #922a40;
+}
+@media (max-width: 760px) {
+  .forgot-password-page .auth-shell {
+    gap: 18px;
+  }
+  .forgot-password-page .auth-story h1 {
+    max-width: 13ch;
+    font-size: clamp(29px, 7.5vw, 35px);
+  }
+  .forgot-password-page .auth-form-panel .signup-form {
+    gap: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .forgot-password-page .auth-form-panel *,
+  .forgot-password-page .auth-form-panel *::before,
+  .forgot-password-page .auth-form-panel *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}
