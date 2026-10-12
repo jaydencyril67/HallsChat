@@ -6638,3 +6638,75 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     animation-duration: 0s !important;
   }
 }
+
+
+/* Landing conversation mockup: explicit light-theme surfaces for every nested chat element. */
+:root[data-theme="light"] .landing-page .landing-preview-window {
+  border-color: #e6cdd2;
+  background: linear-gradient(150deg, #fffdfc, #f7eeee);
+  box-shadow: 0 24px 60px rgba(61, 24, 33, .13), 0 0 42px rgba(169, 31, 53, .06);
+}
+:root[data-theme="light"] .landing-page .landing-preview-top,
+:root[data-theme="light"] .landing-page .landing-preview-bottom {
+  border-color: #eadadd;
+  background: #f8eeee;
+}
+:root[data-theme="light"] .landing-page .landing-preview-status {
+  color: #80636b;
+}
+:root[data-theme="light"] .landing-page .landing-preview-greeting > small,
+:root[data-theme="light"] .landing-page .landing-preview-section-label {
+  color: #8d6c74;
+}
+:root[data-theme="light"] .landing-page .landing-preview-greeting h3 {
+  color: #32151d;
+}
+:root[data-theme="light"] .landing-page .landing-preview-greeting h3 span,
+:root[data-theme="light"] .landing-page .landing-preview-bottom .landing-preview-nav-active {
+  color: #a32640;
+}
+:root[data-theme="light"] .landing-page .landing-preview-greeting p,
+:root[data-theme="light"] .landing-page .landing-preview-chat-copy span,
+:root[data-theme="light"] .landing-page .landing-preview-chat time,
+:root[data-theme="light"] .landing-page .landing-preview-bottom > span {
+  color: #80636b;
+}
+:root[data-theme="light"] .landing-page .landing-preview-chat-copy strong {
+  color: #38212a;
+}
+:root[data-theme="light"] .landing-page .landing-preview-chat {
+  border-bottom-color: #eadadd;
+}
+:root[data-theme="light"] .landing-page .landing-preview-message {
+  border-color: #e9cbd1;
+  background: linear-gradient(110deg, #f9e9ec, #fff8f7);
+}
+:root[data-theme="light"] .landing-page .landing-preview-message > span {
+  color: #a32640;
+}
+:root[data-theme="light"] .landing-page .landing-preview-message p {
+  color: #74545d;
+}
+:root[data-theme="light"] .landing-page .landing-preview-message strong {
+  color: #32151d;
+}
+:root[data-theme="light"] .landing-page .landing-float-card {
+  border-color: #e5cbd0;
+  background: rgba(255, 250, 249, .97);
+  box-shadow: 0 12px 30px rgba(61, 24, 33, .12);
+  color: #38212a;
+}
+:root[data-theme="light"] .landing-page .landing-float-card strong {
+  color: #38212a;
+}
+:root[data-theme="light"] .landing-page .landing-float-card small {
+  color: #80636b;
+}
+:root[data-theme="light"] .landing-page .landing-float-icon {
+  border-color: #e9cbd1;
+  background: #f8e8eb;
+  color: #922a40;
+}
+:root[data-theme="light"] .landing-page .landing-float-check {
+  color: #27845a;
+}
