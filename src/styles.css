@@ -6710,3 +6710,143 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .landing-page .landing-float-check {
   color: #27845a;
 }
+
+
+/* Signup refinement pass: clearer validation feedback, steadier form sizing, and mobile comfort. */
+.signup-page .signup-shell,
+.signup-page .signup-story,
+.signup-page .signup-form-panel,
+.signup-page .signup-confirmation-panel {
+  min-width: 0;
+}
+.signup-page .signup-story h1 {
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.signup-page .signup-form-panel {
+  box-sizing: border-box;
+}
+.signup-page .signup-form {
+  gap: 16px;
+}
+.signup-page .signup-field-row {
+  align-items: start;
+}
+.signup-page .signup-username-status,
+.signup-page .signup-email-status {
+  display: block;
+  min-height: 1.45em;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.signup-page .signup-username-status-checking,
+.signup-page .signup-email-status-checking {
+  color: #c9a4ad;
+}
+.signup-page .signup-username-status-available,
+.signup-page .signup-email-status-accepted {
+  color: #65d5a0;
+}
+.signup-page .signup-username-status-taken,
+.signup-page .signup-username-status-invalid,
+.signup-page .signup-email-status-rejected,
+.signup-page .signup-email-status-invalid {
+  color: #ff9aa7;
+}
+.signup-page .signup-username-status-error,
+.signup-page .signup-email-status-error {
+  color: #e6bdc5;
+}
+.signup-page .signup-terms input {
+  cursor: pointer;
+}
+.signup-page .signup-terms a {
+  text-underline-offset: 3px;
+}
+.signup-page .signup-password-wrap button {
+  min-width: 32px;
+  min-height: 32px;
+  touch-action: manipulation;
+}
+.signup-page :is(input, button, a):focus-visible {
+  outline: 2px solid var(--theme-focus, #ed5367);
+  outline-offset: 3px;
+}
+:root[data-theme="light"] .signup-page .signup-username-status-checking,
+:root[data-theme="light"] .signup-page .signup-email-status-checking {
+  color: #80636b;
+}
+:root[data-theme="light"] .signup-page .signup-username-status-available,
+:root[data-theme="light"] .signup-page .signup-email-status-accepted {
+  color: #21734d;
+}
+:root[data-theme="light"] .signup-page .signup-username-status-taken,
+:root[data-theme="light"] .signup-page .signup-username-status-invalid,
+:root[data-theme="light"] .signup-page .signup-email-status-rejected,
+:root[data-theme="light"] .signup-page .signup-email-status-invalid,
+:root[data-theme="light"] .signup-page .signup-feedback-error {
+  color: #922a40;
+}
+:root[data-theme="light"] .signup-page .signup-username-status-error,
+:root[data-theme="light"] .signup-page .signup-email-status-error {
+  color: #795c63;
+}
+:root[data-theme="light"] .signup-page .signup-terms {
+  color: #6f555d;
+}
+:root[data-theme="light"] .signup-page .signup-terms a {
+  color: #922a40;
+}
+@media (max-width: 760px) {
+  .signup-page .signup-shell {
+    width: calc(100% - 32px);
+    padding-top: calc(var(--app-top-gap, 75px) + 12px);
+    padding-bottom: 28px;
+    gap: 14px;
+  }
+  .signup-page .signup-story {
+    min-height: 0;
+  }
+  .signup-page .signup-story-content {
+    padding: 18px 0 12px;
+  }
+  .signup-page .signup-story h1 {
+    font-size: clamp(30px, 8vw, 38px);
+    letter-spacing: -1.1px;
+  }
+  .signup-page .signup-form-panel {
+    border-radius: 18px;
+  }
+  .signup-page .signup-form {
+    margin-top: 21px;
+    gap: 14px;
+  }
+  .signup-page .signup-field-row {
+    gap: 10px;
+  }
+}
+@media (max-width: 420px) {
+  .signup-page .signup-field-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .signup-page .signup-field-row .signup-field {
+    width: 100%;
+  }
+  .signup-page .signup-form-panel {
+    padding: 20px 16px;
+  }
+  .signup-page .signup-confirmation-panel {
+    min-height: 0;
+    margin-top: calc(var(--app-top-gap, 75px) + 14px);
+    padding: 26px 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signup-page .signup-form-panel *,
+  .signup-page .signup-confirmation-panel *,
+  .signup-page .signup-form-panel *::before,
+  .signup-page .signup-form-panel *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}
