@@ -3302,3 +3302,59 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     font-size: 12px;
   }
 }
+
+
+/* Final Home light-theme pass: inline-authored feed controls and compact states.
+   Do not recolor user-selected post backgrounds, photos, or creative canvases. */
+:root[data-theme="light"] .social-home .social-post > form[style] textarea {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post > form[style] button:not([type="submit"]) {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post > form[style] button[type="submit"] {
+  background: var(--theme-primary) !important;
+  color: #fff !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"] button:not(:last-child) {
+  background: var(--theme-surface-raised) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="alertdialog"] button:last-child {
+  background: var(--theme-primary) !important;
+  color: #fff !important;
+}
+:root[data-theme="light"] .social-home .social-feed-heading .signup-form-kicker {
+  color: var(--theme-primary);
+}
+:root[data-theme="light"] .social-home .social-empty-feed {
+  border: 1px solid var(--theme-line);
+  border-radius: 15px;
+  background: linear-gradient(145deg, var(--theme-surface), #f5e9e8);
+  color: var(--theme-muted);
+  box-shadow: 0 4px 15px rgba(83, 31, 42, .04);
+}
+:root[data-theme="light"] .social-home .social-empty-feed strong {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-empty-feed > svg {
+  color: var(--theme-primary);
+}
+:root[data-theme="light"] .social-home .social-post,
+:root[data-theme="light"] .social-home .social-composer.social-composer-collapsed {
+  box-shadow: 0 4px 15px rgba(83, 31, 42, .045);
+}
+:root[data-theme="light"] .social-home .social-post + .social-post {
+  margin-top: 10px;
+}
+:root[data-theme="light"] .social-home .social-post-action-muted:focus-visible,
+:root[data-theme="light"] .social-home .social-like:focus-visible,
+:root[data-theme="light"] .social-home .social-comment-like:focus-visible {
+  outline: 2px solid var(--theme-focus);
+  outline-offset: 2px;
+}
