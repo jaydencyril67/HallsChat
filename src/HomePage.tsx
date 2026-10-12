@@ -1096,10 +1096,10 @@ export default function HomePage() {
           <button type="button" className="social-story-snap-close" onClick={closeStoryComposer} aria-label="Close story creator"><X size={21}/></button>
           <div className="social-story-snap-tools" aria-label="Story editing tools">
             <button type="button" onClick={addStoryTextSection} disabled={storyTextSections.length >= 10} aria-label="Add text" title="Add text"><Pencil size={20}/></button>
-            <button type="button" onClick={() => { setStoryColorPickerOpen(value => !value); setStoryTextColorPickerOpen(false); setStoryTextManagerOpen(false); }} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
+            <button type="button" onClick={() => { setStoryColorPickerOpen(value => !value); setStoryTextColorPickerOpen(false); setStoryTextSizePickerOpen(false); setStoryTextManagerOpen(false); }} aria-label="Change background color" title="Background color"><Palette size={20}/></button>
             <button type="button" onClick={() => { setStoryTextColorPickerOpen(value => !value); setStoryColorPickerOpen(false); setStoryTextManagerOpen(false); }} aria-label="Change text color" title="Text color"><CaseSensitive size={21}/></button>
             <label className="social-story-snap-tool" aria-label="Add photo" title="Add photo"><ImagePlus size={20}/><input type="file" accept="image/*" hidden onChange={selectStoryPhoto}/></label>
-            <button type="button" onClick={() => setStoryTextManagerOpen(value => !value)} aria-expanded={storyTextManagerOpen} aria-label="Manage text sections" title="Manage text"><MoreHorizontal size={21}/></button>
+            <button type="button" onClick={() => { setStoryTextManagerOpen(value => !value); setStoryTextSizePickerOpen(false); setStoryColorPickerOpen(false); setStoryTextColorPickerOpen(false); }} aria-expanded={storyTextManagerOpen} aria-label="Manage text sections" title="Manage text"><MoreHorizontal size={21}/></button>
           </div>
           {storyTextManagerOpen && <div className={`social-story-text-manager ${storyTextSections.length > 3 ? "is-scrollable" : ""}`} role="dialog" aria-label="Manage story text sections">
             <div className="social-story-text-manager-head"><strong>Text sections</strong><button type="button" onClick={() => setStoryTextManagerOpen(false)} aria-label="Close text section manager"><X size={15}/></button></div>
