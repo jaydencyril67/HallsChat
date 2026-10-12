@@ -2713,3 +2713,153 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .chat-bubble-mine { color: #fff !important; }
 :root[data-theme="light"] .social-comment-edit-modal { background: var(--theme-surface) !important; color: var(--theme-text) !important; border-color: var(--theme-line) !important; }
 :root[data-theme="light"] .social-comment-edit-modal>header small { color: var(--theme-muted) !important; }
+
+
+/* Home-page completeness pass: theme legacy feed, composer, story controls,
+   menus, poll creation, upload states and dialogs in light mode only. */
+:root[data-theme="light"] .social-home .social-layout,
+:root[data-theme="light"] .social-home .social-feed-column,
+:root[data-theme="light"] .social-home .social-stories,
+:root[data-theme="light"] .social-home .social-feed-heading,
+:root[data-theme="light"] .social-home .social-post-head,
+:root[data-theme="light"] .social-home .social-post-actions,
+:root[data-theme="light"] .social-home .social-comments-header,
+:root[data-theme="light"] .social-home .social-comments-composer-wrap {
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-post-manager,
+:root[data-theme="light"] .social-home .social-post-composer,
+:root[data-theme="light"] .social-home .social-post-composer-panel,
+:root[data-theme="light"] .social-home .social-post-composer-head,
+:root[data-theme="light"] .social-home .social-post-composer-user,
+:root[data-theme="light"] .social-home .social-post-manager-poll,
+:root[data-theme="light"] .social-home .social-post-manager-poll-summary,
+:root[data-theme="light"] .social-home .social-poll-options,
+:root[data-theme="light"] .social-home .social-poll-option-field,
+:root[data-theme="light"] .social-home .social-post-manager-footer,
+:root[data-theme="light"] .social-home .social-post-manager-tools,
+:root[data-theme="light"] .social-home .social-post-manager-attachments {
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-post-composer,
+:root[data-theme="light"] .social-home .social-post-composer-panel,
+:root[data-theme="light"] .social-home .social-post-manager,
+:root[data-theme="light"] .social-home .social-post-manager-poll,
+:root[data-theme="light"] .social-home .social-post-manager-poll-summary,
+:root[data-theme="light"] .social-home .social-poll-options,
+:root[data-theme="light"] .social-home .social-poll-option-field {
+  background-color: var(--theme-surface);
+}
+:root[data-theme="light"] .social-home .social-post-composer-head h2,
+:root[data-theme="light"] .social-home .social-post-composer-user strong,
+:root[data-theme="light"] .social-home .social-post-manager-poll h3,
+:root[data-theme="light"] .social-home .social-post-manager-poll-summary strong,
+:root[data-theme="light"] .social-home .social-poll-options-label,
+:root[data-theme="light"] .social-home .social-poll-field-label,
+:root[data-theme="light"] .social-home .social-char-count,
+:root[data-theme="light"] .social-home .social-upload-status,
+:root[data-theme="light"] .social-home .social-story-expiry {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .social-home .social-post-manager button:not(.button-primary),
+:root[data-theme="light"] .social-home .social-post-composer button:not(.button-primary),
+:root[data-theme="light"] .social-home .social-story-snap-tool,
+:root[data-theme="light"] .social-home .social-story-snap-close,
+:root[data-theme="light"] .social-home .social-story-manager-select,
+:root[data-theme="light"] .social-home .social-story-manager-delete,
+:root[data-theme="light"] .social-home .social-post-background-picker button,
+:root[data-theme="light"] .social-home .social-post-text-color-picker button,
+:root[data-theme="light"] .social-home .social-post-text-size-picker button {
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-post-manager button:not(.button-primary),
+:root[data-theme="light"] .social-home .social-post-composer button:not(.button-primary),
+:root[data-theme="light"] .social-home .social-story-snap-tool,
+:root[data-theme="light"] .social-home .social-story-snap-close,
+:root[data-theme="light"] .social-home .social-story-manager-select,
+:root[data-theme="light"] .social-home .social-story-manager-delete {
+  background-color: var(--theme-surface-raised);
+}
+:root[data-theme="light"] .social-home .social-post-composer textarea,
+:root[data-theme="light"] .social-home .social-post-manager textarea,
+:root[data-theme="light"] .social-home .social-post-manager input,
+:root[data-theme="light"] .social-home .social-post-manager select,
+:root[data-theme="light"] .social-home .social-poll-option-field input,
+:root[data-theme="light"] .social-home .social-story-active-text-input {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-line) !important;
+}
+:root[data-theme="light"] .social-home .social-post-composer textarea::placeholder,
+:root[data-theme="light"] .social-home .social-post-manager textarea::placeholder,
+:root[data-theme="light"] .social-home .social-post-manager input::placeholder,
+:root[data-theme="light"] .social-home .social-story-active-text-input::placeholder {
+  color: var(--theme-muted) !important;
+  opacity: 1;
+}
+:root[data-theme="light"] .social-home .social-post-image-link,
+:root[data-theme="light"] .social-home .social-post-actions button,
+:root[data-theme="light"] .social-home .social-comment-thread button {
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-post-actions button:not(.social-post-action-muted),
+:root[data-theme="light"] .social-home .social-comment-thread button:not(.social-comment-reply):not(.social-comment-delete) {
+  color: var(--theme-muted);
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"],
+:root[data-theme="light"] .social-home .social-comment-delete-wrap [role="menu"],
+:root[data-theme="light"] .social-home .social-comment-action-menu,
+:root[data-theme="light"] .social-home .social-comment-delete-confirm,
+:root[data-theme="light"] .social-home .social-post-manager [role="dialog"] {
+  background: var(--theme-surface) !important;
+  color: var(--theme-text) !important;
+  border: 1px solid var(--theme-line) !important;
+  box-shadow: 0 12px 32px rgba(61,24,33,.14);
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"] button,
+:root[data-theme="light"] .social-home .social-comment-delete-wrap [role="menu"] button,
+:root[data-theme="light"] .social-home .social-comment-action-menu button,
+:root[data-theme="light"] .social-home .social-comment-delete-confirm button {
+  color: var(--theme-text);
+}
+:root[data-theme="light"] .social-home .social-post-delete-wrap [role="menu"] button:hover,
+:root[data-theme="light"] .social-home .social-comment-delete-wrap [role="menu"] button:hover,
+:root[data-theme="light"] .social-home .social-comment-action-menu button:hover {
+  background: var(--theme-surface-raised);
+}
+:root[data-theme="light"] .social-home .social-story-upload-indicator,
+:root[data-theme="light"] .social-home .social-upload-status,
+:root[data-theme="light"] .social-home .social-story-text-manager,
+:root[data-theme="light"] .social-home .social-story-text-manager-head,
+:root[data-theme="light"] .social-home .social-story-text-manager-list,
+:root[data-theme="light"] .social-home .social-story-color-popout,
+:root[data-theme="light"] .social-home .social-story-text-color-popout,
+:root[data-theme="light"] .social-home .social-story-text-size-popout {
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-story-text-manager,
+:root[data-theme="light"] .social-home .social-story-color-popout,
+:root[data-theme="light"] .social-home .social-story-text-color-popout,
+:root[data-theme="light"] .social-home .social-story-text-size-popout {
+  background: var(--theme-surface);
+}
+:root[data-theme="light"] .social-home .social-story-text-manager-head,
+:root[data-theme="light"] .social-home .social-story-text-manager-list {
+  background: transparent;
+}
+:root[data-theme="light"] .social-home .social-story-manager-select,
+:root[data-theme="light"] .social-home .social-story-manager-delete,
+:root[data-theme="light"] .social-home .social-story-text-size-control button {
+  color: var(--theme-text);
+  border-color: var(--theme-line);
+}
+:root[data-theme="light"] .social-home .social-story-viewer-head,
+:root[data-theme="light"] .social-home .social-story-viewer-footer {
+  color: #fff7f7;
+}
+/* The story viewer and media/crop canvases stay dark by design; their authored
+   images and user-selected text/background colors are intentionally preserved. */
