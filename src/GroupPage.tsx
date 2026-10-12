@@ -121,6 +121,9 @@ export default function GroupPage() {
   const [showJoin, setShowJoin] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [groupAvatarFile, setGroupAvatarFile] = useState<File | null>(null);
+  const [groupAvatarPreview, setGroupAvatarPreview] = useState("");
+  const groupAvatarInputRef = useRef<HTMLInputElement | null>(null);
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [inviteCode, setInviteCode] = useState("");
   const [draft, setDraft] = useState("");
@@ -296,10 +299,16 @@ export default function GroupPage() {
   const filteredGroups = useMemo(() => groups.filter(group => (group.name + " " + group.description).toLowerCase().includes(search.trim().toLowerCase())), [groups, search]);
 
   async function createGroup(event: React.FormEvent) {
-    event.preventDefault(); setBusy(true); setError(""); setNotice("");
+    event.preventDefault();
+    if (name.trim().length < 2) { setError("Group name must be at least 2 characters."); return; }
+    setBusy(true); setError(""); setNotice("");
     try {
-      const payload = await request("/api/groups", { method: "POST", body: JSON.stringify({ name, description, visibility }) });
-      setShowCreate(false); setName(""); setDescription(""); setVisibility("public"); setTab("mine");
+      let avatar = "";
+      const token = localStorage.getItem("hallschat_token");
+      if (groupAvatarFile && token) avatar = await uploadGroupMedia(groupAvatarFile, token);
+      const payload = await request("/api/groups", { method: "POST", body: JSON.stringify({ name: name.trim(), description: description.trim(), visibility, ...(avatar ? { avatar } : {}) }) });
+      setShowCreate(false); setName(""); setDescription(""); setVisibility("public"); setGroupAvatarFile(null); setGroupAvatarPreview("");
+      setTab("mine");
       await loadGroups("mine"); if (payload.group?.id) setActiveId(payload.group.id);
       setNotice(visibility === "private" && payload.group?.inviteCode ? "Group created. Keep the private invite code safe: " + payload.group.inviteCode : "Your group is ready.");
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to create group."); }
@@ -628,10 +637,43 @@ export default function GroupPage() {
         </>}
       </div>
     </section>
-    {(showCreate || showJoin) && <div role="dialog" aria-modal="true" aria-label={showCreate ? "Create a group" : "Join a group"} onClick={event => { if (event.target === event.currentTarget) { setShowCreate(false); setShowJoin(false); } }} style={{ position: "fixed", inset: 0, zIndex: 4000, display: "grid", placeItems: "center", padding: 18, background: "rgba(7,3,6,.78)", backdropFilter: "blur(8px)" }}>
+    {showCreate && <div role="dialog" aria-modal="true" aria-label="Create a group" style={{ position: "fixed", inset: 0, zIndex: 4000, display: "flex", flexDirection: "column", width: "100%", height: "100dvh", minHeight: 0, padding: 0, background: "#16080d", color: "#fff0f3", overflow: "hidden" }}>
+      <header style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 13px", borderBottom: "1px solid rgba(255,210,219,.12)", background: "rgba(28,9,15,.98)", flexShrink: 0 }}>
+        <button type="button" aria-label="Close create group" onClick={() => { setShowCreate(false); setError(""); }} style={{ ...secondary, width: 40, minWidth: 40, height: 40, padding: 0 }}><ArrowLeft size={19}/></button>
+        <div style={{ flex: 1, minWidth: 0 }}><strong style={{ display: "block", fontSize: "1.02rem" }}>Create a group</strong><span style={{ ...muted, display: "block", fontSize: ".75rem", marginTop: 3 }}>Set up your community on HallsChat</span></div>
+      </header>
+      <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", padding: "20px 16px calc(24px + env(safe-area-inset-bottom, 0px))" }}>
+        <form onSubmit={createGroup} style={{ display: "grid", gap: 19, maxWidth: 560, margin: "0 auto" }}>
+          <div style={{ display: "grid", justifyItems: "center", gap: 9, padding: "6px 0 2px" }}>
+            <button type="button" onClick={() => groupAvatarInputRef.current?.click()} aria-label="Upload group profile picture" style={{ position: "relative", width: 112, height: 112, borderRadius: 28, overflow: "hidden", border: "1px dashed rgba(255,156,171,.65)", background: "linear-gradient(145deg,rgba(197,45,68,.2),rgba(53,18,29,.8))", color: "#ff9cab", display: "grid", placeItems: "center", padding: 0 }}>
+              {groupAvatarPreview ? <img src={groupAvatarPreview} alt="Group profile preview" style={{ width: "100%", height: "100%", objectFit: "cover" }}/> : <div style={{ display: "grid", justifyItems: "center", gap: 7 }}><Camera size={26}/><span style={{ fontSize: ".7rem", fontWeight: 750 }}>Add photo</span></div>}
+              <span style={{ position: "absolute", right: 6, bottom: 6, width: 27, height: 27, display: "grid", placeItems: "center", borderRadius: 9, background: "#c52d44", color: "white", border: "2px solid #16080d" }}><Plus size={15}/></span>
+            </button>
+            <span style={{ ...muted, fontSize: ".75rem" }}>Group profile picture · optional</span>
+            <input ref={groupAvatarInputRef} type="file" accept="image/*" hidden onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; if (!file.type.startsWith("image/")) { setError("Choose an image file for the group picture."); return; } if (file.size > 10 * 1024 * 1024) { setError("Group picture must be 10 MB or smaller."); return; } if (groupAvatarPreview) URL.revokeObjectURL(groupAvatarPreview); setGroupAvatarFile(file); setGroupAvatarPreview(URL.createObjectURL(file)); setError(""); }}/>
+            {groupAvatarPreview && <button type="button" onClick={() => { URL.revokeObjectURL(groupAvatarPreview); setGroupAvatarFile(null); setGroupAvatarPreview(""); if (groupAvatarInputRef.current) groupAvatarInputRef.current.value = ""; }} style={{ ...secondary, minHeight: 32, padding: "6px 10px" }}>Remove photo</button>}
+          </div>
+          <label style={{ display: "grid", gap: 7, fontSize: ".82rem", fontWeight: 750 }}>Group name <span style={{ ...muted, fontWeight: 500 }}>Required</span><input required minLength={2} maxLength={80} value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Weekend Football Crew" style={field}/><span style={{ ...muted, fontSize: ".7rem", fontWeight: 500 }}>{name.trim().length}/80 characters</span></label>
+          <label style={{ display: "grid", gap: 7, fontSize: ".82rem", fontWeight: 750 }}>Description <span style={{ ...muted, fontWeight: 500 }}>Optional</span><textarea maxLength={500} value={description} onChange={event => setDescription(event.target.value)} placeholder="Tell people what your group is about…" rows={4} style={{ ...field, resize: "vertical", minHeight: 100 }}/><span style={{ ...muted, fontSize: ".7rem", fontWeight: 500 }}>{description.length}/500 characters</span></label>
+          <section style={{ display: "grid", gap: 9 }}>
+            <strong style={{ fontSize: ".82rem" }}>Group ID</strong>
+            <div style={{ ...panel, padding: 13, display: "flex", alignItems: "center", gap: 10 }}><span style={{ width: 35, height: 35, display: "grid", placeItems: "center", borderRadius: 10, background: "rgba(184,32,50,.16)", color: "#ff9cab" }}><UsersRound size={17}/></span><div><strong style={{ display: "block", fontSize: ".82rem" }}>8-digit group code</strong><span style={{ ...muted, display: "block", fontSize: ".74rem", marginTop: 4 }}>A unique code will be assigned when the group is created.</span></div></div>
+          </section>
+          <section style={{ display: "grid", gap: 9 }}>
+            <strong style={{ fontSize: ".82rem" }}>Group privacy</strong>
+            <span style={{ ...muted, fontSize: ".75rem", lineHeight: 1.5 }}>Choose who can discover and join your group.</span>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,minmax(0,1fr))", gap: 10 }}>
+              {([{ id: "public", label: "Public", detail: "Anyone can discover it", icon: Compass }, { id: "private", label: "Private", detail: "Invite code required", icon: LockKeyhole }] as const).map(option => <button key={option.id} type="button" onClick={() => setVisibility(option.id)} aria-pressed={visibility === option.id} style={{ ...secondary, minHeight: 94, padding: 13, flexDirection: "column", alignItems: "flex-start", justifyContent: "center", gap: 8, borderColor: visibility === option.id ? "rgba(229,70,92,.85)" : "rgba(255,210,219,.16)", background: visibility === option.id ? "rgba(184,32,50,.15)" : "rgba(255,255,255,.03)", textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 7, color: visibility === option.id ? "#ff9cab" : "#fff0f3", fontWeight: 800 }}><option.icon size={16}/>{option.label}{visibility === option.id ? <span style={{ fontSize: ".65rem" }}>✓</span> : null}</span><span style={{ ...muted, fontSize: ".72rem", fontWeight: 500, lineHeight: 1.4 }}>{option.detail}</span></button>)}
+            </div>
+          </section>
+          <button type="submit" disabled={busy || name.trim().length < 2} style={{ ...primary, width: "100%", minHeight: 48, position: "sticky", bottom: 0, boxShadow: "0 -8px 24px rgba(22,8,13,.45)", opacity: busy || name.trim().length < 2 ? .6 : 1 }}>{busy ? <LoadingDots/> : <><Plus size={17}/> Create group</>}</button>
+        </form>
+      </div>
+    </div>}
+    {showJoin && <div role="dialog" aria-modal="true" aria-label="Join a private group" onClick={event => { if (event.target === event.currentTarget) setShowJoin(false); }} style={{ position: "fixed", inset: 0, zIndex: 4000, display: "grid", placeItems: "center", padding: 18, background: "rgba(7,3,6,.78)", backdropFilter: "blur(8px)" }}>
       <div style={{ ...panel, width: "100%", maxWidth: 430, padding: 18, boxShadow: "0 20px 70px rgba(0,0,0,.5)" }}>
-        <div style={{ display: "flex", alignItems: "center", marginBottom: 15 }}><strong style={{ fontSize: "1rem" }}>{showCreate ? "Create a group" : "Join a private group"}</strong></div>
-        {showCreate ? <form onSubmit={createGroup} style={{ display: "grid", gap: 11 }}><label style={{ fontSize: ".78rem", fontWeight: 750 }}>Group name<input required minLength={2} maxLength={80} value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Weekend Football Crew" style={{ ...field, marginTop: 6 }}/></label><label style={{ fontSize: ".78rem", fontWeight: 750 }}>Description <span style={muted}>(optional)</span><textarea maxLength={500} value={description} onChange={event => setDescription(event.target.value)} placeholder="What is this group about?" rows={3} style={{ ...field, resize: "vertical", marginTop: 6 }}/></label><div style={{ fontSize: ".78rem", fontWeight: 750 }}>Who can join?</div><div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>{([{ id: "public", label: "Public", detail: "Anyone can discover it" }, { id: "private", label: "Private", detail: "Invite code required" }] as const).map(option => <button key={option.id} type="button" onClick={() => setVisibility(option.id)} style={{ ...secondary, minHeight: 68, flexDirection: "column", alignItems: "flex-start", borderColor: visibility === option.id ? "rgba(229,70,92,.75)" : "rgba(255,210,219,.16)", background: visibility === option.id ? "rgba(184,32,50,.13)" : "rgba(255,255,255,.03)" }}><span>{option.id === "public" ? <Compass size={15}/> : <LockKeyhole size={15}/>} {option.label}</span><span style={{ ...muted, fontSize: ".68rem", fontWeight: 500 }}>{option.detail}</span></button>)}</div><button type="submit" disabled={busy || name.trim().length < 2} style={{ ...primary, width: "100%", opacity: busy || name.trim().length < 2 ? .6 : 1 }}>{busy ? <LoadingDots/> : <><Plus size={16}/> Create group</>}</button></form> : <form onSubmit={event => { event.preventDefault(); void joinGroup(undefined, inviteCode); }} style={{ display: "grid", gap: 12 }}><p style={{ ...muted, margin: 0, fontSize: ".82rem", lineHeight: 1.55 }}>Enter the invite code shared by the group owner or an admin.</p><input required value={inviteCode} onChange={event => setInviteCode(event.target.value.trim())} placeholder="Invite code" style={field}/><button type="submit" disabled={busy || !inviteCode.trim()} style={{ ...primary, width: "100%" }}>{busy ? <LoadingDots/> : <><UserPlus size={16}/> Join group</>}</button></form>}
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 15 }}><strong style={{ fontSize: "1rem" }}>Join a private group</strong></div>
+        <form onSubmit={event => { event.preventDefault(); void joinGroup(undefined, inviteCode); }} style={{ display: "grid", gap: 12 }}><p style={{ ...muted, margin: 0, fontSize: ".82rem", lineHeight: 1.55 }}>Enter the invite code shared by the group owner or an admin.</p><input required value={inviteCode} onChange={event => setInviteCode(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" maxLength={8} placeholder="8-digit group code" style={field}/><button type="submit" disabled={busy || inviteCode.length !== 8} style={{ ...primary, width: "100%" }}>{busy ? <LoadingDots/> : <><UserPlus size={16}/> Join group</>}</button></form>
       </div>
     </div>}
     {confirmAction && <div role="dialog" aria-modal="true" aria-label="Confirm group action" onClick={event => { if (event.target === event.currentTarget) { setConfirmAction(null); setConfirmMessage(""); } }} style={{ position: "fixed", inset: 0, zIndex: 4500, display: "grid", placeItems: "center", padding: 18, background: "rgba(7,3,6,.78)", backdropFilter: "blur(8px)" }}><div style={{ ...panel, width: "100%", maxWidth: 380, padding: 18, boxShadow: "0 20px 70px rgba(0,0,0,.5)" }}><div style={{ width: 42, height: 42, borderRadius: 13, display: "grid", placeItems: "center", background: "rgba(184,32,50,.16)", color: "#ff9cab", marginBottom: 12 }}><AlertTriangle size={20}/></div><strong style={{ display: "block", fontSize: ".98rem" }}>Are you sure?</strong><p style={{ ...muted, fontSize: ".82rem", lineHeight: 1.55, margin: "7px 0 17px" }}>{confirmMessage}</p><div style={{ display: "flex", gap: 9 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { setConfirmAction(null); setConfirmMessage(""); }}>Cancel</button><button type="button" style={{ ...primary, flex: 1 }} disabled={busy} onClick={() => { const action = confirmAction; setConfirmAction(null); setConfirmMessage(""); if (action) void action(); }}>Confirm</button></div></div></div>}
