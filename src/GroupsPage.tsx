@@ -246,8 +246,18 @@ export default function GroupsPage() {
     const onReaction = (event: { id: string; groupId: string; reactions: GroupReaction[] }) => {
       setMessages(current => current.map(message => message.id === event.id ? { ...message, reactions: event.reactions || [] } : message));
     };
-    const onUpdated = (event: { groupId?: string }) => {
+    const onUpdated = (event: { groupId?: string; reason?: string }) => {
       void loadGroups(tabRef.current, false);
+      if (event?.groupId && activeGroupIdRef.current === event.groupId && event.reason === "removed") {
+        setActiveGroupId("");
+        setActiveGroup(null);
+        setMessages([]);
+        setMobileChatOpen(false);
+        setTypingLabel("");
+        setNotice("You no longer have access to this group.");
+        if (window.location.pathname.startsWith("/groups/")) navigate("/groups");
+        return;
+      }
       if (event?.groupId && activeGroupIdRef.current === event.groupId) refreshDetailsRef.current();
     };
     const onMembersUpdated = (event: { groupId: string }) => {
