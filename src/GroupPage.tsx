@@ -200,7 +200,7 @@ export default function GroupPage() {
   }, [request]);
 
   useEffect(() => { void loadGroups(tab); const timer = window.setInterval(() => void loadGroups(tab, false), 15000); return () => window.clearInterval(timer); }, [tab, loadGroups]);
-  useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); const timer = window.setInterval(() => void loadDetail(activeId, false), 5000); return () => window.clearInterval(timer); }, [activeId, loadDetail]);
+  useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); }, [activeId, loadDetail]);
   useEffect(() => { const list = groupMessageListRef.current; if (list) list.scrollTop = list.scrollHeight; }, [activeId, messages.length]);
   useEffect(() => {
     if (!activeId) { socketRef.current?.disconnect(); socketRef.current = null; setGroupSocket(null); return; }
