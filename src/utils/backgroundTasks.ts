@@ -12,7 +12,7 @@ export function getBackgroundTaskState() { return state; }
 export function subscribeBackgroundTasks(listener: (next: BackgroundTaskState) => void) {
   listeners.add(listener);
   listener(state);
-  return () => listeners.delete(listener);
+  return () => { listeners.delete(listener); };
 }
 export function startBackgroundTask(label: string, status = "Working…") {
   const id = `background-task-${Date.now()}-${++nextId}`;
