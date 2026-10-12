@@ -6850,3 +6850,114 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
     animation-duration: 0s !important;
   }
 }
+
+
+/* Verification and post-signup success screens: consistent, readable states in both themes. */
+.email-verification-page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+.email-verification-page .email-verification-panel {
+  flex: 0 1 auto;
+  width: min(500px, calc(100% - 32px));
+  min-height: 0;
+  margin: clamp(28px, 7vh, 72px) auto 36px;
+  padding: clamp(24px, 5vw, 42px);
+  gap: 15px;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+.email-verification-page .signup-confirmation-icon {
+  flex: 0 0 auto;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+}
+.email-verification-page .email-verification-loading .signup-confirmation-icon {
+  border-color: rgba(237, 83, 103, .28);
+}
+.email-verification-page .email-verification-success .signup-confirmation-icon {
+  color: #6cdaa1;
+  border-color: rgba(108, 218, 161, .3);
+  background: rgba(48, 170, 109, .1);
+}
+.email-verification-page .email-verification-error .signup-confirmation-icon {
+  color: #ff9aa7;
+  border-color: rgba(255, 115, 132, .34);
+  background: rgba(190, 45, 65, .12);
+}
+.email-verification-page .signup-form-kicker {
+  line-height: 1.6;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.email-verification-page .signup-confirmation-panel h1 {
+  max-width: 18ch;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.email-verification-page .signup-confirmation-panel > p {
+  max-width: 42ch;
+}
+.email-verification-page .signup-confirmation-tip {
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+.email-verification-page .signup-confirmation-continue {
+  min-height: 46px;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.email-verification-page .signup-confirmation-panel :is(a, button):focus-visible,
+.signup-page .signup-confirmation-panel :is(a, button):focus-visible {
+  outline: 2px solid #ed5367;
+  outline-offset: 3px;
+}
+:root[data-theme="light"] .signup-page .signup-confirmation-icon {
+  background: #f8e8eb;
+  border-color: #e7c6cd;
+  color: #922a40;
+}
+:root[data-theme="light"] .email-verification-page .email-verification-success .signup-confirmation-icon {
+  background: #eaf7ef;
+  border-color: #b9dfc7;
+  color: #24734c;
+}
+:root[data-theme="light"] .email-verification-page .email-verification-error .signup-confirmation-icon {
+  background: #fff0f1;
+  border-color: #e6b9c1;
+  color: #922a40;
+}
+:root[data-theme="light"] .signup-page .signup-confirmation-back:hover {
+  color: #922a40;
+}
+@media (max-width: 520px) {
+  .email-verification-page .email-verification-panel {
+    width: calc(100% - 28px);
+    margin-top: 26px;
+    margin-bottom: max(24px, env(safe-area-inset-bottom));
+    padding: 25px 18px;
+    gap: 13px;
+  }
+  .email-verification-page .signup-confirmation-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+  }
+  .email-verification-page .signup-confirmation-panel h1 {
+    font-size: clamp(24px, 7vw, 29px);
+  }
+  .email-verification-page .signup-confirmation-panel > p {
+    font-size: 12px;
+    line-height: 1.75;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .email-verification-page *,
+  .email-verification-page *::before,
+  .email-verification-page *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
