@@ -4003,3 +4003,76 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .chat-page :is(button,input,textarea,[role="button"]):focus-visible {
   outline-color: var(--chat-focus);
 }
+
+/* Chat page light-theme pass 3 — message metadata, call cards, recording states.
+   Deliberately light-only: the existing dark-theme rules above remain unchanged. */
+:root[data-theme="light"] .chat-page .chat-message-footer time {
+  color: var(--chat-muted);
+}
+:root[data-theme="light"] .chat-page .chat-message-content-mine .chat-message-footer time {
+  color: rgba(255, 248, 248, .78);
+}
+:root[data-theme="light"] .chat-page .chat-message-deleted-text {
+  color: var(--chat-muted);
+}
+:root[data-theme="light"] .chat-page .chat-lock-dot {
+  color: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page .chat-call-icon {
+  background: #f5e5e7;
+  color: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page .chat-call-bubble-alert .chat-call-icon {
+  background: #f7dfe3;
+  color: #a52c43;
+}
+:root[data-theme="light"] .chat-page .chat-call-copy span {
+  color: var(--chat-muted);
+}
+:root[data-theme="light"] .chat-page .chat-call-copy .chat-call-status-alert {
+  color: #a52c43;
+}
+:root[data-theme="light"] .chat-page .chat-call-bubble .chat-message-footer time {
+  color: var(--chat-muted);
+}
+:root[data-theme="light"] .chat-page .chat-call-bubble-alert .chat-message-footer time {
+  color: #8c3444;
+}
+:root[data-theme="light"] .chat-page .chat-recording-control {
+  background: #f5e0e4;
+  color: var(--chat-accent);
+  border-color: #e8c5cc;
+}
+:root[data-theme="light"] .chat-page .chat-discard-recording {
+  background: var(--chat-surface-raised);
+  color: var(--chat-muted);
+  border-color: var(--chat-border);
+}
+:root[data-theme="light"] .chat-page .chat-recording-status,
+:root[data-theme="light"] .chat-page .chat-recording-status.is-paused,
+:root[data-theme="light"] .chat-page .chat-voice-draft-preview {
+  color: var(--chat-muted);
+}
+:root[data-theme="light"] .chat-page .chat-recording-dot {
+  background: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page .chat-voice-meta {
+  color: var(--chat-muted);
+}
+:root[data-theme="light"] .chat-page .chat-voice-sending {
+  color: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page .chat-voice-mic {
+  background: #f5e0e4;
+  color: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page .chat-voice-note-pending .chat-voice-waveform span.is-played {
+  background: var(--chat-accent);
+}
+:root[data-theme="light"] .chat-page .chat-image-pending-grid {
+  color: var(--chat-text);
+}
+:root[data-theme="light"] .chat-page .chat-message-loading {
+  color: var(--chat-muted);
+}
+
