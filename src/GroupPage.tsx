@@ -4,6 +4,7 @@ import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import type { ChangeEvent } from "react";
 import ImagePreviewModal from "./components/ImagePreviewModal";
+import StoryImageCropModal from "./components/StoryImageCropModal";
 import AppHeader from "./AppHeader";
 import GroupCallPanel from "./components/GroupCallPanel";
 import NowBar from "./NowBar";
@@ -124,6 +125,7 @@ export default function GroupPage() {
   const [groupCode, setGroupCode] = useState("");
   const [groupAvatarFile, setGroupAvatarFile] = useState<File | null>(null);
   const [groupAvatarPreview, setGroupAvatarPreview] = useState("");
+  const [groupAvatarCropSource, setGroupAvatarCropSource] = useState<string | null>(null);
   const groupAvatarInputRef = useRef<HTMLInputElement | null>(null);
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [inviteCode, setInviteCode] = useState("");
@@ -298,6 +300,21 @@ export default function GroupPage() {
   }, []);
 
   const filteredGroups = useMemo(() => groups.filter(group => (group.name + " " + group.description).toLowerCase().includes(search.trim().toLowerCase())), [groups, search]);
+
+  function cancelGroupAvatarCrop() {
+    if (groupAvatarCropSource) URL.revokeObjectURL(groupAvatarCropSource);
+    setGroupAvatarCropSource(null);
+  }
+
+  async function confirmGroupAvatarCrop(croppedFile: File) {
+    if (groupAvatarCropSource) URL.revokeObjectURL(groupAvatarCropSource);
+    setGroupAvatarCropSource(null);
+    await new Promise<void>(resolve => window.setTimeout(resolve, 0));
+    if (groupAvatarPreview) URL.revokeObjectURL(groupAvatarPreview);
+    setGroupAvatarFile(croppedFile);
+    setGroupAvatarPreview(URL.createObjectURL(croppedFile));
+    setError("");
+  }
 
   async function createGroup(event: React.FormEvent) {
     event.preventDefault();
@@ -651,7 +668,7 @@ export default function GroupPage() {
               <span style={{ position: "absolute", right: 5, bottom: 5, width: 26, height: 26, display: "grid", placeItems: "center", borderRadius: 10, background: "#c52d44", color: "white", border: "2px solid #16080d" }}><Plus size={15}/></span>
             </button>
             <span style={{ ...muted, fontSize: ".86rem" }}>Group picture · optional</span>
-            <input ref={groupAvatarInputRef} type="file" accept="image/*" hidden onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; if (!file.type.startsWith("image/")) { setError("Choose an image file for the group picture."); return; } if (file.size > 10 * 1024 * 1024) { setError("Group picture must be 10 MB or smaller."); return; } if (groupAvatarPreview) URL.revokeObjectURL(groupAvatarPreview); setGroupAvatarFile(file); setGroupAvatarPreview(URL.createObjectURL(file)); setError(""); }}/>
+            <input ref={groupAvatarInputRef} type="file" accept="image/*" hidden onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; setError(""); if (!file.type.startsWith("image/")) { setError("Choose an image file for the group picture."); return; } if (file.size > 10 * 1024 * 1024) { setError("Group picture must be 10 MB or smaller."); return; } if (groupAvatarCropSource) URL.revokeObjectURL(groupAvatarCropSource); setGroupAvatarCropSource(URL.createObjectURL(file)); }}/>
             {groupAvatarPreview && <button type="button" onClick={() => { URL.revokeObjectURL(groupAvatarPreview); setGroupAvatarFile(null); setGroupAvatarPreview(""); if (groupAvatarInputRef.current) groupAvatarInputRef.current.value = ""; }} style={{ ...secondary, minHeight: 32, padding: "6px 10px" }}>Remove photo</button>}
           </div>
           <label style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Group name <span style={{ ...muted, fontWeight: 500 }}>Required</span><input required minLength={2} maxLength={80} value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Weekend Football Crew" style={field}/></label>
@@ -676,6 +693,7 @@ export default function GroupPage() {
     </div>}
     {confirmAction && <div role="dialog" aria-modal="true" aria-label="Confirm group action" onClick={event => { if (event.target === event.currentTarget) { setConfirmAction(null); setConfirmMessage(""); } }} style={{ position: "fixed", inset: 0, zIndex: 4500, display: "grid", placeItems: "center", padding: 18, background: "rgba(7,3,6,.78)", backdropFilter: "blur(8px)" }}><div style={{ ...panel, width: "100%", maxWidth: 380, padding: 18, boxShadow: "0 20px 70px rgba(0,0,0,.5)" }}><div style={{ width: 42, height: 42, borderRadius: 13, display: "grid", placeItems: "center", background: "rgba(184,32,50,.16)", color: "#ff9cab", marginBottom: 12 }}><AlertTriangle size={20}/></div><strong style={{ display: "block", fontSize: ".98rem" }}>Are you sure?</strong><p style={{ ...muted, fontSize: ".82rem", lineHeight: 1.55, margin: "7px 0 17px" }}>{confirmMessage}</p><div style={{ display: "flex", gap: 9 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { setConfirmAction(null); setConfirmMessage(""); }}>Cancel</button><button type="button" style={{ ...primary, flex: 1 }} disabled={busy} onClick={() => { const action = confirmAction; setConfirmAction(null); setConfirmMessage(""); if (action) void action(); }}>Confirm</button></div></div></div>}
     {(error || notice) && <div className={"halls-toast " + (error ? "halls-toast-error" : "halls-toast-success")} role={error ? "alert" : "status"}><span>{error || notice}</span><button type="button" aria-label="Dismiss notification" onClick={() => { setError(""); setNotice(""); }}>×</button></div>}
+    {groupAvatarCropSource && <StoryImageCropModal imageUrl={groupAvatarCropSource} onCancel={cancelGroupAvatarCrop} onDone={confirmGroupAvatarCrop} title="Edit group picture" aspectRatio={1} />}
     {viewingImageUrl && <ImagePreviewModal imageUrl={viewingImageUrl} onClose={() => setViewingImageUrl(null)} />}
     {!activeId && <NowBar />}
   </main>;
