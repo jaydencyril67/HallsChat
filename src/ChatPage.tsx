@@ -24,7 +24,7 @@ type ChatPerson = {
 type ChatReply = { id: string; senderId: string; text?: string; imageUrl?: string; audioUrl?: string; deleted?: boolean };
 type ChatReaction = { userId: string; emoji: string };
 type ChatCall = { id: string; person: { id: string; name: string; username: string; profilePicture?: string }; direction: "incoming" | "outgoing"; kind: "audio" | "video"; status: "ringing" | "missed" | "declined" | "cancelled" | "completed" | "failed"; durationSeconds: number; createdAt: string };
-type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: ChatReply | null; reactions?: ChatReaction[]; deletedForEveryone?: boolean; editedAt?: string | null; createdAt: string; pending?: boolean };
+type ChatMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: ChatReply | null; reactions?: ChatReaction[]; deletedForEveryone?: boolean; editedAt?: string | null; readAt?: string | null; createdAt: string; pending?: boolean };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -501,7 +501,16 @@ export default function ChatPage() {
     setLiveSocket(socket);
     let hasConnected = false;
     socket.on("connect", () => {
-      if (hasConnected) void loadPeople(false);
+      if (hasConnected) {
+        void loadPeople(false);
+        const openConversationId = activeIdRef.current;
+        if (openConversationId) {
+          void loadMessages(openConversationId, false);
+          socket.emit("chat:read", { senderId: openConversationId });
+        }
+      } else if (activeIdRef.current) {
+        socket.emit("chat:read", { senderId: activeIdRef.current });
+      }
       hasConnected = true;
     });
     socket.on("presence:update", (payload: { userId?: string; isOnline?: boolean }) => {
@@ -523,6 +532,10 @@ export default function ChatPage() {
       } else {
         otherTypingTimerRef.current = null;
       }
+    });
+    socket.on("chat:read", (payload: { readerId?: string; senderId?: string; readAt?: string }) => {
+      if (!payload?.readerId || !payload.senderId || !payload.readAt) return;
+      setMessages(current => current.map(message => message.senderId === currentUserIdRef.current && message.recipientId === payload.readerId && payload.senderId === currentUserIdRef.current ? { ...message, readAt: payload.readAt } : message));
     });
     socket.on("chat:reaction", (payload: { id?: string; reactions?: ChatReaction[] }) => {
       if (!payload?.id || !Array.isArray(payload.reactions)) return;
@@ -563,6 +576,7 @@ export default function ChatPage() {
         (message.senderId === me && message.recipientId === openId) ||
         (message.senderId === openId && message.recipientId === me);
       if (belongsToOpenConversation) {
+        if (message.senderId !== me && socket.connected) socket.emit("chat:read", { senderId: message.senderId });
         setMessages(current => {
           if (current.some(item => item.id === message.id)) return current;
           // Reconcile the server echo with the optimistic message already shown in the chat.
@@ -606,7 +620,7 @@ export default function ChatPage() {
       setLiveSocket(null);
       if (socketRef.current === socket) socketRef.current = null;
     };
-  }, [currentUserId, loadPeople]);
+  }, [currentUserId, loadMessages, loadPeople]);
 
   useEffect(() => {
     setOtherTyping(false);
@@ -632,6 +646,7 @@ export default function ChatPage() {
       if (response.status === 401) { localStorage.removeItem("hallschat_token"); navigate("/signin", { replace: true }); return; }
       if (!response.ok) throw new Error(payload.message || "This conversation couldn't be loaded.");
       const history = Array.isArray(payload.messages) ? payload.messages as ChatMessage[] : [];
+      if (socketRef.current?.connected && history.some(message => message.senderId === personId && !message.readAt)) socketRef.current.emit("chat:read", { senderId: personId });
       // Keep only this conversation's live/optimistic items when history returns.
       // Otherwise, messages from the previously opened chat can leak into this thread.
       setMessages(current => {
@@ -1092,7 +1107,7 @@ export default function ChatPage() {
                       {message.audioUrl && <VoiceNotePlayer src={message.audioUrl} pending={Boolean(message.pending)} />}
                       {message.text && (editingMessageId === message.id ? <form onSubmit={event => { event.preventDefault(); void saveMessageEdit(message); }} onClick={event => event.stopPropagation()} style={{ display: "grid", gap: 8, minWidth: 0, margin: "3px 0" }}><textarea value={editMessageDraft} onChange={event => setEditMessageDraft(event.target.value)} maxLength={4000} rows={Math.max(2, Math.min(6, editMessageDraft.split("\n").length + 1))} aria-label="Edit message" autoFocus style={{ width: "100%", minWidth: 0, boxSizing: "border-box", resize: "vertical", padding: "9px 10px", border: "1px solid rgba(255,255,255,.2)", borderRadius: 10, background: "rgba(0,0,0,.2)", color: "inherit", font: "inherit", lineHeight: 1.45 }} /><div style={{ display: "flex", justifyContent: "flex-end", gap: 7 }}><button type="button" onClick={() => { setEditingMessageId(null); setEditMessageDraft(""); }} disabled={savingMessageEdit} style={{ minHeight: 30, padding: "5px 10px", border: "1px solid rgba(255,255,255,.16)", borderRadius: 8, background: "transparent", color: "inherit", fontSize: ".75rem" }}>Cancel</button><button type="submit" disabled={savingMessageEdit || !editMessageDraft.trim() || editMessageDraft.trim() === message.text.trim()} style={{ minHeight: 30, padding: "5px 10px", border: 0, borderRadius: 8, background: "var(--accent, #a855f7)", color: "#fff", fontSize: ".75rem", fontWeight: 700 }}>{savingMessageEdit ? <LoadingDots /> : "Save"}</button></div></form> : <p className="chat-message-text">{message.text}</p>)}
                     </div>}
-                    <div className="chat-message-footer"><time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}{message.editedAt && !message.pending ? " · Edited" : ""}</time>
+                    <div className="chat-message-footer"><time>{message.pending ? "Sending…" : new Date(message.createdAt).toLocaleString()}{message.editedAt && !message.pending ? " · Edited" : ""}</time>{!message.pending && message.senderId === currentUserId && <span aria-label={message.readAt ? "Seen" : "Sent"} title={message.readAt ? `Seen ${new Date(message.readAt).toLocaleString()}` : "Sent"} style={{ fontSize: ".68rem", opacity: message.readAt ? 1 : .65, whiteSpace: "nowrap" }}>{message.readAt ? "✓✓ Seen" : "✓ Sent"}</span>
                       {!message.pending && !message.deletedForEveryone && <div className="chat-message-delete-wrap" style={{ position: "relative", display: "inline-flex", flexShrink: 0 }}>
                         <button type="button" className="chat-message-more" aria-label="Message actions" title="Message actions" onClick={event => { event.stopPropagation(); setDeleteConfirmId(null); setActionMenuFor(current => current === message.id ? null : message.id); }}><MoreVertical size={15} /></button>
                         {deleteConfirmId === message.id && <div className="chat-delete-popout" role="alertdialog" aria-label="Confirm delete message" onClick={event => event.stopPropagation()} style={{ position: "absolute", right: 0, bottom: "calc(100% + 8px)", zIndex: 10000, width: "min(188px, calc(100vw - 24px))", maxWidth: "calc(100vw - 24px)", boxSizing: "border-box", padding: 11, border: "1px solid rgba(255,210,219,.2)", borderRadius: 13, background: "linear-gradient(145deg,rgba(57,17,27,.98),rgba(28,9,15,.99))", boxShadow: "0 10px 28px rgba(0,0,0,.42)", color: "#fff0f3", textAlign: "left", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
