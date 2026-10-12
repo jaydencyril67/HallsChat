@@ -199,6 +199,7 @@ export default function ChatPage() {
     socket.disconnect();
     socketRef.current = null;
   }
+  const retryClientIdsRef = useRef<{ text?: string; images: string[] }>({ images: [] });
   const typingRecipientRef = useRef("");
   const typingStopTimerRef = useRef<number | null>(null);
   const otherTypingTimerRef = useRef<number | null>(null);
@@ -215,7 +216,7 @@ export default function ChatPage() {
   async function persistChatMessage(
     recipientId: string,
     savedToken: string,
-    input: { text?: string; images?: string[]; audioUrl?: string; replyToId?: string }
+    input: { text?: string; images?: string[]; audioUrl?: string; replyToId?: string; clientMessageId?: string }
   ): Promise<ChatMessage> {
     const response = await fetch(`${apiBase}/api/chat/${encodeURIComponent(recipientId)}/messages`, {
       method: "POST",
@@ -932,6 +933,8 @@ export default function ChatPage() {
     const pendingIds = pendingItems.map(item => item.id);
     const filesToSend = [...imageFiles];
     const previewsToRelease = [...imagePreviews];
+    const textClientMessageId = text ? (retryClientIdsRef.current.text || pendingIds[0]) : undefined;
+    const imageClientMessageIds = filesToSend.map((_, index) => retryClientIdsRef.current.images[index] || pendingIds[(text ? 1 : 0) + index]);
 
     // Show the messages in the conversation immediately, before image upload/network sending.
     setMessages(current => [...current, ...pendingItems]);
@@ -950,17 +953,19 @@ export default function ChatPage() {
         images.push(await uploadChatImage(file, savedToken));
       }
       updateBackgroundTask(backgroundTaskId, "Sending message…");
-      const sendOne = (messageText: string, imageUrl?: string, includeReply = false) =>
+      const sendOne = (messageText: string, imageUrl?: string, includeReply = false, clientMessageId?: string) =>
         persistChatMessage(recipientId, savedToken, {
           text: messageText,
           images: imageUrl ? [imageUrl] : [],
-          ...(includeReply && replyTarget ? { replyToId: replyTarget.id } : {})
+          ...(includeReply && replyTarget ? { replyToId: replyTarget.id } : {}),
+          ...(clientMessageId ? { clientMessageId } : {})
         });
 
       let pendingIndex = 0;
       if (text) {
-        const sent = await sendOne(text, undefined, true);
+        const sent = await sendOne(text, undefined, true, textClientMessageId);
         sentMessages.push(sent);
+        retryClientIdsRef.current.text = undefined;
         const pendingId = pendingIds[pendingIndex++];
         setMessages(current => {
           const withoutPending = current.filter(message => message.id !== pendingId && message.id !== sent.id);
@@ -968,8 +973,9 @@ export default function ChatPage() {
         });
       }
       for (const [imageIndex, imageUrl] of images.entries()) {
-        const sent = await sendOne("", imageUrl, !text && imageIndex === 0);
+        const sent = await sendOne("", imageUrl, !text && imageIndex === 0, imageClientMessageIds[imageIndex]);
         sentMessages.push(sent);
+        retryClientIdsRef.current.images[imageIndex] = "";
         const pendingId = pendingIds[pendingIndex++];
         setMessages(current => {
           const withoutPending = current.filter(message => message.id !== pendingId && message.id !== sent.id);
@@ -977,6 +983,7 @@ export default function ChatPage() {
         });
       }
       previewsToRelease.forEach(url => URL.revokeObjectURL(url));
+      retryClientIdsRef.current = { images: [] };
       const lastSent = sentMessages[sentMessages.length - 1];
       if (lastSent) setPeople(current => current.map(person => person.id === recipientId ? { ...person, lastMessage: lastSent.text || ((lastSent.images?.length || lastSent.imageUrl) ? "📷 Photo" : ""), lastMessageAt: lastSent.createdAt } : person).sort((a, b) => {
         const aTime = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
@@ -992,6 +999,8 @@ export default function ChatPage() {
       const failedImageIndexes = filesToSend.map((_, index) => index).filter(index => !images[index] || !sentImageUrls.has(images[index]));
       const failedFiles = failedImageIndexes.map(index => filesToSend[index]);
       const failedPreviews = failedImageIndexes.map(index => previewsToRelease[index]);
+      retryClientIdsRef.current.text = text && !sentText ? textClientMessageId : undefined;
+      retryClientIdsRef.current.images = failedImageIndexes.map(index => imageClientMessageIds[index]);
       previewsToRelease.forEach((url, index) => { if (!failedImageIndexes.includes(index)) URL.revokeObjectURL(url); });
       setDraft(sentText ? "" : text);
       setImageFiles(failedFiles);
