@@ -368,7 +368,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-shell{width:min(1120px,calc(100% - 48px));padding-top:104px}
 .social-layout{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:20px}
 .social-feed-column{min-width:0}
-.social-composer,.social-post,.social-empty,.social-profile-card,.social-side-card,.social-side-note{border:1px solid var(--theme-line);border-radius:16px;background:linear-gradient(150deg,rgba(42,13,21,.94),rgba(27,8,13,.96));box-shadow:0 10px 32px rgba(0,0,0,.12)}
+.social-composer,.social-post,.social-empty,.social-profile-card,.social-side-card,.social-side-note{border:1px solid var(--theme-line);border-radius:16px;background:var(--theme-feed-card-bg);box-shadow:var(--theme-feed-card-shadow)}
 .social-composer{padding:13px 18px 10px}
 .social-composer-top{display:flex;align-items:center;gap:11px}
 .social-avatar{width:42px;height:42px;display:grid;place-items:center;flex-shrink:0;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:linear-gradient(145deg,#a84b5d,#51202d);color:#fff2f4;font-size:12px;font-weight:700;letter-spacing:.3px}
@@ -395,19 +395,19 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-post{padding:17px 18px 12px}
 .social-post-head{display:flex;align-items:center;gap:11px;min-width:0}
 .social-post-author{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
-.social-post-author strong{overflow:hidden;color:#f5e6e9;font-size:12px;text-overflow:ellipsis;white-space:nowrap}
-.social-post-author span{overflow:hidden;color:#9f8087;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.social-post-author strong{overflow:hidden;color:var(--theme-feed-text-heading);font-size:12px;text-overflow:ellipsis;white-space:nowrap}
+.social-post-author span{overflow:hidden;color:var(--theme-feed-text-secondary);font-size:10px;text-overflow:ellipsis;white-space:nowrap}
 .social-post-audience{display:grid;place-items:center;width:30px;height:30px;flex-shrink:0;border:1px solid var(--theme-line);border-radius:10px;color:#c9a4ac}
-.social-post-content{height:220px;max-height:220px;overflow-y:auto;overscroll-behavior:contain;margin:17px 0 18px;padding:10px 10px 10px 0;color:#f1e3e6;font-size:13px;line-height:1.9;overflow-wrap:anywhere;white-space:pre-wrap;scrollbar-width:thin;scrollbar-color:rgba(214,74,91,.55) rgba(255,255,255,.04)}
+.social-post-content{height:220px;max-height:220px;overflow-y:auto;overscroll-behavior:contain;margin:17px 0 18px;padding:10px 10px 10px 0;color:var(--theme-feed-text-body);font-size:13px;line-height:1.9;overflow-wrap:anywhere;white-space:pre-wrap;scrollbar-width:thin;scrollbar-color:var(--theme-feed-scroll-thumb) var(--theme-feed-scroll-track)}
 .social-post-content::-webkit-scrollbar{width:5px}
-.social-post-content::-webkit-scrollbar-track{background:rgba(255,255,255,.04);border-radius:99px}
-.social-post-content::-webkit-scrollbar-thumb{background:rgba(214,74,91,.55);border-radius:99px}
+.social-post-content::-webkit-scrollbar-track{background:var(--theme-feed-scroll-track);border-radius:99px}
+.social-post-content::-webkit-scrollbar-thumb{background:var(--theme-feed-scroll-thumb);border-radius:99px}
 .social-post-actions{display:flex;align-items:center;gap:18px;padding-top:11px;border-top:1px solid var(--theme-line)}
-.social-like,.social-post-action-muted{display:inline-flex;align-items:center;gap:7px;color:#a98b92;font-size:11px}
+.social-like,.social-post-action-muted{display:inline-flex;align-items:center;gap:7px;color:var(--theme-feed-text-action);font-size:11px}
 .social-like{padding:5px 2px;border:0;background:transparent}
 .social-like:hover,.social-like.is-liked{color:#f16b80}
 .social-like:disabled{opacity:.55}
-.social-post-action-muted{color:#80616a}
+.social-post-action-muted{color:var(--theme-feed-text-muted)}
 .social-empty{display:flex;flex-direction:column;align-items:center;padding:33px 23px;text-align:center}
 .social-empty-icon{width:48px;height:48px;display:grid;place-items:center;border:1px solid rgba(232,90,110,.2);border-radius:15px;background:rgba(184,32,50,.1);color:#ee7b8b}
 .social-empty h3{margin:16px 0 7px;color:var(--theme-text);font-size:17px}
