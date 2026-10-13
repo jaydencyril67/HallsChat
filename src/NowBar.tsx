@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, CircleHelp, ContactRound, Home, MessageCircle, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
+const getNowbarFeature = (key: string) => { try { return window.localStorage.getItem(key) !== "false"; } catch { return true; } };
+const swipeRoutes = ["/home", "/chats", "/halls", "/profile", "/calls", "/groups", "/settings", "/help"];
 
 type View = "title" | "actions";
 type Mode = "compact" | "expanded";
@@ -56,6 +58,10 @@ export default function NowBar() {
   const [view, setView] = useState<View>("title");
   const [mode, setMode] = useState<Mode>("compact");
   const [pageTitle, setPageTitle] = useState(getPageTitle);
+  const [swipeEnabled, setSwipeEnabled] = useState(() => getNowbarFeature("hallschat_nowbar_swipe_enabled"));
+  const [expandEnabled, setExpandEnabled] = useState(() => getNowbarFeature("hallschat_nowbar_expand_enabled"));
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const swipeHandled = useRef(false);
   const [activeAction, setActiveAction] = useState(() => {
     const title = getPageTitle();
     return actions.find(action => action.label === title)?.label ?? "HOME";
@@ -64,6 +70,12 @@ export default function NowBar() {
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTriggered = useRef(false);
   const barRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const syncFeatures = () => { setSwipeEnabled(getNowbarFeature("hallschat_nowbar_swipe_enabled")); setExpandEnabled(getNowbarFeature("hallschat_nowbar_expand_enabled")); };
+    window.addEventListener("storage", syncFeatures); window.addEventListener("hallschat:nowbar-settings-changed", syncFeatures);
+    return () => { window.removeEventListener("storage", syncFeatures); window.removeEventListener("hallschat:nowbar-settings-changed", syncFeatures); };
+  }, []);
 
   useEffect(() => {
     const syncPath = () => {
@@ -123,7 +135,7 @@ export default function NowBar() {
     holdTimer.current = setTimeout(() => {
       holdTriggered.current = true;
       setView("actions");
-      setMode(current => current === "compact" ? "expanded" : "compact");
+      if (expandEnabled) setMode(current => current === "compact" ? "expanded" : "compact");
     }, 700);
   };
 
@@ -141,6 +153,24 @@ export default function NowBar() {
     }
     setView(current => current === "title" ? "actions" : "title");
     resetIdleTimer();
+  };
+
+  const handleSwipeStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (!swipeEnabled || view !== "title" || event.touches.length !== 1) return;
+    swipeStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  };
+  const handleSwipeEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    const start = swipeStart.current; swipeStart.current = null;
+    if (!swipeEnabled || view !== "title" || !start || event.changedTouches.length !== 1) return;
+    const touch = event.changedTouches[0], dx = touch.clientX - start.x, dy = touch.clientY - start.y;
+    if (Math.abs(dx) < 50 || Math.abs(dx) <= Math.abs(dy)) return;
+    const path = (window.location.pathname || "/").replace(/\/$/, "") || "/";
+    const index = swipeRoutes.indexOf(path), next = swipeRoutes[index + (dx < 0 ? 1 : -1)];
+    if (index < 0 || !next) return;
+    swipeHandled.current = true; holdTriggered.current = true;
+    if (holdTimer.current) { clearTimeout(holdTimer.current); holdTimer.current = null; }
+    if (idleTimer.current) { clearTimeout(idleTimer.current); idleTimer.current = null; }
+    navigate(next);
   };
 
   const chooseAction = (label: string) => {
@@ -179,13 +209,13 @@ export default function NowBar() {
         role="button"
         tabIndex={0}
         aria-label={view === "title" ? `${pageTitle} page. Tap to show navigation buttons; hold to expand.` : "Navigation buttons. Tap to show current page."}
-        onClick={toggleView}
+        onClick={() => { if (swipeHandled.current) { swipeHandled.current = false; return; } toggleView(); }}
         onMouseDown={startHold}
         onMouseUp={stopHold}
         onMouseLeave={stopHold}
-        onTouchStart={startHold}
-        onTouchEnd={stopHold}
-        onTouchCancel={stopHold}
+        onTouchStart={event => { startHold(); handleSwipeStart(event); }}
+        onTouchEnd={event => { stopHold(); handleSwipeEnd(event); }}
+        onTouchCancel={() => { stopHold(); swipeStart.current = null; }}
         onKeyDown={event => {
           if (event.key === "Enter" || event.key === " ") {
             event.preventDefault();
