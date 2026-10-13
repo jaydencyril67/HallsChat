@@ -189,7 +189,7 @@ export default function NowBar() {
       PROFILE: "/profile",
       CALLS: "/calls",
       GROUP: "/groups",
-      SET: "/settings",
+      SETTINGS: "/settings",
       HELP: "/help",
     };
     setActiveAction(label);
