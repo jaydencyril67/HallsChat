@@ -1829,7 +1829,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-eyebrow{margin-top:18px;color:var(--theme-primary-hover);font-size:10px;font-weight:800;letter-spacing:1.7px}
 .halls-call-card h2,.halls-call-stage h2{margin:0;font-size:24px}.halls-call-card p,.halls-call-stage p{margin:0;color:var(--theme-muted);font-size:13px}
 .halls-call-actions,.halls-call-controls{display:flex;align-items:center;justify-content:center;gap:25px;margin-top:34px}
-.halls-call-actions button,.halls-call-controls button{width:54px;height:54px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--theme-surface-raised);color:var(--theme-primary-contrast)}
+.halls-call-actions button,.halls-call-controls button{width:54px;height:54px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--theme-surface-raised);color:var(--theme-text)}
 .halls-call-actions svg,.halls-call-controls svg{width:22px;height:22px}
 .halls-call-actions .halls-call-decline,.halls-call-controls .halls-call-hangup{background:var(--theme-call-end);color:var(--theme-primary-contrast)}
 .halls-call-actions .halls-call-accept{background:var(--theme-call-accept);color:var(--theme-primary-contrast)}
@@ -1839,6 +1839,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-local-video{position:absolute;top:16px;right:16px;width:clamp(90px,25%,180px);aspect-ratio:3/4;object-fit:cover;border:1px solid var(--theme-call-video-border);border-radius:15px;background:var(--theme-call-video-local-bg);z-index:2}
 .halls-call-stage-video>.halls-call-eyebrow,.halls-call-stage-video>h2,.halls-call-stage-video>p{position:relative;z-index:2;text-shadow:var(--theme-call-video-text-shadow);background:var(--theme-call-video-overlay);padding:3px 8px;border-radius:6px}
 .halls-call-stage-video>.halls-call-controls{position:absolute;z-index:3;bottom:26px;margin:0}
+.halls-call-stage-video .halls-call-controls button:not(.halls-call-hangup){background:var(--theme-call-video-button-bg);color:var(--theme-call-video-text)}
 .halls-call-close{position:absolute;right:15px;top:15px;z-index:5;width:38px;height:38px;border:0;border-radius:50%;background:var(--theme-call-video-control-bg);color:var(--theme-call-video-text)}
 .halls-call-controls button.is-active{background:var(--theme-call-video-control-active-bg)}
 .halls-call-error{color:var(--theme-toast-error-text)!important;text-align:center}
