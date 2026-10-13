@@ -27,6 +27,7 @@
   --theme-fixed-dark-header-border: var(--theme-header-border);
   --theme-fixed-dark-header-shadow: var(--theme-header-shadow);
   --theme-fixed-dark-text: #f8f0f1;
+  --theme-fixed-dark-bg: #10090d;
   --theme-fixed-dark-line: rgba(255, 229, 232, 0.09);
   --theme-fixed-dark-primary: #b82032;
   --theme-fixed-dark-primary-hover: #d23b4e;
