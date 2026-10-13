@@ -167,7 +167,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
-      {activeStatusError && <p className="settings-status-error" role="status">{activeStatusError}</p>}
+      {activeStatusError && <p className="settings-theme-current" role="status">{activeStatusError}</p>}
     </section>
     <NowBar />
   </main>;
