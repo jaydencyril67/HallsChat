@@ -108,13 +108,6 @@ export default function ThemeSettingsPage() {
     return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
   }, [alertChannelMenuOpen]);
 
-  const chooseAlertChannel = (channel: "email" | "inApp" | "push") => {
-    const next = { ...alertChannels, [channel]: !alertChannels[channel] };
-    setAlertChannels(next);
-    localStorage.setItem("hallschat_alert_channels", JSON.stringify(next));
-    window.dispatchEvent(new CustomEvent("hallschat:alert-channels-changed", { detail: next }));
-  };
-
   useEffect(() => {
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
