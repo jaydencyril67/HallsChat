@@ -3872,3 +3872,52 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
 .topbar.theme-fixed-dark .halls-header-upload-status.is-failed {
   color: var(--theme-fixed-dark-primary-hover);
 }
+
+
+/* Per-user conversation actions: anchored popout, styled entirely with shared theme tokens. */
+.chat-person-row { position: relative; cursor: pointer; }
+.chat-person-row-menu-open { z-index: 5; }
+.chat-conversation-menu-anchor {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% - 5px);
+  right: 10px;
+  width: max-content;
+  max-width: min(240px, calc(100vw - 32px));
+}
+.chat-conversation-delete-popout {
+  display: flex;
+  flex-direction: column;
+  min-width: 176px;
+  padding: 5px;
+  border: 1px solid var(--theme-accent-border);
+  border-radius: 13px;
+  background: var(--theme-surface-elevated, var(--theme-card-raised));
+  box-shadow: var(--theme-shadow-popout, var(--theme-shadow-selected));
+}
+.chat-conversation-delete-popout button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--theme-danger);
+  font: inherit;
+  font-size: .75rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+.chat-conversation-delete-popout button:hover,
+.chat-conversation-delete-popout button:focus-visible {
+  background: var(--theme-status-danger-bg);
+  outline: none;
+}
+.chat-conversation-delete-popout button:focus-visible { box-shadow: inset 0 0 0 1px var(--theme-focus); }
+@media (max-width: 560px) {
+  .chat-conversation-menu-anchor { right: 6px; max-width: calc(100vw - 28px); }
+}
