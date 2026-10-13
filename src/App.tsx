@@ -190,9 +190,11 @@ export default function App() {
 
 
   const normalizedPath = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
-  const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);\n  const sharedPostMatch = normalizedPath.match(/^\/post\/([^/]+)$/);
+  const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);
+  const sharedPostMatch = normalizedPath.match(/^\/post\/([^/]+)$/);
   let page: ReactNode;
-  if (sharedPostMatch) page = <SharedPostPage postId={decodeURIComponent(sharedPostMatch[1])} />;\n  else if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />
+  if (sharedPostMatch) page = <SharedPostPage postId={decodeURIComponent(sharedPostMatch[1])} />;
+  else if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />
   else if (normalizedPath === "/verify-email") page = <EmailVerificationPage />;
   else if (normalizedPath === "/signup") page = <SignupPage />;
   else if (normalizedPath === "/signin" || normalizedPath === "/sign-in") page = <SigninPage />;
