@@ -131,7 +131,7 @@ export default function HomePage() {
   const [storyTextColorPickerOpen, setStoryTextColorPickerOpen] = useState(false);
   const [storyTextSizePickerOpen, setStoryTextSizePickerOpen] = useState(false);
   const storyTextDragRef = useRef<{ pointerId: number; sectionId: string; startX: number; startY: number; originX: number; originY: number; nextX: number; nextY: number; element: HTMLParagraphElement } | null>(null);
-  const [storyBackground, setStoryBackground] = useState("#8b1e35");
+  const [storyBackground, setStoryBackground] = useState("var(--theme-palette-burgundy)");
   const [storyPhoto, setStoryPhoto] = useState<SelectedImage | null>(null);
   const [storyEditingImageUrl, setStoryEditingImageUrl] = useState("");
   const [postEditingImageUrl, setPostEditingImageUrl] = useState("");
@@ -139,9 +139,9 @@ export default function HomePage() {
   const [selectedImageMenuIndex, setSelectedImageMenuIndex] = useState<number | null>(null);
   const [storyPublishing, setStoryPublishing] = useState(false);
   const [composerMode, setComposerMode] = useState<"post" | "poll">("post");
-  const [postBackground, setPostBackground] = useState("#8b1e35");
+  const [postBackground, setPostBackground] = useState("var(--theme-palette-burgundy)");
   const [postBackgroundEnabled, setPostBackgroundEnabled] = useState(false);
-  const [postTextColor, setPostTextColor] = useState("#ffffff");
+  const [postTextColor, setPostTextColor] = useState("var(--theme-palette-white)");
   const [postTextSize, setPostTextSize] = useState(27);
   const [postTextColorPickerOpen, setPostTextColorPickerOpen] = useState(false);
   const [postTextSizePickerOpen, setPostTextSizePickerOpen] = useState(false);
@@ -236,7 +236,7 @@ export default function HomePage() {
       setComposerMode(failedInput.poll ? "poll" : "post");
       setPollQuestion(failedInput.poll?.question || "");
       setPollOptions(failedInput.poll?.options?.length ? failedInput.poll.options : ["", ""]);
-      setPostBackground(failedInput.backgroundColor || "#8b1e35");
+      setPostBackground(failedInput.backgroundColor || "var(--theme-palette-burgundy)");
       setPostBackgroundEnabled(Boolean(failedInput.backgroundColor));
       setSelectedImages(current => {
         current.forEach(item => URL.revokeObjectURL(item.preview));
@@ -249,9 +249,9 @@ export default function HomePage() {
       const publishedPost = next.lastPost as SocialPost;
       setPosts(current => [publishedPost, ...current.filter(post => post.id !== publishedPost.id)]);
       setDraft("");
-      setPostBackground("#8b1e35");
+      setPostBackground("var(--theme-palette-burgundy)");
       setPostBackgroundEnabled(false);
-      setPostTextColor("#ffffff");
+      setPostTextColor("var(--theme-palette-white)");
       setPostTextSize(27);
       setPostBackgroundPickerOpen(false);
       setPostTextColorPickerOpen(false);
@@ -716,7 +716,7 @@ export default function HomePage() {
 
   function addStoryTextSection() {
     const id = `story-text-${Date.now()}-${storyTextSections.length}`;
-    setStoryTextSections(current => [...current, { id, text: "", x: 50, y: Math.min(85, 50 + current.length * 8), fontSize: 24, color: "#ffffff" }]);
+    setStoryTextSections(current => [...current, { id, text: "", x: 50, y: Math.min(85, 50 + current.length * 8), fontSize: 24, color: "var(--theme-palette-white)" }]);
     setActiveStoryTextId(id);
   }
 
@@ -726,7 +726,7 @@ export default function HomePage() {
 
   function removeStoryTextSection(id: string) {
     const remaining = storyTextSections.filter(section => section.id !== id);
-    setStoryTextSections(remaining.length ? remaining : [{ id: `story-text-${Date.now()}`, text: "", x: 50, y: 50, fontSize: 24, color: "#ffffff" }]);
+    setStoryTextSections(remaining.length ? remaining : [{ id: `story-text-${Date.now()}`, text: "", x: 50, y: 50, fontSize: 24, color: "var(--theme-palette-white)" }]);
     if (activeStoryTextId === id) setActiveStoryTextId(remaining[0]?.id || "");
     storyTextDragRef.current = null;
   }
@@ -796,7 +796,7 @@ export default function HomePage() {
     setNotice("");
     setStories(current => [...current.filter(item => item.id !== temporaryId), pendingStory]);
     setStoryComposerOpen(false);
-    setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50, fontSize: 24, color: "#ffffff" }]);
+    setStoryTextSections([{ id: "story-text-1", text: "", x: 50, y: 50, fontSize: 24, color: "var(--theme-palette-white)" }]);
     setActiveStoryTextId("story-text-1");
     setStoryTextManagerOpen(false);
     setStoryColorPickerOpen(false);
@@ -1298,11 +1298,11 @@ export default function HomePage() {
           </div>
           {postBackgroundPickerOpen && <div className="social-story-color-popout social-post-background-picker" role="dialog" aria-label="Choose post background color">
             <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setPostBackgroundPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
-            <div className="social-story-colors" aria-label="Post background colors">{["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e","#9333ea"].map(color => <button key={color} type="button" className={postBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setPostBackground(color); setPostBackgroundEnabled(true); }} aria-label={`Choose ${color} background`} />)}</div>
+            <div className="social-story-colors" aria-label="Post background colors">{["var(--theme-palette-burgundy)","var(--theme-palette-blue)","var(--theme-palette-green)","var(--theme-palette-violet)","var(--theme-palette-orange)","var(--theme-palette-charcoal)","var(--theme-palette-rose)","var(--theme-palette-teal)","var(--theme-palette-gold)","var(--theme-palette-slate)","var(--theme-palette-deep-teal)","var(--theme-palette-purple)"].map(color => <button key={color} type="button" className={postBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setPostBackground(color); setPostBackgroundEnabled(true); }} aria-label={`Choose ${color} background`} />)}</div>
           </div>}
           {postTextColorPickerOpen && <div className="social-story-color-popout social-story-text-color-popout social-post-text-color-picker" role="dialog" aria-label="Choose post text color">
             <div className="social-story-color-popout-head"><strong>Text color</strong><button type="button" onClick={() => setPostTextColorPickerOpen(false)} aria-label="Close text colors"><X size={14}/></button></div>
-            <div className="social-story-colors" aria-label="Post text colors">{["#ffffff","#111111","#ff4d6d","#ffb703","#70e000","#00d4ff","#8b5cf6","#ff7ac6","#d1d5db","#f97316","#22c55e","#3b82f6"].map(color => <button key={color} type="button" className={postTextColor === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setPostTextColor(color); setPostTextColorPickerOpen(false); }} aria-label={`Choose ${color} text`} />)}</div>
+            <div className="social-story-colors" aria-label="Post text colors">{["var(--theme-palette-white)","var(--theme-palette-black)","var(--theme-palette-bright-rose)","var(--theme-palette-bright-gold)","var(--theme-palette-lime)","var(--theme-palette-cyan)","var(--theme-palette-lavender)","var(--theme-palette-pink)","var(--theme-palette-light-gray)","var(--theme-palette-bright-orange)","var(--theme-palette-bright-green)","var(--theme-palette-bright-blue)"].map(color => <button key={color} type="button" className={postTextColor === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setPostTextColor(color); setPostTextColorPickerOpen(false); }} aria-label={`Choose ${color} text`} />)}</div>
           </div>}
           {postTextSizePickerOpen && <div className="social-story-color-popout social-story-text-size-popout social-post-text-size-picker" role="dialog" aria-label="Adjust post text size">
             <div className="social-story-color-popout-head"><strong>Text size</strong><button type="button" onClick={() => setPostTextSizePickerOpen(false)} aria-label="Close text size"><X size={14}/></button></div>
@@ -1324,7 +1324,7 @@ export default function HomePage() {
       <form className="social-story-dialog social-story-snap-composer" role="dialog" aria-modal="true" aria-label="Create story" onClick={event => event.stopPropagation()} onSubmit={publishStory}>
         <div className={`social-story-preview social-story-snap-canvas ${storyPhoto ? "has-photo" : ""}`} style={{ background: storyPhoto ? "var(--theme-bg)" : storyBackground }}>
           {storyPhoto && <img src={storyPhoto.preview} alt="Story preview" />}
-          {storyTextSections.filter(section => section.text.trim()).map(section => <p key={section.id} className={`social-story-draggable-text ${activeStoryTextId === section.id ? "is-active" : ""}`} style={{ left: `${section.x}%`, top: `${section.y}%`, fontSize: `${section.fontSize || 24}px`, color: section.color || "#ffffff" }} onPointerDown={event => handleStoryTextPointerDown(event, section)} onPointerMove={handleStoryTextPointerMove} onPointerUp={handleStoryTextPointerUp} onPointerCancel={handleStoryTextPointerUp} onClick={() => setActiveStoryTextId(section.id)} aria-label="Drag to position story text">{section.text}</p>)}
+          {storyTextSections.filter(section => section.text.trim()).map(section => <p key={section.id} className={`social-story-draggable-text ${activeStoryTextId === section.id ? "is-active" : ""}`} style={{ left: `${section.x}%`, top: `${section.y}%`, fontSize: `${section.fontSize || 24}px`, color: section.color || "var(--theme-palette-white)" }} onPointerDown={event => handleStoryTextPointerDown(event, section)} onPointerMove={handleStoryTextPointerMove} onPointerUp={handleStoryTextPointerUp} onPointerCancel={handleStoryTextPointerUp} onClick={() => setActiveStoryTextId(section.id)} aria-label="Drag to position story text">{section.text}</p>)}
           {!storyPhoto && !storyTextSections.some(section => section.text.trim()) && <span>Your story preview</span>}
           <button type="button" className="social-story-snap-close" onClick={closeStoryComposer} aria-label="Close story creator"><X size={21}/></button>
           <div className="social-story-snap-tools" aria-label="Story editing tools">
@@ -1345,11 +1345,11 @@ export default function HomePage() {
             </div>
           </div>}
           {storyTextSizePickerOpen && <div className="social-story-color-popout social-story-text-size-popout" role="dialog" aria-label="Adjust text size"><div className="social-story-color-popout-head"><strong>Text size</strong><button type="button" onClick={() => setStoryTextSizePickerOpen(false)} aria-label="Close text size"><X size={14}/></button></div><div className="social-story-text-size-control"><label htmlFor="story-text-size">Size</label><input id="story-text-size" type="range" min="12" max="64" step="1" value={storyTextSections.find(section => section.id === activeStoryTextId)?.fontSize || 24} onChange={event => { const fontSize = Number(event.target.value); setStoryTextSections(current => current.map(section => section.id === activeStoryTextId ? {...section,fontSize} : section)); }} aria-label="Adjust text size" /><output>{storyTextSections.find(section => section.id === activeStoryTextId)?.fontSize || 24}px</output></div></div>}
-          {storyTextColorPickerOpen && <div className="social-story-color-popout social-story-text-color-popout" role="dialog" aria-label="Choose text color"><div className="social-story-color-popout-head"><strong>Text color</strong><button type="button" onClick={() => setStoryTextColorPickerOpen(false)} aria-label="Close text colors"><X size={14}/></button></div><div className="social-story-colors" aria-label="Story text color">{["#ffffff","#111111","#ff4d6d","#ffb703","#70e000","#00d4ff","#8b5cf6","#ff7ac6","#d1d5db","#f97316","#22c55e","#3b82f6"].map(color => <button key={color} type="button" className={(storyTextSections.find(section => section.id === activeStoryTextId)?.color || "#ffffff") === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryTextSections(current => current.map(section => section.id === activeStoryTextId ? {...section,color} : section)); setStoryTextColorPickerOpen(false); }} aria-label={`Choose ${color} text`} />)}</div></div>}
+          {storyTextColorPickerOpen && <div className="social-story-color-popout social-story-text-color-popout" role="dialog" aria-label="Choose text color"><div className="social-story-color-popout-head"><strong>Text color</strong><button type="button" onClick={() => setStoryTextColorPickerOpen(false)} aria-label="Close text colors"><X size={14}/></button></div><div className="social-story-colors" aria-label="Story text color">{["var(--theme-palette-white)","var(--theme-palette-black)","var(--theme-palette-bright-rose)","var(--theme-palette-bright-gold)","var(--theme-palette-lime)","var(--theme-palette-cyan)","var(--theme-palette-lavender)","var(--theme-palette-pink)","var(--theme-palette-light-gray)","var(--theme-palette-bright-orange)","var(--theme-palette-bright-green)","var(--theme-palette-bright-blue)"].map(color => <button key={color} type="button" className={(storyTextSections.find(section => section.id === activeStoryTextId)?.color || "var(--theme-palette-white)") === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryTextSections(current => current.map(section => section.id === activeStoryTextId ? {...section,color} : section)); setStoryTextColorPickerOpen(false); }} aria-label={`Choose ${color} text`} />)}</div></div>}
           {storyColorPickerOpen && <div className="social-story-color-popout" role="dialog" aria-label="Choose story background color">
             <div className="social-story-color-popout-head"><strong>Background color</strong><button type="button" onClick={() => setStoryColorPickerOpen(false)} aria-label="Close background colors"><X size={14}/></button></div>
             <div className="social-story-colors" aria-label="Story background color">
-              {["#8b1e35","#235b87","#246b52","#6340a3","#b75a24","#20232d","#d94f70","#087e8b","#d4a017","#6b7280","#0f766e","#9333ea"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryBackground(color); setStoryColorPickerOpen(false); setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; }); }} aria-label={`Choose ${color} background`} />)}
+              {["var(--theme-palette-burgundy)","var(--theme-palette-blue)","var(--theme-palette-green)","var(--theme-palette-violet)","var(--theme-palette-orange)","var(--theme-palette-charcoal)","var(--theme-palette-rose)","var(--theme-palette-teal)","var(--theme-palette-gold)","var(--theme-palette-slate)","var(--theme-palette-deep-teal)","var(--theme-palette-purple)"].map(color => <button key={color} type="button" className={storyBackground === color ? "is-selected" : ""} style={{background:color}} onClick={() => { setStoryBackground(color); setStoryColorPickerOpen(false); setStoryPhoto(current => { if (current) URL.revokeObjectURL(current.preview); return null; }); }} aria-label={`Choose ${color} background`} />)}
             </div>
           </div>}
           <div className="social-story-snap-bottom">
@@ -1375,7 +1375,7 @@ export default function HomePage() {
         <div className="social-story-viewer-head"><span className="social-story-viewer-avatar">{storyViewer.author?.profilePicture ? <img src={storyViewer.author.profilePicture} alt="" /> : initials(storyViewer.author?.name || "H")}</span><div><strong>{storyViewer.author?.name || "HallsChat user"}</strong><small>{timeAgo(storyViewer.createdAt)}</small></div>{storyViewer.isMine && <button type="button" className="social-story-delete-trigger" onClick={() => setStoryDeleteConfirm(storyViewer.id)} aria-label="Delete your story" title="Delete story" disabled={storyDeleting}><Trash2 size={17}/></button>}<button type="button" onClick={closeStoryViewer} aria-label="Close story"><X size={19}/></button></div>
         <div className="social-story-viewer-content" style={{background:storyViewer.background || "var(--theme-primary)"}} onPointerDown={event => { storySwipeRef.current = { x: event.clientX, y: event.clientY }; setStoryPlaybackPaused(true); }} onPointerUp={event => { const start = storySwipeRef.current; storySwipeRef.current = null; setStoryPlaybackPaused(false); if (!start) return; const dx = event.clientX - start.x; const dy = event.clientY - start.y; if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.25) moveStoryPlayback(dx < 0 ? 1 : -1); }} onPointerCancel={() => { storySwipeRef.current = null; setStoryPlaybackPaused(false); }}>
           {storyViewer.mediaUrl && <img src={storyViewer.mediaUrl} alt="Story" />}
-          {(storyViewer.textSections?.length ? storyViewer.textSections.filter(section => section.text?.trim()) : (storyViewer.text ? [{ id: "legacy-story-text", text: storyViewer.text, x: storyViewer.textPosition?.x ?? 50, y: storyViewer.textPosition?.y ?? 50 }] : [])).map(section => <p key={section.id} className="social-story-positioned-text" style={{ left: `${section.x}%`, top: `${section.y}%`, fontSize: `${section.fontSize || 24}px`, color: section.color || "#ffffff" }}>{section.text}</p>)}
+          {(storyViewer.textSections?.length ? storyViewer.textSections.filter(section => section.text?.trim()) : (storyViewer.text ? [{ id: "legacy-story-text", text: storyViewer.text, x: storyViewer.textPosition?.x ?? 50, y: storyViewer.textPosition?.y ?? 50 }] : [])).map(section => <p key={section.id} className="social-story-positioned-text" style={{ left: `${section.x}%`, top: `${section.y}%`, fontSize: `${section.fontSize || 24}px`, color: section.color || "var(--theme-palette-white)" }}>{section.text}</p>)}
           <button type="button" className="social-story-tap-zone previous" aria-label="Previous story" onClick={() => moveStoryPlayback(-1)} />
           <button type="button" className="social-story-tap-zone next" aria-label="Next story" onClick={() => moveStoryPlayback(1)} />
         </div>
