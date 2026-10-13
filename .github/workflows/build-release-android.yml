@@ -83,6 +83,14 @@ jobs:
           EOF
           npx cap add android
 
+      - name: Generate HallsChat native app icons
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+          cp public/crown-chat.svg assets/icon.svg
+          cp public/crown-chat.svg assets/splash.svg
+          npx capacitor-assets generate --android
+
       - name: Set HallsChat Android version
         env:
           APP_VERSION: ${{ inputs.app_version }}
