@@ -130,6 +130,16 @@
   --theme-text-subtle: #b9a6ac;
   --theme-avatar-initials-text: #fff;
   --theme-danger-action-hover-bg: var(--theme-surface-raised);
+
+  /* Social feed foundation roles; light mode overrides these inside the page scope. */
+  --theme-feed-card-bg: linear-gradient(150deg, rgba(42, 13, 21, 0.94), rgba(27, 8, 13, 0.96));
+  --theme-feed-text-heading: #f5e6e9;
+  --theme-feed-text-body: #f1e3e6;
+  --theme-feed-text-secondary: #9f8087;
+  --theme-feed-text-action: #a98b92;
+  --theme-feed-text-muted: #80616a;
+  --theme-feed-scroll-track: rgba(255, 255, 255, 0.04);
+  --theme-feed-scroll-thumb: rgba(214, 74, 91, 0.55);
 }
 
 /* Hybrid theme architecture: any page or component can opt into the shared light palette by adding .theme-token-scope. Unsubscribed areas keep the dark root tokens and all existing hardcoded colors. */
@@ -237,6 +247,15 @@ html[data-theme="light"] .theme-token-scope {
   --theme-text-subtle: var(--theme-text-secondary);
   --theme-avatar-initials-text: #84263a;
   --theme-danger-action-hover-bg: #f2dfe3;
+
+  --theme-feed-card-bg: var(--theme-card);
+  --theme-feed-text-heading: var(--theme-text);
+  --theme-feed-text-body: var(--theme-text);
+  --theme-feed-text-secondary: var(--theme-text-secondary);
+  --theme-feed-text-action: var(--theme-text-secondary);
+  --theme-feed-text-muted: var(--theme-text-muted);
+  --theme-feed-scroll-track: rgba(83, 31, 42, 0.06);
+  --theme-feed-scroll-thumb: rgba(169, 31, 53, 0.38);
 }
 
 /* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
