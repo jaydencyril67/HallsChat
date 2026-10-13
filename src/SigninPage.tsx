@@ -52,7 +52,7 @@ export default function SigninPage() {
     } finally { setResending(false); }
   }
 
-  return <main className="signup-page auth-page">
+  return <main className="signup-page auth-page theme-token-scope">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
     <AppHeader homeHref="/" />
