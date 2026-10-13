@@ -730,3 +730,28 @@ jobs:
             --notes "HallsChat Android release $APP_VERSION.
 
           Download HallsChat.apk and install it on Android. Android may ask you to confirm installation."
+
+      - name: Notify HallsChat users about this release
+        env:
+          API_URL: ${{ vars.HALLSCHAT_API_URL || 'https://hallschats.onrender.com' }}
+          RELEASE_SECRET: ${{ secrets.HALLSCHAT_RELEASE_WEBHOOK_SECRET }}
+          APP_VERSION: ${{ inputs.app_version }}
+        run: |
+          set -euo pipefail
+          if [ -z "${RELEASE_SECRET:-}" ]; then
+            echo "::error::Set HALLSCHAT_RELEASE_WEBHOOK_SECRET in GitHub Actions secrets and Render environment variables."
+            exit 1
+          fi
+          payload="$(jq -n --arg tag "v$APP_VERSION" '{tag: $tag}')"
+          for attempt in 1 2 3 4 5; do
+            if curl --fail-with-body --silent --show-error \
+              --request POST "$API_URL/api/notifications/release-published" \
+              --header "Content-Type: application/json" \
+              --header "X-HallsChat-Release-Secret: $RELEASE_SECRET" \
+              --data "$payload"; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 5 ]; then sleep 5; fi
+          done
+          echo "::error::Release was published, but notifying HallsChat users failed after 5 attempts."
+          exit 1
