@@ -21,6 +21,12 @@ export default function ThemeSettingsPage() {
   const [callsPrivacySaving, setCallsPrivacySaving] = useState(false);
   const [callsPrivacyError, setCallsPrivacyError] = useState("");
   const callsPrivacyMenuRef = useRef<HTMLDivElement>(null);
+  const [profileDiscoverable, setProfileDiscoverable] = useState(true);
+  const [visibilityLoaded, setVisibilityLoaded] = useState(false);
+  const [visibilityMenuOpen, setVisibilityMenuOpen] = useState(false);
+  const [visibilitySaving, setVisibilitySaving] = useState(false);
+  const [visibilityError, setVisibilityError] = useState("");
+  const visibilityMenuRef = useRef<HTMLDivElement>(null);
   const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
   const currentThemeLabel = themePreference === "system"
     ? "System"
@@ -77,6 +83,35 @@ export default function ThemeSettingsPage() {
       .finally(() => { if (!cancelled) setCallsPrivacyLoaded(true); });
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken) { navigate("/signin", { replace: true }); return; }
+    let cancelled = false;
+    fetch(apiBase + "/api/settings/visibility", { headers: { Authorization: "Bearer " + savedToken } })
+      .then(async response => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || "Unable to load visibility settings.");
+        if (!cancelled) setProfileDiscoverable(payload.profileDiscoverable !== false);
+      })
+      .catch(error => { if (!cancelled) setVisibilityError(error instanceof Error ? error.message : "Unable to load visibility settings."); })
+      .finally(() => { if (!cancelled) setVisibilityLoaded(true); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!visibilityMenuOpen) return;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (visibilityMenuRef.current && !visibilityMenuRef.current.contains(event.target as Node)) setVisibilityMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setVisibilityMenuOpen(false); };
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [visibilityMenuOpen]);
 
   useEffect(() => {
     if (!callsPrivacyMenuOpen) return;
@@ -148,6 +183,28 @@ export default function ThemeSettingsPage() {
       setCallsPrivacyError(error instanceof Error ? error.message : "Unable to update calls privacy.");
     } finally {
       setCallsPrivacySaving(false);
+    }
+  };
+
+  const chooseVisibility = async (visible: boolean) => {
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken || visibilitySaving || !visibilityLoaded) return;
+    setVisibilitySaving(true);
+    setVisibilityError("");
+    try {
+      const response = await fetch(apiBase + "/api/settings/visibility", {
+        method: "PATCH",
+        headers: { Authorization: "Bearer " + savedToken, "Content-Type": "application/json" },
+        body: JSON.stringify({ profileDiscoverable: visible })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Unable to update visibility.");
+      setProfileDiscoverable(payload.profileDiscoverable !== false);
+      setVisibilityMenuOpen(false);
+    } catch (error) {
+      setVisibilityError(error instanceof Error ? error.message : "Unable to update visibility.");
+    } finally {
+      setVisibilitySaving(false);
     }
   };
 
@@ -264,6 +321,41 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <section className="settings-theme-card" aria-label="Visibility">
+        <span className="settings-theme-title">Visibility</span>
+        <span className="settings-theme-current" aria-live="polite">{!visibilityLoaded ? "Loading…" : profileDiscoverable ? "Profile shown" : "Profile hidden"}</span>
+        <div className="settings-theme-menu-anchor" ref={visibilityMenuRef}>
+          <button
+            type="button"
+            className="settings-theme-menu-trigger"
+            aria-label="Visibility options"
+            aria-haspopup="menu"
+            aria-expanded={visibilityMenuOpen}
+            disabled={!visibilityLoaded || visibilitySaving}
+            onClick={() => setVisibilityMenuOpen(open => !open)}
+          >
+            <MoreHorizontal size={21} />
+          </button>
+          {visibilityMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Visibility options">
+            {([
+              { value: false, label: "Hide Profile" },
+              { value: true, label: "Show Profile" },
+            ] as const).map(option => <button
+              key={String(option.value)}
+              type="button"
+              role="menuitemradio"
+              aria-checked={profileDiscoverable === option.value}
+              className={"settings-theme-menu-option" + (profileDiscoverable === option.value ? " is-selected" : "")}
+              disabled={visibilitySaving}
+              onClick={() => void chooseVisibility(option.value)}
+            >
+              <span>{option.label}</span>
+              {profileDiscoverable === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+          </div>}
+        </div>
+      </section>
+      {visibilityError && <p className="settings-theme-current" role="status">{visibilityError}</p>}
       {callsPrivacyError && <p className="settings-theme-current" role="status">{callsPrivacyError}</p>}
       {activeStatusError && <p className="settings-theme-current" role="status">{activeStatusError}</p>}
     </section>
