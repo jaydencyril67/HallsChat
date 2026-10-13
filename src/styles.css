@@ -2658,7 +2658,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
 
 /* Halls list refinement: compact rows, clear hierarchy and phone-safe controls.
    Theme colors are overridden only in light mode; dark colors remain untouched. */
-.halls-page .halls-group-list {
+.halls-page .halls-list {
   min-width: 0;
 }
 .halls-page .halls-list-row {
