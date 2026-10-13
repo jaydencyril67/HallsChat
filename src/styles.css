@@ -51,7 +51,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar, *::befor
 .signup-benefit-list strong{font-size:11px;font-weight:700}
 .signup-benefit-list small{color:var(--theme-muted);font-size:10px;line-height:1.6}
 .signup-story-footer{display:flex;align-items:center;gap:9px;color:var(--theme-soft);font-size:10px}
-.signup-footer-mark{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--theme-line);border-radius:9px;background:var(--theme-primary-contrast)fff04;color:var(--theme-muted)}
+.signup-footer-mark{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--theme-line);border-radius:9px;background:var(--theme-surface-subtle);color:var(--theme-muted)}
 .signup-form-panel{padding:clamp(25px,4vw,42px);border:1px solid var(--theme-line);border-radius:23px;background:linear-gradient(150deg,var(--theme-surface-raised),var(--theme-surface));box-shadow:0 28px 90px var(--theme-shadow-card-soft),0 0 50px var(--theme-status-danger-bg)}
 .signup-form-heading h2{margin:12px 0 8px;font:800 clamp(25px,3vw,31px)/1.2 Manrope,sans-serif;letter-spacing:-.8px}
 .signup-form-heading>p{margin:0;color:var(--theme-muted);font-size:11px;line-height:1.7}
