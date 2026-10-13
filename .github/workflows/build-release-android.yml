@@ -36,6 +36,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -52,7 +53,7 @@ jobs:
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
 
       - name: Install web dependencies
-        run: npm install
+        run: npm ci
 
       - name: Install pinned Android build dependencies
         run: |
@@ -64,7 +65,7 @@ jobs:
             @capacitor/splash-screen@7.0.3 \
             sharp
 
-      - name: Build HallsChat web app
+      - name: Verify HallsChat web build
         run: npm run build
 
       - name: Create Capacitor Android project
@@ -198,7 +199,7 @@ jobs:
 
       - name: Build signed HallsChat production APK
         working-directory: android
-        run: ./gradlew --no-daemon --stacktrace assembleRelease
+        run: ./gradlew --no-daemon --stacktrace --console=plain assembleRelease
 
       - name: Verify APK
         run: |
