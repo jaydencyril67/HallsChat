@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
-:root{--app-top-gap:75px;font-family:'DM Sans',sans-serif;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-optical-sizing:auto;font-weight:400;background:var(--theme-bg)}*{box-sizing:border-box}body{margin:0;min-width:320px;min-height:100vh}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #d64a5b;outline-offset:2px}/* Restored shared floating app header styles */
+:root{--app-top-gap:75px;font-family:'DM Sans',sans-serif;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;font-optical-sizing:auto;font-weight:400;background:var(--theme-bg)}*{box-sizing:border-box}body{margin:0;min-width:320px;min-height:100vh}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid var(--theme-focus);outline-offset:2px}/* Restored shared floating app header styles */
 .topbar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:50;width:max-content;max-width:calc(100% - 20px);min-height:48px;height:auto;flex-shrink:0;display:grid;grid-template-columns:30px minmax(0,1fr) 30px;align-items:center;gap:12px;padding:7px 13px;border:1px solid var(--theme-header-border);border-radius:999px;background:var(--theme-header-bg);box-shadow:var(--theme-header-shadow);backdrop-filter:blur(16px)}.header-artwork{position:relative;width:30px;height:30px;display:grid;place-items:center;flex-shrink:0}.header-artwork-right{justify-self:end}.header-logo{position:relative;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:transparent;box-shadow:0 3px 12px rgba(180,30,52,.18)}.header-logo img{display:block;width:100%;height:100%;object-fit:cover;border-radius:inherit}.header-brand{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center}.header-brand strong{max-width:calc(100vw - 112px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff5f6;font-size:12px;font-weight:800;letter-spacing:.12em}.header-brand small{max-width:min(70vw,420px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:rgba(255,255,255,.72);font-size:10px}
 /* HallsChat public landing page */
 .landing-cta{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:46px;padding:0 18px;border:1px solid rgba(255,255,255,.14);border-radius:12px;background:linear-gradient(145deg,var(--theme-primary-hover),var(--theme-primary));box-shadow:var(--theme-shadow-primary);color:#fff;font:700 12px/1 'DM Sans',sans-serif;text-decoration:none;cursor:pointer;transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}.landing-cta:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 8px 24px rgba(184,32,50,.3)}.landing-cta:focus-visible{outline:2px solid var(--theme-focus);outline-offset:3px}.landing-cta-small{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 12px;border:1px solid var(--theme-line);border-radius:10px;background:var(--theme-surface);color:var(--theme-text);font:700 10px/1 'DM Sans',sans-serif;text-decoration:none;gap:7px}.landing-back-top{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 12px;border:1px solid var(--theme-line);border-radius:10px;color:var(--theme-text);text-decoration:none;transition:background .16s ease,border-color .16s ease}.landing-back-top:hover{background:var(--theme-surface-raised);border-color:rgba(210,59,78,.35)}
@@ -938,8 +938,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   align-items: center;
   gap: 10px;
   padding: 8px 12px;
-  border-top: 1px solid var(--chat-border, rgba(255,255,255,.1));
-  background: var(--chat-surface, rgba(20,20,24,.92));
+  border-top: 1px solid var(--theme-border);
+  background: var(--theme-card);
 }
 .chat-image-pending img {
   width: 48px;
@@ -963,21 +963,23 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   border: 0;
   border-radius: 50%;
   color: inherit;
-  background: rgba(128,128,128,.18);
+  background: var(--theme-surface-hover);
 }
-.chat-composer .chat-attach-button {
-  display: grid;
+.chat-composer .chat-attach-button {display: grid;
   place-items: center;
   flex: 0 0 38px;
   width: 38px;
   min-width: 38px;
   height: 38px;
   padding: 0;
-  border: 0;
+  border: 1px solid transparent;
   border-radius: 50%;
-  color: inherit;
+  color: var(--theme-primary-hover);
   background: transparent;
+  transition: background .16s ease, border-color .16s ease, color .16s ease;
 }
+.chat-composer .chat-attach-button:hover,.chat-composer .chat-attach-button[aria-expanded="true"]{background:var(--theme-accent-soft);border-color:var(--theme-accent-border)}
+.chat-composer .chat-attach-button:focus-visible{outline:2px solid var(--theme-focus);outline-offset:2px}
 .chat-composer .chat-attach-button:disabled { opacity: .45; }
 .chat-image-viewer {
   position: fixed;
@@ -987,7 +989,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   align-items: center;
   justify-content: center;
   padding: 56px 14px 18px;
-  background: rgba(0,0,0,.92);
+  background: var(--theme-overlay);
 }
 .chat-image-viewer > img {
   display: block;
@@ -1000,8 +1002,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   position: absolute;
   top: max(14px, env(safe-area-inset-top));
   right: 14px;
-  color: #fff;
-  background: rgba(255,255,255,.14);
+  color: var(--theme-text-primary);
+  background: var(--theme-surface-raised);
 }
 
 
@@ -1056,7 +1058,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   right: -5px;
   width: 22px;
   height: 22px;
-  background: rgba(20,12,15,.92);
+  background: var(--theme-surface-raised);
 }
 .chat-image-pending-grid .chat-image-count {
   flex: 0 0 auto;
@@ -1080,7 +1082,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   border-radius: 0;
   background: transparent;
   scrollbar-width: thin;
-  scrollbar-color: rgba(222,68,89,.45) transparent;
+  scrollbar-color: var(--theme-primary-hover) transparent;
 }
 .chat-person-row {
   flex: 0 0 auto;
@@ -1103,9 +1105,9 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   padding: 13px 12px 12px;
   border: 1px solid var(--theme-border);
   border-radius: 17px;
-  background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
+  background: var(--theme-card);
   scrollbar-width: thin;
-  scrollbar-color: rgba(222,68,89,.45) transparent;
+  scrollbar-color: var(--theme-primary-hover) transparent;
 }
 .chat-message-loading,
 .chat-empty-conversation { flex: 1 1 auto; }
@@ -1125,9 +1127,9 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   bottom: 0;
   width: 11px;
   height: 11px;
-  border: 2px solid #241018;
+  border: 2px solid var(--theme-card);
   border-radius: 50%;
-  background: #85818a;
+  background: var(--theme-presence-offline);
 }
 .chat-avatar-presence.is-online { background:var(--theme-presence-online); }
 .chat-avatar-presence.is-offline { background:var(--theme-presence-offline); }
@@ -1147,7 +1149,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   height: 7px;
   flex: 0 0 7px;
   border-radius: 50%;
-  background: #85818a;
+  background: var(--theme-presence-offline);
 }
 .presence-online .presence-dot { background: var(--theme-presence-online); }
 
@@ -1176,7 +1178,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   padding: 10px 13px;
   border: 1px solid var(--theme-border);
   border-radius: 14px;
-  background: linear-gradient(145deg,rgba(57,17,27,.58),rgba(28,9,15,.8));
+  background: var(--theme-card);
   color: var(--theme-text-primary);
   box-shadow: none;
 }
@@ -1510,7 +1512,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   border:1px solid var(--theme-border-strong);
   border-radius:999px;
   background:var(--theme-popover-bg);
-  box-shadow:0 8px 24px rgba(0,0,0,.38),inset 0 1px 0 var(--theme-surface-hover);
+  box-shadow:var(--theme-shadow-card-soft),inset 0 1px 0 var(--theme-surface-hover);
   backdrop-filter:blur(18px);
   white-space:nowrap;
 }
@@ -1564,7 +1566,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   border:1px solid var(--theme-border-strong);
   border-radius:14px;
   background:var(--theme-popover-bg);
-  box-shadow:0 10px 30px rgba(0,0,0,.42),inset 0 1px 0 var(--theme-surface-subtle);
+  box-shadow:var(--theme-shadow-card-soft),inset 0 1px 0 var(--theme-surface-subtle);
   backdrop-filter:blur(18px);
 }
 .chat-message-line-mine .chat-message-actions{left:auto;right:0}
@@ -1890,7 +1892,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-calls-detail .halls-call-trigger-audio{background:#c62e48;color:var(--theme-primary-contrast)}
 .halls-calls-detail .halls-call-trigger-video{background:#6737a0;color:var(--theme-primary-contrast)}
 .halls-calls-detail .halls-call-triggers button:disabled{opacity:.45}
-.halls-calls-chat-link{margin-top:12px;padding:8px 12px;border:0;background:transparent;color:#e99aa5;font-size:11px;cursor:pointer}
+.halls-calls-chat-link{margin-top:12px;padding:8px 12px;border:0;background:transparent;color:var(--theme-primary-hover);font-size:11px;cursor:pointer}
 .halls-calls-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:190px;padding:22px;text-align:center;color:#b9a6ac;font-size:12px}
 .halls-calls-empty strong{color:var(--theme-text,#fff);font-size:14px}
 .halls-calls-empty span{max-width:240px;line-height:1.5}
@@ -2112,13 +2114,13 @@ html[data-theme="light"] .home-page.halls-calls-page{
 
 /* Home-style anchored pop-out confirmation for outgoing calls. */
 .halls-call-trigger-wrap{position:relative;display:flex;min-width:0}
-.halls-call-confirm-popout{position:fixed;top:8px;left:8px;z-index:10050;display:flex;flex-direction:column;gap:6px;width:min(208px,calc(100vw - 16px));max-width:calc(100vw - 16px);box-sizing:border-box;padding:11px;border:1px solid rgba(255,210,219,.2);border-radius:13px;background:linear-gradient(145deg,rgba(57,17,27,.98),rgba(28,9,15,.99));box-shadow:0 10px 28px rgba(0,0,0,.42);color:#fff0f3;text-align:left;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.halls-call-confirm-popout{position:fixed;top:8px;left:8px;z-index:10050;display:flex;flex-direction:column;gap:6px;width:min(208px,calc(100vw - 16px));max-width:calc(100vw - 16px);box-sizing:border-box;padding:11px;border:1px solid var(--theme-border-strong);border-radius:13px;background:var(--theme-popover-bg);box-shadow:var(--theme-shadow-card-soft);color:var(--theme-text-primary);text-align:left;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
 .halls-call-confirm-popout>strong{font-size:12px;font-weight:750;line-height:1.4}
-.halls-call-confirm-popout>span{font-size:11px;line-height:1.45;color:#e8c6ce}
-.halls-call-confirm-popout>span b{color:#fff}
+.halls-call-confirm-popout>span{font-size:11px;line-height:1.45;color:var(--theme-text-secondary)}
+.halls-call-confirm-popout>span b{color:var(--theme-text-primary)}
 .halls-call-confirm-popout>div{display:flex;gap:6px;margin-top:5px}
-.halls-call-confirm-popout button{display:flex;align-items:center;justify-content:center;gap:4px;flex:1;min-height:30px;padding:5px 7px;border:1px solid rgba(255,210,219,.15);border-radius:8px;background:rgba(255,255,255,.06);color:#f5dce1;font-size:10px;font-weight:650;cursor:pointer}
-.halls-call-confirm-popout button.halls-call-confirm-start{border:0!important;background:#b92d45;color:#fff;font-weight:750}
+.halls-call-confirm-popout button{display:flex;align-items:center;justify-content:center;gap:4px;flex:1;min-height:30px;padding:5px 7px;border:1px solid var(--theme-action-secondary-border);border-radius:8px;background:var(--theme-action-secondary-bg);color:var(--theme-action-secondary-text);font-size:10px;font-weight:650;cursor:pointer}
+.halls-call-confirm-popout button.halls-call-confirm-start{border:0!important;background:var(--theme-primary);color:var(--theme-primary-contrast);font-weight:750}
 .halls-call-confirm-popout button:active{transform:scale(.98)}
 
 
