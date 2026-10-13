@@ -49,7 +49,7 @@ export default function ForgotPasswordPage() {
     } finally { setSubmitting(false); }
   }
 
-  return <main className="signup-page auth-page forgot-password-page theme-token-scope">
+  return <main className={`signup-page auth-page forgot-password-page theme-token-scope${token ? " password-reset-page" : ""}`}>
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
     <AppHeader homeHref="/" />
