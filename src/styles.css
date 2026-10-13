@@ -3862,3 +3862,20 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
   }
 }
 
+/* Compact upload/task feedback lives inside the permanently dark app header. */
+.topbar.theme-fixed-dark .halls-header-upload-status {
+  max-width: min(70vw, 420px);
+  color: var(--theme-fixed-dark-muted-text);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .025em;
+}
+.topbar.theme-fixed-dark .halls-header-upload-status.is-active {
+  color: var(--theme-fixed-dark-primary-hover);
+}
+.topbar.theme-fixed-dark .halls-header-upload-status.is-complete {
+  color: var(--theme-fixed-dark-text);
+}
+.topbar.theme-fixed-dark .halls-header-upload-status.is-failed {
+  color: var(--theme-fixed-dark-primary-hover);
+}
