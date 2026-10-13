@@ -133,6 +133,7 @@
 
   /* Social feed foundation roles; light mode overrides these inside the page scope. */
   --theme-feed-card-bg: linear-gradient(150deg, rgba(42, 13, 21, 0.94), rgba(27, 8, 13, 0.96));
+  --theme-feed-card-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
   --theme-feed-text-heading: #f5e6e9;
   --theme-feed-text-body: #f1e3e6;
   --theme-feed-text-secondary: #9f8087;
@@ -249,6 +250,7 @@ html[data-theme="light"] .theme-token-scope {
   --theme-danger-action-hover-bg: #f2dfe3;
 
   --theme-feed-card-bg: var(--theme-card);
+  --theme-feed-card-shadow: var(--theme-shadow-card-soft);
   --theme-feed-text-heading: var(--theme-text);
   --theme-feed-text-body: var(--theme-text);
   --theme-feed-text-secondary: var(--theme-text-secondary);
