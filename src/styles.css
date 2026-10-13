@@ -2584,49 +2584,49 @@ html[data-theme="light"] .home-page.halls-calls-page{
 /* Create-group modal pass 2: form clarity and small-screen usability.
    All color adjustments are scoped to the light theme; scrolling improvements
    are structural and apply consistently across themes. */
-.halls-create-group-modal {
+.halls-create-modal {
   isolation: isolate;
 }
-.halls-create-group-modal .halls-create-group-scroll {
+.halls-create-modal .halls-create-scroll {
   scrollbar-width: none;
   -ms-overflow-style: none;
   overscroll-behavior-y: contain;
 }
-.halls-create-group-modal .halls-create-group-scroll::-webkit-scrollbar {
+.halls-create-modal .halls-create-scroll::-webkit-scrollbar {
   display: none;
 }
-.halls-create-group-modal .halls-create-group-form {
+.halls-create-modal .halls-create-form {
   width: 100%;
   box-sizing: border-box;
   padding-bottom: 4px;
 }
-.halls-create-group-modal .halls-create-group-form > label {
+.halls-create-modal .halls-create-form > label {
   min-width: 0;
   line-height: 1.4;
 }
-.halls-create-group-modal .halls-create-group-form > label > input,
-.halls-create-group-modal .halls-create-group-form > label > textarea {
+.halls-create-modal .halls-create-form > label > input,
+.halls-create-modal .halls-create-form > label > textarea {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
 }
-.halls-create-group-modal .halls-create-group-form button {
+.halls-create-modal .halls-create-form button {
   -webkit-tap-highlight-color: transparent;
 }
-.halls-create-group-modal .halls-create-group-form button:focus-visible,
-.halls-create-group-modal > header button:focus-visible {
+.halls-create-modal .halls-create-form button:focus-visible,
+.halls-create-modal > header button:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 3px;
 }
 @media (max-height: 760px) {
-  .halls-create-group-modal .halls-create-group-form {
+  .halls-create-modal .halls-create-form {
     gap: 11px !important;
   }
-  .halls-create-group-modal .halls-create-group-form > div:first-child {
+  .halls-create-modal .halls-create-form > div:first-child {
     gap: 6px !important;
     padding-top: 2px !important;
   }
-  .halls-create-group-modal .halls-create-group-form > div:first-child > button:first-child {
+  .halls-create-modal .halls-create-form > div:first-child > button:first-child {
     width: 82px !important;
     height: 82px !important;
     min-width: 82px !important;
@@ -2634,105 +2634,105 @@ html[data-theme="light"] .home-page.halls-calls-page{
   }
 }
 @media (max-width: 380px) {
-  .halls-create-group-modal .halls-create-group-scroll {
+  .halls-create-modal .halls-create-scroll {
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
-  .halls-create-group-modal .halls-create-group-form {
+  .halls-create-modal .halls-create-form {
     gap: 11px !important;
   }
-  .halls-create-group-modal .halls-create-group-form section > div {
+  .halls-create-modal .halls-create-form section > div {
     gap: 6px !important;
   }
-  .halls-create-group-modal .halls-create-group-form section > div > button {
+  .halls-create-modal .halls-create-form section > div > button {
     padding: 10px 8px !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .halls-create-group-modal * {
+  .halls-create-modal * {
     scroll-behavior: auto !important;
     transition-duration: 0s !important;
   }
 }
 
 
-/* Group list refinement: compact rows, clear hierarchy and phone-safe controls.
+/* Halls list refinement: compact rows, clear hierarchy and phone-safe controls.
    Theme colors are overridden only in light mode; dark colors remain untouched. */
-.halls-groups-page .halls-group-list {
+.halls-page .halls-group-list {
   min-width: 0;
 }
-.halls-groups-page .halls-group-list-row {
+.halls-page .halls-list-row {
   min-width: 0;
   border-radius: 15px !important;
   transition: border-color .16s ease, background-color .16s ease;
 }
-.halls-groups-page .halls-group-list-row > div {
+.halls-page .halls-list-row > div {
   min-width: 0;
 }
-.halls-groups-page .halls-group-list-row > div > span:first-child {
+.halls-page .halls-list-row > div > span:first-child {
   min-width: 0;
   overflow-wrap: anywhere;
 }
-.halls-groups-page .halls-group-list-row > div > span:nth-child(2) {
+.halls-page .halls-list-row > div > span:nth-child(2) {
   line-height: 1.45;
 }
-.halls-groups-page .halls-group-list-row > button {
+.halls-page .halls-list-row > button {
   flex-shrink: 0;
   white-space: nowrap;
 }
-.halls-groups-page .halls-group-list-tabs button {
+.halls-page .halls-list-tabs button {
   min-height: 39px;
   -webkit-tap-highlight-color: transparent;
 }
-.halls-groups-page .halls-group-list-search {
+.halls-page .halls-list-search {
   min-width: 0;
 }
-.halls-groups-page .halls-group-list-search input {
+.halls-page .halls-list-search input {
   margin-bottom: 12px;
 }
-.halls-groups-page .halls-group-list-actions button {
+.halls-page .halls-list-actions button {
   min-height: 40px;
   white-space: nowrap;
 }
 @media (hover: hover) {
-  .halls-groups-page .halls-group-list-row:hover {
+  .halls-page .halls-list-row:hover {
     border-color: var(--theme-accent-border) !important;
   }
 }
 @media (max-width: 420px) {
-  .halls-groups-page .halls-group-list-row {
+  .halls-page .halls-list-row {
     gap: 9px !important;
     padding: 11px 10px !important;
   }
-  .halls-groups-page .halls-group-list-row .chat-avatar,
-  .halls-groups-page .halls-group-list-row > span:first-child {
+  .halls-page .halls-list-row .chat-avatar,
+  .halls-page .halls-list-row > span:first-child {
     flex-shrink: 0;
   }
-  .halls-groups-page .halls-group-list-row > div > span:first-child {
+  .halls-page .halls-list-row > div > span:first-child {
     font-size: .84rem !important;
     line-height: 1.35;
   }
-  .halls-groups-page .halls-group-list-row > div > span:nth-child(2) {
+  .halls-page .halls-list-row > div > span:nth-child(2) {
     font-size: .72rem !important;
   }
-  .halls-groups-page .halls-group-list-row > div > span:nth-child(3) {
+  .halls-page .halls-list-row > div > span:nth-child(3) {
     font-size: .67rem !important;
     line-height: 1.4;
   }
-  .halls-groups-page .halls-group-list-row > button {
+  .halls-page .halls-list-row > button {
     min-height: 36px;
   }
-  .halls-groups-page .halls-group-list-actions {
+  .halls-page .halls-list-actions {
     gap: 7px !important;
   }
-  .halls-groups-page .halls-group-list-actions button {
+  .halls-page .halls-list-actions button {
     gap: 5px !important;
     padding: 9px 8px !important;
     font-size: .75rem !important;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .halls-groups-page .halls-group-list-row {
+  .halls-page .halls-list-row {
     transition: none;
   }
 }
@@ -2746,25 +2746,25 @@ html[data-theme="light"] .home-page.halls-calls-page{
 
 
 /* Group list pass 2: interaction clarity and light-theme empty/search states. */
-.halls-groups-page .halls-group-list-row:focus-within {
+.halls-page .halls-list-row:focus-within {
   outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
-.halls-groups-page .halls-group-list-row button:active,
-.halls-groups-page .halls-group-list-actions button:active {
+.halls-page .halls-list-row button:active,
+.halls-page .halls-list-actions button:active {
   transform: scale(.985);
 }
-.halls-groups-page .halls-group-list-row button,
-.halls-groups-page .halls-group-list-actions button {
+.halls-page .halls-list-row button,
+.halls-page .halls-list-actions button {
   transition: background-color .15s ease, border-color .15s ease, transform .12s ease;
 }
-.halls-groups-page .halls-group-list-row button:disabled {
+.halls-page .halls-list-row button:disabled {
   opacity: .58;
   cursor: wait;
 }
 @media (prefers-reduced-motion: reduce) {
-  .halls-groups-page .halls-group-list-row button,
-  .halls-groups-page .halls-group-list-actions button {
+  .halls-page .halls-list-row button,
+  .halls-page .halls-list-actions button {
     transition: none !important;
   }
 }
@@ -3796,7 +3796,7 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
 
 
 /* Groups page follows the same semantic theme tokens as the chat page. */
-.halls-groups-page {
+.halls-page {
   background: var(--theme-bg);
   color: var(--theme-text);
 }
