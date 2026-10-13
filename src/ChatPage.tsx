@@ -1016,7 +1016,7 @@ export default function ChatPage() {
     }
   }
 
-  return <main className={`home-page social-home chat-page ${activePerson && mobileConversationOpen ? "chat-page-conversation-open" : ""}`}>
+  return <main className={`home-page social-home chat-page theme-token-scope ${activePerson && mobileConversationOpen ? "chat-page-conversation-open" : ""}`}>
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell chat-shell">
       <div className={`chat-layout ${activePerson && mobileConversationOpen ? "chat-layout-conversation-open" : ""}`}>
