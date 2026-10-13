@@ -1818,32 +1818,32 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* HallsChat voice/video calls */
 .halls-call-triggers{display:flex;align-items:center;gap:7px;margin-left:auto;flex-shrink:0}
-.halls-call-triggers button{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--theme-line,rgba(255,255,255,.12));border-radius:12px;background:var(--theme-surface,rgba(255,255,255,.04));color:var(--theme-text,#fff);transition:background .16s,transform .16s}
-.halls-call-triggers button:hover{background:var(--theme-primary,#b82032);color:#fff}
+.halls-call-triggers button{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--theme-line,rgba(255,255,255,.12));border-radius:12px;background:var(--theme-surface,rgba(255,255,255,.04));color:var(--theme-text,var(--theme-text));transition:background .16s,transform .16s}
+.halls-call-triggers button:hover{background:var(--theme-primary,#b82032);color:var(--theme-text)}
 .halls-call-triggers button:disabled{opacity:.45}
-.halls-call-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:rgba(5,3,7,.84);backdrop-filter:blur(18px)}
-.halls-call-card,.halls-call-stage{position:relative;width:min(100%,390px);min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:30px 24px;border:1px solid rgba(255,255,255,.13);border-radius:26px;background:linear-gradient(160deg,#291017,#100a0e 78%);color:#fff;box-shadow:0 24px 90px #0008}
-.halls-call-avatar{width:94px;height:94px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:linear-gradient(145deg,#d94a60,#702032);font-size:32px;font-weight:800}
+.halls-call-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:var(--theme-overlay);backdrop-filter:blur(18px)}
+.halls-call-card,.halls-call-stage{position:relative;width:min(100%,390px);min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:30px 24px;border:1px solid var(--theme-line);border-radius:26px;background:var(--theme-surface);color:var(--theme-text);box-shadow:var(--theme-shadow-card-soft)}
+.halls-call-avatar{width:94px;height:94px;display:grid;place-items:center;overflow:hidden;border-radius:50%;background:var(--theme-avatar-gradient);font-size:32px;font-weight:800}
 .halls-call-avatar img{width:100%;height:100%;object-fit:cover}
 .halls-call-avatar-large{width:112px;height:112px;margin-bottom:16px}
-.halls-call-eyebrow{margin-top:18px;color:#e99aa5;font-size:10px;font-weight:800;letter-spacing:1.7px}
-.halls-call-card h2,.halls-call-stage h2{margin:0;font-size:24px}.halls-call-card p,.halls-call-stage p{margin:0;color:#c2aeb2;font-size:13px}
+.halls-call-eyebrow{margin-top:18px;color:var(--theme-primary-hover);font-size:10px;font-weight:800;letter-spacing:1.7px}
+.halls-call-card h2,.halls-call-stage h2{margin:0;font-size:24px}.halls-call-card p,.halls-call-stage p{margin:0;color:var(--theme-muted);font-size:13px}
 .halls-call-actions,.halls-call-controls{display:flex;align-items:center;justify-content:center;gap:25px;margin-top:34px}
-.halls-call-actions button,.halls-call-controls button{width:54px;height:54px;display:grid;place-items:center;border:0;border-radius:50%;background:#3a2c31;color:var(--theme-primary-contrast)}
+.halls-call-actions button,.halls-call-controls button{width:54px;height:54px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--theme-surface-raised);color:var(--theme-primary-contrast)}
 .halls-call-actions svg,.halls-call-controls svg{width:22px;height:22px}
-.halls-call-actions .halls-call-decline,.halls-call-controls .halls-call-hangup{background:#d52e45;color:#fff}
-.halls-call-actions .halls-call-accept{background:#1fa66a;color:#fff}
+.halls-call-actions .halls-call-decline,.halls-call-controls .halls-call-hangup{background:var(--theme-call-end);color:var(--theme-text)}
+.halls-call-actions .halls-call-accept{background:var(--theme-call-accept);color:var(--theme-text)}
 .halls-call-stage{width:min(100%,520px);min-height:500px;overflow:hidden}
-.halls-call-stage-video{width:min(100%,900px);height:min(90dvh,760px);min-height:400px;padding:0;background:#080709}
-.halls-call-remote-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#09090b}
-.halls-call-local-video{position:absolute;top:16px;right:16px;width:clamp(90px,25%,180px);aspect-ratio:3/4;object-fit:cover;border:1px solid #ffffff55;border-radius:15px;background:#222;z-index:2}
-.halls-call-stage-video>.halls-call-eyebrow,.halls-call-stage-video>h2,.halls-call-stage-video>p{position:relative;z-index:2;text-shadow:0 2px 8px #000;background:#0005;padding:3px 8px;border-radius:6px}
+.halls-call-stage-video{width:min(100%,900px);height:min(90dvh,760px);min-height:400px;padding:0;background:var(--theme-call-video-bg)}
+.halls-call-remote-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--theme-call-video-bg)}
+.halls-call-local-video{position:absolute;top:16px;right:16px;width:clamp(90px,25%,180px);aspect-ratio:3/4;object-fit:cover;border:1px solid var(--theme-call-video-border);border-radius:15px;background:#222;z-index:2}
+.halls-call-stage-video>.halls-call-eyebrow,.halls-call-stage-video>h2,.halls-call-stage-video>p{position:relative;z-index:2;text-shadow:0 2px 8px #000;background:var(--theme-call-video-overlay);padding:3px 8px;border-radius:6px}
 .halls-call-stage-video>.halls-call-controls{position:absolute;z-index:3;bottom:26px;margin:0}
-.halls-call-close{position:absolute;right:15px;top:15px;z-index:5;width:38px;height:38px;border:0;border-radius:50%;background:#ffffff20;color:#fff}
-.halls-call-controls button.is-active{background:#75616a}
-.halls-call-error{color:#ff9ba8!important;text-align:center}
-.halls-call-toast{position:fixed;z-index:1100;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:15px;align-items:center;max-width:calc(100% - 24px);padding:12px 15px;border:1px solid #d94a6040;border-radius:13px;background:#211016;color:#fff;font-size:12px;box-shadow:0 8px 35px #0007}
-.halls-call-toast button{border:0;background:transparent;color:#fff;font-size:20px}
+.halls-call-close{position:absolute;right:15px;top:15px;z-index:5;width:38px;height:38px;border:0;border-radius:50%;background:var(--theme-call-video-control-bg);color:var(--theme-text)}
+.halls-call-controls button.is-active{background:var(--theme-call-video-control-active-bg)}
+.halls-call-error{color:var(--theme-toast-error-text)!important;text-align:center}
+.halls-call-toast{position:fixed;z-index:1100;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:15px;align-items:center;max-width:calc(100% - 24px);padding:12px 15px;border:1px solid var(--theme-toast-error-border);border-radius:13px;background:var(--theme-toast-bg);color:var(--theme-text);font-size:12px;box-shadow:0 8px 35px #0007}
+.halls-call-toast button{border:0;background:transparent;color:var(--theme-text);font-size:20px}
 @media(max-width:520px){.halls-call-card,.halls-call-stage{min-height:390px;border-radius:22px}.halls-call-stage-video{height:calc(100dvh - 24px);min-height:420px}.halls-call-triggers{gap:4px}.halls-call-triggers button{width:32px;height:32px}}
 
 
@@ -3587,7 +3587,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
 .halls-call-actions button:focus-visible,
 .halls-call-controls button:focus-visible,
 .halls-call-close:focus-visible {
-  outline: 2px solid #f09aa8;
+  outline: 2px solid var(--theme-focus);
   outline-offset: 4px;
 }
 .halls-call-ring-time {
@@ -3684,10 +3684,10 @@ html[data-theme="light"] .home-page.halls-calls-page{
   width: clamp(88px, 24vw, 176px);
   max-width: 32%;
   aspect-ratio: 3 / 4;
-  border: 1px solid rgba(255,255,255,.72);
+  border: 1px solid var(--theme-call-video-border);
   border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(0,0,0,.36);
-  background: #191519;
+  box-shadow: var(--theme-call-video-shadow);
+  background: var(--theme-call-video-local-bg);
 }
 .halls-call-stage-video > .halls-call-eyebrow,
 .halls-call-stage-video > h2,
@@ -3695,9 +3695,9 @@ html[data-theme="light"] .home-page.halls-calls-page{
   max-width: min(72vw, 420px);
   overflow-wrap: anywhere;
   text-align: center;
-  text-shadow: 0 2px 10px #000, 0 1px 3px #000;
-  background: rgba(8,5,8,.58);
-  border: 1px solid rgba(255,255,255,.09);
+  text-shadow: var(--theme-call-video-text-shadow);
+  background: var(--theme-call-video-overlay);
+  border: 1px solid var(--theme-call-video-border);
   border-radius: 12px;
   padding: 6px 11px;
   backdrop-filter: blur(8px);
@@ -3721,10 +3721,10 @@ html[data-theme="light"] .home-page.halls-calls-page{
   max-width: min(88vw, 460px);
   margin: 0 16px 110px;
   padding: 10px 13px;
-  border: 1px solid rgba(255,130,145,.45);
+  border: 1px solid var(--theme-call-video-error-border);
   border-radius: 12px;
-  background: rgba(67,10,22,.88);
-  color: #ffe7eb !important;
+  background: var(--theme-call-video-error-bg);
+  color: var(--theme-call-video-error-text) !important;
   text-align: center;
 }
 .halls-call-stage-video > .halls-call-controls {
@@ -3734,10 +3734,10 @@ html[data-theme="light"] .home-page.halls-calls-page{
   box-sizing: border-box;
   gap: clamp(14px, 4vw, 24px);
   padding: 10px 16px;
-  border: 1px solid rgba(255,255,255,.16);
+  border: 1px solid var(--theme-call-video-border);
   border-radius: 999px;
-  background: rgba(17,12,16,.76);
-  box-shadow: 0 10px 34px rgba(0,0,0,.32);
+  background: var(--theme-call-video-control-bg);
+  box-shadow: var(--theme-call-video-shadow);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   transform: translateX(-50%);
@@ -3747,7 +3747,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
   height: 52px;
   min-width: 48px;
   min-height: 48px;
-  box-shadow: 0 2px 8px rgba(0,0,0,.16);
+  box-shadow: var(--theme-call-video-shadow);
 }
 .halls-call-stage-video > .halls-call-close {
   top: calc(15px + env(safe-area-inset-top, 0px)) !important;
@@ -3756,9 +3756,9 @@ html[data-theme="light"] .home-page.halls-calls-page{
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid rgba(255,255,255,.2);
-  background: rgba(17,12,16,.72);
-  box-shadow: 0 5px 18px rgba(0,0,0,.22);
+  border: 1px solid var(--theme-call-video-border);
+  background: var(--theme-call-video-control-bg);
+  box-shadow: var(--theme-call-video-shadow);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -3767,7 +3767,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
   height: 20px;
 }
 .halls-call-stage-video :is(button):focus-visible {
-  outline: 2px solid #ffb2be;
+  outline: 2px solid var(--theme-call-video-focus);
   outline-offset: 3px;
 }
 @media (max-width: 520px) {
