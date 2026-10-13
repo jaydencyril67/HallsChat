@@ -1071,10 +1071,10 @@ export default function RoomsPage() {
                 <strong>{person.name}</strong><small>@{person.username} · {person.activeStatusHidden ? "Recent" : person.isOnline ? "Online" : "Offline"}</small><span className="rooms-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </div>
               <span className="rooms-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="rooms-lock-dot" title="Messaging unavailable">•</span>}</span>
-              <button type="button" className="rooms-open-button" onClick={event => { event.stopPropagation(); setConversationMenuFor(null); scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
+              <button type="button" className="rooms-open-button" onClick={event => { event.stopPropagation(); setConversationMenuFor(null); scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open Room"><MessageCircle size={18} /></button>
               {conversationMenuFor === person.id && <div className="rooms-conversation-menu-anchor" onClick={event => event.stopPropagation()}><div className="rooms-conversation-delete-popout" role="menu" aria-label={`Conversation options for ${person.name}`}><button type="button" role="menuitem" onClick={() => deleteConversationForMe(person.id, person.name)}><Trash2 size={15} />Delete conversation</button></div></div>}
             </article>)}
-          </div> : <div className="rooms-list-empty"><UsersRound size={24} /><strong>{people.length ? "No conversations here" : "No followers yet"}</strong><p>{people.length ? "Your message list is clear. New conversations will appear here." : "When someone follows you, you can start chatting with them here."}</p></div>}
+          </div> : <div className="rooms-list-empty"><UsersRound size={24} /><strong>{people.length ? "No conversations here" : "No followers yet"}</strong><p>{people.length ? "Your message list is clear. New conversations will appear here." : "When someone follows you, you can start a conversation with them here."}</p></div>}
         </aside>
 
         <section className="rooms-conversation" aria-label="Conversation">
