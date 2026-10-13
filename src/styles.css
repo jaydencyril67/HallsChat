@@ -4174,3 +4174,9 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
 /* Alert Types uses the existing anchored, theme-token popout with a bounded scroll area. */
 .settings-alert-types-menu{width:224px;max-height:min(70vh,520px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
 .settings-alert-types-menu::-webkit-scrollbar{display:none;}
+
+/* Keep the Alert Types popout compact; scroll within the menu instead of stretching the page. */
+.settings-alert-types-menu{gap:2px;padding:5px;max-height:min(52vh,360px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
+.settings-alert-types-menu::-webkit-scrollbar{display:none;}
+.settings-alert-types-menu .settings-theme-menu-group-label{padding:4px 8px 2px;font-size:9px;line-height:1.2;}
+.settings-alert-types-menu .settings-theme-menu-option{min-height:27px;padding:4px 8px;gap:7px;font-size:10px;line-height:1.2;}
