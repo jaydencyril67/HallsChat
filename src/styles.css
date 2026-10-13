@@ -3825,3 +3825,16 @@ html[data-theme="light"] .home-page.halls-calls-page{
 html[data-theme="light"] .home-page.halls-page {
   background: var(--theme-bg-light);
 }
+
+/* Global app chrome is permanently dark, independent of page theme scopes. */
+.topbar.theme-fixed-dark,
+.nowbar-dock.theme-fixed-dark {
+  color-scheme: dark;
+  --theme-header-bg: var(--theme-fixed-dark-header-bg);
+  --theme-header-border: var(--theme-fixed-dark-header-border);
+  --theme-header-shadow: var(--theme-fixed-dark-header-shadow);
+  --theme-text: var(--theme-fixed-dark-text);
+  --theme-line: var(--theme-fixed-dark-line);
+  --theme-primary: var(--theme-fixed-dark-primary);
+  --theme-primary-hover: var(--theme-fixed-dark-primary-hover);
+}
