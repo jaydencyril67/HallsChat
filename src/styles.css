@@ -3838,3 +3838,8 @@ html[data-theme="light"] .home-page.halls-page {
   --theme-primary: var(--theme-fixed-dark-primary);
   --theme-primary-hover: var(--theme-fixed-dark-primary-hover);
 }
+
+
+/* Public profile page canvas follows the active theme; fixed-dark header and NowBar keep their own styling. */
+.public-profile-page{background:var(--theme-bg);}
+html[data-theme="light"] .public-profile-page{background:var(--theme-bg-light);}
