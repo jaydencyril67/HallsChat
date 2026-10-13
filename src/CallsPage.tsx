@@ -126,7 +126,7 @@ export default function CallsPage() {
               const failed = call.status === "failed";
               const DirectionIcon = call.direction === "incoming" ? ArrowDownLeft : ArrowUpRight;
               const TypeIcon = call.kind === "video" ? Video : Phone;
-              return <button type="button" className="halls-call-history-row" key={call.id} onClick={() => call.person.id && navigate("/chats?user=" + encodeURIComponent(call.person.id))} disabled={!call.person.id}>
+              return <button type="button" className="halls-call-history-row" key={call.id} onClick={() => call.person.id && navigate("/rooms?user=" + encodeURIComponent(call.person.id))} disabled={!call.person.id}>
                 <span className="halls-call-history-avatar">{call.person.profilePicture ? <img src={call.person.profilePicture} alt="" /> : initials(call.person.name)}</span>
                 <span className="halls-call-history-copy">
                   <strong className={missed || rejected || failed ? "is-missed" : ""}>{call.person.name}</strong>
