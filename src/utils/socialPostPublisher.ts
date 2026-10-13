@@ -33,6 +33,15 @@ type ImageKitAuth = { token: string; expire: number; signature: string; publicKe
 import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./backgroundTasks";
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+
+// Post background colors are stored as real CSS colors by the API, not CSS variable references.
+function resolvePostBackgroundColor(value?: string) {
+  if (!value) return undefined;
+  const variable = value.match(/^var\((--[\w-]+)\)$/);
+  if (!variable || typeof document === "undefined") return value;
+  const resolved = getComputedStyle(document.documentElement).getPropertyValue(variable[1]).trim();
+  return resolved || value;
+}
 let state: SocialPostPublishState = { phase: "idle", status: "", message: "", lastPost: null, revision: 0, failureRevision: 0, failedInput: null };
 const listeners = new Set<(next: SocialPostPublishState) => void>();
 
@@ -110,7 +119,7 @@ export function startSocialPostPublish(input: SocialPostPublishInput, token: str
           content: input.content,
           images: urls,
           poll: input.poll,
-          backgroundColor: input.backgroundColor
+          backgroundColor: resolvePostBackgroundColor(input.backgroundColor)
         })
       });
       const payload = await response.json().catch(() => ({}));
