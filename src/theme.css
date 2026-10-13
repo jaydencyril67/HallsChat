@@ -132,6 +132,8 @@
   --theme-danger-action-hover-bg: var(--theme-surface-raised);
 
 
+  --theme-transparent: transparent;
+
   /* Shared selectable content palette for reusable content tools. */
   --theme-palette-burgundy: #8b1e35;
   --theme-palette-white: #ffffff;
