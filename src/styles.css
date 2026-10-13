@@ -1923,7 +1923,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-history-row:last-child{border-bottom:0}
 .halls-call-history-row:hover:not(:disabled){background:var(--theme-surface-hover)}
 .halls-call-history-row:disabled{cursor:default}
-.halls-call-history-avatar{display:grid;place-items:center;flex:0 0 47px;width:47px;height:47px;overflow:hidden;border:1px solid rgba(255,255,255,.11);border-radius:50%;background:var(--theme-avatar-gradient);color:var(--theme-primary-contrast);font-size:13px;font-weight:800}
+.halls-call-history-avatar{display:grid;place-items:center;flex:0 0 47px;width:47px;height:47px;overflow:hidden;border:1px solid var(--theme-avatar-border);border-radius:50%;background:var(--theme-avatar-gradient);color:var(--theme-primary-contrast);font-size:13px;font-weight:800}
 .halls-call-history-avatar img{width:100%;height:100%;object-fit:cover}
 .halls-call-history-copy{display:flex;flex:1;flex-direction:column;gap:7px;min-width:0}
 .halls-call-history-copy>strong{overflow:hidden;color:var(--theme-text-primary);font-size:13px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
@@ -5272,7 +5272,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs {
   background: var(--theme-card-raised);
   border-color: var(--theme-border);
-  box-shadow: inset 0 1px 2px rgba(65, 28, 37, .035);
+  box-shadow: var(--theme-shadow-control-soft);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button {
   color: var(--theme-text-secondary);
@@ -5285,7 +5285,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button.is-active {
   background: var(--theme-card);
   color: var(--theme-danger-strong);
-  box-shadow: 0 1px 4px rgba(75, 32, 43, .11), inset 0 0 0 1px rgba(169, 31, 53, .14);
+  box-shadow: var(--theme-shadow-selected);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button span {
   background: var(--theme-primary);
@@ -5295,11 +5295,11 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   background: var(--theme-card);
   border-color: var(--theme-border);
   color: var(--theme-text-secondary);
-  box-shadow: 0 2px 8px rgba(61, 24, 33, .035);
+  box-shadow: var(--theme-shadow-control-soft);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search:focus-within {
   border-color: var(--theme-focus);
-  box-shadow: 0 0 0 3px rgba(169, 31, 53, .08);
+  box-shadow: var(--theme-shadow-focus-soft);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search input {
   background: transparent;
@@ -5313,7 +5313,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state {
   background: var(--theme-card);
   border-color: var(--theme-border-subtle);
-  box-shadow: 0 5px 18px rgba(61, 24, 33, .035);
+  box-shadow: var(--theme-shadow-card-soft);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
   background: transparent;
@@ -5412,7 +5412,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button:focus-visible,
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search:focus-within,
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button:focus-visible {
-  outline: 2px solid #a92c43;
+  outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
@@ -5420,7 +5420,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-avatar img {
   display: block;
-  background: #f0dfe3;
+  background: var(--theme-surface-raised);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy,
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta {
