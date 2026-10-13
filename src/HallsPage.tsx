@@ -669,7 +669,7 @@ export default function HallsPage() {
               <strong>{detail.name}</strong>
               <span>{detail.memberCount} members · {detail.visibility === "private" ? "Private Hall" : "Public Hall"}</span>
             </div>
-            <HallsCallPanel socket={hallSocket} groupId={activeId} groupName={detail.name} currentUserId={currentUserId}/>
+            <HallsCallPanel socket={hallSocket} hallId={activeId} hallName={detail.name} currentUserId={currentUserId}/>
             <button type="button" className="chat-back-button" onClick={() => setMemberPanel(value => !value)} aria-label="Hall details" aria-expanded={memberPanel} title="Hall details"><UsersRound size={18}/></button>
           </header>
           {memberPanel && <div role="dialog" aria-modal="true" aria-label="Hall details and members" style={{ position: "fixed", zIndex: 5000, inset: 0, width: "100%", height: "100dvh", maxHeight: "100dvh", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain", padding: "calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 20px)", border: 0, borderRadius: 0, background: "var(--theme-bg)", color: "var(--theme-text)", boxShadow: "none", backdropFilter: "none" }}>
