@@ -59,7 +59,7 @@ async function compressGroupImage(file: File): Promise<File> {
       blob = await encode(jpegCanvas, "image/jpeg", 0.82);
     }
     const extension = type === "image/webp" ? "webp" : "jpg";
-    const baseName = file.name.replace(/\.[^.]+$/, "") || "hall-image";
+    const baseName = file.name.replace(/\.[^.]+$/, "") || "group-image";
     return new File([blob], `${baseName}.${extension}`, { type, lastModified: Date.now() });
   } finally { URL.revokeObjectURL(sourceUrl); }
 }
@@ -107,7 +107,7 @@ function HallVoiceNotePlayer({ src, pending = false }: { src: string; pending?: 
 }
 export default function HallsPage() {
   const [tab, setTab] = useState<Tab>("mine");
-  const [Halls, setGroups] = useState<HallSummary[]>([]);
+  const [groups, setGroups] = useState<HallSummary[]>([]);
   const [activeId, setActiveId] = useState("");
   const [detail, setDetail] = useState<HallDetail | null>(null);
   const [messages, setMessages] = useState<HallMessage[]>([]);
@@ -192,7 +192,7 @@ export default function HallsPage() {
     setGroupCodeMessage("Checking Hall ID…");
     const timer = window.setTimeout(async () => {
       try {
-        const response = await fetch(apiBase + "/api/Halls/id-availability?inviteCode=" + encodeURIComponent(value), { signal: controller.signal });
+        const response = await fetch(apiBase + "/api/groups/id-availability?inviteCode=" + encodeURIComponent(value), { signal: controller.signal });
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(payload.message || "Hall ID availability could not be checked.");
         if (controller.signal.aborted) return;
@@ -252,8 +252,8 @@ export default function HallsPage() {
   const loadGroups = useCallback(async (activeTab: Tab, showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
-      const payload = await request("/api/Halls?view=" + activeTab);
-      setGroups(Array.isArray(payload.Halls) ? payload.Halls : []);
+      const payload = await request("/api/groups?view=" + activeTab);
+      setGroups(Array.isArray(payload.groups) ? payload.groups : []);
       setError("");
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to load Halls."); }
     finally { if (showLoader) setLoading(false); }
@@ -263,7 +263,7 @@ export default function HallsPage() {
     if (!id) return;
     if (showLoader) setDetailLoading(true);
     try {
-      const payload = await request("/api/Halls/" + encodeURIComponent(id));
+      const payload = await request("/api/groups/" + encodeURIComponent(id));
       setDetail(payload.group || null);
       setMessages(Array.isArray(payload.messages) ? payload.messages : []);
       setError("");
@@ -281,7 +281,7 @@ export default function HallsPage() {
       if (hasConnected) void loadGroups(tab, false);
       hasConnected = true;
     });
-    socket.on("Halls:list:update", () => { void loadGroups(tab, false); });
+    socket.on("groups:list:update", () => { void loadGroups(tab, false); });
     return () => { socket.removeAllListeners(); socket.disconnect(); };
   }, [tab, loadGroups]);
   useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); }, [activeId, loadDetail]);
@@ -369,7 +369,7 @@ export default function HallsPage() {
     if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
   }, []);
 
-  const filteredGroups = useMemo(() => { const query = search.trim().toLowerCase(); if (!query) return Halls; return Halls.filter(group => [group.name, group.description, group.lastMessage?.text || "", group.lastMessage?.senderName || ""].join(" ").toLowerCase().includes(query)); }, [Halls, search]);
+  const filteredGroups = useMemo(() => { const query = search.trim().toLowerCase(); if (!query) return groups; return groups.filter(group => [group.name, group.description, group.lastMessage?.text || "", group.lastMessage?.senderName || ""].join(" ").toLowerCase().includes(query)); }, [groups, search]);
 
   function cancelGroupAvatarCrop() {
     if (groupAvatarCropSource) URL.revokeObjectURL(groupAvatarCropSource);
@@ -419,7 +419,7 @@ export default function HallsPage() {
     try {
       const avatar = await uploadGroupMedia(croppedFile, token);
       updateBackgroundTask(taskId, "Saving Hall logo…");
-      const payload = await request("/api/Halls/" + encodeURIComponent(activeId) + "/avatar", {
+      const payload = await request("/api/groups/" + encodeURIComponent(activeId) + "/avatar", {
         method: "PATCH",
         body: JSON.stringify({ avatar })
       });
@@ -447,7 +447,7 @@ export default function HallsPage() {
       let avatar = "";
       const token = localStorage.getItem("hallschat_token");
       if (groupAvatarFile && token) avatar = await uploadGroupMedia(groupAvatarFile, token);
-       const payload = await request("/api/Halls", { method: "POST", body: JSON.stringify({ name: name.trim(), description: description.trim(), visibility, groupCode, ...(avatar ? { avatar } : {}) }) });
+       const payload = await request("/api/groups", { method: "POST", body: JSON.stringify({ name: name.trim(), description: description.trim(), visibility, groupCode, ...(avatar ? { avatar } : {}) }) });
       setShowCreate(false); setName(""); setDescription(""); setGroupCode(""); setGroupCodeStatus("idle"); setGroupCodeMessage(""); setVisibility("public"); setGroupAvatarFile(null); setGroupAvatarPreview("");
       setTab("mine");
       await loadGroups("mine"); if (payload.group?.id) setActiveId(payload.group.id);
@@ -459,7 +459,7 @@ export default function HallsPage() {
   async function joinGroup(id?: string, code?: string) {
     setBusy(true); setError(""); setNotice("");
     try {
-      const payload = await request("/api/Halls/join", { method: "POST", body: JSON.stringify(id ? { groupId: id } : { groupCode: code }) });
+      const payload = await request("/api/groups/join", { method: "POST", body: JSON.stringify(id ? { groupId: id } : { groupCode: code }) });
       setShowJoin(false); setInviteCode(""); setNotice("You joined " + (payload.group?.name || "the Hall") + ".");
       setTab("mine"); await loadGroups("mine"); if (payload.group?.id) setActiveId(payload.group.id);
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to join this Hall."); }
@@ -555,7 +555,7 @@ export default function HallsPage() {
       }
       const audioUrl = voiceFile ? (updateBackgroundTask(backgroundTaskId, "Uploading Halls voice note…"), await uploadGroupMedia(voiceFile, savedToken)) : "";
       updateBackgroundTask(backgroundTaskId, "Sending message to Halls…");
-      const payload = await request(`/api/Halls/${encodeURIComponent(groupId)}/messages`, { method: "POST", body: JSON.stringify({ text, images, audioUrl, ...(replyTarget ? { replyToId: replyTarget.id } : {}) }) });
+      const payload = await request(`/api/groups/${encodeURIComponent(groupId)}/messages`, { method: "POST", body: JSON.stringify({ text, images, audioUrl, ...(replyTarget ? { replyToId: replyTarget.id } : {}) }) });
       const sent = payload.message as HallMessage;
       if (!sent?.id) throw new Error("The server didn't confirm your message.");
       setMessages(current => [...current.filter(message => message.id !== pendingId && message.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
@@ -599,7 +599,7 @@ export default function HallsPage() {
   async function saveMessageEdit(message: HallMessage) {
     const text = editMessageDraft.trim(); if (!text || !activeId) { setError("A message cannot be empty."); return; }
     try {
-      const payload = await request(`/api/Halls/${encodeURIComponent(activeId)}/messages/${encodeURIComponent(message.id)}`, { method: "PATCH", body: JSON.stringify({ text }) });
+      const payload = await request(`/api/groups/${encodeURIComponent(activeId)}/messages/${encodeURIComponent(message.id)}`, { method: "PATCH", body: JSON.stringify({ text }) });
       const edited = payload.message;
       setMessages(current => current.map(item => item.id === message.id ? { ...item, text: edited.text, editedAt: edited.editedAt } : item));
       setEditingMessageId(null); setEditMessageDraft(""); setActionMenuFor(null);
@@ -608,7 +608,7 @@ export default function HallsPage() {
   async function deleteHallMessage(message: HallMessage, scope: "me" | "everyone") {
     if (!activeId) return;
     try {
-      await request(`/api/Halls/${encodeURIComponent(activeId)}/messages/${encodeURIComponent(message.id)}?scope=${scope}`, { method: "DELETE" });
+      await request(`/api/groups/${encodeURIComponent(activeId)}/messages/${encodeURIComponent(message.id)}?scope=${scope}`, { method: "DELETE" });
       if (scope === "everyone") setMessages(current => current.map(item => item.id === message.id ? { ...item, text: "", imageUrl: "", images: [], audioUrl: "", deletedForEveryone: true } : item));
       else setMessages(current => current.filter(item => item.id !== message.id));
       setActionMenuFor(null);
@@ -620,7 +620,7 @@ export default function HallsPage() {
   async function leaveGroup() {
     if (!activeId) return;
     setBusy(true);
-    try { await request("/api/Halls/" + encodeURIComponent(activeId) + "/leave", { method: "POST" }); setActiveId(""); setDetail(null); await loadGroups("mine"); setNotice("You left the Hall."); }
+    try { await request("/api/groups/" + encodeURIComponent(activeId) + "/leave", { method: "POST" }); setActiveId(""); setDetail(null); await loadGroups("mine"); setNotice("You left the Hall."); }
     catch (err) { setError(err instanceof Error ? err.message : "Unable to leave this Hall."); }
     finally { setBusy(false); }
   }
@@ -628,14 +628,14 @@ export default function HallsPage() {
   async function deleteGroup() {
     if (!activeId) return;
     setBusy(true);
-    try { await request("/api/Halls/" + encodeURIComponent(activeId), { method: "DELETE" }); setActiveId(""); setDetail(null); await loadGroups("mine"); setNotice("Hall deleted."); }
+    try { await request("/api/groups/" + encodeURIComponent(activeId), { method: "DELETE" }); setActiveId(""); setDetail(null); await loadGroups("mine"); setNotice("Hall deleted."); }
     catch (err) { setError(err instanceof Error ? err.message : "Unable to delete this Hall."); }
     finally { setBusy(false); }
   }
 
   async function removeMember(member: Member) {
     if (!activeId) return;
-    try { await request("/api/Halls/" + encodeURIComponent(activeId) + "/members/" + encodeURIComponent(member.id), { method: "DELETE" }); await loadDetail(activeId, false); setNotice("Member removed."); }
+    try { await request("/api/groups/" + encodeURIComponent(activeId) + "/members/" + encodeURIComponent(member.id), { method: "DELETE" }); await loadDetail(activeId, false); setNotice("Member removed."); }
     catch (err) { setError(err instanceof Error ? err.message : "Unable to remove member."); }
   }
 
@@ -644,7 +644,7 @@ export default function HallsPage() {
     setBusy(true);
     setError("");
     try {
-      const payload = await request("/api/Halls/" + encodeURIComponent(activeId) + "/members/" + encodeURIComponent(member.id) + "/role", { method: "PATCH", body: JSON.stringify({ role }) });
+      const payload = await request("/api/groups/" + encodeURIComponent(activeId) + "/members/" + encodeURIComponent(member.id) + "/role", { method: "PATCH", body: JSON.stringify({ role }) });
       if (payload?.success !== true || payload?.role !== role) throw new Error("The server did not confirm the role change. Please try again.");
       await loadDetail(activeId, false);
       setNotice(role === "admin" ? "@" + member.username + " is now a Halls admin." : "@" + member.username + " is now a Hall member.");
@@ -686,8 +686,8 @@ export default function HallsPage() {
             <div style={{ display: "grid", gap: 10 }}>{detail.members.map(member => <div key={member.id} style={{ display: "flex", alignItems: "center", gap: 9 }}>
               <span className="chat-avatar" style={{ width: 36, height: 36, flexBasis: 36 }}>{member.profilePicture ? <img src={member.profilePicture} alt=""/> : initials(member.name)}</span>
               <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontSize: ".8rem", fontWeight: 750 }}>{member.name}</div><div style={{ ...muted, fontSize: ".7rem" }}>@{member.username} · {member.role}</div></div>
-              {detail.role === "owner" && member.role !== "owner" && <button type="button" aria-label={member.role === "admin" ? "Remove admin privileges from @" + member.username : "Make @" + member.username + " an admin"} title={member.role === "admin" ? "Remove admin" : "Make admin"} disabled={busy} style={{ ...secondary, width: 36, minWidth: 36, height: 36, padding: 0, opacity: busy ? .65 : 1, color: member.role === "admin" ? "var(--theme-danger)" : "var(--theme-danger)" }} className={member.role === "admin" ? undefined : "halls-confirm-trigger"} onClick={event => { if (member.role === "admin") { void changeRole(member, "member"); } else { askConfirm("Make @" + member.username + " an admin? They will be able to help manage this Hall.", () => changeRole(member, "admin"), event.currentTarget); } }}>{member.role === "admin" ? <ShieldMinus size={16}/> : <ShieldCheck size={16}/>}</button>}
-              {isAdmin && member.role !== "owner" && member.id !== detail.ownerId && !(detail.role === "admin" && member.role === "admin") && <button type="button" aria-label={"Remove " + member.name} style={{ ...secondary, padding: 8 }} className="halls-confirm-trigger" onClick={event => askConfirm("Remove @" + member.username + " from this Hall?", () => removeMember(member), event.currentTarget)}><Trash2 size={15}/></button>}
+              {detail.role === "owner" && member.role !== "owner" && <button type="button" aria-label={member.role === "admin" ? "Remove admin privileges from @" + member.username : "Make @" + member.username + " an admin"} title={member.role === "admin" ? "Remove admin" : "Make admin"} disabled={busy} style={{ ...secondary, width: 36, minWidth: 36, height: 36, padding: 0, opacity: busy ? .65 : 1, color: member.role === "admin" ? "var(--theme-danger)" : "var(--theme-danger)" }} className={member.role === "admin" ? undefined : "halls-confirm-trigger"} onClick={event => { if (member.role === "admin") { void changeRole(member, "member"); } else { askConfirm("Make @" + member.username + " an admin? They will be able to help manage this group.", () => changeRole(member, "admin"), event.currentTarget); } }}>{member.role === "admin" ? <ShieldMinus size={16}/> : <ShieldCheck size={16}/>}</button>}
+              {isAdmin && member.role !== "owner" && member.id !== detail.ownerId && !(detail.role === "admin" && member.role === "admin") && <button type="button" aria-label={"Remove " + member.name} style={{ ...secondary, padding: 8 }} className="halls-confirm-trigger" onClick={event => askConfirm("Remove @" + member.username + " from this group?", () => removeMember(member), event.currentTarget)}><Trash2 size={15}/></button>}
             </div>)}</div>
             {detail.role !== "owner" && <div style={{ display: "flex", marginTop: 14 }}><button type="button" style={{ ...secondary, flex: 1, color: "var(--theme-danger)" }} disabled={busy} className="halls-confirm-trigger" onClick={event => { askConfirm("Leave this Hall? You will need to join again to read new messages.", leaveGroup, event.currentTarget); }}><LogOut size={15}/> Leave group</button></div>}
           </div>}
@@ -699,7 +699,7 @@ export default function HallsPage() {
               const imgs = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
               const quoted = message.replyTo;
               const canEdit = mine && !message.pending && !message.deletedForEveryone && Boolean(message.text.trim()) && !imgs.length && !message.audioUrl && Date.now() - new Date(message.createdAt).getTime() <= 24 * 60 * 60 * 1000;
-              const reactionGroups = Array.from((message.reactions || []).reduce((Halls, reaction) => Halls.set(reaction.emoji, [...(Halls.get(reaction.emoji) || []), reaction]), new Map<string, HallReaction[]>()).entries());
+              const reactionGroups = Array.from((message.reactions || []).reduce((groups, reaction) => groups.set(reaction.emoji, [...(groups.get(reaction.emoji) || []), reaction]), new Map<string, HallReaction[]>()).entries());
               if (message.callLog) {
                  const call = message.callLog;
                  const outgoing = call.callerId === currentUserId;
@@ -773,8 +773,8 @@ export default function HallsPage() {
             <div className="chat-attachment-wrap" style={{ position: "relative" }}><button type="button" aria-label="Add attachment" title="Add attachment" onClick={() => setAttachmentMenuOpen(value => !value)} style={{ display: "grid", placeItems: "center", width: 36, height: 36, border: 0, borderRadius: 9, background: "var(--theme-surface-hover)", color: "var(--theme-danger)" }}><Paperclip size={18}/></button>
               {attachmentMenuOpen && <div className="chat-attachment-menu" style={{ position: "absolute", zIndex: 35, bottom: 44, left: 0, display: "grid", gap: 5, minWidth: 160, padding: 7, border: "1px solid var(--theme-line)", borderRadius: 11, background: "var(--theme-popover-bg)", boxShadow: "var(--theme-shadow-card-soft)" }}><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => imageInputRef.current?.click()}><ImageIcon size={15}/> Gallery</button><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => cameraInputRef.current?.click()}><Camera size={15}/> Camera</button><button type="button" style={{ ...secondary, justifyContent: "flex-start" }} onClick={() => void recordVoiceNote()}><Mic size={15}/> Voice note</button></div>}
             </div>
-            {(recording || recordingPaused) ? <div className={"chat-recording-status" + (recordingPaused ? " is-paused" : "")}><span className={"chat-recording-dot" + (recordingPaused ? " is-paused" : "")} />{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceDraft && voiceDraftUrl ? <div className="chat-voice-draft-preview"><HallVoiceNotePlayer src={voiceDraftUrl} /></div> : <textarea ref={draftInputRef} aria-label="Write a Halls message" value={draft} onChange={event => { setDraft(event.target.value); socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: true }); if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current); typingTimerRef.current = window.setTimeout(() => socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: false }), 1200); }} placeholder="Message the Hall…" maxLength={4000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }}/>}
-            {!recording && !recordingPaused && !voiceDraft && <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>}{(recording || recordingPaused) ? <><button type="button" className="chat-recording-control" onClick={() => void recordVoiceNote()} aria-label={recordingPaused ? "Resume recording" : "Pause recording"} title={recordingPaused ? "Resume recording" : "Pause recording"}>{recordingPaused ? <Play size={17} fill="currentColor" /> : <Pause size={17} fill="currentColor" />}</button><button type="button" className="chat-stop-recording" onClick={finishVoiceRecording} aria-label="Finish recording and review" title="Finish recording and review"><Square size={17} fill="currentColor" /></button><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} aria-label="Delete recording" title="Delete recording"><Trash2 size={17} /></button></> : voiceDraft ? <><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} disabled={busy || voiceBusy} aria-label="Delete voice note" title="Delete voice note"><Trash2 size={17} /></button><button type="submit" className="chat-stop-recording" disabled={busy || voiceBusy} aria-label="Send voice note" title="Send voice note">{busy || voiceBusy ? <LoadingDots /> : <Send size={18} />}</button></> : <button type="submit" disabled={busy || voiceBusy || compressingImages || (!draft.trim() && !imageFiles.length)} aria-label="Send Halls message" title="Send"><Send size={18}/></button>}
+            {(recording || recordingPaused) ? <div className={"chat-recording-status" + (recordingPaused ? " is-paused" : "")}><span className={"chat-recording-dot" + (recordingPaused ? " is-paused" : "")} />{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceDraft && voiceDraftUrl ? <div className="chat-voice-draft-preview"><HallVoiceNotePlayer src={voiceDraftUrl} /></div> : <textarea ref={draftInputRef} aria-label="Write a group message" value={draft} onChange={event => { setDraft(event.target.value); socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: true }); if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current); typingTimerRef.current = window.setTimeout(() => socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: false }), 1200); }} placeholder="Message the Hall…" maxLength={4000} rows={1} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }}/>}
+            {!recording && !recordingPaused && !voiceDraft && <span className="chat-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>}{(recording || recordingPaused) ? <><button type="button" className="chat-recording-control" onClick={() => void recordVoiceNote()} aria-label={recordingPaused ? "Resume recording" : "Pause recording"} title={recordingPaused ? "Resume recording" : "Pause recording"}>{recordingPaused ? <Play size={17} fill="currentColor" /> : <Pause size={17} fill="currentColor" />}</button><button type="button" className="chat-stop-recording" onClick={finishVoiceRecording} aria-label="Finish recording and review" title="Finish recording and review"><Square size={17} fill="currentColor" /></button><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} aria-label="Delete recording" title="Delete recording"><Trash2 size={17} /></button></> : voiceDraft ? <><button type="button" className="chat-discard-recording" onClick={discardVoiceDraft} disabled={busy || voiceBusy} aria-label="Delete voice note" title="Delete voice note"><Trash2 size={17} /></button><button type="submit" className="chat-stop-recording" disabled={busy || voiceBusy} aria-label="Send voice note" title="Send voice note">{busy || voiceBusy ? <LoadingDots /> : <Send size={18} />}</button></> : <button type="submit" disabled={busy || voiceBusy || compressingImages || (!draft.trim() && !imageFiles.length)} aria-label="Send group message" title="Send"><Send size={18}/></button>}
           </form>
         </section> : <>
           <div className="halls-list-tabs" style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
@@ -787,7 +787,7 @@ export default function HallsPage() {
           </div>
           {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 34 }}><LoadingDots/></div> : filteredGroups.length ? <div className="halls-list" style={{ display: "grid", gap: 10 }}>{filteredGroups.map(group => <div key={group.id} className="halls-list-row" style={{ ...panel, padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
             <Avatar name={group.name} src={group.avatar} size={49}/><div style={{ flex: 1, minWidth: 0, textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: ".9rem", fontWeight: 850, color: "var(--theme-text)" }}>{group.name}{group.visibility === "private" ? <LockKeyhole size={13} color="var(--theme-danger)"/> : null}</span><span style={{ display: "block", ...muted, fontSize: ".75rem", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{group.lastMessage ? (group.lastMessage.senderName ? group.lastMessage.senderName + ": " : "") + group.lastMessage.text : group.description || "No messages yet"}</span><span style={{ display: "block", ...muted, fontSize: ".7rem", marginTop: 5 }}>{group.memberCount} members · {group.role || "Public"}{group.lastMessage ? " · " + formatTime(group.lastMessage.createdAt) : ""}</span></div>{tab === "discover" ? <button type="button" style={primary} disabled={busy} onClick={() => void joinGroup(group.id)}>Join</button> : <button type="button" aria-label={"Open " + group.name} title={"Open " + group.name} style={{ ...secondary, width: 38, minWidth: 38, padding: 0 }} onClick={() => setActiveId(group.id)}><ArrowLeft size={17} style={{ transform: "rotate(180deg)" }}/></button>}
-          </div>)}</div> : <div className="halls-list-empty" style={{ ...panel, textAlign: "center", padding: "32px 18px" }}><div className="halls-list-empty-icon" style={{ width: 49, height: 49, margin: "0 auto 12px", borderRadius: 16, display: "grid", placeItems: "center", background: "var(--theme-danger-action-bg)", color: "var(--theme-danger)" }}><UsersRound size={23}/></div><strong style={{ display: "block", fontSize: ".92rem" }}>{search.trim() ? "No matching Halls" : tab === "mine" ? "Your group story starts here" : "No Halls to discover yet"}</strong><p style={{ ...muted, margin: "7px auto 14px", maxWidth: 320, fontSize: ".8rem", lineHeight: 1.6 }}>{search.trim() ? "Try a different group name, description, or recent message." : tab === "mine" ? "Create a group for friends, family, classmates, or your community." : "Public Halls will appear here when they are available."}</p>{search.trim() ? <button type="button" style={secondary} onClick={() => setSearch("")}><X size={15}/> Clear search</button> : tab === "mine" && <button type="button" style={primary} onClick={() => setShowCreate(true)}><Plus size={16}/> Create your first group</button>}</div>}
+          </div>)}</div> : <div className="halls-list-empty" style={{ ...panel, textAlign: "center", padding: "32px 18px" }}><div className="halls-list-empty-icon" style={{ width: 49, height: 49, margin: "0 auto 12px", borderRadius: 16, display: "grid", placeItems: "center", background: "var(--theme-danger-action-bg)", color: "var(--theme-danger)" }}><UsersRound size={23}/></div><strong style={{ display: "block", fontSize: ".92rem" }}>{search.trim() ? "No matching groups" : tab === "mine" ? "Your group story starts here" : "No groups to discover yet"}</strong><p style={{ ...muted, margin: "7px auto 14px", maxWidth: 320, fontSize: ".8rem", lineHeight: 1.6 }}>{search.trim() ? "Try a different group name, description, or recent message." : tab === "mine" ? "Create a Hall for friends, family, classmates, or your community." : "Public Halls will appear here when they are available."}</p>{search.trim() ? <button type="button" style={secondary} onClick={() => setSearch("")}><X size={15}/> Clear search</button> : tab === "mine" && <button type="button" style={primary} onClick={() => setShowCreate(true)}><Plus size={16}/> Create your first group</button>}</div>}
         </>}
       </div>
     </section>
