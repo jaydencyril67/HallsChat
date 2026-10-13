@@ -229,7 +229,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
       } catch (e) { setError(e instanceof Error ? e.message : "A participant connection failed."); }
     };
     const onEnded = (event: { callId: string; groupId?: string }) => {
-      if (event.groupId !== groupId || (callIdRef.current && event.callId !== callIdRef.current)) return;
+      if (event.groupId !== hallId || (callIdRef.current && event.callId !== callIdRef.current)) return;
       resetCall(false);
       setError("The Hall call has ended.");
     };
