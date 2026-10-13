@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, CircleHelp, Code2, ContactRound, Globe, Home, MessagesSquare, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
 const getNowbarFeature = (key: string) => { try { return window.localStorage.getItem(key) !== "false"; } catch { return true; } };
-const swipeRoutes = ["/home", "/chats", "/halls", "/profile", "/calls", "/groups", "/settings", "/help", "/dev"];
+const swipeRoutes = ["/home", "/rooms", "/halls", "/profile", "/calls", "/groups", "/settings", "/help", "/dev"];
 
 type View = "title" | "actions";
 type Mode = "compact" | "expanded";
@@ -54,7 +54,7 @@ function getPageTitle() {
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
   if (path === "/signup") return "SIGN UP";
   if (path === "/confirm-email" || path === "/verify-email") return "CONFIRM EMAIL";
-  if (path.startsWith("/chats")) return "ROOMS";
+  if (path.startsWith("/rooms")) return "ROOMS";
   if (path.startsWith("/contacts")) return "PEOPLE";
   if (path.startsWith("/halls")) return "GLOBE";
   if (path.startsWith("/calls")) return "CALLS";
@@ -195,7 +195,7 @@ export default function NowBar() {
     }
     const routeByAction: Record<string, string> = {
       HOME: "/home",
-      ROOMS: "/chats",
+      ROOMS: "/rooms",
       PEOPLE: "/contacts",
       GLOBE: "/halls",
       PROFILE: "/profile",
