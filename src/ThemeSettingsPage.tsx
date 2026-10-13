@@ -1,60 +1,77 @@
-import { Check, Moon, Sun, Smartphone } from "lucide-react";
+import { Check, MoreHorizontal } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 
 export default function ThemeSettingsPage() {
   const { themeMode, themePreference, setThemePreference } = useAppTheme();
-  const isLight = themeMode === "light";
-  const choice = themePreference;
-  const toggleTheme = () => setThemePreference(isLight ? "dark" : "light");
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const themeMenuRef = useRef<HTMLDivElement>(null);
+  const currentThemeLabel = themePreference === "system"
+    ? "System"
+    : themePreference === "light"
+      ? "Light"
+      : "Dark";
+
+  useEffect(() => {
+    if (!themeMenuOpen) return;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
+        setThemeMenuOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setThemeMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [themeMenuOpen]);
+
+  const chooseTheme = (preference: "dark" | "light" | "system") => {
+    setThemePreference(preference);
+    setThemeMenuOpen(false);
+  };
 
   return <main className="home-page social-home settings-page theme-token-scope">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell settings-shell">
-      <section className="settings-card" aria-labelledby="appearance-heading">
-        <div className="settings-card-heading">
-          <span className="settings-section-icon"><Sun size={18} /></span>
-          <div>
-            <h2 id="appearance-heading">Appearance</h2>
-            <p>Choose how HallsChat looks on this device.</p>
-          </div>
-        </div>
-
-        <div className="settings-theme-switch-row">
-          <span className="settings-theme-icon" aria-hidden="true">
-            {isLight ? <Sun size={19} /> : <Moon size={19} />}
-          </span>
-          <span className="settings-theme-copy">
-            <strong>{isLight ? "Light theme" : "Dark theme"}</strong>
-            <small>{isLight ? "Warm ivory surfaces with burgundy accents" : "The original deep burgundy HallsChat look"}</small>
-          </span>
+      <section className="settings-theme-card" aria-label="App theme">
+        <span className="settings-theme-title">App theme</span>
+        <div className="settings-theme-menu-anchor" ref={themeMenuRef}>
           <button
             type="button"
-            role="switch"
-            aria-checked={isLight}
-            aria-label="Toggle light theme"
-            className={`settings-theme-switch${isLight ? " is-on" : ""}`}
-            onClick={toggleTheme}
+            className="settings-theme-menu-trigger"
+            aria-label="Choose app theme"
+            aria-haspopup="menu"
+            aria-expanded={themeMenuOpen}
+            onClick={() => setThemeMenuOpen(open => !open)}
           >
-            <span className="settings-theme-switch-thumb" />
+            <MoreHorizontal size={21} />
           </button>
+          {themeMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="App theme options">
+            {([
+              { value: "dark", label: "Dark" },
+              { value: "light", label: "Light" },
+              { value: "system", label: "System" },
+            ] as const).map(option => <button
+              key={option.value}
+              type="button"
+              role="menuitemradio"
+              aria-checked={themePreference === option.value}
+              className={`settings-theme-menu-option${themePreference === option.value ? " is-selected" : ""}`}
+              onClick={() => chooseTheme(option.value)}
+            >
+              <span>{option.label}</span>
+              {themePreference === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+          </div>}
         </div>
-
-        <button
-          type="button"
-          className={`settings-system-option${choice === "system" ? " is-selected" : ""}`}
-          aria-pressed={choice === "system"}
-          onClick={() => setThemePreference("system")}
-        >
-          <span className="settings-theme-icon"><Smartphone size={18} /></span>
-          <span className="settings-theme-copy">
-            <strong>Use device theme</strong>
-            <small>Automatically follow your phone's light or dark setting</small>
-          </span>
-          <span className="settings-theme-check" aria-hidden="true">{choice === "system" && <Check size={15} />}</span>
-        </button>
-        <p className="settings-note">Your choice is saved on this device and stays selected after refresh.</p>
+        <span className="settings-theme-current" aria-live="polite">{currentThemeLabel}</span>
       </section>
     </section>
     <NowBar />
