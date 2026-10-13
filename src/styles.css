@@ -687,7 +687,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-empty-conversation,.chat-welcome{display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center}
 .chat-empty-conversation>span,.chat-welcome>span{display:grid;place-items:center;width:56px;height:56px;margin-bottom:15px;border:1px solid var(--theme-accent-border);border-radius:18px;background:var(--theme-accent-soft);color:var(--theme-empty-state-icon)}
 .chat-empty-conversation strong,.chat-welcome h2{margin:0;color:var(--theme-text-primary);font-size:1rem;font-weight:800}
-.chat-empty-conversation p,.chat-welcome p{max-width:310px;margin:8px 0 0;color:var(--chat-muted);font-size:.77rem;line-height:1.7}
+.chat-empty-conversation p,.chat-welcome p{max-width:310px;margin:8px 0 0;color:var(--theme-text-secondary);font-size:.77rem;line-height:1.7}
 .chat-welcome h2{max-width:340px;font-size:1.05rem;line-height:1.4}
 .chat-composer{display:flex;align-items:flex-end;gap:8px;padding:11px 12px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--chat-line);background:var(--theme-card)}
 .chat-composer textarea{display:block;flex:1;min-width:0;min-height:42px;max-height:120px;resize:vertical;padding:12px 13px;border:1px solid var(--theme-border);border-radius:13px;background:var(--theme-surface-hover);color:var(--theme-text-primary);font:inherit;font-size:.8rem;line-height:1.5;outline:none}
@@ -1042,8 +1042,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   gap: 8px;
   flex-wrap: wrap;
   padding: 8px 12px;
-  border-top: 1px solid var(--chat-border, rgba(255,255,255,.1));
-  background: var(--chat-surface, rgba(20,20,24,.92));
+  border-top: 1px solid var(--theme-border);
+  background: var(--theme-card);
 }
 .chat-image-pending-grid .chat-image-pending {
   position: relative;
@@ -2126,8 +2126,8 @@ html[data-theme="light"] .home-page.halls-calls-page{
 
 /* Header tap opens the alerts center, following the CryBots header interaction. */
 .hallschat-clickable-header{cursor:pointer;user-select:none;transition:border-color .16s ease,box-shadow .16s ease,filter .16s ease}
-.hallschat-clickable-header:hover{border-color:#d64a5b80;box-shadow:0 10px 32px #0005,0 0 0 1px #d64a5b20}
-.hallschat-clickable-header:focus-visible{outline:2px solid var(--theme-focus,#ed5367);outline-offset:4px}
+.hallschat-clickable-header:hover{border-color:var(--theme-accent-border);box-shadow:var(--theme-shadow-card-soft),0 0 0 1px var(--theme-accent-soft)}
+.hallschat-clickable-header:focus-visible{outline:2px solid var(--theme-focus);outline-offset:4px}
 .halls-alerts-shell{max-width:900px}
 .halls-alerts-toolbar{display:flex;gap:8px;padding-bottom:14px;border-bottom:1px solid var(--theme-line)}
 .halls-alerts-toolbar button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:36px;padding:0 13px;border:1px solid var(--theme-line);border-radius:999px;background:#ffffff05;color:var(--theme-muted);font-size:11px;font-weight:700}
