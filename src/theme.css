@@ -363,6 +363,9 @@
 
 /* Hybrid theme architecture: any page or component can opt into the shared light palette by adding .theme-token-scope. Unsubscribed areas keep the dark root tokens and all existing hardcoded colors. */
 html[data-theme="light"] .theme-token-scope {
+  --theme-shadow-color-primary: rgba(169, 31, 53, 0.15);
+  --theme-shadow-color-soft: rgba(61, 24, 33, 0.035);
+  --theme-shadow-color-focus: rgba(169, 31, 53, 0.08);
   color-scheme: light;
   --theme-bg: #f8f3f1;
   --theme-bg-light: #f8f3f1;
