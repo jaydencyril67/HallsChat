@@ -21,7 +21,7 @@ import AppThemeProvider from "./components/AppTheme";
 import SharedPostPage from "./SharedPostPage";
 
 const navigationSections: Record<string, { title: string; description: string }> = {
-  "/chats": { title: "Chat", description: "Your conversations will live here." },
+  "/chats": { title: "Rooms", description: "Your conversations will live here." },
   "/contacts": { title: "People", description: "Your contacts and connections will live here." },
   "/calls": { title: "Calls", description: "Your calls will live here." },
   "/groups": { title: "Groups", description: "Your group conversations will live here." },
