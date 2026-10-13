@@ -1166,7 +1166,7 @@ export default function HomePage() {
   }
 
   function getPostLink(post: SocialPost) {
-    return `${window.location.origin}/home#post-${encodeURIComponent(post.id)}`;
+    return `${window.location.origin}/post/${encodeURIComponent(post.id)}`;
   }
 
   async function copyPostLink(post: SocialPost) {
