@@ -5,11 +5,11 @@ import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
 type Participant = { id: string; name?: string; username?: string; profilePicture?: string };
 type IncomingHallCall = { callId: string; groupId: string; kind: "audio" | "video"; caller: Participant; startedAt: number };
 type PeerState = { pc: RTCPeerConnection; stream?: MediaStream };
-type Props = { socket: Socket | null; groupId: string; groupName: string; currentUserId: string };
+type Props = { socket: Socket | null; hallId: string; hallName: string; currentUserId: string };
 
 const rtcConfig: RTCConfiguration = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }] };
 
-export default function HallsCallPanel({ socket, groupId, groupName, currentUserId }: Props) {
+export default function HallsCallPanel({ socket, hallId, hallName, currentUserId }: Props) {
   const [incoming, setIncoming] = useState<IncomingHallCall | null>(null);
   const [callId, setCallId] = useState("");
   const [kind, setKind] = useState<"audio" | "video">("audio");
@@ -122,7 +122,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
     try {
       await startLocalMedia(callKind);
       const result = await new Promise<{ ok?: boolean; message?: string; callId?: string }>((resolve, reject) => {
-        socket.timeout(10000).emit("group-call:start", { groupId, kind: callKind }, (timeoutError: Error | null, response: { ok?: boolean; message?: string; callId?: string }) => {
+        socket.timeout(10000).emit("group-call:start", { groupId: hallId, kind: callKind }, (timeoutError: Error | null, response: { ok?: boolean; message?: string; callId?: string }) => {
           if (timeoutError) return reject(new Error("Unable to start the Hall call. Try again."));
           resolve(response);
         });
@@ -145,7 +145,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
       closePeers(); stopLocal();
       setError(e instanceof Error ? e.message : "Unable to start the Hall call.");
     } finally { setBusy(false); }
-  }, [socket, groupId, busy, startLocalMedia, closePeers, stopLocal]);
+  }, [socket, hallId, busy, startLocalMedia, closePeers, stopLocal]);
 
   useLayoutEffect(() => {
     if (!confirmKind) return;
@@ -169,7 +169,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
     window.addEventListener("resize", reposition);
     window.addEventListener("scroll", reposition, true);
     return () => { window.removeEventListener("resize", reposition); window.removeEventListener("scroll", reposition, true); };
-  }, [confirmKind, groupName]);
+  }, [confirmKind, hallName]);
 
   useEffect(() => {
     if (!confirmKind) return;
@@ -191,7 +191,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
   useEffect(() => {
     if (!socket) return;
     const onIncoming = (event: IncomingHallCall) => {
-      if (event.groupId !== groupId || event.caller?.id === currentUserId || callIdRef.current) return;
+      if (event.groupId !== hallId || event.caller?.id === currentUserId || callIdRef.current) return;
       setIncoming(event);
     };
     const onPeerJoined = (event: { callId: string; participant: Participant }) => {
@@ -242,7 +242,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
       socket.off("group-call:incoming", onIncoming); socket.off("group-call:peer-joined", onPeerJoined);
       socket.off("group-call:peer-left", onPeerLeft); socket.off("group-call:signal", onSignal); socket.off("group-call:ended", onEnded);
     };
-  }, [socket, groupId, currentUserId, ensurePeer, resetCall]);
+  }, [socket, hallId, currentUserId, ensurePeer, resetCall]);
 
   useEffect(() => () => {
     if (callIdRef.current) socketRef.current?.emit("group-call:leave", { callId: callIdRef.current });
@@ -270,16 +270,16 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
     </div>
     {confirmKind && !active && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label={`Confirm Hall ${confirmKind} call`}>
       <strong>Start Hall {confirmKind} call?</strong>
-      <span>Call <b>{groupName}</b> now?</span>
+      <span>Call <b>{hallName}</b> now?</span>
       <div><button type="button" className="halls-call-confirm-cancel" onClick={() => setConfirmKind(null)}>Cancel</button><button type="button" className="halls-call-confirm-start" onClick={() => { const selectedKind = confirmKind; setConfirmKind(null); void startCall(selectedKind); }}>{confirmKind === "video" ? <Video size={14} /> : <Phone size={14} />} Start call</button></div>
     </div>}
     {error && <div role="status" style={{ position: "fixed", zIndex: 10020, left: 12, right: 12, bottom: 90, maxWidth: 420, margin: "0 auto", padding: "10px 12px", borderRadius: 10, background: "var(--theme-toast-danger-bg)", color: "var(--theme-toast-error-text)", fontSize: ".78rem", border: "1px solid var(--theme-toast-error-border)" }}>{error}<button type="button" onClick={() => setError("")} style={{ float: "right", background: "none", border: 0, color: "inherit" }}><X size={14}/></button></div>}
     {incoming && !active && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label="Incoming Hall call">
       <div className="halls-call-card">
-        <div className="halls-call-avatar">{(incoming.caller?.name || incoming.caller?.username || groupName || "G").slice(0, 1).toUpperCase()}</div>
+        <div className="halls-call-avatar">{(incoming.caller?.name || incoming.caller?.username || hallName || "G").slice(0, 1).toUpperCase()}</div>
         <span className="halls-call-eyebrow">INCOMING HALL {incoming.kind.toUpperCase()} CALL</span>
         <h2>{incoming.caller?.name || incoming.caller?.username || "A Hall member"}</h2>
-        <p>{groupName}</p>
+        <p>{hallName}</p>
         <p className="halls-call-ring-time">Hall call ringing…</p>
         <div className="halls-call-actions">
           <button className="halls-call-decline" type="button" onClick={() => { socket?.emit("group-call:dismiss", { callId: incoming.callId }); setIncoming(null); }} aria-label="Dismiss Hall call"><PhoneOff /></button>
@@ -289,7 +289,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
     </div>}
     {active && <div role="dialog" aria-modal="true" aria-label="Hall call" style={{ position: "fixed", zIndex: 10025, inset: 0, display: "flex", flexDirection: "column", background: "var(--theme-bg)", color: "var(--theme-text)" }}>
       <header style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px", borderBottom: "1px solid var(--theme-line)" }}>
-        <div style={{ flex: 1, minWidth: 0 }}><strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{groupName}</strong><span style={{ fontSize: ".75rem", color: "var(--theme-muted)" }}>{kind === "video" ? "Video" : "Audio"} call · {participants.length + 1} here</span></div>
+        <div style={{ flex: 1, minWidth: 0 }}><strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hallName}</strong><span style={{ fontSize: ".75rem", color: "var(--theme-muted)" }}>{kind === "video" ? "Video" : "Audio"} call · {participants.length + 1} here</span></div>
         <button type="button" onClick={leave} aria-label="Close Hall call" style={{ border: 0, background: "transparent", color: "inherit" }}><X size={21}/></button>
       </header>
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))", gap: 10, alignContent: "center" }}>
