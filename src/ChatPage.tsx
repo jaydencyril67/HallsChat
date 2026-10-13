@@ -255,12 +255,23 @@ export default function ChatPage() {
       createdAt: saved.createdAt || new Date().toISOString()
     } as ChatMessage;
   }
-  function deleteConversationForMe(personId: string, personName: string) {
+  async function deleteConversationForMe(personId: string, personName: string) {
     if (!currentUserId) {
       setError("Your account is still loading. Please try again.");
       return;
     }
+    const savedToken = token();
+    if (!savedToken) {
+      navigate("/signin", { replace: true });
+      return;
+    }
     try {
+      const response = await fetch(`${apiBase}/api/chat/conversations/${encodeURIComponent(personId)}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${savedToken}` }
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "That conversation couldn't be deleted.");
       const storageKey = `hallschat_hidden_conversations:${currentUserId}`;
       const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
       const hiddenIds = new Set(Array.isArray(saved) ? saved.map(String) : []);
@@ -278,12 +289,12 @@ export default function ChatPage() {
         setHistoryLoadedFor("");
       }
       setError("");
-    } catch {
-      setError(`Couldn't delete the conversation with ${personName} from this device. Please check available storage and try again.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Couldn't delete the conversation with ${personName}.`);
     }
   }
 
-  function messagePreview(message: Pick<ChatMessage, "text" | "images" | "imageUrl" | "audioUrl" | "deletedForEveryone">) {
+  function messagePreview  function messagePreview(message: Pick<ChatMessage, "text" | "images" | "imageUrl" | "audioUrl" | "deletedForEveryone">) {
     if (message.deletedForEveryone) return "This message was deleted";
     if (message.text?.trim()) return message.text;
     if (message.audioUrl) return "🎤 Voice note";
