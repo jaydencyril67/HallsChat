@@ -21,6 +21,40 @@
   --theme-header-bg: linear-gradient(180deg, #080709 0%, #030304 100%);
   --theme-header-border: #918B8D;
   --theme-header-shadow: 0 14px 34px rgba(0, 0, 0, 0.48), 0 2px 10px rgba(0, 0, 0, 0.28);
+
+  /* Semantic colour groups — shared roles, not one token per component. */
+  --theme-bg-page: var(--theme-bg);
+  --theme-card: var(--theme-surface);
+  --theme-card-raised: var(--theme-surface-raised);
+  --theme-input-bg: var(--theme-surface);
+  --theme-popover-bg: var(--theme-surface-raised);
+  --theme-overlay: rgba(8, 3, 5, 0.72);
+  --theme-border: var(--theme-line);
+  --theme-border-strong: rgba(248, 240, 241, 0.18);
+  --theme-text-primary: var(--theme-text);
+  --theme-text-secondary: var(--theme-muted);
+  --theme-text-muted: var(--theme-soft);
+  --theme-text-placeholder: var(--theme-soft);
+  --theme-text-inverse: #ffffff;
+  --theme-action-secondary-bg: var(--theme-surface-raised);
+  --theme-action-secondary-text: var(--theme-text);
+  --theme-action-secondary-border: var(--theme-line);
+  --theme-selection-bg: rgba(184, 32, 50, 0.20);
+  --theme-danger: #ff7185;
+  --theme-danger-strong: #e34b62;
+  --theme-warning: #f2bd69;
+  --theme-info: #8bbdff;
+  --theme-disabled-bg: #38232a;
+  --theme-disabled-text: #987d83;
+  --theme-status-success-bg: rgba(66, 200, 138, 0.13);
+  --theme-status-danger-bg: rgba(255, 113, 133, 0.13);
+  --theme-status-warning-bg: rgba(242, 189, 105, 0.13);
+  --theme-status-info-bg: rgba(139, 189, 255, 0.13);
+  --theme-message-own-bg: #351019;
+  --theme-message-other-bg: #261017;
+  --theme-media-control-bg: rgba(8, 3, 5, 0.68);
+  --theme-wave-track: rgba(248, 240, 241, 0.22);
+  --theme-wave-progress: var(--theme-primary-hover);
 }
 
 /* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
@@ -77,6 +111,40 @@
   --theme-header-bg: rgba(255, 253, 252, 0.96);
   --theme-header-border: rgba(83, 31, 42, 0.2);
   --theme-header-shadow: 0 10px 28px rgba(61, 24, 33, 0.12);
+
+  /* Same semantic roles, tuned for HallsChat's warm white light theme. */
+  --theme-bg-page: var(--theme-bg);
+  --theme-card: var(--theme-surface);
+  --theme-card-raised: var(--theme-surface-raised);
+  --theme-input-bg: #ffffff;
+  --theme-popover-bg: #ffffff;
+  --theme-overlay: rgba(49, 21, 29, 0.42);
+  --theme-border: var(--theme-line);
+  --theme-border-strong: rgba(83, 31, 42, 0.24);
+  --theme-text-primary: var(--theme-text);
+  --theme-text-secondary: var(--theme-muted);
+  --theme-text-muted: var(--theme-soft);
+  --theme-text-placeholder: #9a7c82;
+  --theme-text-inverse: #ffffff;
+  --theme-action-secondary-bg: #f7eeee;
+  --theme-action-secondary-text: var(--theme-text);
+  --theme-action-secondary-border: var(--theme-line);
+  --theme-selection-bg: rgba(169, 31, 53, 0.10);
+  --theme-danger: #b4233b;
+  --theme-danger-strong: #941b30;
+  --theme-warning: #8b570b;
+  --theme-info: #245e9b;
+  --theme-disabled-bg: #eee5e5;
+  --theme-disabled-text: #9a8589;
+  --theme-status-success-bg: rgba(22, 132, 84, 0.10);
+  --theme-status-danger-bg: rgba(180, 35, 59, 0.09);
+  --theme-status-warning-bg: rgba(139, 87, 11, 0.10);
+  --theme-status-info-bg: rgba(36, 94, 155, 0.09);
+  --theme-message-own-bg: #f6e3e7;
+  --theme-message-other-bg: #ffffff;
+  --theme-media-control-bg: rgba(49, 21, 29, 0.68);
+  --theme-wave-track: rgba(83, 31, 42, 0.22);
+  --theme-wave-progress: var(--theme-primary-hover);
 }
 :root[data-theme="light"] body { background: var(--theme-bg); color: var(--theme-text); }
 :root[data-theme="light"] .topbar .header-brand strong { color: var(--theme-text); }
