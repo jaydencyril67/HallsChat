@@ -55,6 +55,19 @@
   --theme-media-control-bg: rgba(8, 3, 5, 0.68);
   --theme-wave-track: rgba(248, 240, 241, 0.22);
   --theme-wave-progress: var(--theme-primary-hover);
+
+  /* Shared roles found during the page, feed, chat and call-modal audit. */
+  --theme-presence-online: #62dfa1;
+  --theme-presence-offline: #8d747b;
+  --theme-toast-bg: rgba(38, 18, 27, 0.98);
+  --theme-toast-danger-bg: rgba(54, 18, 22, 0.98);
+  --theme-toast-border: rgba(255, 210, 219, 0.20);
+  --theme-progress-track: rgba(248, 240, 241, 0.12);
+  --theme-progress-fill: var(--theme-primary-hover);
+  --theme-call-accept: #42c88a;
+  --theme-call-end: #e34b62;
+  --theme-avatar-fallback-bg: var(--theme-surface-raised);
+  --theme-avatar-fallback-text: var(--theme-text);
 }
 
 /* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
@@ -145,6 +158,19 @@
   --theme-media-control-bg: rgba(49, 21, 29, 0.68);
   --theme-wave-track: rgba(83, 31, 42, 0.22);
   --theme-wave-progress: var(--theme-primary-hover);
+
+  /* Shared roles found during the page, feed, chat and call-modal audit. */
+  --theme-presence-online: #168454;
+  --theme-presence-offline: #9a8589;
+  --theme-toast-bg: rgba(255, 253, 252, 0.98);
+  --theme-toast-danger-bg: rgba(255, 242, 243, 0.98);
+  --theme-toast-border: rgba(83, 31, 42, 0.18);
+  --theme-progress-track: rgba(83, 31, 42, 0.12);
+  --theme-progress-fill: var(--theme-primary-hover);
+  --theme-call-accept: #168454;
+  --theme-call-end: #b4233b;
+  --theme-avatar-fallback-bg: var(--theme-surface-raised);
+  --theme-avatar-fallback-text: var(--theme-text);
 }
 :root[data-theme="light"] body { background: var(--theme-bg); color: var(--theme-text); }
 :root[data-theme="light"] .topbar .header-brand strong { color: var(--theme-text); }
