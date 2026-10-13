@@ -2,12 +2,31 @@ import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { io } from "socket.io-client";
 import { navigate } from "./utils/navigate";
+import { dismissBackgroundTaskResult, getBackgroundTaskState, subscribeBackgroundTasks, type BackgroundTaskSnapshot } from "./utils/backgroundTasks";
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
 export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) {
   const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [taskState, setTaskState] = useState<BackgroundTaskSnapshot>(() => getBackgroundTaskState());
+
+  useEffect(() => subscribeBackgroundTasks(setTaskState), []);
+
+  const activeTask = taskState.tasks[taskState.tasks.length - 1];
+  const taskResult = activeTask ? null : taskState.lastResult;
+  const uploadRelated = (label: string, status = "") => /upload|photo|picture|image|attachment|story|logo/i.test(`${label} ${status}`);
+  const headerStatus = activeTask
+    ? (uploadRelated(activeTask.label, activeTask.status) ? "Uploading" : "Sending")
+    : taskResult
+      ? taskResult.error ? "Upload Failed" : uploadRelated(taskResult.label, taskResult.status) ? "Uploaded" : "Sent"
+      : "";
+
+  useEffect(() => {
+    if (activeTask || !taskResult) return;
+    const timer = window.setTimeout(() => dismissBackgroundTaskResult(), 4000);
+    return () => window.clearTimeout(timer);
+  }, [activeTask?.id, taskResult?.id, taskState.revision]);
 
   useEffect(() => {
     const updateOnlineStatus = () => setIsOnline(navigator.onLine);
@@ -69,6 +88,7 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
     <div className="header-brand">
       <strong>{isOnline ? "HALLSCHAT" : "NO INTERNET"}</strong>
       {!isOnline && <small>Check your connection</small>}
+      {headerStatus && <small className={`halls-header-upload-status${taskResult?.error ? " is-failed" : taskResult ? " is-complete" : " is-active"}`} role={taskResult?.error ? "alert" : "status"} aria-live="polite">{headerStatus}</small>}
     </div>
     <span className="header-artwork header-artwork-right" aria-hidden="true">
       <span className="header-logo"><img src="/crown-chat.svg?v=7" alt="" /></span>
