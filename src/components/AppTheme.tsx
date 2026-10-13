@@ -52,7 +52,7 @@ const AppThemeContext = createContext<AppThemeContextValue | null>(null);
  */
 export function AppThemeProvider({ children }: { children: React.ReactNode }) {
   const [themePreference, setPreferenceState] = useState<AppThemePreference>(getInitialPreference);
-  const [themeMode, setModeState] = useState<AppThemeMode>(() => resolvePreference(getInitialPreference));
+  const [themeMode, setModeState] = useState<AppThemeMode>(() => resolvePreference(getInitialPreference()));
 
   useEffect(() => {
     try {
