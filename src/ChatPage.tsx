@@ -138,6 +138,7 @@ function VoiceNotePlayer({ src, pending = false }: { src: string; pending?: bool
 
 export default function ChatPage() {
   const [people, setPeople] = useState<ChatPerson[]>([]);
+  const [conversationMenuFor, setConversationMenuFor] = useState<string | null>(null);
   const [activeId, setActiveId] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [conversationCalls, setConversationCalls] = useState<ChatCall[]>([]);
@@ -208,6 +209,16 @@ export default function ChatPage() {
   const [swipingMessageId, setSwipingMessageId] = useState<string | null>(null);
   const [messageSwipeOffset, setMessageSwipeOffset] = useState(0);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
+  const visiblePeople = useMemo(() => {
+    if (!currentUserId) return people;
+    try {
+      const hidden = JSON.parse(localStorage.getItem(`hallschat_hidden_conversations:${currentUserId}`) || "[]");
+      const hiddenIds = new Set(Array.isArray(hidden) ? hidden.map(String) : []);
+      return people.filter(person => !hiddenIds.has(person.id));
+    } catch {
+      return people;
+    }
+  }, [people, currentUserId]);
   activeIdRef.current = activeId;
   currentUserIdRef.current = currentUserId;
 
@@ -244,6 +255,34 @@ export default function ChatPage() {
       createdAt: saved.createdAt || new Date().toISOString()
     } as ChatMessage;
   }
+  function deleteConversationForMe(personId: string, personName: string) {
+    if (!currentUserId) {
+      setError("Your account is still loading. Please try again.");
+      return;
+    }
+    try {
+      const storageKey = `hallschat_hidden_conversations:${currentUserId}`;
+      const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      const hiddenIds = new Set(Array.isArray(saved) ? saved.map(String) : []);
+      hiddenIds.add(personId);
+      localStorage.setItem(storageKey, JSON.stringify([...hiddenIds]));
+      setPeople(current => current.filter(person => person.id !== personId));
+      setConversationMenuFor(null);
+      if (activeIdRef.current === personId) {
+        stopTyping(personId);
+        setOtherTyping(false);
+        setMobileConversationOpen(false);
+        setActiveId("");
+        setMessages([]);
+        setConversationCalls([]);
+        setHistoryLoadedFor("");
+      }
+      setError("");
+    } catch {
+      setError(`Couldn't delete the conversation with ${personName} from this device. Please check available storage and try again.`);
+    }
+  }
+
   function messagePreview(message: Pick<ChatMessage, "text" | "images" | "imageUrl" | "audioUrl" | "deletedForEveryone">) {
     if (message.deletedForEveryone) return "This message was deleted";
     if (message.text?.trim()) return message.text;
@@ -287,6 +326,7 @@ export default function ChatPage() {
       if (!target.closest(".chat-message-actions, .chat-message-more")) setActionMenuFor(null);
       if (!target.closest(".chat-message-delete-wrap")) setDeleteConfirmId(null);
       if (!target.closest(".chat-attachment-menu, .chat-attachment-wrap")) setAttachmentMenuOpen(false);
+      if (!target.closest(".chat-conversation-menu-anchor, .chat-person-row")) setConversationMenuFor(null);
     };
     document.addEventListener("pointerdown", closePopoutsOutside);
     return () => document.removeEventListener("pointerdown", closePopoutsOutside);
@@ -1022,16 +1062,17 @@ export default function ChatPage() {
       <div className={`chat-layout ${activePerson && mobileConversationOpen ? "chat-layout-conversation-open" : ""}`}>
         <aside className="chat-sidebar" aria-label="Your conversations">
           <div className="chat-sidebar-heading"><strong>Messages</strong></div>
-          {listLoading ? <div className="chat-list-state"><LoadingDots /></div> : people.length ? <div className="chat-people-list">
-            {people.map(person => <article key={person.id} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""}`}>
-              <button type="button" className="chat-person-avatar-link" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} aria-label={"View " + person.name + " profile"}><Avatar person={person} /></button>
+          {listLoading ? <div className="chat-list-state"><LoadingDots /></div> : visiblePeople.length ? <div className="chat-people-list">
+            {visiblePeople.map(person => <article key={person.id} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""} ${conversationMenuFor === person.id ? "chat-person-row-menu-open" : ""}`} onClick={() => setConversationMenuFor(current => current === person.id ? null : person.id)}>
+              <button type="button" className="chat-person-avatar-link" onClick={event => { event.stopPropagation(); navigate("/users/" + encodeURIComponent(person.id)); }} aria-label={"View " + person.name + " profile"}><Avatar person={person} /></button>
               <div className="chat-person-copy" aria-label={`Conversation details for ${person.name}`}>
                 <strong>{person.name}</strong><small>@{person.username} · {person.isOnline ? "Online" : "Offline"}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </div>
               <span className="chat-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="chat-lock-dot" title="Messaging unavailable">•</span>}</span>
-              <button type="button" className="chat-open-button" onClick={() => { scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
+              <button type="button" className="chat-open-button" onClick={event => { event.stopPropagation(); setConversationMenuFor(null); scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
+              {conversationMenuFor === person.id && <div className="chat-conversation-menu-anchor" onClick={event => event.stopPropagation()}><div className="chat-conversation-delete-popout" role="menu" aria-label={`Conversation options for ${person.name}`}><button type="button" role="menuitem" onClick={() => deleteConversationForMe(person.id, person.name)}><Trash2 size={15} />Delete conversation</button></div></div>}
             </article>)}
-          </div> : <div className="chat-list-empty"><UsersRound size={24} /><strong>No followers yet</strong><p>When someone follows you, you can start chatting with them here.</p></div>}
+          </div> : <div className="chat-list-empty"><UsersRound size={24} /><strong>{people.length ? "No conversations here" : "No followers yet"}</strong><p>{people.length ? "Your message list is clear. New conversations will appear here." : "When someone follows you, you can start chatting with them here."}</p></div>}
         </aside>
 
         <section className="chat-conversation" aria-label="Conversation">
