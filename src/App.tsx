@@ -18,6 +18,7 @@ import NowBar from "./NowBar";
 import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
 import AppThemeProvider from "./components/AppTheme";
+import SharedPostPage from "./SharedPostPage";
 
 const navigationSections: Record<string, { title: string; description: string }> = {
   "/chats": { title: "Chat", description: "Your conversations will live here." },
@@ -189,9 +190,9 @@ export default function App() {
 
 
   const normalizedPath = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
-  const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);
+  const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);\n  const sharedPostMatch = normalizedPath.match(/^\/post\/([^/]+)$/);
   let page: ReactNode;
-  if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />;
+  if (sharedPostMatch) page = <SharedPostPage postId={decodeURIComponent(sharedPostMatch[1])} />;\n  else if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />
   else if (normalizedPath === "/verify-email") page = <EmailVerificationPage />;
   else if (normalizedPath === "/signup") page = <SignupPage />;
   else if (normalizedPath === "/signin" || normalizedPath === "/sign-in") page = <SigninPage />;
