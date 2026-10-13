@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, CircleHelp, ContactRound, Home, MessageCircle, Phone, Settings, UsersRound, UserRound } from "lucide-react";
+import { ChevronDown, CircleHelp, ContactRound, Globe, Home, MessageCircle, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
 const getNowbarFeature = (key: string) => { try { return window.localStorage.getItem(key) !== "false"; } catch { return true; } };
 const swipeRoutes = ["/home", "/chats", "/halls", "/profile", "/calls", "/groups", "/settings", "/help"];
@@ -11,7 +11,7 @@ const NOWBAR_ACTION_STORAGE_KEY = "hallschat-nowbar-action";
 
 function readSavedNowBarAction() {
   try {
-    return window.localStorage.getItem(NOWBAR_ACTION_STORAGE_KEY);
+    const saved = window.localStorage.getItem(NOWBAR_ACTION_STORAGE_KEY);\n    return saved === "HALLS" ? "GLOBE" : saved;
   } catch {
     return null;
   }
@@ -28,7 +28,7 @@ function saveNowBarAction(label: string) {
 const actions = [
   { label: "HOME", icon: Home },
   { label: "CHAT", icon: MessageCircle },
-  { label: "HALLS", icon: UsersRound },
+  { label: "GLOBE", icon: Globe },
   { label: "PROFILE", icon: UserRound },
   { label: "CALLS", icon: Phone },
   { label: "GROUP", icon: UsersRound },
@@ -45,7 +45,7 @@ function getPageTitle() {
   if (path === "/confirm-email" || path === "/verify-email") return "CONFIRM EMAIL";
   if (path.startsWith("/chats")) return "CHAT";
   if (path.startsWith("/contacts")) return "PEOPLE";
-  if (path.startsWith("/halls")) return "HALLS";
+  if (path.startsWith("/halls")) return "GLOBE";
   if (path.startsWith("/calls")) return "CALLS";
   if (path.startsWith("/groups")) return "GROUP";
   if (path.startsWith("/notifications")) return "ALERT";
@@ -185,7 +185,7 @@ export default function NowBar() {
       HOME: "/home",
       CHAT: "/chats",
       PEOPLE: "/contacts",
-      HALLS: "/halls",
+      GLOBE: "/halls",
       PROFILE: "/profile",
       CALLS: "/calls",
       GROUP: "/groups",
