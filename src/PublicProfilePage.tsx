@@ -7,7 +7,7 @@ import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
 
 type ProfilePost = { id: string; content: string; images: string[]; createdAt: string; likeCount: number; commentCount: number };
-type PublicUser = { id: string; name: string; username: string; profilePicture?: string; coverPhoto?: string; createdAt?: string; followersCount: number; followingCount: number; isFollowing: boolean; isSelf: boolean; canMessage: boolean; isOnline: boolean };
+type PublicUser = { id: string; name: string; username: string; profilePicture?: string; coverPhoto?: string; createdAt?: string; followersCount: number; followingCount: number; isFollowing: boolean; isSelf: boolean; canMessage: boolean; isOnline?: boolean; activeStatusHidden?: boolean };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
 const timeAgo = (value: string) => {
@@ -90,7 +90,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                 <div style={{ marginTop: 13 }}>
                   <h1 style={{ margin: 0, color: "var(--theme-text-primary)", fontSize: "1.25rem", fontWeight: 850, letterSpacing: "-.02em" }}>{profile.name}</h1>
                   <div style={{ ...muted, marginTop: 4, fontSize: ".85rem" }}>@{profile.username}</div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9, color: profile.isOnline ? "var(--theme-presence-online)" : "var(--theme-presence-offline)", fontSize: ".74rem", fontWeight: 650 }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: profile.isOnline ? "var(--theme-presence-online)" : "var(--theme-presence-offline)" }} />{profile.isOnline ? "Online now" : "Offline"}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9, color: profile.activeStatusHidden ? "var(--theme-muted)" : profile.isOnline ? "var(--theme-presence-online)" : "var(--theme-presence-offline)", fontSize: ".74rem", fontWeight: 650 }}>{!profile.activeStatusHidden && <span style={{ width: 7, height: 7, borderRadius: "50%", background: profile.isOnline ? "var(--theme-presence-online)" : "var(--theme-presence-offline)" }} />}{profile.activeStatusHidden ? "Recent" : profile.isOnline ? "Online now" : "Offline"}</div>
                 </div>
                 <div style={{ display: "flex", gap: 22, marginTop: 17, paddingTop: 14, borderTop: "1px solid var(--theme-border)" }}>
                   <div><strong style={{ color: "var(--theme-text-primary)", fontSize: ".95rem" }}>{profile.followersCount}</strong><span style={{ ...muted, marginLeft: 5, fontSize: ".78rem" }}>followers</span></div>
