@@ -141,6 +141,23 @@
   --theme-feed-text-muted: #80616a;
   --theme-feed-scroll-track: rgba(255, 255, 255, 0.04);
   --theme-feed-scroll-thumb: rgba(214, 74, 91, 0.55);
+  --theme-feed-avatar-gradient: linear-gradient(145deg, #a84b5d, #51202d);
+  --theme-feed-avatar-self-gradient: linear-gradient(145deg, #c13b51, #641628);
+  --theme-feed-avatar-border: rgba(255, 255, 255, 0.1);
+  --theme-feed-avatar-text: #fff2f4;
+  --theme-feed-input-bg: rgba(10, 3, 6, 0.38);
+  --theme-feed-input-border: rgba(255, 226, 231, 0.1);
+  --theme-feed-text-placeholder: #8f6f77;
+  --theme-feed-focus-border: rgba(214, 74, 91, 0.7);
+  --theme-feed-focus-shadow: 0 0 0 3px rgba(184, 32, 50, 0.1);
+  --theme-feed-accent-strong: #f16b80;
+  --theme-feed-accent-text: #f09aa7;
+  --theme-feed-accent-soft: rgba(184, 32, 50, 0.1);
+  --theme-feed-accent-border: rgba(232, 90, 110, 0.22);
+  --theme-feed-accent-border-strong: rgba(225, 78, 100, 0.55);
+  --theme-feed-poll-bg: rgba(12, 3, 7, 0.25);
+  --theme-feed-poll-option-bg: rgba(255, 255, 255, 0.018);
+  --theme-feed-poll-track: rgba(255, 255, 255, 0.08);
 }
 
 /* Hybrid theme architecture: any page or component can opt into the shared light palette by adding .theme-token-scope. Unsubscribed areas keep the dark root tokens and all existing hardcoded colors. */
@@ -258,6 +275,23 @@ html[data-theme="light"] .theme-token-scope {
   --theme-feed-text-muted: var(--theme-text-muted);
   --theme-feed-scroll-track: rgba(83, 31, 42, 0.06);
   --theme-feed-scroll-thumb: rgba(169, 31, 53, 0.38);
+  --theme-feed-avatar-gradient: linear-gradient(145deg, #f0c5cc, #c77b89);
+  --theme-feed-avatar-self-gradient: linear-gradient(145deg, #d85a70, #a91f35);
+  --theme-feed-avatar-border: rgba(83, 31, 42, 0.16);
+  --theme-feed-avatar-text: #32151d;
+  --theme-feed-input-bg: #ffffff;
+  --theme-feed-input-border: rgba(83, 31, 42, 0.18);
+  --theme-feed-text-placeholder: #9a7c82;
+  --theme-feed-focus-border: var(--theme-focus);
+  --theme-feed-focus-shadow: 0 0 0 3px rgba(169, 31, 53, 0.12);
+  --theme-feed-accent-strong: #b4233b;
+  --theme-feed-accent-text: #a91f35;
+  --theme-feed-accent-soft: rgba(169, 31, 53, 0.08);
+  --theme-feed-accent-border: rgba(169, 31, 53, 0.22);
+  --theme-feed-accent-border-strong: rgba(169, 31, 53, 0.48);
+  --theme-feed-poll-bg: #fffdfc;
+  --theme-feed-poll-option-bg: rgba(83, 31, 42, 0.025);
+  --theme-feed-poll-track: rgba(83, 31, 42, 0.1);
 }
 
 /* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
