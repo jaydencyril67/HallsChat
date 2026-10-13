@@ -545,7 +545,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   .social-post-content{height:auto;max-height:260px;font-size:15px;font-weight:650;line-height:1.7}
 }
 
-.social-comments{padding:12px 13px 13px;border-top:1px solid rgba(255,210,219,.08);background:rgba(12,4,7,.2)}
+.social-comments{padding:12px 13px 13px;border-top:1px solid var(--theme-feed-comment-border);background:var(--theme-feed-comment-inline-bg)}
 .social-comments-list{display:grid;gap:12px}
 .social-comment{display:flex;align-items:flex-start;gap:9px;min-width:0}
 .social-comment-avatar{width:31px;height:31px;flex:0 0 31px;display:grid;place-items:center;border:1px solid var(--theme-feed-comment-avatar-border);border-radius:50%;background:var(--theme-feed-comment-avatar-bg);color:var(--theme-feed-comment-avatar-text);font-size:10px;font-weight:800}
