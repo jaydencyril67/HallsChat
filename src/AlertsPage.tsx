@@ -137,7 +137,7 @@ export default function AlertsPage() {
   const visibleAlerts = filter === "unread" ? alerts.filter(item => !item.readAt) : alerts;
 
   return (
-    <main className="home-page social-home halls-alerts-page">
+    <main className="home-page social-home halls-alerts-page theme-token-scope">
       <AppHeader homeHref="/home" />
       <section className="home-shell social-shell halls-alerts-shell">
         <div className="halls-alerts-controls">
