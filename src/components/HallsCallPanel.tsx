@@ -127,7 +127,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
           resolve(response);
         });
       });
-      if (!result.ok || !result.callId) throw new Error(result.message || "Unable to start the group call.");
+      if (!result.ok || !result.callId) throw new Error(result.message || "Unable to start the Hall call.");
       callIdRef.current = result.callId;
       setCallId(result.callId); setKind(callKind);
       const joinResult = await new Promise<{ ok?: boolean; message?: string; participants?: Participant[] }>((resolve, reject) => {
@@ -143,7 +143,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
       if (id) socket.emit("group-call:leave", { callId: id });
       callIdRef.current = ""; setCallId("");
       closePeers(); stopLocal();
-      setError(e instanceof Error ? e.message : "Unable to start the group call.");
+      setError(e instanceof Error ? e.message : "Unable to start the Hall call.");
     } finally { setBusy(false); }
   }, [socket, groupId, busy, startLocalMedia, closePeers, stopLocal]);
 
@@ -280,10 +280,10 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
         <span className="halls-call-eyebrow">INCOMING GROUP {incoming.kind.toUpperCase()} CALL</span>
         <h2>{incoming.caller?.name || incoming.caller?.username || "A Hall member"}</h2>
         <p>{groupName}</p>
-        <p className="halls-call-ring-time">Group call ringing…</p>
+        <p className="halls-call-ring-time">Hall call ringing…</p>
         <div className="halls-call-actions">
           <button className="halls-call-decline" type="button" onClick={() => { socket?.emit("group-call:dismiss", { callId: incoming.callId }); setIncoming(null); }} aria-label="Dismiss Hall call"><PhoneOff /></button>
-          <button className="halls-call-accept" type="button" disabled={busy} onClick={() => { setIncoming(null); setError(""); setBusy(true); void joinCall(incoming.callId, incoming.kind).catch(e => { resetCall(true); setError(e instanceof Error ? e.message : "Unable to join call."); }).finally(() => setBusy(false)); }} aria-label="Join group call"><Phone /></button>
+          <button className="halls-call-accept" type="button" disabled={busy} onClick={() => { setIncoming(null); setError(""); setBusy(true); void joinCall(incoming.callId, incoming.kind).catch(e => { resetCall(true); setError(e instanceof Error ? e.message : "Unable to join call."); }).finally(() => setBusy(false)); }} aria-label="Join Hall call"><Phone /></button>
         </div>
       </div>
     </div>}
