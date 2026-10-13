@@ -87,6 +87,7 @@
   --theme-call-video-control-active-bg: #75616a;
   --theme-call-video-border: rgba(255, 255, 255, 0.20);
   --theme-call-video-local-bg: #191519;
+  --theme-call-video-text: #ffffff;
   --theme-call-video-text-shadow: 0 2px 10px #000, 0 1px 3px #000;
   --theme-call-video-shadow: 0 8px 28px rgba(0, 0, 0, 0.36);
   --theme-call-video-error-bg: rgba(67, 10, 22, 0.88);
