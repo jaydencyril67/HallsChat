@@ -1378,7 +1378,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .chat-message-content:has(.chat-voice-note){width:min(292px,86%);max-width:86%!important;padding:9px 11px!important;border-radius:14px!important}
 .chat-voice-note{display:flex;align-items:center;gap:9px;width:100%;min-width:0;padding:0}
 .chat-voice-note audio{display:none}
-.chat-voice-play{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;padding:0;border:0;border-radius:50%;background:var(--theme-primary-hover);color:#2b0d15;cursor:pointer}
+.chat-voice-play{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;padding:0;border:0;border-radius:50%;background:var(--theme-primary-hover);color:var(--theme-primary-contrast);cursor:pointer}
 .chat-voice-play:active{transform:scale(.96)}
 .chat-voice-play-symbol{transform:rotate(90deg);fill:currentColor}
 .chat-voice-track{flex:1;min-width:0}
