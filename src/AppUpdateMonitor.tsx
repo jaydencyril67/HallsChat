@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Capacitor } from "@capacitor/core";
-import { Download, X } from "lucide-react";
+import { Download } from "lucide-react";
 import { NativeAppUpdate } from "./utils/nativeAppUpdate";
 
 type UpdateCheckResponse = {
@@ -119,7 +119,6 @@ export default function AppUpdateMonitor() {
           </button>
         )}
         <button type="button" className="hallschat-update-later" onClick={() => setHidden(true)}>Later</button>
-        <button type="button" className="hallschat-update-dismiss" aria-label="Dismiss update notice" onClick={() => setHidden(true)}><X size={16} /></button>
       </div>
     </aside>
   );
