@@ -135,11 +135,11 @@ export default function ThemeSettingsPage() {
     return () => { cancelled = true; };
   }, []);
 
-  const decodeVapidKey = (value: string) => {
+  const decodeVapidKey = (value: string): ArrayBuffer => {
     const padded = value + "=".repeat((4 - value.length % 4) % 4);
     const base64 = padded.replace(/-/g, "+").replace(/_/g, "/");
     const raw = window.atob(base64);
-    return Uint8Array.from(raw, char => char.charCodeAt(0));
+    return Uint8Array.from(raw, char => char.charCodeAt(0)).buffer as ArrayBuffer;
   };
 
   const chooseAlertChannel = async (channel: "email" | "inApp" | "push") => {
