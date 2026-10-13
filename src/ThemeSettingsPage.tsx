@@ -26,6 +26,10 @@ export default function ThemeSettingsPage() {
     }
   });
   const [alertChannelMenuOpen, setAlertChannelMenuOpen] = useState(false);
+  const [alertChannelsLoaded, setAlertChannelsLoaded] = useState(false);
+  const [alertChannelsSaving, setAlertChannelsSaving] = useState(false);
+  const [alertChannelsError, setAlertChannelsError] = useState("");
+  const [pushVapidKey, setPushVapidKey] = useState<string | null>(null);
   const alertChannelMenuRef = useRef<HTMLDivElement>(null);
   const idleLogoutMenuRef = useRef<HTMLDivElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
@@ -109,6 +113,76 @@ export default function ThemeSettingsPage() {
     setAlertChannels(next);
     localStorage.setItem("hallschat_alert_channels", JSON.stringify(next));
     window.dispatchEvent(new CustomEvent("hallschat:alert-channels-changed", { detail: next }));
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    let cancelled = false;
+    fetch(apiBase + "/api/settings/alert-channels", { headers: { Authorization: "Bearer " + token } })
+      .then(async response => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || "Unable to load alert channel settings.");
+        if (!cancelled) {
+          const channels = payload.alertChannels || {};
+          setAlertChannels({ email: channels.email !== false, inApp: channels.inApp !== false, push: channels.push !== false });
+          setPushVapidKey(typeof payload.vapidPublicKey === "string" ? payload.vapidPublicKey : null);
+          localStorage.setItem("hallschat_alert_channels", JSON.stringify({ email: channels.email !== false, inApp: channels.inApp !== false, push: channels.push !== false }));
+        }
+      })
+      .catch(error => { if (!cancelled) setAlertChannelsError(error instanceof Error ? error.message : "Unable to load alert channel settings."); })
+      .finally(() => { if (!cancelled) setAlertChannelsLoaded(true); });
+    return () => { cancelled = true; };
+  }, []);
+
+  const decodeVapidKey = (value: string) => {
+    const padded = value + "=".repeat((4 - value.length % 4) % 4);
+    const base64 = padded.replace(/-/g, "+").replace(/_/g, "/");
+    const raw = window.atob(base64);
+    return Uint8Array.from(raw, char => char.charCodeAt(0));
+  };
+
+  const chooseAlertChannel = async (channel: "email" | "inApp" | "push") => {
+    const token = localStorage.getItem("hallschat_token");
+    if (!token || alertChannelsSaving || !alertChannelsLoaded) return;
+    setAlertChannelsSaving(true);
+    setAlertChannelsError("");
+    try {
+      let pushSubscription: PushSubscription | null = null;
+      if (channel === "push" && !alertChannels.push) {
+        if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) throw new Error("Push alerts are not supported by this browser.");
+        if (!pushVapidKey) throw new Error("Push alerts need the VAPID public/private keys configured on the HallsChat backend first.");
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") throw new Error("Allow notifications in your browser settings to enable push alerts.");
+        const registration = await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
+        pushSubscription = await registration.pushManager.getSubscription();
+        if (!pushSubscription) pushSubscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decodeVapidKey(pushVapidKey) });
+        const saveSubscription = await fetch(apiBase + "/api/alerts/push-subscription", { method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ subscription: pushSubscription.toJSON() }) });
+        const savePayload = await saveSubscription.json().catch(() => ({}));
+        if (!saveSubscription.ok) throw new Error(savePayload.message || "Unable to register this device for push alerts.");
+      }
+      const next = { ...alertChannels, [channel]: !alertChannels[channel] };
+      const response = await fetch(apiBase + "/api/settings/alert-channels", { method: "PATCH", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ alertChannels: next }) });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Unable to update alert channel settings.");
+      setAlertChannels(payload.alertChannels || next);
+      localStorage.setItem("hallschat_alert_channels", JSON.stringify(payload.alertChannels || next));
+      if (channel === "push" && next.push === false && "serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration("/");
+        const subscription = await registration?.pushManager.getSubscription();
+        if (subscription) {
+          await fetch(apiBase + "/api/alerts/push-subscription", { method: "DELETE", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ endpoint: subscription.endpoint }) }).catch(() => undefined);
+          await subscription.unsubscribe().catch(() => false);
+        }
+      }
+      window.dispatchEvent(new CustomEvent("hallschat:alert-channels-changed", { detail: payload.alertChannels || next }));
+      setAlertChannelMenuOpen(false);
+    } catch (error) {
+      setAlertChannelsError(error instanceof Error ? error.message : "Unable to update alert channel settings.");
+    } finally {
+      setAlertChannelsSaving(false);
+    }
   };
 
   const chooseNowbarToggle = (feature: "swipe" | "expand", enabled: boolean) => {
@@ -610,9 +684,9 @@ export default function ThemeSettingsPage() {
       </section>
       <section className="settings-theme-card" aria-label="Alert Channel">
         <span className="settings-theme-title">Alert Channel</span>
-        <span className="settings-theme-current" aria-live="polite">{[alertChannels.email && "Email", alertChannels.inApp && "In-App", alertChannels.push && "Push"].filter(Boolean).join(" · ") || "All Off"}</span>
+        <span className="settings-theme-current" aria-live="polite">{!alertChannelsLoaded ? "Loading…" : [alertChannels.email && "Email", alertChannels.inApp && "In-App", alertChannels.push && "Push"].filter(Boolean).join(" · ") || "All Off"}</span>
         <div className="settings-theme-menu-anchor" ref={alertChannelMenuRef}>
-          <button type="button" className="settings-theme-menu-trigger" aria-label="Alert Channel options" aria-haspopup="menu" aria-expanded={alertChannelMenuOpen} onClick={() => setAlertChannelMenuOpen(open => !open)}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Alert Channel options" aria-haspopup="menu" aria-expanded={alertChannelMenuOpen} disabled={!alertChannelsLoaded || alertChannelsSaving} onClick={() => setAlertChannelMenuOpen(open => !open)}>
             <MoreHorizontal size={21} />
           </button>
           {alertChannelMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Alert Channel options">
@@ -626,7 +700,8 @@ export default function ThemeSettingsPage() {
               role="menuitemcheckbox"
               aria-checked={alertChannels[option.value]}
               className={"settings-theme-menu-option" + (alertChannels[option.value] ? " is-selected" : "")}
-              onClick={() => chooseAlertChannel(option.value)}
+              disabled={alertChannelsSaving}
+              onClick={() => void chooseAlertChannel(option.value)}
             >
               <span>{option.label}</span>
               <span>{alertChannels[option.value] ? "On" : "Off"}</span>
@@ -668,6 +743,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      {alertChannelsError && <p className="settings-theme-current" role="status">{alertChannelsError}</p>}
       {commentingError && <p className="settings-theme-current" role="status">{commentingError}</p>}
       {readReceiptsError && <p className="settings-theme-current" role="status">{readReceiptsError}</p>}
       {visibilityError && <p className="settings-theme-current" role="status">{visibilityError}</p>}
