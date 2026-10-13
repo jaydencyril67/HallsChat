@@ -711,6 +711,17 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      - name: Verify release notification credentials
+        env:
+          RELEASE_SECRET: ${{ secrets.HALLSCHAT_RELEASE_WEBHOOK_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${RELEASE_SECRET:-}" ]; then
+            echo "::error::Set HALLSCHAT_RELEASE_WEBHOOK_SECRET in GitHub Actions secrets and Render environment variables before publishing a release."
+            exit 1
+          fi
+          echo "HallsChat release notification credentials are configured."
+
       - name: Publish HallsChat GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
