@@ -1,10 +1,12 @@
-import { Check, MoreHorizontal } from "lucide-react";
+import { Check, Download, Globe, MoreHorizontal, Smartphone, Store } from "lucide-react";
 import { navigate } from "./utils/navigate";
 import { useEffect, useRef, useState } from "react";
 import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 
+type BeforeInstallPromptEvent = Event & { readonly platforms: string[]; readonly userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>; prompt: () => Promise<void> };
+const HALLSCHAT_APK_URL = "https://github.com/jaydencyril67/HallsChat/releases/latest/download/HallsChat.apk";
 type AlertTypeKey = "chats" | "posts" | "stories" | "comments" | "follows" | "likes" | "calls" | "mentions" | "communities" | "systemUpdates" | "accountSecurity";
 const DEFAULT_ALERT_TYPES: Record<AlertTypeKey, boolean> = {
   chats: true, posts: true, stories: true, comments: true, follows: true, likes: true, calls: true, mentions: true, communities: true, systemUpdates: true, accountSecurity: true
@@ -18,6 +20,11 @@ const ALERT_TYPE_GROUPS: { label: string; options: { value: AlertTypeKey; label:
 export default function ThemeSettingsPage() {
   const { themePreference, setThemePreference } = useAppTheme();
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [downloadAppMenuOpen, setDownloadAppMenuOpen] = useState(false);
+  const downloadAppMenuRef = useRef<HTMLDivElement>(null);
+  const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [pwaInstalled, setPwaInstalled] = useState(() => window.matchMedia("(display-mode: standalone)").matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
+  const [downloadAppMessage, setDownloadAppMessage] = useState("");
   const [idleLogoutMinutes, setIdleLogoutMinutes] = useState<0 | 5 | 10 | 30>(() => {
     const saved = Number(localStorage.getItem("hallschat_idle_logout_minutes") || 0);
     return saved === 5 || saved === 10 || saved === 30 ? saved : 0;
@@ -84,6 +91,40 @@ export default function ThemeSettingsPage() {
     : themePreference === "light"
       ? "Light"
       : "Dark";
+
+  useEffect(() => {
+    if (!downloadAppMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (downloadAppMenuRef.current && !downloadAppMenuRef.current.contains(event.target as Node)) setDownloadAppMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setDownloadAppMenuOpen(false); };
+    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [downloadAppMenuOpen]);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event: Event) => { event.preventDefault(); setDeferredInstallPrompt(event as BeforeInstallPromptEvent); };
+    const handleAppInstalled = () => { setPwaInstalled(true); setDeferredInstallPrompt(null); setDownloadAppMessage("HallsChat has been installed on this device."); };
+    const displayMode = window.matchMedia("(display-mode: standalone)");
+    const syncInstalled = () => setPwaInstalled(displayMode.matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+    displayMode.addEventListener("change", syncInstalled);
+    return () => { window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt); window.removeEventListener("appinstalled", handleAppInstalled); displayMode.removeEventListener("change", syncInstalled); };
+  }, []);
+
+  const handlePwaInstall = async () => {
+    if (pwaInstalled) { setDownloadAppMessage("HallsChat is already installed on this device."); setDownloadAppMenuOpen(false); return; }
+    if (!deferredInstallPrompt) { setDownloadAppMessage("Automatic installation is unavailable in this browser right now. Open the browser menu and choose “Install app” or “Add to Home screen”."); setDownloadAppMenuOpen(false); return; }
+    try {
+      await deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      setDownloadAppMessage(choice.outcome === "accepted" ? "HallsChat installation started." : "Installation was cancelled.");
+      if (choice.outcome === "accepted") setPwaInstalled(true);
+      setDeferredInstallPrompt(null);
+    } catch {
+      setDownloadAppMessage("Could not open the install prompt. Open the browser menu and choose “Install app” or “Add to Home screen”.");
+    }
+    setDownloadAppMenuOpen(false);
+  };
 
   useEffect(() => {
     if (!idleLogoutMenuOpen) return;
@@ -520,6 +561,47 @@ export default function ThemeSettingsPage() {
   return <main className="home-page social-home settings-page theme-token-scope">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell settings-shell">
+      <section className="settings-theme-card" aria-label="Download App">
+        <span className="settings-theme-title">Download App</span>
+        <span className="settings-theme-current" aria-live="polite">{pwaInstalled ? "PWA installed" : "APK · Web App"}</span>
+        <div className="settings-theme-menu-anchor" ref={downloadAppMenuRef}>
+          <button
+            type="button"
+            className="settings-theme-menu-trigger"
+            aria-label="Download App options"
+            aria-haspopup="menu"
+            aria-expanded={downloadAppMenuOpen}
+            onClick={() => setDownloadAppMenuOpen(open => !open)}
+          >
+            <MoreHorizontal size={21} />
+          </button>
+          {downloadAppMenuOpen && <div className="settings-theme-menu settings-download-app-menu" role="menu" aria-label="Download App options">
+            <button type="button" role="menuitem" className="settings-theme-menu-option" disabled aria-disabled="true">
+              <Store size={16} aria-hidden="true" />
+              <span>KingsStore</span>
+              <span className="settings-download-app-note">Soon</span>
+            </button>
+            <a
+              role="menuitem"
+              className="settings-theme-menu-option settings-download-app-link"
+              href={HALLSCHAT_APK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => { setDownloadAppMessage("Opening the latest signed HallsChat APK download."); setDownloadAppMenuOpen(false); }}
+            >
+              <Smartphone size={16} aria-hidden="true" />
+              <span>Android APK</span>
+              <Download size={15} aria-hidden="true" />
+            </a>
+            <button type="button" role="menuitem" className="settings-theme-menu-option" onClick={() => void handlePwaInstall()}>
+              <Globe size={16} aria-hidden="true" />
+              <span>PWA (Web App)</span>
+              {pwaInstalled && <Check size={15} aria-hidden="true" />}
+            </button>
+          </div>}
+        </div>
+        {downloadAppMessage && <span className="settings-theme-current settings-download-app-status" role="status">{downloadAppMessage}</span>}
+      </section>
       <section className="settings-theme-card" aria-label="App theme">
         <span className="settings-theme-title">App theme</span>
         <span className="settings-theme-current" aria-live="polite">{currentThemeLabel}</span>
