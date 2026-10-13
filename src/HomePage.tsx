@@ -174,6 +174,15 @@ export default function HomePage() {
     });
     return () => cancelAnimationFrame(frame);
   }, [posts]);
+  useEffect(() => {
+    if (feedLoading || !window.location.hash.startsWith("#post-")) return;
+    const postId = decodeURIComponent(window.location.hash.slice("#post-".length));
+    const frame = requestAnimationFrame(() => {
+      document.getElementById(`post-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [feedLoading, posts]);
+
   const [openComments, setOpenComments] = useState<string[]>([]);
 
   // Keep the feed at its current position while the comments sheet is open.
@@ -1157,7 +1166,7 @@ export default function HomePage() {
   }
 
   function getPostLink(post: SocialPost) {
-    return `${window.location.origin}/home?post=${encodeURIComponent(post.id)}`;
+    return `${window.location.origin}/home#post-${encodeURIComponent(post.id)}`;
   }
 
   async function copyPostLink(post: SocialPost) {
@@ -1252,7 +1261,7 @@ export default function HomePage() {
 
             <div className="social-feed-heading"><div><span className="signup-form-kicker">THE LATEST</span><h2>Your feed</h2></div><span className="social-feed-count">{posts.length} {posts.length === 1 ? "post" : "posts"}</span></div>
             {!feedLoading && posts.length > 0 && <div className="social-post-list">
-              {posts.map(post => <article className="social-post" key={post.id}>
+              {posts.map(post => <article className="social-post" id={`post-${post.id}`} key={post.id}>
                 <div className="social-post-head">{post.author?.profilePicture ? <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, overflow: "hidden", cursor: "pointer" }}><img src={post.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></button> : <span className="social-avatar" aria-hidden="true">{initials(post.author?.name || "HallsChat member")}</span>}<div className="social-post-author" style={{ padding: 0, border: 0, background: "var(--theme-transparent)", color: "inherit", textAlign: "left" }}><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div><div className="social-post-delete-wrap" style={{ position: "relative", marginLeft: "auto", flexShrink: 0, display: "flex", alignItems: "center", gap: 5 }}>
 <button type="button" className="social-post-action-muted" onClick={() => void downloadPost(post)} disabled={downloadingPostIds.includes(post.id)} aria-label="Download post" title="Download post" style={{ width: 36, height: 36, minWidth: 36, padding: 0, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 10, background: "var(--theme-surface-hover)", color: "var(--theme-text)", cursor: downloadingPostIds.includes(post.id) ? "wait" : "pointer" }}>{downloadingPostIds.includes(post.id) ? <LoadingDots /> : <Download size={17} />}</button>
 <button type="button" className="social-post-action-muted" onClick={() => void sharePost(post)} aria-label="Share post" title="Share post" style={{ width: 36, height: 36, minWidth: 36, padding: 0, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 10, background: "var(--theme-surface-hover)", color: "var(--theme-text)", cursor: "pointer" }}><Share2 size={17} /></button>
