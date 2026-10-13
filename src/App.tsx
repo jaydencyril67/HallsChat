@@ -163,6 +163,48 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const readTimeout = () => {
+      const value = Number(localStorage.getItem("hallschat_idle_logout_minutes") || 0);
+      return value === 5 || value === 10 || value === 30 ? value * 60_000 : 0;
+    };
+    const lastActivityKey = "hallschat_last_activity_at";
+    let hasLoggedOut = false;
+    const logoutIfExpired = () => {
+      if (hasLoggedOut || !localStorage.getItem("hallschat_token")) return;
+      const timeout = readTimeout();
+      if (!timeout) return;
+      const lastActivity = Number(localStorage.getItem(lastActivityKey) || 0);
+      if (!lastActivity) {
+        localStorage.setItem(lastActivityKey, String(Date.now()));
+        return;
+      }
+      if (Date.now() - lastActivity >= timeout) {
+        hasLoggedOut = true;
+        localStorage.removeItem("hallschat_token");
+        localStorage.removeItem(lastActivityKey);
+        navigate("/signin", { replace: true });
+      }
+    };
+    const recordActivity = () => {
+      if (hasLoggedOut || document.visibilityState !== "visible" || !localStorage.getItem("hallschat_token")) return;
+      if (readTimeout()) localStorage.setItem(lastActivityKey, String(Date.now()));
+    };
+    logoutIfExpired();
+    const timer = window.setInterval(logoutIfExpired, 1000);
+    const activityEvents: Array<keyof WindowEventMap> = ["pointerdown", "keydown", "touchstart", "scroll", "input", "click"];
+    activityEvents.forEach(eventName => window.addEventListener(eventName, recordActivity, { passive: true }));
+    const onVisibilityChange = () => { if (document.visibilityState === "visible") logoutIfExpired(); };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pageshow", logoutIfExpired);
+    return () => {
+      window.clearInterval(timer);
+      activityEvents.forEach(eventName => window.removeEventListener(eventName, recordActivity));
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pageshow", logoutIfExpired);
+    };
+  }, []);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       document.getElementById("initial-splash")?.remove();
     }, 3000);
