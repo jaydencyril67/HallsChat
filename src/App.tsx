@@ -22,7 +22,7 @@ import AppThemeProvider from "./components/AppTheme";
 import SharedPostPage from "./SharedPostPage";
 
 const navigationSections: Record<string, { title: string; description: string }> = {
-  "/chats": { title: "Rooms", description: "Your conversations will live here." },
+  "/rooms": { title: "Rooms", description: "Your conversations will live here." },
   "/contacts": { title: "People", description: "Your contacts and connections will live here." },
   "/calls": { title: "Calls", description: "Your calls will live here." },
   "/groups": { title: "Halls", description: "Your Halls conversations will live here." },
@@ -254,7 +254,7 @@ export default function App() {
   else if (normalizedPath === "/home") page = <HomePage />;
   else if (normalizedPath === "/halls") page = <GlobePage />;
   else if (normalizedPath === "/groups") page = <HallsPage />;
-  else if (normalizedPath === "/chats") page = <RoomsPage />;
+  else if (normalizedPath === "/rooms") page = <RoomsPage />;
   else if (normalizedPath === "/calls") page = <CallsPage />;
   else if (normalizedPath === "/profile") page = <ProfilePage />;
   else if (normalizedPath === "/settings") page = <ThemeSettingsPage />;
