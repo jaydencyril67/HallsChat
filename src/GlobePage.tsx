@@ -100,7 +100,7 @@ export default function GlobePage() {
   const panel: React.CSSProperties = { border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)" };
   const muted: React.CSSProperties = { color: "var(--theme-muted)" };
 
-  return <main className="home-page social-home halls-page globe-directory-page">
+  return <main className="home-page social-home globe-page globe-directory-page">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell theme-token-scope" style={{ paddingBottom: 112 }}>
       <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "0 0 24px", boxSizing: "border-box" }}>
