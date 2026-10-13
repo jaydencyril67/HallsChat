@@ -2495,7 +2495,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
 
 /* Chat light theme — completion pass.
    Additive light-only overrides. Dark theme declarations and tokens remain untouched. */
-/* Halls directory light theme — strictly scoped additive overrides.
+/* Globe directory light theme — strictly scoped additive overrides.
    The dark theme rules and shared/profile page styles are intentionally untouched. */
 @media (max-width: 420px) {
   }
@@ -3766,8 +3766,9 @@ html[data-theme="light"] .home-page.halls-calls-page{
     animation: none !important;
   }
 }
-/* Halls page background follows the selected theme independently of its permanently dark header and Nowbar. */
-html[data-theme="light"] .home-page.halls-page {
+/* Globe and profile canvases follow the selected theme independently of the permanently dark header and Nowbar. */
+html[data-theme="light"] .home-page.globe-page,
+html[data-theme="light"] .home-page.profile-page {
   background: var(--theme-bg-light);
 }
 
