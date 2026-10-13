@@ -32,7 +32,7 @@ const actions = [
   { label: "PROFILE", icon: UserRound },
   { label: "CALLS", icon: Phone },
   { label: "GROUP", icon: UsersRound },
-  { label: "SET", icon: Settings },
+  { label: "SETTINGS", icon: Settings },
   { label: "HELP", icon: CircleHelp },
 ];
 
@@ -49,7 +49,7 @@ function getPageTitle() {
   if (path.startsWith("/calls")) return "CALLS";
   if (path.startsWith("/groups")) return "GROUP";
   if (path.startsWith("/notifications")) return "ALERT";
-  if (path.startsWith("/settings")) return "SET";
+  if (path.startsWith("/settings")) return "SETTINGS";
   if (path.startsWith("/help")) return "HELP";
   return "HALLSCHAT";
 }
