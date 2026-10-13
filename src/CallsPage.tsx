@@ -103,7 +103,7 @@ export default function CallsPage() {
 
   return <main className="home-page social-home halls-calls-page">
     <AppHeader homeHref="/home" />
-    <section className="home-shell social-shell halls-calls-shell halls-call-history-shell">
+    <section className="home-shell social-shell halls-calls-shell halls-call-history-shell theme-token-scope">
       <div className="halls-call-history-toolbar">
         <div className="halls-call-history-tabs" role="tablist" aria-label="Filter call history">
           <button type="button" role="tab" aria-selected={filter === "all"} className={filter === "all" ? "is-active" : ""} onClick={() => setFilter("all")}>All{calls.length > 0 && <span>{calls.length}</span>}</button>
