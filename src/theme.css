@@ -131,6 +131,33 @@
   --theme-avatar-initials-text: #fff;
   --theme-danger-action-hover-bg: var(--theme-surface-raised);
 
+
+  /* Shared selectable content palette for reusable content tools. */
+  --theme-palette-burgundy: #8b1e35;
+  --theme-palette-white: #ffffff;
+  --theme-palette-blue: #235b87;
+  --theme-palette-green: #246b52;
+  --theme-palette-violet: #6340a3;
+  --theme-palette-orange: #b75a24;
+  --theme-palette-charcoal: #20232d;
+  --theme-palette-rose: #d94f70;
+  --theme-palette-teal: #087e8b;
+  --theme-palette-gold: #d4a017;
+  --theme-palette-slate: #6b7280;
+  --theme-palette-deep-teal: #0f766e;
+  --theme-palette-purple: #9333ea;
+  --theme-palette-black: #111111;
+  --theme-palette-bright-rose: #ff4d6d;
+  --theme-palette-bright-gold: #ffb703;
+  --theme-palette-lime: #70e000;
+  --theme-palette-cyan: #00d4ff;
+  --theme-palette-lavender: #8b5cf6;
+  --theme-palette-pink: #ff7ac6;
+  --theme-palette-light-gray: #d1d5db;
+  --theme-palette-bright-orange: #f97316;
+  --theme-palette-bright-green: #22c55e;
+  --theme-palette-bright-blue: #3b82f6;
+
   /* Social feed foundation roles; light mode overrides these inside the page scope. */
 }
 
