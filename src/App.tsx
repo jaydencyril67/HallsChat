@@ -124,6 +124,16 @@ function GlobalModalScrollLock() {
 export default function App() {
   const [path, setPath] = useState(() => window.location.pathname);
 
+  useEffect(() => {
+    if (window.location.pathname !== "/home" || !window.location.hash.startsWith("#post-")) return;
+    try {
+      const postId = decodeURIComponent(window.location.hash.slice("#post-".length));
+      if (postId) navigate("/post/" + encodeURIComponent(postId));
+    } catch {
+      // Ignore malformed legacy post links and leave the normal home route intact.
+    }
+  }, []);
+
 
   useEffect(() => {
     let stopped = false;
@@ -194,7 +204,7 @@ export default function App() {
   const sharedPostMatch = normalizedPath.match(/^\/post\/([^/]+)$/);
   let page: ReactNode;
   if (sharedPostMatch) page = <SharedPostPage postId={decodeURIComponent(sharedPostMatch[1])} />;
-  else if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />
+  else if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />;
   else if (normalizedPath === "/verify-email") page = <EmailVerificationPage />;
   else if (normalizedPath === "/signup") page = <SignupPage />;
   else if (normalizedPath === "/signin" || normalizedPath === "/sign-in") page = <SigninPage />;
