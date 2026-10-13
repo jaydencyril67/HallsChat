@@ -3821,3 +3821,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
     animation: none !important;
   }
 }
+/* Halls page background follows the selected theme independently of its permanently dark header and Nowbar. */
+html[data-theme="light"] .home-page.halls-page {
+  background: var(--theme-bg-light);
+}
