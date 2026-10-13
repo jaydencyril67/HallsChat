@@ -24,7 +24,7 @@ const navigationSections: Record<string, { title: string; description: string }>
   "/chats": { title: "Rooms", description: "Your conversations will live here." },
   "/contacts": { title: "People", description: "Your contacts and connections will live here." },
   "/calls": { title: "Calls", description: "Your calls will live here." },
-  "/groups": { title: "Groups", description: "Your group conversations will live here." },
+  "/groups": { title: "Halls", description: "Your Halls conversations will live here." },
   "/settings": { title: "Settings", description: "Your HallsChat preferences will live here." },
   "/help": { title: "Help", description: "Help and support will live here." },
 };
