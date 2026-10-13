@@ -2008,6 +2008,11 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 
 
+/* Calls page background follows the shared light background token without making the header or NowBar light. */
+html[data-theme="light"] .home-page.halls-calls-page{
+  background:var(--theme-bg-light);
+}
+
 /* Calls page: keep filter tabs and search stationary; history fills the remaining viewport. */
 .home-page.halls-calls-page{
   box-sizing:border-box;
