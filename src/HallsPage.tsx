@@ -7,7 +7,7 @@ import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 
-type HallUser = { id: string; name: string; username: string; profilePicture?: string; following: boolean; isOnline?: boolean };
+type HallUser = { id: string; name: string; username: string; profilePicture?: string; following: boolean; isOnline?: boolean; activeStatusHidden?: boolean };
 type HallTab = "discover" | "followers";
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
@@ -58,9 +58,13 @@ export default function HallsPage() {
       if (hasConnected) void loadUsers(tab, false);
       hasConnected = true;
     });
-    socket.on("presence:update", (event: { userId?: string; isOnline?: boolean }) => {
-      if (!event.userId || typeof event.isOnline !== "boolean") return;
-      setUsers(current => current.map(person => person.id === event.userId ? { ...person, isOnline: event.isOnline } : person));
+    socket.on("presence:update", (event: { userId?: string; isOnline?: boolean; activeStatusHidden?: boolean }) => {
+      if (!event.userId) return;
+      if (event.activeStatusHidden === true) {
+        setUsers(current => current.map(person => person.id === event.userId ? { ...person, activeStatusHidden: true, isOnline: undefined } : person));
+        return;
+      }
+      if (typeof event.isOnline === "boolean") setUsers(current => current.map(person => person.id === event.userId ? { ...person, activeStatusHidden: false, isOnline: event.isOnline } : person));
     });
     return () => { socket.removeAllListeners(); socket.disconnect(); };
   }, [tab, loadUsers]);
@@ -115,7 +119,7 @@ export default function HallsPage() {
               <button className="halls-person-avatar" type="button" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} aria-label={"View " + person.name + " profile"} style={{ width: 44, height: 44, flexShrink: 0, display: "grid", placeItems: "center", overflow: "hidden", borderRadius: "50%", border: "1px solid var(--theme-avatar-border)", background: "var(--theme-avatar-gradient)", color: "var(--theme-avatar-initials-text)", fontSize: ".82rem", fontWeight: 800, padding: 0 }}>{person.profilePicture ? <img src={person.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : initials(person.name)}</button>
               <div style={{ minWidth: 0, flex: 1 }}>
                 <button className="halls-person-name" type="button" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} style={{ display: "block", maxWidth: "100%", padding: 0, border: 0, background: "transparent", color: "var(--theme-text-primary)", fontSize: ".88rem", fontWeight: 750, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</button>
-                <div style={{ ...muted, marginTop: 4, fontSize: ".78rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>@{person.username}</div><div className={`presence-label ${person.isOnline ? "presence-online" : "presence-offline"}`}><span className="presence-dot" />{person.isOnline ? "Online" : "Offline"}</div>
+                <div style={{ ...muted, marginTop: 4, fontSize: ".78rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>@{person.username}</div><div className={`presence-label ${person.activeStatusHidden ? "presence-recent" : person.isOnline ? "presence-online" : "presence-offline"}`}>{!person.activeStatusHidden && <span className="presence-dot" />}{person.activeStatusHidden ? "Recent" : person.isOnline ? "Online" : "Offline"}</div>
               </div>
               <button className={`halls-follow-button ${person.following ? "is-following" : "is-not-following"}`} type="button" disabled={busyId === person.id} onClick={() => void toggleFollow(person)} style={{ minWidth: 94, minHeight: 36, padding: "8px 11px", borderRadius: 999, border: person.following ? "1px solid var(--theme-action-secondary-border)" : "1px solid var(--theme-primary)", background: person.following ? "var(--theme-action-secondary-bg)" : "linear-gradient(135deg,var(--theme-primary-hover),var(--theme-primary))", color: person.following ? "var(--theme-action-secondary-text)" : "var(--theme-primary-contrast)", fontSize: ".75rem", fontWeight: 800, opacity: busyId === person.id ? .7 : 1 }}>
                 {busyId === person.id ? <LoadingDots /> : person.following ? "Following" : "Follow"}
