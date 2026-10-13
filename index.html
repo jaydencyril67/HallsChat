@@ -68,6 +68,16 @@
         user-select: text;
       }
 
+      /* Early-paint splash tokens: defined here because the splash appears before React/CSS modules load. */
+      :root {
+        --splash-background: #19070b;
+        --splash-foreground: #fff8f7;
+      }
+      html[data-theme="light"] {
+        --splash-background: #f8f3f1;
+        --splash-foreground: #32151d;
+      }
+
       /* HallsChat refresh splash, shown before React mounts. */
       .initial-splash {
         position: fixed;
@@ -82,8 +92,8 @@
         height: 100dvh;
         min-height: 100vh;
         overflow: hidden;
-        background: #19070b;
-        color: #fff8f7;
+        background: var(--splash-background);
+        color: var(--splash-foreground);
       }
       .initial-splash-card {
         display: flex;
