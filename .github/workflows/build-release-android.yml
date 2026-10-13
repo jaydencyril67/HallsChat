@@ -1,21 +1,22 @@
-name: Build Signed HallsChat Release APK
+name: Build Production Android APK
 
 on:
   workflow_dispatch:
     inputs:
       build_apk:
-        description: Build the signed HallsChat production APK
+        description: 'Build the HallsChat production APK'
         required: true
         default: false
         type: boolean
       app_version:
-        description: Android version name (for example 1.0.0)
+        description: 'HallsChat Android version (use the same version for the GitHub Release tag, without the v)'
         required: true
         default: '1.0.0'
         type: string
 
 permissions:
-  contents: read
+  contents: write
+  actions: read
 
 concurrency:
   group: hallschat-release-apk
@@ -26,14 +27,15 @@ jobs:
     if: inputs.build_apk == true
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
     steps:
-      - name: Check out HallsChat
+      - name: Checkout HallsChat
         uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -45,31 +47,27 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
-          accept-android-sdk-licenses: true
 
-      - name: Accept Android SDK licenses non-interactively
-        shell: bash
-        run: |
-          set -euo pipefail
-          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -n 1)"
-          if [ -z "$SDKMANAGER" ]; then
-            echo "::error::Android SDK manager was not found."
-            exit 1
-          fi
-          yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses >/dev/null
-          "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --list_installed >/dev/null
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
 
       - name: Install web dependencies
         run: npm install
 
-      - name: Install pinned Capacitor Android dependencies
+      - name: Install pinned Android build dependencies
         run: |
           npm install --no-save --package-lock=false \
             @capacitor/core@7.6.9 \
             @capacitor/android@7.6.9 \
-            @capacitor/cli@7.6.9
+            @capacitor/cli@7.6.9 \
+            @capacitor/assets@3.0.5 \
+            @capacitor/splash-screen@7.0.3 \
+            sharp
 
-      - name: Create bundled Capacitor configuration
+      - name: Build HallsChat web app
+        run: npm run build
+
+      - name: Create Capacitor Android project
         run: |
           cat > capacitor.config.ts <<'EOF'
           import type { CapacitorConfig } from '@capacitor/cli';
@@ -83,106 +81,162 @@ jobs:
 
           export default config;
           EOF
+          npx cap add android
 
-      - name: Build HallsChat web app
-        run: npm run build
-
-      - name: Create Android project
-        run: npx cap add android
-
-      - name: Set Android version
+      - name: Set HallsChat Android version
         env:
           APP_VERSION: ${{ inputs.app_version }}
           APP_VERSION_CODE: ${{ github.run_number }}
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import os, re
+          import os
+          import re
+
           version = os.environ["APP_VERSION"].strip()
+          version_code = os.environ["APP_VERSION_CODE"]
           if not re.fullmatch(r"\d+\.\d+\.\d+", version):
-              raise SystemExit("APP_VERSION must look like 1.0.0")
+              raise SystemExit("APP_VERSION must use semantic version format such as 1.0.0")
+
           path = Path("android/app/build.gradle")
           text = path.read_text()
-          text, code_count = re.subn(r"(?m)^\s*versionCode\s+\d+\s*$", f"        versionCode {os.environ['APP_VERSION_CODE']}", text, count=1)
-          text, name_count = re.subn(r"""(?m)^\s*versionName\s+["'][^"']*["']\s*$""", f'        versionName "{version}"', text, count=1)
+          text, code_count = re.subn(r"(?m)^\s*versionCode\s+\d+\s*$", f"        versionCode {version_code}", text, count=1)
+          text, name_count = re.subn(r"""(?m)^\s*versionName\s+["'][^"']*["']\s*$""", f'versionName "{version}"', text, count=1)
           if code_count != 1 or name_count != 1:
-              raise SystemExit("Unable to set Android versionCode/versionName safely")
+              raise SystemExit("Could not safely set Android versionCode and versionName")
           path.write_text(text)
+          print(f"Configured HallsChat version {version} (versionCode {version_code})")
           PY
 
-      - name: Load and verify permanent release keystore
+      - name: Prepare release signing
         env:
-          KEYSTORE_BASE64: ${{ secrets.HALLSCHAT_ANDROID_KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.HALLSCHAT_ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.HALLSCHAT_ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.HALLSCHAT_ANDROID_KEY_PASSWORD }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Missing HallsChat signing secret. Configure HALLSCHAT_ANDROID_KEYSTORE_BASE64, HALLSCHAT_ANDROID_KEYSTORE_PASSWORD, HALLSCHAT_ANDROID_KEY_ALIAS, and HALLSCHAT_ANDROID_KEY_PASSWORD in repository Actions secrets."
-              exit 1
-            fi
-          done
-          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/hallschat-release.keystore"
-          keytool -list -keystore "$RUNNER_TEMP/hallschat-release.keystore" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
-          {
-            echo "HALLSCHAT_KEYSTORE_PATH=$RUNNER_TEMP/hallschat-release.keystore"
-            echo "HALLSCHAT_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
-            echo "HALLSCHAT_KEY_ALIAS=$KEY_ALIAS"
-            echo "HALLSCHAT_KEY_PASSWORD=$KEY_PASSWORD"
-          } >> "$GITHUB_ENV"
+          mkdir -p signing
 
-      - name: Configure Gradle release signing
-        run: |
+          run_id="$(gh run list \
+            --workflow generate-release-keystore.yml \
+            --status success \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId')"
+
+          if [ -z "$run_id" ] || [ "$run_id" = "null" ]; then
+            echo "::error::No successful HallsChat signing-key workflow was found."
+            echo "Run 'Generate HallsChat Release Signing Key' once before building the production APK."
+            exit 1
+          fi
+
+          gh run download "$run_id" \
+            --name hallschat-release-signing-files \
+            --dir signing
+
+          test -f signing/hallschat-release.keystore
+          test -f signing/hallschat-signing-credentials.txt
+          cp signing/hallschat-release.keystore android/app/hallschat-release.keystore
+
+          set -a
+          source signing/hallschat-signing-credentials.txt
+          set +a
+
+          test -n "${HALLSCHAT_ANDROID_KEYSTORE_PASSWORD:-}"
+          test -n "${HALLSCHAT_ANDROID_KEY_ALIAS:-}"
+          test -n "${HALLSCHAT_ANDROID_KEY_PASSWORD:-}"
+
+          cat >> android/gradle.properties <<EOF
+          HALLSCHAT_KEYSTORE_FILE=hallschat-release.keystore
+          HALLSCHAT_KEYSTORE_PASSWORD=$HALLSCHAT_ANDROID_KEYSTORE_PASSWORD
+          HALLSCHAT_KEY_ALIAS=$HALLSCHAT_ANDROID_KEY_ALIAS
+          HALLSCHAT_KEY_PASSWORD=$HALLSCHAT_ANDROID_KEY_PASSWORD
+          EOF
+
           python3 - <<'PY'
           from pathlib import Path
           import re
-          p = Path("android/app/build.gradle")
-          s = p.read_text()
-          if "signingConfigs {" not in s:
-              marker = "android {"
-              if marker not in s: raise SystemExit("Android Gradle android block not found")
-              s = s.replace(marker, marker + """
-              signingConfigs {
-                  release {
-                      storeFile file(System.getenv('HALLSCHAT_KEYSTORE_PATH'))
-                      storePassword System.getenv('HALLSCHAT_KEYSTORE_PASSWORD')
-                      keyAlias System.getenv('HALLSCHAT_KEY_ALIAS')
-                      keyPassword System.getenv('HALLSCHAT_KEY_PASSWORD')
-                  }
+
+          path = Path("android/app/build.gradle")
+          text = path.read_text()
+
+          if "signingConfigs {" not in text:
+              signing_block = """    signingConfigs {
+              release {
+                  storeFile file(project.findProperty("HALLSCHAT_KEYSTORE_FILE"))
+                  storePassword project.findProperty("HALLSCHAT_KEYSTORE_PASSWORD")
+                  keyAlias project.findProperty("HALLSCHAT_KEY_ALIAS")
+                  keyPassword project.findProperty("HALLSCHAT_KEY_PASSWORD")
               }
-          """, 1)
-          pattern = r"(?ms)(buildTypes\s*\{\s*release\s*\{)(.*?)(\n\s*\})"
-          match = re.search(pattern, s)
-          if not match: raise SystemExit("Could not find generated release build type")
-          body = match.group(2)
-          if "signingConfig signingConfigs.release" not in body:
-              body += "\n            signingConfig signingConfigs.release"
-              s = s[:match.start(2)] + body + s[match.end(2):]
-          p.write_text(s)
+          }
+
+          """
+              marker = "    buildTypes {"
+              if marker not in text:
+                  raise SystemExit("Could not find Android buildTypes block")
+              text = text.replace(marker, signing_block + marker, 1)
+
+          build_types = re.search(r"(?ms)^    buildTypes {.*$", text)
+          if not build_types:
+              raise SystemExit("Could not find Android buildTypes block")
+
+          build_text = build_types.group(0)
+          release_match = re.search(r"(?m)^        release {\n", build_text)
+          if not release_match:
+              raise SystemExit("Could not find Android release build type")
+
+          release_start = release_match.end()
+          release_body_end = build_text.find("\n        }", release_start)
+          if release_body_end == -1:
+              raise SystemExit("Could not find end of release build type")
+
+          release_body = build_text[release_start:release_body_end]
+          if "signingConfig signingConfigs.release" not in release_body:
+              build_text = build_text[:release_start] + "            signingConfig signingConfigs.release\n" + build_text[release_start:]
+
+          text = text[:build_types.start()] + build_text
+          path.write_text(text)
           PY
 
-      - name: Sync bundled web assets
-        run: npx cap sync android
+      - name: Build signed HallsChat production APK
+        working-directory: android
+        run: ./gradlew --no-daemon --stacktrace assembleRelease
 
-      - name: Build signed release APK
+      - name: Verify APK
         run: |
-          cd android
-          ./gradlew --no-daemon assembleRelease
-
-      - name: Verify APK signature and prepare downloads
-        run: |
+          set -euo pipefail
           APK="android/app/build/outputs/apk/release/app-release.apk"
           test -s "$APK"
           apksigner verify --verbose "$APK"
-          mkdir -p release
-          cp "$APK" "release/HallsChat-${{ inputs.app_version }}-release.apk"
-          sha256sum "release/HallsChat-${{ inputs.app_version }}-release.apk" > "release/HallsChat-${{ inputs.app_version }}-release.apk.sha256"
+          cp "$APK" HallsChat.apk
+          test -s HallsChat.apk
+          sha256sum HallsChat.apk > HallsChat.apk.sha256
+          ls -lh HallsChat.apk
 
-      - name: Upload signed release APK
+      - name: Upload HallsChat production APK
         uses: actions/upload-artifact@v4
         with:
           name: hallschat-release-apk
-          path: release/*
+          path: |
+            HallsChat.apk
+            HallsChat.apk.sha256
+          if-no-files-found: error
           retention-days: 7
+
+      - name: Publish HallsChat GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APP_VERSION: ${{ inputs.app_version }}
+        run: |
+          set -euo pipefail
+          tag="v${APP_VERSION}"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::Release $tag already exists. Choose a new app_version so every APK has a unique release tag."
+            exit 1
+          fi
+
+          gh release create "$tag" HallsChat.apk HallsChat.apk.sha256 \
+            --target "$GITHUB_SHA" \
+            --title "HallsChat $APP_VERSION" \
+            --notes "HallsChat Android release $APP_VERSION.
+
+          Download HallsChat.apk and install it on Android. Android may ask you to confirm installation."
