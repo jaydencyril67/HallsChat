@@ -6,7 +6,7 @@ import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 
 type BeforeInstallPromptEvent = Event & { readonly platforms: string[]; readonly userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>; prompt: () => Promise<void> };
-const HALLSCHAT_APK_URL = "https://github.com/jaydencyril67/HallsChat/releases/latest/download/HallsChat.apk";
+const HALLSCHAT_APK_URL = "https://hallschat.kingshall.online/downloads/HallsChat.apk";
 type AlertTypeKey = "chats" | "posts" | "stories" | "comments" | "follows" | "likes" | "calls" | "mentions" | "communities" | "systemUpdates" | "accountSecurity";
 const DEFAULT_ALERT_TYPES: Record<AlertTypeKey, boolean> = {
   chats: true, posts: true, stories: true, comments: true, follows: true, likes: true, calls: true, mentions: true, communities: true, systemUpdates: true, accountSecurity: true
