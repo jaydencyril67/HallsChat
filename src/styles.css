@@ -2754,7 +2754,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
 }
 @media (hover: hover) {
   .halls-groups-page .halls-group-list-row:hover {
-    border-color: rgba(229, 70, 92, .42) !important;
+    border-color: var(--theme-accent-border) !important;
   }
 }
 @media (max-width: 420px) {
@@ -2805,7 +2805,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
 
 /* Group list pass 2: interaction clarity and light-theme empty/search states. */
 .halls-groups-page .halls-group-list-row:focus-within {
-  outline: 2px solid rgba(229, 70, 92, .48);
+  outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
 .halls-groups-page .halls-group-list-row button:active,
@@ -3850,3 +3850,10 @@ html[data-theme="light"] .public-profile-page{background:var(--theme-bg-light);}
 /* Chat canvas follows the selected theme; only the chat shell opts into shared theme tokens. */
 .chat-page{background:var(--theme-bg);}
 html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
+
+
+/* Groups page follows the same semantic theme tokens as the chat page. */
+.halls-groups-page {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
