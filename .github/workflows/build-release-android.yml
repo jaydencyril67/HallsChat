@@ -91,6 +91,125 @@ jobs:
           cp public/crown-chat.svg assets/splash.svg
           npx capacitor-assets generate --android
 
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Configure unified HallsChat native launch splash
+        run: |
+          set -euo pipefail
+          mkdir -p android/app/src/main/res/drawable android/app/src/main/res/values-v31
+
+          # Keep the launch mark circular on both legacy and Android 12+ splash APIs.
+          cat > android/app/src/main/res/drawable/hallschat_splash_icon.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="432dp"
+              android:height="432dp"
+              android:viewportWidth="192"
+              android:viewportHeight="192">
+              <path
+                  android:fillColor="#210812"
+                  android:pathData="M96,8 A88,88 0,1 0,96,184 A88,88 0,1 0,96,8" />
+              <path
+                  android:fillColor="#000000"
+                  android:fillAlpha="0"
+                  android:strokeColor="#74213F"
+                  android:strokeWidth="2"
+                  android:pathData="M96,9 A87,87 0,1 0,96,183 A87,87 0,1 0,96,9" />
+              <path
+                  android:fillColor="#FFF8F2"
+                  android:pathData="M58,48 H134 C142,48 148,54 148,62 V100 C148,108 142,114 134,114 H99 L77,131 L81,114 H58 C50,114 44,108 44,100 V62 C44,54 50,48 58,48 Z" />
+              <path
+                  android:fillColor="#74213F"
+                  android:pathData="M59,75 L72,86 L87,64 L102,86 L117,64 L130,75 L123,99 H66 Z" />
+              <path
+                  android:fillColor="#74213F"
+                  android:pathData="M68,105 H121 V110 H68 Z" />
+              <path
+                  android:fillColor="#74213F"
+                  android:pathData="M55,75 A4,4 0,1 0,63,75 A4,4 0,1 0,55,75 M83,64 A4,4 0,1 0,91,64 A4,4 0,1 0,83,64 M113,64 A4,4 0,1 0,121,64 A4,4 0,1 0,113,64 M126,75 A4,4 0,1 0,134,75 A4,4 0,1 0,126,75" />
+          </vector>
+          XML
+
+          cat > /tmp/hallschat_branding.svg <<'SVG'
+          <svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320">
+            <rect width="800" height="320" fill="none"/>
+            <text x="400" y="174"
+                  text-anchor="middle"
+                  fill="#FFF8F2"
+                  font-family="sans-serif"
+                  font-size="86"
+                  font-weight="700">HallsChat</text>
+          </svg>
+          SVG
+          node - <<'NODE'
+          const sharp = require('sharp');
+          sharp('/tmp/hallschat_branding.svg')
+            .png()
+            .toFile('android/app/src/main/res/drawable/hallschat_branding.png')
+            .then(() => console.log('Created HallsChat branding PNG'))
+            .catch((err) => { console.error(err); process.exit(1); });
+          NODE
+
+          # Android 11 and below use this full launch layer-list. Android 12+ uses
+          # the same burgundy surface and circular crown-chat mark through SplashScreen.
+          cat > android/app/src/main/res/drawable/hallschat_launch_background.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+              <item android:drawable="@color/hallschat_splash_background" />
+              <item
+                  android:width="213dp"
+                  android:height="213dp"
+                  android:gravity="center"
+                  android:drawable="@drawable/hallschat_splash_icon" />
+              <item
+                  android:width="160dp"
+                  android:height="64dp"
+                  android:gravity="center|bottom"
+                  android:bottom="51dp"
+                  android:drawable="@drawable/hallschat_branding" />
+          </layer-list>
+          XML
+
+          cat > android/app/src/main/res/values/hallschat_splash_colors.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="hallschat_splash_background">#54152D</color>
+          </resources>
+          XML
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("android/app/src/main/res/values/styles.xml")
+          text = path.read_text()
+          pattern = re.compile(
+              r'(?s)<style\\s+name="AppTheme\\.NoActionBarLaunch"[^>]*>.*?</style>'
+          )
+          replacement = """<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+              <item name="android:windowBackground">@drawable/hallschat_launch_background</item>
+              <item name="windowSplashScreenBackground">@color/hallschat_splash_background</item>
+              <item name="windowSplashScreenAnimatedIcon">@drawable/hallschat_splash_icon</item>
+              <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+          </style>"""
+          if not pattern.search(text):
+              raise SystemExit("Could not find Capacitor AppTheme.NoActionBarLaunch")
+          path.write_text(pattern.sub(replacement, text, count=1))
+          PY
+
+          cat > android/app/src/main/res/values-v31/hallschat_splash.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
+                  <item name="android:windowSplashScreenBackground">@color/hallschat_splash_background</item>
+                  <item name="android:windowSplashScreenAnimatedIcon">@drawable/hallschat_splash_icon</item>
+                  <item name="android:windowSplashScreenBrandingImage">@drawable/hallschat_branding</item>
+                  <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+              </style>
+          </resources>
+          XML
+
       - name: Set HallsChat Android version
         env:
           APP_VERSION: ${{ inputs.app_version }}
