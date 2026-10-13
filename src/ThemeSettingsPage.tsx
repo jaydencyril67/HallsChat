@@ -1,6 +1,8 @@
 import { Check, Download, Globe, MoreHorizontal, Smartphone, Store } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
+import { NativeAppUpdate } from "./utils/nativeAppUpdate";
 import { navigate } from "./utils/navigate";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -110,6 +112,27 @@ export default function ThemeSettingsPage() {
     displayMode.addEventListener("change", syncInstalled);
     return () => { window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt); window.removeEventListener("appinstalled", handleAppInstalled); displayMode.removeEventListener("change", syncInstalled); };
   }, []);
+
+  const handleApkDownload = async (event: ReactMouseEvent<HTMLAnchorElement>) => {
+    setDownloadAppMenuOpen(false);
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") {
+      setDownloadAppMessage("Opening the latest signed HallsChat APK download.");
+      return;
+    }
+    event.preventDefault();
+    setDownloadAppMessage("Preparing the Android APK download…");
+    try {
+      const result = await NativeAppUpdate.downloadAndInstall({ url: HALLSCHAT_APK_URL });
+      if (result.requiresPermission) {
+        setDownloadAppMessage("Allow HallsChat to install unknown apps in Android settings, return here, then tap Android APK again.");
+      } else {
+        setDownloadAppMessage("The APK is downloading. Android will ask you to approve the update when it finishes.");
+      }
+    } catch {
+      setDownloadAppMessage("The in-app installer could not start. Opening the APK download in your browser.");
+      window.setTimeout(() => window.open(HALLSCHAT_APK_URL, "_blank", "noopener,noreferrer"), 300);
+    }
+  };
 
   const handlePwaInstall = async () => {
     if (pwaInstalled) { setDownloadAppMessage("HallsChat is already installed on this device."); setDownloadAppMenuOpen(false); return; }
@@ -587,7 +610,7 @@ export default function ThemeSettingsPage() {
               href={HALLSCHAT_APK_URL}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={() => { setDownloadAppMessage("Opening the latest signed HallsChat APK download."); setDownloadAppMenuOpen(false); }}
+              onClick={handleApkDownload}
             >
               <Smartphone size={16} aria-hidden="true" />
               <span>Android APK</span>
