@@ -1,54 +1,13 @@
 import { Check, Moon, Sun, Smartphone } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 
-type ThemeChoice = "dark" | "light" | "system";
-const STORAGE_KEY = "hallschat-theme";
-
-function readChoice(): ThemeChoice {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved === "light" || saved === "system" || saved === "dark" ? saved : "dark";
-  } catch {
-    return "dark";
-  }
-}
-
-function resolveTheme(choice: ThemeChoice): "dark" | "light" {
-  if (choice !== "system") return choice;
-  return window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark";
-}
-
-function applyChoice(choice: ThemeChoice) {
-  const resolved = resolveTheme(choice);
-  document.documentElement.dataset.theme = resolved;
-  document.querySelector('meta[name="theme-color"]')?.setAttribute(
-    "content",
-    resolved === "light" ? "#f8f3f1" : "#19070b",
-  );
-}
-
 export default function ThemeSettingsPage() {
-  const [choice, setChoice] = useState<ThemeChoice>(readChoice);
-  const resolvedTheme = resolveTheme(choice);
-  const isLight = resolvedTheme === "light";
-
-  useEffect(() => {
-    applyChoice(choice);
-    try {
-      localStorage.setItem(STORAGE_KEY, choice);
-    } catch {
-      // Theme still works for this session if storage is unavailable.
-    }
-    if (choice !== "system") return;
-    const media = window.matchMedia("(prefers-color-scheme: light)");
-    const update = () => applyChoice("system");
-    media.addEventListener?.("change", update);
-    return () => media.removeEventListener?.("change", update);
-  }, [choice]);
-
-  const toggleTheme = () => setChoice(isLight ? "dark" : "light");
+  const { themeMode, themePreference, setThemePreference } = useAppTheme();
+  const isLight = themeMode === "light";
+  const choice = themePreference;
+  const toggleTheme = () => setThemePreference(isLight ? "dark" : "light");
 
   return <main className="home-page social-home settings-page">
     <AppHeader homeHref="/home" />
@@ -92,7 +51,7 @@ export default function ThemeSettingsPage() {
           type="button"
           className={`settings-system-option${choice === "system" ? " is-selected" : ""}`}
           aria-pressed={choice === "system"}
-          onClick={() => setChoice("system")}
+          onClick={() => setThemePreference("system")}
         >
           <span className="settings-theme-icon"><Smartphone size={18} /></span>
           <span className="settings-theme-copy">
