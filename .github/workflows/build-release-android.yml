@@ -235,6 +235,391 @@ jobs:
           print(f"Configured HallsChat version {version} (versionCode {version_code})")
           PY
 
+      - name: Add native APK update installer
+        run: |
+          set -euo pipefail
+          mkdir -p android/app/src/main/java/com/kingshall/hallschat
+          cat > android/app/src/main/java/com/kingshall/hallschat/NativeAppUpdatePlugin.java <<'JAVA'
+          package com.kingshall.hallschat;
+          
+          import android.app.DownloadManager;
+          import android.content.BroadcastReceiver;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.content.IntentFilter;
+          import android.content.pm.PackageInfo;
+          import android.database.Cursor;
+          import android.net.ConnectivityManager;
+          import android.net.NetworkInfo;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Environment;
+          import android.provider.Settings;
+          
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import com.getcapacitor.PluginMethod;
+          
+          import java.net.HttpURLConnection;
+          import java.net.URL;
+          
+          @CapacitorPlugin(name = "NativeAppUpdate")
+          public class NativeAppUpdatePlugin extends Plugin {
+              private BroadcastReceiver downloadReceiver;
+              private long pendingDownloadId = -1L;
+              private String pendingDownloadUrl = "";
+          
+              private String statusLabel(int status) {
+                  if (status == DownloadManager.STATUS_PENDING) return "PENDING";
+                  if (status == DownloadManager.STATUS_RUNNING) return "RUNNING";
+                  if (status == DownloadManager.STATUS_PAUSED) return "PAUSED";
+                  if (status == DownloadManager.STATUS_SUCCESSFUL) return "SUCCESSFUL";
+                  if (status == DownloadManager.STATUS_FAILED) return "FAILED";
+                  return "UNKNOWN(" + status + ")";
+              }
+          
+              private String reasonLabel(int reason) {
+                  switch (reason) {
+                      case DownloadManager.ERROR_CANNOT_RESUME: return "CANNOT_RESUME";
+                      case DownloadManager.ERROR_DEVICE_NOT_FOUND: return "DEVICE_NOT_FOUND";
+                      case DownloadManager.ERROR_FILE_ALREADY_EXISTS: return "FILE_ALREADY_EXISTS";
+                      case DownloadManager.ERROR_FILE_ERROR: return "FILE_ERROR";
+                      case DownloadManager.ERROR_HTTP_DATA_ERROR: return "HTTP_DATA_ERROR";
+                      case DownloadManager.ERROR_INSUFFICIENT_SPACE: return "INSUFFICIENT_SPACE";
+                      case DownloadManager.ERROR_TOO_MANY_REDIRECTS: return "TOO_MANY_REDIRECTS";
+                      case DownloadManager.ERROR_UNHANDLED_HTTP_CODE: return "UNHANDLED_HTTP_CODE";
+                      case DownloadManager.ERROR_UNKNOWN: return "UNKNOWN";
+                      case DownloadManager.PAUSED_QUEUED_FOR_WIFI: return "PAUSED_QUEUED_FOR_WIFI";
+                      case DownloadManager.PAUSED_WAITING_FOR_NETWORK: return "PAUSED_WAITING_FOR_NETWORK";
+                      case DownloadManager.PAUSED_WAITING_TO_RETRY: return "PAUSED_WAITING_TO_RETRY";
+                      default:
+                          if (reason >= 400 && reason < 600) return "HTTP_" + reason;
+                          return reason == 0 ? "NONE" : "REASON_" + reason;
+                  }
+              }
+          
+              private void emitLog(String stage, String message, JSObject details) {
+                  JSObject event = details == null ? new JSObject() : details;
+                  event.put("stage", stage);
+                  event.put("message", message);
+                  event.put("timestamp", System.currentTimeMillis());
+                  notifyListeners("downloadLog", event);
+              }
+          
+              private JSObject queryDownload(long id) {
+                  JSObject result = new JSObject();
+                  result.put("downloadId", id);
+                  result.put("downloadUrl", pendingDownloadUrl);
+                  result.put("checkedAt", System.currentTimeMillis());
+                  if (id < 0) {
+                      result.put("status", "NO_DOWNLOAD");
+                      result.put("message", "No download has been queued in this app session.");
+                      return result;
+                  }
+          
+                  DownloadManager manager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                  if (manager == null) {
+                      result.put("status", "DOWNLOAD_SERVICE_UNAVAILABLE");
+                      return result;
+                  }
+          
+                  Cursor cursor = null;
+                  try {
+                      cursor = manager.query(new DownloadManager.Query().setFilterById(id));
+                      if (cursor == null || !cursor.moveToFirst()) {
+                          result.put("status", "NOT_FOUND");
+                          result.put("message", "Android DownloadManager has no record for this download ID.");
+                          return result;
+                      }
+          
+                      int statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS);
+                      int reasonIndex = cursor.getColumnIndex(DownloadManager.COLUMN_REASON);
+                      int bytesIndex = cursor.getColumnIndex(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR);
+                      int totalIndex = cursor.getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES);
+                      int uriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_URI);
+                      int localUriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI);
+                      int lastModifiedIndex = cursor.getColumnIndex(DownloadManager.COLUMN_LAST_MODIFIED_TIMESTAMP);
+                      int status = statusIndex >= 0 ? cursor.getInt(statusIndex) : -1;
+                      int reason = reasonIndex >= 0 ? cursor.getInt(reasonIndex) : 0;
+                      long bytes = bytesIndex >= 0 ? cursor.getLong(bytesIndex) : -1L;
+                      long total = totalIndex >= 0 ? cursor.getLong(totalIndex) : -1L;
+                      result.put("status", statusLabel(status));
+                      result.put("statusCode", status);
+                      result.put("reason", reasonLabel(reason));
+                      result.put("reasonCode", reason);
+                      result.put("bytesDownloaded", bytes);
+                      result.put("totalBytes", total);
+                      if (uriIndex >= 0) result.put("requestedUri", cursor.getString(uriIndex));
+                      if (localUriIndex >= 0) result.put("localUri", cursor.getString(localUriIndex));
+                      if (lastModifiedIndex >= 0) result.put("lastModified", cursor.getLong(lastModifiedIndex));
+                  } catch (Exception error) {
+                      result.put("queryError", error.getClass().getSimpleName() + ": " + String.valueOf(error.getMessage()));
+                  } finally {
+                      if (cursor != null) cursor.close();
+                  }
+                  return result;
+              }
+          
+              @PluginMethod
+              public void getAppInfo(PluginCall call) {
+                  try {
+                      PackageInfo info = getContext().getPackageManager().getPackageInfo(getContext().getPackageName(), 0);
+                      JSObject result = new JSObject();
+                      result.put("versionName", info.versionName == null ? "" : info.versionName);
+                      result.put("versionCode", Build.VERSION.SDK_INT >= 28 ? (double) info.getLongVersionCode() : (double) info.versionCode);
+                      call.resolve(result);
+                  } catch (Exception error) {
+                      call.reject("Unable to read the installed HallsChat version.", error);
+                  }
+              }
+          
+              @PluginMethod
+              public void getDownloadDiagnostics(PluginCall call) {
+                  JSObject result = queryDownload(pendingDownloadId);
+                  ConnectivityManager connectivity = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+                  try {
+                      NetworkInfo active = connectivity == null ? null : connectivity.getActiveNetworkInfo();
+                      result.put("networkConnected", active != null && active.isConnected());
+                      result.put("networkType", active == null ? "NONE" : active.getTypeName());
+                  } catch (Exception error) {
+                      result.put("networkCheckError", error.getClass().getSimpleName() + ": " + String.valueOf(error.getMessage()));
+                  }
+                  result.put("androidVersion", Build.VERSION.RELEASE);
+                  result.put("androidSdkInt", Build.VERSION.SDK_INT);
+                  call.resolve(result);
+              }
+          
+              @PluginMethod
+              public void probeDownloadEndpoint(PluginCall call) {
+                  String urlText = call.getString("url");
+                  Uri parsed = urlText == null ? null : Uri.parse(urlText);
+                  if (parsed == null || !"https".equalsIgnoreCase(parsed.getScheme()) ||
+                          parsed.getHost() == null ||
+                          !"hallschat.kingshall.online".equalsIgnoreCase(parsed.getHost())) {
+                      call.reject("The probe URL is not a trusted HallsChat download URL.");
+                      return;
+                  }
+          
+                  new Thread(() -> {
+                      HttpURLConnection connection = null;
+                      try {
+                          connection = (HttpURLConnection) new URL(urlText).openConnection();
+                          connection.setRequestMethod("GET");
+                          connection.setConnectTimeout(15000);
+                          connection.setReadTimeout(15000);
+                          connection.setInstanceFollowRedirects(true);
+                          connection.setRequestProperty("Range", "bytes=0-0");
+                          connection.setRequestProperty("Accept", "application/vnd.android.package-archive");
+                          connection.connect();
+                          int code = connection.getResponseCode();
+                          JSObject result = new JSObject();
+                          result.put("httpStatus", code);
+                          result.put("contentType", String.valueOf(connection.getContentType()));
+                          result.put("contentLength", connection.getContentLengthLong());
+                          result.put("contentDisposition", String.valueOf(connection.getHeaderField("Content-Disposition")));
+                          result.put("finalUrl", String.valueOf(connection.getURL()));
+                          result.put("acceptRanges", String.valueOf(connection.getHeaderField("Accept-Ranges")));
+                          result.put("probeTimestamp", System.currentTimeMillis());
+                          result.put("ok", code >= 200 && code < 300 &&
+                                  connection.getContentType() != null &&
+                                  connection.getContentType().toLowerCase().contains("application/vnd.android.package-archive"));
+                          try {
+                              if (code >= 400) {
+                                  java.io.InputStream errorStream = connection.getErrorStream();
+                                  if (errorStream != null) errorStream.close();
+                              } else {
+                                  java.io.InputStream input = connection.getInputStream();
+                                  if (input != null) {
+                                      byte[] sample = new byte[4];
+                                      int count = input.read(sample);
+                                      StringBuilder hex = new StringBuilder();
+                                      for (int i = 0; i < count; i++) {
+                                          if (i > 0) hex.append(' ');
+                                          hex.append(String.format("%02X", sample[i] & 0xFF));
+                                      }
+                                      result.put("firstBytesHex", hex.toString());
+                                      result.put("looksLikeApkZip", count >= 2 && sample[0] == 0x50 && sample[1] == 0x4B);
+                                      input.close();
+                                  } else {
+                                      result.put("firstBytesHex", "");
+                                      result.put("looksLikeApkZip", false);
+                                  }
+                              }
+                          } catch (Exception sampleError) {
+                              result.put("sampleReadError", sampleError.getClass().getSimpleName() + ": " + String.valueOf(sampleError.getMessage()));
+                          }
+                          call.resolve(result);
+                      } catch (Exception error) {
+                          JSObject result = new JSObject();
+                          result.put("ok", false);
+                          result.put("error", error.getClass().getSimpleName() + ": " + String.valueOf(error.getMessage()));
+                          result.put("probeTimestamp", System.currentTimeMillis());
+                          call.resolve(result);
+                      } finally {
+                          if (connection != null) connection.disconnect();
+                      }
+                  }, "HallsChat-Apk-Probe").start();
+              }
+          
+              @PluginMethod
+              public void downloadAndInstall(PluginCall call) {
+                  String url = call.getString("url");
+                  Uri parsed = url == null ? null : Uri.parse(url);
+                  if (parsed == null || !"https".equalsIgnoreCase(parsed.getScheme()) ||
+                          parsed.getHost() == null ||
+                          !"hallschat.kingshall.online".equalsIgnoreCase(parsed.getHost())) {
+                      call.reject("The update URL is not a trusted HallsChat download URL.");
+                      return;
+                  }
+          
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                          !getContext().getPackageManager().canRequestPackageInstalls()) {
+                      Intent settings = new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                              Uri.parse("package:" + getContext().getPackageName()));
+                      getActivity().startActivity(settings);
+                      JSObject result = new JSObject();
+                      result.put("requiresPermission", true);
+                      call.resolve(result);
+                      return;
+                  }
+          
+                  DownloadManager manager = (DownloadManager) getContext().getSystemService(Context.DOWNLOAD_SERVICE);
+                  if (manager == null) {
+                      call.reject("Android's download service is unavailable.");
+                      return;
+                  }
+          
+                  try {
+                      if (downloadReceiver != null) {
+                          try { getContext().unregisterReceiver(downloadReceiver); } catch (Exception ignored) {}
+                          downloadReceiver = null;
+                      }
+          
+                      pendingDownloadUrl = url;
+                      emitLog("queued", "Preparing Android DownloadManager request.", null);
+                      IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+                      downloadReceiver = new BroadcastReceiver() {
+                          @Override public void onReceive(Context context, Intent intent) {
+                              long completedId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1L);
+                              if (completedId != pendingDownloadId) return;
+          
+                              try { getContext().unregisterReceiver(this); } catch (Exception ignored) {}
+                              downloadReceiver = null;
+          
+                              JSObject diagnostics = queryDownload(completedId);
+                              String status = diagnostics.optString("status", "UNKNOWN");
+                              String reason = diagnostics.optString("reason", "UNKNOWN");
+                              if (!"SUCCESSFUL".equals(status)) {
+                                  String message = "APK download failed: " + status + " / " + reason +
+                                          " (HTTP/reason code " + diagnostics.optInt("reasonCode", 0) + ").";
+                                  diagnostics.put("message", message);
+                                  emitLog("failed", message, diagnostics);
+                                  notifyListeners("downloadError", diagnostics);
+                                  return;
+                              }
+          
+                              emitLog("downloaded", "APK downloaded successfully; opening Android installer.", diagnostics);
+                              Uri apkUri = manager.getUriForDownloadedFile(completedId);
+                              if (apkUri == null) {
+                                  JSObject failure = queryDownload(completedId);
+                                  failure.put("message", "Android reported a successful download but returned no APK file URI.");
+                                  emitLog("installer_error", failure.optString("message"), failure);
+                                  notifyListeners("downloadError", failure);
+                                  return;
+                              }
+          
+                              Intent install = new Intent(Intent.ACTION_VIEW);
+                              install.setDataAndType(apkUri, "application/vnd.android.package-archive");
+                              install.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                              try {
+                                  getActivity().startActivity(install);
+                                  emitLog("installer_opened", "Android package installer opened.", diagnostics);
+                              } catch (Exception error) {
+                                  JSObject failure = queryDownload(completedId);
+                                  failure.put("message", "Android could not launch the package installer: " + String.valueOf(error.getMessage()));
+                                  emitLog("installer_error", failure.optString("message"), failure);
+                                  notifyListeners("downloadError", failure);
+                              }
+                          }
+                      };
+          
+                      if (Build.VERSION.SDK_INT >= 33) {
+                          getContext().registerReceiver(downloadReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
+                      } else {
+                          getContext().registerReceiver(downloadReceiver, filter);
+                      }
+          
+                      DownloadManager.Request request = new DownloadManager.Request(parsed);
+                      request.setTitle("HallsChat update");
+                      request.setDescription("Downloading the latest HallsChat APK.");
+                      request.setMimeType("application/vnd.android.package-archive");
+                      request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                      request.setAllowedOverMetered(true);
+                      request.setAllowedOverRoaming(false);
+                      request.setDestinationInExternalFilesDir(getContext(), Environment.DIRECTORY_DOWNLOADS,
+                              "HallsChat-update-" + System.currentTimeMillis() + ".apk");
+                      pendingDownloadId = manager.enqueue(request);
+          
+                      JSObject result = new JSObject();
+                      result.put("status", "downloading");
+                      result.put("downloadId", (double) pendingDownloadId);
+                      result.put("url", url);
+                      result.put("queuedAt", System.currentTimeMillis());
+                      emitLog("started", "Android DownloadManager accepted the request.", result);
+                      call.resolve(result);
+                  } catch (Exception error) {
+                      if (downloadReceiver != null) {
+                          try { getContext().unregisterReceiver(downloadReceiver); } catch (Exception ignored) {}
+                          downloadReceiver = null;
+                      }
+                      JSObject failure = new JSObject();
+                      failure.put("message", "Unable to start the APK download: " + String.valueOf(error.getMessage()));
+                      failure.put("error", error.getClass().getSimpleName());
+                      emitLog("start_error", failure.optString("message"), failure);
+                      call.reject(failure.optString("message"), error);
+                  }
+              }
+          
+              @Override
+              protected void handleOnDestroy() {
+                  if (downloadReceiver != null) {
+                      try { getContext().unregisterReceiver(downloadReceiver); } catch (Exception ignored) {}
+                      downloadReceiver = null;
+                  }
+                  super.handleOnDestroy();
+              }
+          }
+          JAVA
+          cat > android/app/src/main/java/com/kingshall/hallschat/MainActivity.java <<'JAVA'
+          package com.kingshall.hallschat;
+          
+          import android.os.Bundle;
+          import com.getcapacitor.BridgeActivity;
+          
+          public class MainActivity extends BridgeActivity {
+              @Override
+              public void onCreate(Bundle savedInstanceState) {
+                  registerPlugin(NativeAppUpdatePlugin.class);
+                  super.onCreate(savedInstanceState);
+                  if (getBridge() != null && getBridge().getWebView() != null) {
+                      getBridge().getWebView().setVerticalScrollBarEnabled(false);
+                      getBridge().getWebView().setHorizontalScrollBarEnabled(false);
+                  }
+              }
+          }
+          JAVA
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          text = path.read_text()
+          permission = '    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />'
+          if 'android.permission.REQUEST_INSTALL_PACKAGES' not in text:
+              text = text.replace('</manifest>', permission + '\\n</manifest>', 1)
+          path.write_text(text)
+          PY
+
       - name: Prepare release signing
         env:
           GH_TOKEN: ${{ github.token }}
