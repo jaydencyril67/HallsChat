@@ -1129,8 +1129,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   border-radius: 50%;
   background: #85818a;
 }
-.chat-avatar-presence.is-online { background: #39d98a; }
-.chat-avatar-presence.is-offline { background: #85818a; }
+.chat-avatar-presence.is-online { background:var(--theme-presence-online); }
+.chat-avatar-presence.is-offline { background:var(--theme-presence-offline); }
 .presence-label {
   display: flex;
   align-items: center;
