@@ -132,50 +132,6 @@
   --theme-danger-action-hover-bg: var(--theme-surface-raised);
 
   /* Social feed foundation roles; light mode overrides these inside the page scope. */
-  --theme-feed-card-bg: linear-gradient(150deg, rgba(42, 13, 21, 0.94), rgba(27, 8, 13, 0.96));
-  --theme-feed-card-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
-  --theme-feed-text-heading: #f5e6e9;
-  --theme-feed-text-body: #f1e3e6;
-  --theme-feed-text-secondary: #9f8087;
-  --theme-feed-text-action: #a98b92;
-  --theme-feed-text-muted: #80616a;
-  --theme-feed-scroll-track: rgba(255, 255, 255, 0.04);
-  --theme-feed-scroll-thumb: rgba(214, 74, 91, 0.55);
-  --theme-feed-avatar-gradient: linear-gradient(145deg, #a84b5d, #51202d);
-  --theme-feed-avatar-self-gradient: linear-gradient(145deg, #c13b51, #641628);
-  --theme-feed-avatar-border: rgba(255, 255, 255, 0.1);
-  --theme-feed-avatar-text: #fff2f4;
-  --theme-feed-input-bg: rgba(10, 3, 6, 0.38);
-  --theme-feed-input-border: rgba(255, 226, 231, 0.1);
-  --theme-feed-text-placeholder: #8f6f77;
-  --theme-feed-focus-border: rgba(214, 74, 91, 0.7);
-  --theme-feed-focus-shadow: 0 0 0 3px rgba(184, 32, 50, 0.1);
-  --theme-feed-accent-strong: #f16b80;
-  --theme-feed-accent-text: #f09aa7;
-  --theme-feed-accent-soft: rgba(184, 32, 50, 0.1);
-  --theme-feed-accent-border: rgba(232, 90, 110, 0.22);
-  --theme-feed-accent-border-strong: rgba(225, 78, 100, 0.55);
-  --theme-feed-poll-bg: rgba(12, 3, 7, 0.25);
-  --theme-feed-poll-option-bg: rgba(255, 255, 255, 0.018);
-  --theme-feed-poll-track: rgba(255, 255, 255, 0.08);
-  --theme-feed-comment-inline-bg: rgba(12, 4, 7, 0.2);
-  --theme-feed-comment-sheet-bg: linear-gradient(160deg, #260c14 0%, #17070d 65%, #10060a 100%);
-  --theme-feed-comment-sheet-border: rgba(255, 183, 196, 0.16);
-  --theme-feed-comment-border: rgba(255, 210, 219, 0.12);
-  --theme-feed-comment-bubble-bg: rgba(255, 255, 255, 0.035);
-  --theme-feed-comment-composer-bg: rgba(10, 3, 6, 0.42);
-  --theme-feed-comment-avatar-bg: linear-gradient(145deg, #713040, #35121d);
-  --theme-feed-comment-avatar-border: rgba(236, 102, 121, 0.25);
-  --theme-feed-comment-avatar-text: #ffe4e9;
-  --theme-feed-comment-name: #e9aab5;
-  --theme-feed-comment-text: #f8e9ec;
-  --theme-feed-comment-meta: rgba(246, 220, 225, 0.56);
-  --theme-feed-comment-action: rgba(246, 220, 225, 0.72);
-  --theme-feed-comment-grabber: rgba(255, 220, 226, 0.35);
-  --theme-feed-comment-link: #ff9cac;
-  --theme-feed-comment-link-hover: #ffd4dc;
-  --theme-feed-comment-delete-border: rgba(255, 129, 146, 0.35);
-  --theme-feed-comment-delete-hover-bg: rgba(220, 55, 78, 0.22);
 }
 
 /* Hybrid theme architecture: any page or component can opt into the shared light palette by adding .theme-token-scope. Unsubscribed areas keep the dark root tokens and all existing hardcoded colors. */
@@ -284,50 +240,6 @@ html[data-theme="light"] .theme-token-scope {
   --theme-avatar-initials-text: #84263a;
   --theme-danger-action-hover-bg: #f2dfe3;
 
-  --theme-feed-card-bg: var(--theme-card);
-  --theme-feed-card-shadow: var(--theme-shadow-card-soft);
-  --theme-feed-text-heading: var(--theme-text);
-  --theme-feed-text-body: var(--theme-text);
-  --theme-feed-text-secondary: var(--theme-text-secondary);
-  --theme-feed-text-action: var(--theme-text-secondary);
-  --theme-feed-text-muted: var(--theme-text-muted);
-  --theme-feed-scroll-track: rgba(83, 31, 42, 0.06);
-  --theme-feed-scroll-thumb: rgba(169, 31, 53, 0.38);
-  --theme-feed-avatar-gradient: linear-gradient(145deg, #f0c5cc, #c77b89);
-  --theme-feed-avatar-self-gradient: linear-gradient(145deg, #d85a70, #a91f35);
-  --theme-feed-avatar-border: rgba(83, 31, 42, 0.16);
-  --theme-feed-avatar-text: #32151d;
-  --theme-feed-input-bg: #ffffff;
-  --theme-feed-input-border: rgba(83, 31, 42, 0.18);
-  --theme-feed-text-placeholder: #9a7c82;
-  --theme-feed-focus-border: var(--theme-focus);
-  --theme-feed-focus-shadow: 0 0 0 3px rgba(169, 31, 53, 0.12);
-  --theme-feed-accent-strong: #b4233b;
-  --theme-feed-accent-text: #a91f35;
-  --theme-feed-accent-soft: rgba(169, 31, 53, 0.08);
-  --theme-feed-accent-border: rgba(169, 31, 53, 0.22);
-  --theme-feed-accent-border-strong: rgba(169, 31, 53, 0.48);
-  --theme-feed-poll-bg: #fffdfc;
-  --theme-feed-poll-option-bg: rgba(83, 31, 42, 0.025);
-  --theme-feed-poll-track: rgba(83, 31, 42, 0.1);
-  --theme-feed-comment-inline-bg: var(--theme-card);
-  --theme-feed-comment-sheet-bg: var(--theme-card);
-  --theme-feed-comment-sheet-border: var(--theme-line);
-  --theme-feed-comment-border: var(--theme-line);
-  --theme-feed-comment-bubble-bg: var(--theme-surface-hover);
-  --theme-feed-comment-composer-bg: var(--theme-input-bg);
-  --theme-feed-comment-avatar-bg: var(--theme-feed-avatar-gradient);
-  --theme-feed-comment-avatar-border: var(--theme-feed-avatar-border);
-  --theme-feed-comment-avatar-text: var(--theme-feed-avatar-text);
-  --theme-feed-comment-name: var(--theme-primary);
-  --theme-feed-comment-text: var(--theme-text);
-  --theme-feed-comment-meta: var(--theme-text-secondary);
-  --theme-feed-comment-action: var(--theme-text-secondary);
-  --theme-feed-comment-grabber: var(--theme-line);
-  --theme-feed-comment-link: var(--theme-primary);
-  --theme-feed-comment-link-hover: var(--theme-primary-hover);
-  --theme-feed-comment-delete-border: var(--theme-danger-action-border);
-  --theme-feed-comment-delete-hover-bg: var(--theme-danger-action-bg);
 }
 
 /* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
