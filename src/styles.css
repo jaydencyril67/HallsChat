@@ -2438,7 +2438,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
 @keyframes halls-toast-auto-dismiss{to{opacity:0;visibility:hidden;transform:translate(-50%,-6px);pointer-events:none}}
 
 /* HallsChat Settings page — compact, theme-token-only app theme row. */
-.settings-shell{width:min(720px,calc(100% - 28px));margin:0 auto;padding-top:calc(var(--app-top-gap) + 18px);padding-bottom:110px;color:var(--theme-text);}
+.settings-shell{display:flex;flex-direction:column;gap:8px;width:min(720px,calc(100% - 28px));margin:0 auto;padding-top:calc(var(--app-top-gap) + 18px);padding-bottom:110px;color:var(--theme-text);}
 .settings-theme-card{position:relative;display:flex;align-items:center;gap:10px;min-height:48px;box-sizing:border-box;padding:5px 7px 5px 13px;border:1px solid var(--theme-line);border-radius:12px;background:var(--theme-surface);color:var(--theme-text);box-shadow:0 5px 16px var(--theme-shadow-color-soft);}
 .settings-theme-title{flex:1;min-width:0;font-size:13px;font-weight:700;line-height:1.35;}
 .settings-theme-current{color:var(--theme-muted);font-size:10px;}
