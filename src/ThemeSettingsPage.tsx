@@ -5,7 +5,7 @@ import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 
 export default function ThemeSettingsPage() {
-  const { themeMode, themePreference, setThemePreference } = useAppTheme();
+  const { themePreference, setThemePreference } = useAppTheme();
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const themeMenuRef = useRef<HTMLDivElement>(null);
   const currentThemeLabel = themePreference === "system"
