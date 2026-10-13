@@ -18,8 +18,6 @@ import NowBar from "./NowBar";
 import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
 import AppThemeProvider from "./components/AppTheme";
-import { dismissSocialPostPublishStatus, getSocialPostPublishState, subscribeSocialPostPublishing, type SocialPostPublishState } from "./utils/socialPostPublisher";
-import { dismissBackgroundTaskResult, getBackgroundTaskState, subscribeBackgroundTasks, type BackgroundTaskSnapshot } from "./utils/backgroundTasks";
 
 const navigationSections: Record<string, { title: string; description: string }> = {
   "/chats": { title: "Chat", description: "Your conversations will live here." },
@@ -44,73 +42,6 @@ function NavigationSectionPage({ title, description }: { title: string; descript
   </main>;
 }
 
-
-function GlobalPostPublishingStatus() {
-  const [publishState, setPublishState] = useState<SocialPostPublishState>(() => getSocialPostPublishState());
-
-  useEffect(() => subscribeSocialPostPublishing(setPublishState), []);
-
-  useEffect(() => {
-    if (publishState.phase !== "success" && publishState.phase !== "error") return;
-    const timer = window.setTimeout(() => dismissSocialPostPublishStatus(), 6000);
-    return () => window.clearTimeout(timer);
-  }, [publishState.phase, publishState.revision, publishState.message]);
-
-  if (publishState.phase === "idle") return null;
-  const uploading = publishState.phase === "uploading";
-  const failed = publishState.phase === "error";
-  return <>
-    {uploading && <style>{`@keyframes hallschat-global-post-progress { from { transform: translateX(-110%); } to { transform: translateX(280%); } }`}</style>}
-    <div role={failed ? "alert" : "status"} aria-live="polite" style={{ position: "fixed", left: 14, right: 14, top: "calc(env(safe-area-inset-top, 0px) + 12px)", zIndex: 9999, maxWidth: 440, margin: "0 auto", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", border: `1px solid ${failed ? "var(--theme-toast-error-border)" : uploading ? "var(--theme-toast-border)" : "var(--theme-toast-success-border)"}`, borderRadius: 14, background: failed ? "var(--theme-toast-danger-bg)" : uploading ? "var(--theme-toast-bg)" : "var(--theme-toast-success-bg)", boxShadow: "var(--theme-shadow-card-soft)", color: "var(--theme-text)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-      <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, flexShrink: 0, borderRadius: 10, background: failed ? "var(--theme-status-danger-bg)" : uploading ? "var(--theme-status-info-bg)" : "var(--theme-status-success-bg)", color: failed ? "var(--theme-danger)" : uploading ? "var(--theme-info)" : "var(--theme-success)" }}>{uploading ? <span aria-hidden="true" style={{ fontSize: 20, fontWeight: 800, lineHeight: 1 }}>↑</span> : failed ? "!" : "✓"}</span>
-      <span style={{ display: "grid", gap: 3, minWidth: 0, flex: 1 }}>
-        <strong style={{ fontSize: ".88rem", fontWeight: 650 }}>{uploading ? "Posting in the background" : failed ? "Post couldn't be published" : "Post published"}</strong>
-        <span style={{ fontSize: ".78rem", color: "var(--theme-text-secondary)", overflowWrap: "anywhere" }}>{publishState.status || publishState.message}</span>
-        {uploading && <span style={{ display: "block", height: 3, marginTop: 3, overflow: "hidden", borderRadius: 99, background: "var(--theme-progress-track)" }}><span style={{ display: "block", width: "36%", height: "100%", borderRadius: 99, background: "var(--theme-progress-fill)", animation: "hallschat-global-post-progress 1.2s ease-in-out infinite alternate" }}/></span>}
-      </span>
-      {!uploading && <button type="button" onClick={dismissSocialPostPublishStatus} aria-label="Dismiss post status" style={{ border: 0, background: "transparent", color: "var(--theme-text)", fontSize: 22, padding: "2px 4px", lineHeight: 1 }}>×</button>}
-    </div>
-  </>;
-}
-
-
-function GlobalBackgroundTaskStatus() {
-  const [taskState, setTaskState] = useState<BackgroundTaskSnapshot>(() => getBackgroundTaskState());
-  useEffect(() => subscribeBackgroundTasks(setTaskState), []);
-
-  // Social posts already have their own global publishing toast. Hide the same
-  // operation here so one post (including a multi-image post) never renders twice.
-  const visibleTasks = taskState.tasks.filter(task => task.label !== "Publishing post");
-  const visibleResult = taskState.lastResult?.label === "Publishing post" ? null : taskState.lastResult;
-
-  useEffect(() => {
-    if (visibleTasks.length || !visibleResult) return;
-    const timer = window.setTimeout(() => dismissBackgroundTaskResult(), 5500);
-    return () => window.clearTimeout(timer);
-  }, [visibleTasks.length, visibleResult?.id, taskState.revision]);
-
-  const active = visibleTasks[visibleTasks.length - 1];
-  const result = !active ? visibleResult : null;
-  if (!active && !result) return null;
-  const failed = Boolean(result?.error);
-  const title = active
-    ? (visibleTasks.length > 1 ? `${visibleTasks.length} tasks running` : active.label)
-    : failed ? `${result!.label} failed` : `${result!.label} complete`;
-  const status = active
-    ? (visibleTasks.length > 1 ? `${active.status} · ${visibleTasks.length} operations in progress` : active.status)
-    : result!.status;
-  return <>
-    {active && <style>{`@keyframes hallschat-global-task-progress { from { transform: translateX(-100%); } to { transform: translateX(300%); } }`}</style>}
-    <div role={failed ? "alert" : "status"} aria-live="polite" style={{ position: "fixed", left: 12, right: 12, top: "calc(env(safe-area-inset-top, 0px) + 78px)", zIndex: 9998, maxWidth: 360, margin: "0 auto", boxSizing: "border-box", padding: "9px 12px", border: "1px solid var(--theme-toast-border)", borderRadius: 9, background: failed ? "var(--theme-toast-danger-bg)" : "var(--theme-toast-bg)", color: "var(--theme-text)", boxShadow: "var(--theme-shadow-card-soft)", fontSize: ".8rem" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span aria-hidden="true" style={{ flexShrink: 0, fontSize: 15, fontWeight: 800, lineHeight: 1 }}>{active ? "↑" : failed ? "!" : "✓"}</span>
-        <strong style={{ fontWeight: 600, flex: 1, minWidth: 0 }}>{title}</strong>
-        <span style={{ color: "var(--theme-text-secondary)", overflowWrap: "anywhere", textAlign: "right" }}>{status}</span>
-      </div>
-      {active && <div style={{ height: 2, marginTop: 7, overflow: "hidden", borderRadius: 2, background: "var(--theme-progress-track)" }}><div style={{ width: "35%", height: "100%", background: "var(--theme-progress-fill)", animation: "hallschat-global-task-progress 1.2s ease-in-out infinite alternate" }} /></div>}
-    </div>
-  </>;
-}
 
 function GlobalModalScrollLock() {
   useEffect(() => {
@@ -278,5 +209,5 @@ export default function App() {
     page = <NavigationSectionPage title={section.title} description={section.description} />;
   } else page = <LandingPage onSignup={() => navigate("/signup")} />;
 
-  return <AppThemeProvider><>{page}<GlobalModalScrollLock /><GlobalPostPublishingStatus /><GlobalBackgroundTaskStatus /></></AppThemeProvider>;
+  return <AppThemeProvider><>{page}<GlobalModalScrollLock /></></AppThemeProvider>;
 }
