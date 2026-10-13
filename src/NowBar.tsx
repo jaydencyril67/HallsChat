@@ -12,7 +12,7 @@ const NOWBAR_ACTION_STORAGE_KEY = "hallschat-nowbar-action";
 function readSavedNowBarAction() {
   try {
     const saved = window.localStorage.getItem(NOWBAR_ACTION_STORAGE_KEY);
-    return saved === "HALLS" ? "GLOBE" : saved === "CHAT" ? "ROOMS" : saved;
+    return saved === "HALLS" ? "GLOBE" : saved === "CHAT" ? "ROOMS" : saved === "GROUP" ? "HALLS" : saved;
   } catch {
     return null;
   }
@@ -32,7 +32,7 @@ const actions = [
   { label: "GLOBE", icon: Globe },
   { label: "PROFILE", icon: UserRound },
   { label: "CALLS", icon: Phone },
-  { label: "GROUP", icon: UsersRound },
+  { label: "HALLS", icon: UsersRound },
   { label: "SETTINGS", icon: Settings },
   { label: "HELP", icon: CircleHelp },
 ];
@@ -48,7 +48,7 @@ function getPageTitle() {
   if (path.startsWith("/contacts")) return "PEOPLE";
   if (path.startsWith("/halls")) return "GLOBE";
   if (path.startsWith("/calls")) return "CALLS";
-  if (path.startsWith("/groups")) return "GROUP";
+  if (path.startsWith("/groups")) return "HALLS";
   if (path.startsWith("/notifications")) return "ALERT";
   if (path.startsWith("/settings")) return "SETTINGS";
   if (path.startsWith("/help")) return "HELP";
@@ -189,7 +189,7 @@ export default function NowBar() {
       GLOBE: "/halls",
       PROFILE: "/profile",
       CALLS: "/calls",
-      GROUP: "/groups",
+      HALLS: "/groups",
       SETTINGS: "/settings",
       HELP: "/help",
     };
