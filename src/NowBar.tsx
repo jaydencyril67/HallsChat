@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, CircleHelp, ContactRound, Globe, Home, MessageCircle, Phone, Settings, UsersRound, UserRound } from "lucide-react";
+import { ChevronDown, CircleHelp, ContactRound, Globe, Home, MessagesSquare, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
 const getNowbarFeature = (key: string) => { try { return window.localStorage.getItem(key) !== "false"; } catch { return true; } };
 const swipeRoutes = ["/home", "/chats", "/halls", "/profile", "/calls", "/groups", "/settings", "/help"];
@@ -11,7 +11,8 @@ const NOWBAR_ACTION_STORAGE_KEY = "hallschat-nowbar-action";
 
 function readSavedNowBarAction() {
   try {
-    const saved = window.localStorage.getItem(NOWBAR_ACTION_STORAGE_KEY);\n    return saved === "HALLS" ? "GLOBE" : saved;
+    const saved = window.localStorage.getItem(NOWBAR_ACTION_STORAGE_KEY);
+    return saved === "HALLS" ? "GLOBE" : saved === "CHAT" ? "ROOMS" : saved;
   } catch {
     return null;
   }
@@ -27,7 +28,7 @@ function saveNowBarAction(label: string) {
 
 const actions = [
   { label: "HOME", icon: Home },
-  { label: "CHAT", icon: MessageCircle },
+  { label: "ROOMS", icon: MessagesSquare },
   { label: "GLOBE", icon: Globe },
   { label: "PROFILE", icon: UserRound },
   { label: "CALLS", icon: Phone },
@@ -43,7 +44,7 @@ function getPageTitle() {
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
   if (path === "/signup") return "SIGN UP";
   if (path === "/confirm-email" || path === "/verify-email") return "CONFIRM EMAIL";
-  if (path.startsWith("/chats")) return "CHAT";
+  if (path.startsWith("/chats")) return "ROOMS";
   if (path.startsWith("/contacts")) return "PEOPLE";
   if (path.startsWith("/halls")) return "GLOBE";
   if (path.startsWith("/calls")) return "CALLS";
@@ -183,7 +184,7 @@ export default function NowBar() {
     }
     const routeByAction: Record<string, string> = {
       HOME: "/home",
-      CHAT: "/chats",
+      ROOMS: "/chats",
       PEOPLE: "/contacts",
       GLOBE: "/halls",
       PROFILE: "/profile",
