@@ -13,6 +13,10 @@ export default function ThemeSettingsPage() {
     return saved === 5 || saved === 10 || saved === 30 ? saved : 0;
   });
   const [idleLogoutMenuOpen, setIdleLogoutMenuOpen] = useState(false);
+  const [nowbarSwipeEnabled, setNowbarSwipeEnabled] = useState(() => localStorage.getItem("hallschat_nowbar_swipe_enabled") !== "false");
+  const [nowbarExpandEnabled, setNowbarExpandEnabled] = useState(() => localStorage.getItem("hallschat_nowbar_expand_enabled") !== "false");
+  const [nowbarToggleMenuOpen, setNowbarToggleMenuOpen] = useState(false);
+  const nowbarToggleMenuRef = useRef<HTMLDivElement>(null);
   const idleLogoutMenuRef = useRef<HTMLDivElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
   const [activeStatusVisible, setActiveStatusVisible] = useState(true);
@@ -72,6 +76,20 @@ export default function ThemeSettingsPage() {
     if (minutes === 0) localStorage.removeItem("hallschat_last_activity_at");
     else localStorage.setItem("hallschat_last_activity_at", String(Date.now()));
     setIdleLogoutMenuOpen(false);
+  };
+
+  useEffect(() => {
+    if (!nowbarToggleMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (nowbarToggleMenuRef.current && !nowbarToggleMenuRef.current.contains(event.target as Node)) setNowbarToggleMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setNowbarToggleMenuOpen(false); };
+    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [nowbarToggleMenuOpen]);
+
+  const chooseNowbarToggle = (feature: "swipe" | "expand", enabled: boolean) => {
+    if (feature === "swipe") { setNowbarSwipeEnabled(enabled); localStorage.setItem("hallschat_nowbar_swipe_enabled", String(enabled)); }
+    else { setNowbarExpandEnabled(enabled); localStorage.setItem("hallschat_nowbar_expand_enabled", String(enabled)); }
+    window.dispatchEvent(new CustomEvent("hallschat:nowbar-settings-changed")); setNowbarToggleMenuOpen(false);
   };
 
   useEffect(() => {
@@ -582,6 +600,19 @@ export default function ThemeSettingsPage() {
               <span>{option.label}</span>
               {idleLogoutMinutes === option.value && <Check size={15} aria-hidden="true" />}
             </button>)}
+          </div>}
+        </div>
+      </section>
+      <section className="settings-theme-card" aria-label="Nowbar Toggle">
+        <span className="settings-theme-title">Nowbar Toggle</span>
+        <span className="settings-theme-current" aria-live="polite">{nowbarSwipeEnabled ? "Swipe On" : "Swipe Off"} · {nowbarExpandEnabled ? "Expand On" : "Expand Off"}</span>
+        <div className="settings-theme-menu-anchor" ref={nowbarToggleMenuRef}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Nowbar Toggle options" aria-haspopup="menu" aria-expanded={nowbarToggleMenuOpen} onClick={() => setNowbarToggleMenuOpen(open => !open)}><MoreHorizontal size={21} /></button>
+          {nowbarToggleMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Nowbar Toggle options" style={{ width: "166px" }}>
+            <div className="settings-theme-menu-group-label">Swipe navigation</div>
+            {([true, false] as const).map(enabled => <button key={"swipe-" + enabled} type="button" role="menuitemradio" aria-checked={nowbarSwipeEnabled === enabled} className={"settings-theme-menu-option" + (nowbarSwipeEnabled === enabled ? " is-selected" : "")} onClick={() => chooseNowbarToggle("swipe", enabled)}><span>{enabled ? "Swipe Turn On" : "Swipe Turn Off"}</span>{nowbarSwipeEnabled === enabled && <Check size={15} aria-hidden="true" />}</button>)}
+            <div className="settings-theme-menu-group-label">Expansion</div>
+            {([true, false] as const).map(enabled => <button key={"expand-" + enabled} type="button" role="menuitemradio" aria-checked={nowbarExpandEnabled === enabled} className={"settings-theme-menu-option" + (nowbarExpandEnabled === enabled ? " is-selected" : "")} onClick={() => chooseNowbarToggle("expand", enabled)}><span>{enabled ? "Expand Turn On" : "Expand Turn Off"}</span>{nowbarExpandEnabled === enabled && <Check size={15} aria-hidden="true" />}</button>)}
           </div>}
         </div>
       </section>
