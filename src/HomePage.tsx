@@ -1174,7 +1174,7 @@ export default function HomePage() {
     }
   }
 
-  return <main className="home-page social-home">
+  return <main className="home-page social-home theme-token-scope">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell">
