@@ -813,7 +813,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
-      {alertTypesError && <p className="settings-theme-current" role="status">{alertTypesError}</p>
+      {alertTypesError && <p className="settings-theme-current" role="status">{alertTypesError}</p>}
       {alertChannelsError && <p className="settings-theme-current" role="status">{alertChannelsError}</p>}
       {commentingError && <p className="settings-theme-current" role="status">{commentingError}</p>}
       {readReceiptsError && <p className="settings-theme-current" role="status">{readReceiptsError}</p>}
