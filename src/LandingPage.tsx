@@ -25,7 +25,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
     navigate(token ? "/home" : "/signin");
   };
 
-  return <main className="landing-page">
+  return <main className="landing-page theme-token-scope">
     <div className="landing-glow landing-glow-one" aria-hidden="true" />
     <div className="landing-glow landing-glow-two" aria-hidden="true" />
     <AppHeader />
