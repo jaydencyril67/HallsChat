@@ -4181,3 +4181,9 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 .settings-alert-types-menu::-webkit-scrollbar{display:none;width:0;height:0;}
 .settings-alert-types-menu>div{display:grid;gap:3px;}
 .settings-alert-types-menu>div+div{margin-top:2px;}
+
+/* Download App anchored settings pop-out */
+.settings-download-app-menu{width:196px;}
+.settings-download-app-link{text-decoration:none;}
+.settings-download-app-note{margin-left:auto;color:var(--theme-muted);font-size:10px;white-space:nowrap;}
+.settings-download-app-status{flex:1 0 100%;min-width:0;line-height:1.45;overflow-wrap:anywhere;}
