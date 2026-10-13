@@ -9,7 +9,7 @@ export default function ThemeSettingsPage() {
   const choice = themePreference;
   const toggleTheme = () => setThemePreference(isLight ? "dark" : "light");
 
-  return <main className="home-page social-home settings-page">
+  return <main className="home-page social-home settings-page theme-token-scope">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell settings-shell">
       <div className="settings-heading">
