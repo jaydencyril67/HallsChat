@@ -3,14 +3,14 @@ import type { Socket } from "socket.io-client";
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
 
 type Participant = { id: string; name?: string; username?: string; profilePicture?: string };
-type IncomingGroupCall = { callId: string; groupId: string; kind: "audio" | "video"; caller: Participant; startedAt: number };
+type IncomingHallCall = { callId: string; groupId: string; kind: "audio" | "video"; caller: Participant; startedAt: number };
 type PeerState = { pc: RTCPeerConnection; stream?: MediaStream };
 type Props = { socket: Socket | null; groupId: string; groupName: string; currentUserId: string };
 
 const rtcConfig: RTCConfiguration = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }] };
 
 export default function HallsCallPanel({ socket, groupId, groupName, currentUserId }: Props) {
-  const [incoming, setIncoming] = useState<IncomingGroupCall | null>(null);
+  const [incoming, setIncoming] = useState<IncomingHallCall | null>(null);
   const [callId, setCallId] = useState("");
   const [kind, setKind] = useState<"audio" | "video">("audio");
   const [participants, setParticipants] = useState<Participant[]>([]);
@@ -190,7 +190,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
 
   useEffect(() => {
     if (!socket) return;
-    const onIncoming = (event: IncomingGroupCall) => {
+    const onIncoming = (event: IncomingHallCall) => {
       if (event.groupId !== groupId || event.caller?.id === currentUserId || callIdRef.current) return;
       setIncoming(event);
     };
@@ -269,7 +269,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
       </div>
     </div>
     {confirmKind && !active && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label={`Confirm Hall ${confirmKind} call`}>
-      <strong>Start group {confirmKind} call?</strong>
+      <strong>Start Hall {confirmKind} call?</strong>
       <span>Call <b>{groupName}</b> now?</span>
       <div><button type="button" className="halls-call-confirm-cancel" onClick={() => setConfirmKind(null)}>Cancel</button><button type="button" className="halls-call-confirm-start" onClick={() => { const selectedKind = confirmKind; setConfirmKind(null); void startCall(selectedKind); }}>{confirmKind === "video" ? <Video size={14} /> : <Phone size={14} />} Start call</button></div>
     </div>}
@@ -277,7 +277,7 @@ export default function HallsCallPanel({ socket, groupId, groupName, currentUser
     {incoming && !active && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label="Incoming Hall call">
       <div className="halls-call-card">
         <div className="halls-call-avatar">{(incoming.caller?.name || incoming.caller?.username || groupName || "G").slice(0, 1).toUpperCase()}</div>
-        <span className="halls-call-eyebrow">INCOMING GROUP {incoming.kind.toUpperCase()} CALL</span>
+        <span className="halls-call-eyebrow">INCOMING HALL {incoming.kind.toUpperCase()} CALL</span>
         <h2>{incoming.caller?.name || incoming.caller?.username || "A Hall member"}</h2>
         <p>{groupName}</p>
         <p className="halls-call-ring-time">Hall call ringing…</p>
