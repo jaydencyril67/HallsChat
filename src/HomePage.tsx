@@ -1,7 +1,7 @@
 import { ChangeEvent, FormEvent, useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import type { ReactNode } from "react";
 import { io } from "socket.io-client";
-import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, PaintBucket, CaseSensitive, Type } from "lucide-react";
+import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Share2, Link as LinkIcon, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, PaintBucket, CaseSensitive, Type } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -1156,6 +1156,55 @@ export default function HomePage() {
     }
   }
 
+  function getPostLink(post: SocialPost) {
+    return `${window.location.origin}/home?post=${encodeURIComponent(post.id)}`;
+  }
+
+  async function copyPostLink(post: SocialPost) {
+    const link = getPostLink(post);
+    setPostActionMenuId(null);
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        const field = document.createElement("textarea");
+        field.value = link;
+        field.setAttribute("readonly", "");
+        field.style.position = "fixed";
+        field.style.opacity = "0";
+        document.body.appendChild(field);
+        field.select();
+        const copied = document.execCommand("copy");
+        field.remove();
+        if (!copied) throw new Error("Copy isn't available in this browser.");
+      }
+      setNotice("Post link copied.");
+    } catch (err) {
+      setFeedError(err instanceof Error ? err.message : "Couldn't copy the post link.");
+    }
+  }
+
+  async function sharePost(post: SocialPost) {
+    const url = getPostLink(post);
+    setPostActionMenuId(null);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `HallsChat post by ${post.author?.name || "HallsChat member"}`,
+          text: post.content || "View this post on HallsChat.",
+          url
+        });
+      } else {
+        await copyPostLink(post);
+        return;
+      }
+      setNotice("Post shared.");
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      setFeedError(err instanceof Error ? err.message : "Couldn't share this post.");
+    }
+  }
+
   async function toggleLike(post: SocialPost) {
     if (likingIds.includes(post.id)) return;
     const token = localStorage.getItem("hallschat_token");
@@ -1204,10 +1253,12 @@ export default function HomePage() {
             <div className="social-feed-heading"><div><span className="signup-form-kicker">THE LATEST</span><h2>Your feed</h2></div><span className="social-feed-count">{posts.length} {posts.length === 1 ? "post" : "posts"}</span></div>
             {!feedLoading && posts.length > 0 && <div className="social-post-list">
               {posts.map(post => <article className="social-post" key={post.id}>
-                <div className="social-post-head">{post.author?.profilePicture ? <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, overflow: "hidden", cursor: "pointer" }}><img src={post.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></button> : <span className="social-avatar" aria-hidden="true">{initials(post.author?.name || "HallsChat member")}</span>}<div className="social-post-author" style={{ padding: 0, border: 0, background: "var(--theme-transparent)", color: "inherit", textAlign: "left" }}><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div><div className="social-post-delete-wrap" style={{ position: "relative", marginLeft: "auto", flexShrink: 0 }}>
+                <div className="social-post-head">{post.author?.profilePicture ? <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, overflow: "hidden", cursor: "pointer" }}><img src={post.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></button> : <span className="social-avatar" aria-hidden="true">{initials(post.author?.name || "HallsChat member")}</span>}<div className="social-post-author" style={{ padding: 0, border: 0, background: "var(--theme-transparent)", color: "inherit", textAlign: "left" }}><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div><div className="social-post-delete-wrap" style={{ position: "relative", marginLeft: "auto", flexShrink: 0, display: "flex", alignItems: "center", gap: 5 }}>
+<button type="button" className="social-post-action-muted" onClick={() => void downloadPost(post)} disabled={downloadingPostIds.includes(post.id)} aria-label="Download post" title="Download post" style={{ width: 36, height: 36, minWidth: 36, padding: 0, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 10, background: "var(--theme-surface-hover)", color: "var(--theme-text)", cursor: downloadingPostIds.includes(post.id) ? "wait" : "pointer" }}>{downloadingPostIds.includes(post.id) ? <LoadingDots /> : <Download size={17} />}</button>
+<button type="button" className="social-post-action-muted" onClick={() => void sharePost(post)} aria-label="Share post" title="Share post" style={{ width: 36, height: 36, minWidth: 36, padding: 0, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 10, background: "var(--theme-surface-hover)", color: "var(--theme-text)", cursor: "pointer" }}><Share2 size={17} /></button>
+<button type="button" className="social-post-action-muted" onClick={() => void copyPostLink(post)} aria-label="Copy post link" title="Copy post link" style={{ width: 36, height: 36, minWidth: 36, padding: 0, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 10, background: "var(--theme-surface-hover)", color: "var(--theme-text)", cursor: "pointer" }}><LinkIcon size={17} /></button>
 <button type="button" className="social-post-action-muted" onClick={() => { setPostActionMenuId(current => current === post.id ? null : post.id); setPostDeleteConfirmId(null); }} aria-label="Post options" aria-expanded={postActionMenuId === post.id} title="Post options" style={{ width: 36, height: 36, minWidth: 36, padding: 0, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 10, background: "var(--theme-surface-hover)", color: "var(--theme-text)", cursor: "pointer" }}><MoreHorizontal size={19} /></button>
 {postActionMenuId === post.id && <div role="menu" aria-label="Post options" style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 9, width: 176, padding: 6, display: "grid", gap: 4, border: "1px solid var(--theme-border)", borderRadius: 12, background: "var(--theme-popover-bg)", boxShadow: "var(--theme-shadow-card-soft)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
-<button type="button" role="menuitem" onClick={() => void downloadPost(post)} disabled={downloadingPostIds.includes(post.id)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "var(--theme-transparent)", color: "var(--theme-text)", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}>{downloadingPostIds.includes(post.id) ? <LoadingDots /> : <Download size={15} />} Download post</button>
 {post.author?.id === user?.id && !post.poll && Date.now() - new Date(post.createdAt).getTime() <= 24 * 60 * 60 * 1000 && <button type="button" role="menuitem" onClick={() => beginEditPost(post)} disabled={savingPostIds.includes(post.id)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "var(--theme-transparent)", color: "var(--theme-text)", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}><Pencil size={15} /> Edit post</button>}
 {post.author?.id === user?.id && <button type="button" role="menuitem" onClick={() => { setPostActionMenuId(null); setPostDeleteConfirmId(post.id); }} disabled={deletingIds.includes(post.id)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "var(--theme-transparent)", color: "var(--theme-danger)", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}><Trash2 size={15} /> Delete post</button>}
 </div>}
