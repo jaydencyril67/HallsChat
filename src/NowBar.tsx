@@ -8,11 +8,19 @@ type View = "title" | "actions";
 type Mode = "compact" | "expanded";
 
 const NOWBAR_ACTION_STORAGE_KEY = "hallschat-nowbar-action";
+const NOWBAR_GLOBE_MIGRATION_KEY = "hallschat-nowbar-globe-migration-v1";
 
 function readSavedNowBarAction() {
   try {
     const saved = window.localStorage.getItem(NOWBAR_ACTION_STORAGE_KEY);
-    return saved === "HALLS" ? "GLOBE" : saved === "CHAT" ? "ROOMS" : saved === "GROUP" ? "HALLS" : saved;
+    if (window.localStorage.getItem(NOWBAR_GLOBE_MIGRATION_KEY) !== "true") {
+      window.localStorage.setItem(NOWBAR_GLOBE_MIGRATION_KEY, "true");
+      if (saved === "HALLS") {
+        window.localStorage.setItem(NOWBAR_ACTION_STORAGE_KEY, "GLOBE");
+        return "GLOBE";
+      }
+    }
+    return saved === "CHAT" ? "ROOMS" : saved === "GROUP" ? "HALLS" : saved;
   } catch {
     return null;
   }
@@ -20,6 +28,7 @@ function readSavedNowBarAction() {
 
 function saveNowBarAction(label: string) {
   try {
+    window.localStorage.setItem(NOWBAR_GLOBE_MIGRATION_KEY, "true");
     window.localStorage.setItem(NOWBAR_ACTION_STORAGE_KEY, label.trim().toUpperCase());
   } catch {
     // Keep the NowBar usable when storage is unavailable.
