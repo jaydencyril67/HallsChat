@@ -4178,4 +4178,5 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
 /* Alert Types: force a bounded block scroll area on mobile instead of inheriting the shared grid menu layout. */
 .settings-alert-types-menu{display:block;box-sizing:border-box;width:224px;height:auto;max-height:min(30vh,220px);overflow-x:hidden;overflow-y:scroll;overscroll-behavior:contain;scrollbar-width:none;padding:5px;}
 .settings-alert-types-menu::-webkit-scrollbar{display:none;width:0;height:0;}
+.settings-alert-types-menu>div{display:grid;gap:3px;}
 .settings-alert-types-menu>div+div{margin-top:2px;}
