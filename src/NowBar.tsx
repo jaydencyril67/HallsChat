@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, CircleHelp, ContactRound, Globe, Home, MessagesSquare, Phone, Settings, UsersRound, UserRound } from "lucide-react";
+import { ChevronDown, CircleHelp, Code2, ContactRound, Globe, Home, MessagesSquare, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
 const getNowbarFeature = (key: string) => { try { return window.localStorage.getItem(key) !== "false"; } catch { return true; } };
-const swipeRoutes = ["/home", "/chats", "/halls", "/profile", "/calls", "/groups", "/settings", "/help"];
+const swipeRoutes = ["/home", "/chats", "/halls", "/profile", "/calls", "/groups", "/settings", "/help", "/dev"];
 
 type View = "title" | "actions";
 type Mode = "compact" | "expanded";
@@ -35,6 +35,7 @@ const actions = [
   { label: "HALLS", icon: UsersRound },
   { label: "SETTINGS", icon: Settings },
   { label: "HELP", icon: CircleHelp },
+  { label: "DEV", icon: Code2 },
 ];
 
 function getPageTitle() {
@@ -52,6 +53,7 @@ function getPageTitle() {
   if (path.startsWith("/notifications")) return "ALERT";
   if (path.startsWith("/settings")) return "SETTINGS";
   if (path.startsWith("/help")) return "HELP";
+  if (path.startsWith("/dev")) return "DEV";
   return "HALLSCHAT";
 }
 
@@ -192,6 +194,7 @@ export default function NowBar() {
       HALLS: "/groups",
       SETTINGS: "/settings",
       HELP: "/help",
+      DEV: "/dev",
     };
     setActiveAction(label);
     setPageTitle(label);
