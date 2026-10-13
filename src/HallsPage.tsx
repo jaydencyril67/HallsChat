@@ -96,9 +96,9 @@ export default function HallsPage() {
   const panel: React.CSSProperties = { border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)" };
   const muted: React.CSSProperties = { color: "var(--theme-muted)" };
 
-  return <main className="home-page social-home halls-page halls-directory-page theme-token-scope">
+  return <main className="home-page social-home halls-page halls-directory-page">
     <AppHeader homeHref="/home" />
-    <section className="home-shell social-shell" style={{ paddingBottom: 112 }}>
+    <section className="home-shell social-shell theme-token-scope" style={{ paddingBottom: 112 }}>
       <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "0 0 24px", boxSizing: "border-box" }}>
         <div className="halls-directory-tabs" style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
           {([{ id: "discover", label: "Discover people", icon: UserPlus }, { id: "followers", label: "Your followers", icon: UserRoundCheck }] as const).map(({ id, label, icon: Icon }) =>
@@ -117,7 +117,7 @@ export default function HallsPage() {
                 <button className="halls-person-name" type="button" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} style={{ display: "block", maxWidth: "100%", padding: 0, border: 0, background: "transparent", color: "var(--theme-text-primary)", fontSize: ".88rem", fontWeight: 750, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</button>
                 <div style={{ ...muted, marginTop: 4, fontSize: ".78rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>@{person.username}</div><div className={`presence-label ${person.isOnline ? "presence-online" : "presence-offline"}`}><span className="presence-dot" />{person.isOnline ? "Online" : "Offline"}</div>
               </div>
-              <button className={`halls-follow-button ${person.following ? "is-following" : "is-not-following"}`} type="button" disabled={busyId === person.id} onClick={() => void toggleFollow(person)} style={{ minWidth: 94, minHeight: 36, padding: "8px 11px", borderRadius: 999, border: person.following ? "1px solid var(--theme-action-secondary-border)" : "1px solid var(--theme-primary)", background: person.following ? "var(--theme-action-secondary-bg)" : "linear-gradient(135deg,var(--theme-primary-hover),var(--theme-primary))", color: "var(--theme-primary-contrast)", fontSize: ".75rem", fontWeight: 800, opacity: busyId === person.id ? .7 : 1 }}>
+              <button className={`halls-follow-button ${person.following ? "is-following" : "is-not-following"}`} type="button" disabled={busyId === person.id} onClick={() => void toggleFollow(person)} style={{ minWidth: 94, minHeight: 36, padding: "8px 11px", borderRadius: 999, border: person.following ? "1px solid var(--theme-action-secondary-border)" : "1px solid var(--theme-primary)", background: person.following ? "var(--theme-action-secondary-bg)" : "linear-gradient(135deg,var(--theme-primary-hover),var(--theme-primary))", color: person.following ? "var(--theme-action-secondary-text)" : "var(--theme-primary-contrast)", fontSize: ".75rem", fontWeight: 800, opacity: busyId === person.id ? .7 : 1 }}>
                 {busyId === person.id ? <LoadingDots /> : person.following ? "Following" : "Follow"}
               </button>
             </div>)}
@@ -129,7 +129,7 @@ export default function HallsPage() {
         }
       </div>
     </section>
-    {(error || notice) && <div className={`halls-toast ${error ? "halls-toast-error" : "halls-toast-success"}`} role={error ? "alert" : "status"}><span>{error || notice}</span>{error && <button type="button" onClick={() => { setError(""); void loadUsers(tab); }} aria-label="Retry loading people" title="Retry">↻</button>}<button type="button" onClick={() => { setError(""); setNotice(""); }} aria-label="Dismiss notification">×</button></div>}
+    {(error || notice) && <div className={`halls-toast theme-token-scope ${error ? "halls-toast-error" : "halls-toast-success"}`} role={error ? "alert" : "status"}><span>{error || notice}</span>{error && <button type="button" onClick={() => { setError(""); void loadUsers(tab); }} aria-label="Retry loading people" title="Retry">↻</button>}<button type="button" onClick={() => { setError(""); setNotice(""); }} aria-label="Dismiss notification">×</button></div>}
     <NowBar />
   </main>;
 }
