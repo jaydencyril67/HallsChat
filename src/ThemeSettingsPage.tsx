@@ -20,9 +20,9 @@ export default function ThemeSettingsPage() {
   const [alertChannels, setAlertChannels] = useState<{ email: boolean; inApp: boolean; push: boolean }>(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("hallschat_alert_channels") || "{}");
-      return { email: saved.email !== false, inApp: saved.inApp !== false, push: saved.push !== false };
+      return { email: saved.email === true, inApp: saved.inApp !== false, push: saved.push === true };
     } catch {
-      return { email: true, inApp: true, push: true };
+      return { email: false, inApp: true, push: false };
     }
   });
   const [alertChannelMenuOpen, setAlertChannelMenuOpen] = useState(false);
@@ -118,9 +118,9 @@ export default function ThemeSettingsPage() {
         if (!response.ok) throw new Error(payload.message || "Unable to load alert channel settings.");
         if (!cancelled) {
           const channels = payload.alertChannels || {};
-          setAlertChannels({ email: channels.email !== false, inApp: channels.inApp !== false, push: channels.push !== false });
+          setAlertChannels({ email: channels.email === true, inApp: channels.inApp !== false, push: channels.push === true });
           setPushVapidKey(typeof payload.vapidPublicKey === "string" ? payload.vapidPublicKey : null);
-          localStorage.setItem("hallschat_alert_channels", JSON.stringify({ email: channels.email !== false, inApp: channels.inApp !== false, push: channels.push !== false }));
+          localStorage.setItem("hallschat_alert_channels", JSON.stringify({ email: channels.email === true, inApp: channels.inApp !== false, push: channels.push === true }));
         }
       })
       .catch(error => { if (!cancelled) setAlertChannelsError(error instanceof Error ? error.message : "Unable to load alert channel settings."); })
