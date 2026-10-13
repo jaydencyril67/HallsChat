@@ -584,47 +584,6 @@ export default function ThemeSettingsPage() {
   return <main className="home-page social-home settings-page theme-token-scope">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell settings-shell">
-      <section className="settings-theme-card" aria-label="Download App">
-        <span className="settings-theme-title">Download App</span>
-        <span className="settings-theme-current" aria-live="polite">{pwaInstalled ? "PWA installed" : "APK · Web App"}</span>
-        <div className="settings-theme-menu-anchor" ref={downloadAppMenuRef}>
-          <button
-            type="button"
-            className="settings-theme-menu-trigger"
-            aria-label="Download App options"
-            aria-haspopup="menu"
-            aria-expanded={downloadAppMenuOpen}
-            onClick={() => setDownloadAppMenuOpen(open => !open)}
-          >
-            <MoreHorizontal size={21} />
-          </button>
-          {downloadAppMenuOpen && <div className="settings-theme-menu settings-download-app-menu" role="menu" aria-label="Download App options">
-            <button type="button" role="menuitem" className="settings-theme-menu-option" disabled aria-disabled="true">
-              <Store size={16} aria-hidden="true" />
-              <span>KingsStore</span>
-              <span className="settings-download-app-note">Soon</span>
-            </button>
-            <a
-              role="menuitem"
-              className="settings-theme-menu-option settings-download-app-link"
-              href={HALLSCHAT_APK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={handleApkDownload}
-            >
-              <Smartphone size={16} aria-hidden="true" />
-              <span>Android APK</span>
-              <Download size={15} aria-hidden="true" />
-            </a>
-            <button type="button" role="menuitem" className="settings-theme-menu-option" onClick={() => void handlePwaInstall()}>
-              <Globe size={16} aria-hidden="true" />
-              <span>PWA (Web App)</span>
-              {pwaInstalled && <Check size={15} aria-hidden="true" />}
-            </button>
-          </div>}
-        </div>
-        {downloadAppMessage && <span className="settings-theme-current settings-download-app-status" role="status">{downloadAppMessage}</span>}
-      </section>
       <section className="settings-theme-card" aria-label="App theme">
         <span className="settings-theme-title">App theme</span>
         <span className="settings-theme-current" aria-live="polite">{currentThemeLabel}</span>
@@ -925,6 +884,47 @@ export default function ThemeSettingsPage() {
       {visibilityError && <p className="settings-theme-current" role="status">{visibilityError}</p>}
       {callsPrivacyError && <p className="settings-theme-current" role="status">{callsPrivacyError}</p>}
       {activeStatusError && <p className="settings-theme-current" role="status">{activeStatusError}</p>}
+      <section className="settings-theme-card" aria-label="Download App">
+        <span className="settings-theme-title">Download App</span>
+        <span className="settings-theme-current" aria-live="polite">{pwaInstalled ? "PWA installed" : "APK · Web App"}</span>
+        <div className="settings-theme-menu-anchor" ref={downloadAppMenuRef}>
+          <button
+            type="button"
+            className="settings-theme-menu-trigger"
+            aria-label="Download App options"
+            aria-haspopup="menu"
+            aria-expanded={downloadAppMenuOpen}
+            onClick={() => setDownloadAppMenuOpen(open => !open)}
+          >
+            <MoreHorizontal size={21} />
+          </button>
+          {downloadAppMenuOpen && <div className="settings-theme-menu settings-download-app-menu" role="menu" aria-label="Download App options">
+            <button type="button" role="menuitem" className="settings-theme-menu-option" disabled aria-disabled="true">
+              <Store size={16} aria-hidden="true" />
+              <span>KingsStore</span>
+              <span className="settings-download-app-note">Soon</span>
+            </button>
+            <a
+              role="menuitem"
+              className="settings-theme-menu-option settings-download-app-link"
+              href={HALLSCHAT_APK_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleApkDownload}
+            >
+              <Smartphone size={16} aria-hidden="true" />
+              <span>Android APK</span>
+              <Download size={15} aria-hidden="true" />
+            </a>
+            <button type="button" role="menuitem" className="settings-theme-menu-option" onClick={() => void handlePwaInstall()}>
+              <Globe size={16} aria-hidden="true" />
+              <span>PWA (Web App)</span>
+              {pwaInstalled && <Check size={15} aria-hidden="true" />}
+            </button>
+          </div>}
+        </div>
+        {downloadAppMessage && <span className="settings-theme-current settings-download-app-status" role="status">{downloadAppMessage}</span>}
+      </section>
     </section>
     <NowBar />
   </main>;
