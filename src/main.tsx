@@ -16,7 +16,6 @@ function applySavedTheme() {
     ? (window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark")
     : preference;
   document.documentElement.dataset.theme = resolved;
-  document.documentElement.style.colorScheme = resolved;
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", resolved === "light" ? "#f8f3f1" : "#19070b");
 }
 applySavedTheme();
