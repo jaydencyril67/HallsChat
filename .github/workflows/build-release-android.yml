@@ -6,12 +6,12 @@ on:
       build_apk:
         description: 'Build the HallsChat production APK'
         required: true
-        default: false
+        default: true
         type: boolean
       app_version:
         description: 'HallsChat Android version (use the same version for the GitHub Release tag, without the v)'
         required: true
-        default: '1.0.0'
+        default: '1.0.2'
         type: string
 
 permissions:
@@ -24,7 +24,6 @@ concurrency:
 
 jobs:
   build-release:
-    if: inputs.build_apk == true
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -91,7 +90,7 @@ jobs:
           cp public/crown-chat.svg assets/splash.svg
           npx capacitor-assets generate --android
 
-            - name: Sync Capacitor
+      - name: Sync Capacitor
         run: npx cap sync android
 
       - name: Configure unified HallsChat native launch splash
@@ -189,7 +188,7 @@ jobs:
           </resources>
           XML
 
-            - name: Set HallsChat Android version
+      - name: Set HallsChat Android version
         env:
           APP_VERSION: ${{ inputs.app_version }}
           APP_VERSION_CODE: ${{ github.run_number }}
