@@ -98,8 +98,8 @@
   --theme-danger-action-hover-bg: var(--theme-surface-raised);
 }
 
-/* Light tokens are opt-in: only the Calls page receives them. Other pages keep the dark root tokens until they explicitly adopt theme tokens. */
-html[data-theme="light"] .halls-calls-page .halls-call-history-shell {
+/* Hybrid theme architecture: any page or component can opt into the shared light palette by adding .theme-token-scope. Unsubscribed areas keep the dark root tokens and all existing hardcoded colors. */
+html[data-theme="light"] .theme-token-scope {
   color-scheme: light;
   --theme-bg: #f8f3f1;
   --theme-surface: #fffdfc;
