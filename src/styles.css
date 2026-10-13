@@ -2415,18 +2415,8 @@ html[data-theme="light"] .home-page.halls-calls-page{
 
 
 /* Keep long post text readable while giving the composer scroll area more room. */
-.social-post-snap-canvas .social-post-live-preview{width:100%;max-width:none;box-sizing:border-box;padding-left:10px;padding-right:46px;}
-.social-post-snap-canvas .social-post-snap-main{padding-right:50px;}
-.social-post-snap-canvas .social-post-snap-poll{padding-right:50px;}
-@media(max-width:520px){
-  .social-post-snap-canvas .social-post-live-preview{padding-left:8px;padding-right:42px;}
-  .social-post-snap-canvas .social-post-snap-main{padding-right:46px;}
-  .social-post-snap-canvas .social-post-snap-poll{padding-right:46px;}
-}
-
-
 /* Let the post text use the full canvas width beneath the floating icon rail. */
-.social-post-snap-canvas .social-post-live-preview{width:100%;max-width:none;padding-left:10px;padding-right:8px;}
+.social-post-snap-canvas .social-post-live-preview{width:100%;max-width:none;box-sizing:border-box;padding-left:10px;padding-right:8px;}
 .social-post-snap-canvas .social-post-snap-main{padding-right:10px;}
 .social-post-snap-canvas .social-post-snap-poll{padding-right:10px;}
 .social-post-snap-canvas .social-story-snap-tools{z-index:20;}
@@ -2482,48 +2472,6 @@ html[data-theme="light"] .home-page.halls-calls-page{
 .settings-system-option{display:flex;align-items:center;gap:11px;width:100%;min-height:62px;margin-top:9px;padding:10px 12px;border:1px solid var(--theme-line);border-radius:12px;background:var(--theme-surface);color:var(--theme-text);text-align:left;cursor:pointer;}
 .settings-system-option.is-selected{border-color:var(--theme-primary);background:var(--theme-surface-raised);}
 .settings-system-option .settings-theme-icon{display:grid;place-items:center;width:36px;height:36px;flex-shrink:0;border-radius:11px;background:rgba(184,32,50,.13);color:var(--theme-primary);}
-/* Page-by-page light theme pass: social pages use semantic theme tokens, not dark-only panel colors. */
-/* Light theme coverage — feed, comments, chat, alerts, authentication and navigation. */
-/* Home-page completeness pass: theme legacy feed, composer, story controls,
-   menus, poll creation, upload states and dialogs in light mode only. */
-/* The story viewer and media/crop canvases stay dark by design; their authored
-   images and user-selected text/background colors are intentionally preserved. */
-
-
-/* Final Home light-theme coverage: controls authored with inline dark-mode
-   styles need explicit light overrides. Creative media canvases and the
-   colors selected for post/story content remain untouched. */
-/* Keep text/background swatches exactly as selected by the user. */
-
-
-/* Complete Home light-theme parity: story creation chrome, story management,
-   viewer controls, and remaining feed surfaces. Keep only the actual media
-   canvases and user-authored color choices in their original colors. */
-/* General light surfaces for Home-only floating menus, controls and inline
-   status elements that may be authored with dark defaults or inline styles. */
-/* Home audit pass: catch remaining dark-authored inline UI chrome without
-   recoloring user content, selected swatches, feed artwork, or media canvases. */
-/* Light-mode focus/hover states should remain visible on all Home controls. */
-/* Home Stories tray — actual feed section (not the story editor/viewer).
-   Keep avatar photos and the ring's brand gradient intact in both themes. */
-/* Home feed entry point — the compact card users tap to open the post composer.
-   This is separate from the full post-creation modal styling below. */
-@media (max-width: 520px) {
-  }
-
-
-/* Final Home light-theme pass: inline-authored feed controls and compact states.
-   Do not recolor user-selected post backgrounds, photos, or creative canvases. */
-/* Header and NowBar are permanent dark chrome, independent of the selected
-   page theme. These overrides only counter the light-theme token changes. */
-/* Modal pass 2 — repair hard-coded modal chrome only in light mode.
-   Dark-theme rules, media previews, crop surfaces, and creative canvases stay untouched. */
-/* Modal pass 3 — light-theme finishing touches for chat, comments, story editing,
-   and crop controls. Story/image canvases and the permanent dark theme stay intact. */
-/* The story preview, image crop frame, and story viewer remain media-first
-   dark canvases so selected photos and user-picked story colors are preserved. */
-
-
 /* Chat page light-theme pass — conversation list, message tools, attachments,
    replies, voice notes and image controls. Dark-theme declarations remain untouched. */
 /* Chat page light-token pass 2.
@@ -2537,7 +2485,6 @@ html[data-theme="light"] .home-page.halls-calls-page{
   }
 @media (prefers-reduced-motion: reduce) {
   }
-
 
 
 /* Chat light-theme pass 5 — hard override dark-only conversation-list remnants.
