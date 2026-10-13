@@ -209,16 +209,7 @@ export default function ChatPage() {
   const [swipingMessageId, setSwipingMessageId] = useState<string | null>(null);
   const [messageSwipeOffset, setMessageSwipeOffset] = useState(0);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
-  const visiblePeople = useMemo(() => {
-    if (!currentUserId) return people;
-    try {
-      const hidden = JSON.parse(localStorage.getItem(`hallschat_hidden_conversations:${currentUserId}`) || "[]");
-      const hiddenIds = new Set(Array.isArray(hidden) ? hidden.map(String) : []);
-      return people.filter(person => !hiddenIds.has(person.id));
-    } catch {
-      return people;
-    }
-  }, [people, currentUserId]);
+  const visiblePeople = people;
   activeIdRef.current = activeId;
   currentUserIdRef.current = currentUserId;
 
@@ -272,11 +263,6 @@ export default function ChatPage() {
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || "That conversation couldn't be deleted.");
-      const storageKey = `hallschat_hidden_conversations:${currentUserId}`;
-      const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      const hiddenIds = new Set(Array.isArray(saved) ? saved.map(String) : []);
-      hiddenIds.add(personId);
-      localStorage.setItem(storageKey, JSON.stringify([...hiddenIds]));
       setPeople(current => current.filter(person => person.id !== personId));
       setConversationMenuFor(null);
       if (activeIdRef.current === personId) {
