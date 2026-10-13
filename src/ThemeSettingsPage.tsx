@@ -610,9 +610,9 @@ export default function ThemeSettingsPage() {
           <button type="button" className="settings-theme-menu-trigger" aria-label="Nowbar Toggle options" aria-haspopup="menu" aria-expanded={nowbarToggleMenuOpen} onClick={() => setNowbarToggleMenuOpen(open => !open)}><MoreHorizontal size={21} /></button>
           {nowbarToggleMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Nowbar Toggle options" style={{ width: "166px" }}>
             <div className="settings-theme-menu-group-label">Swipe navigation</div>
-            {([true, false] as const).map(enabled => <button key={"swipe-" + enabled} type="button" role="menuitemradio" aria-checked={nowbarSwipeEnabled === enabled} className={"settings-theme-menu-option" + (nowbarSwipeEnabled === enabled ? " is-selected" : "")} onClick={() => chooseNowbarToggle("swipe", enabled)}><span>{enabled ? "Swipe Turn On" : "Swipe Turn Off"}</span>{nowbarSwipeEnabled === enabled && <Check size={15} aria-hidden="true" />}</button>)}
+            <button type="button" role="menuitemcheckbox" aria-checked={nowbarSwipeEnabled} className={"settings-theme-menu-option" + (nowbarSwipeEnabled ? " is-selected" : "")} onClick={() => chooseNowbarToggle("swipe", !nowbarSwipeEnabled)}><span>Swipe</span><span>{nowbarSwipeEnabled ? "On" : "Off"}</span></button>
             <div className="settings-theme-menu-group-label">Expansion</div>
-            {([true, false] as const).map(enabled => <button key={"expand-" + enabled} type="button" role="menuitemradio" aria-checked={nowbarExpandEnabled === enabled} className={"settings-theme-menu-option" + (nowbarExpandEnabled === enabled ? " is-selected" : "")} onClick={() => chooseNowbarToggle("expand", enabled)}><span>{enabled ? "Expand Turn On" : "Expand Turn Off"}</span>{nowbarExpandEnabled === enabled && <Check size={15} aria-hidden="true" />}</button>)}
+            <button type="button" role="menuitemcheckbox" aria-checked={nowbarExpandEnabled} className={"settings-theme-menu-option" + (nowbarExpandEnabled ? " is-selected" : "")} onClick={() => chooseNowbarToggle("expand", !nowbarExpandEnabled)}><span>Expand</span><span>{nowbarExpandEnabled ? "On" : "Off"}</span></button>
           </div>}
         </div>
       </section>
