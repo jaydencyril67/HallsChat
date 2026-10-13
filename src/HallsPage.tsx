@@ -107,11 +107,11 @@ function HallVoiceNotePlayer({ src, pending = false }: { src: string; pending?: 
 }
 export default function HallsPage() {
   const [tab, setTab] = useState<Tab>("mine");
-  const [groups, setGroups] = useState<HallSummary[]>([]);
+  const [halls, setHalls] = useState<HallSummary[]>([]);
   const [activeId, setActiveId] = useState("");
   const [detail, setDetail] = useState<HallDetail | null>(null);
   const [messages, setMessages] = useState<HallMessage[]>([]);
-  const groupMessageListRef = useRef<HTMLDivElement | null>(null);
+  const hallMessageListRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -122,16 +122,16 @@ export default function HallsPage() {
   const [showJoin, setShowJoin] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [groupCode, setGroupCode] = useState("");
-  const [groupCodeStatus, setGroupCodeStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid" | "error">("idle");
-  const [groupCodeMessage, setGroupCodeMessage] = useState("");
-  const [groupAvatarFile, setGroupAvatarFile] = useState<File | null>(null);
-  const [groupAvatarPreview, setGroupAvatarPreview] = useState("");
-  const [groupAvatarCropSource, setGroupAvatarCropSource] = useState<string | null>(null);
-  const groupAvatarInputRef = useRef<HTMLInputElement | null>(null);
-  const [groupLogoCropSource, setGroupLogoCropSource] = useState<string | null>(null);
-  const groupLogoInputRef = useRef<HTMLInputElement | null>(null);
-  const [groupLogoBusy, setGroupLogoBusy] = useState(false);
+  const [hallCode, setGroupCode] = useState("");
+  const [hallCodeStatus, setGroupCodeStatus] = useState<"idle" | "checking" | "available" | "taken" | "invalid" | "error">("idle");
+  const [hallCodeMessage, setGroupCodeMessage] = useState("");
+  const [hallAvatarFile, setGroupAvatarFile] = useState<File | null>(null);
+  const [hallAvatarPreview, setGroupAvatarPreview] = useState("");
+  const [hallAvatarCropSource, setGroupAvatarCropSource] = useState<string | null>(null);
+  const hallAvatarInputRef = useRef<HTMLInputElement | null>(null);
+  const [hallLogoCropSource, setGroupLogoCropSource] = useState<string | null>(null);
+  const hallLogoInputRef = useRef<HTMLInputElement | null>(null);
+  const [hallLogoBusy, setGroupLogoBusy] = useState(false);
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [inviteCode, setInviteCode] = useState("");
   const [draft, setDraft] = useState("");
@@ -153,7 +153,7 @@ export default function HallsPage() {
   const [voiceBusy, setVoiceBusy] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
   const socketRef = useRef<Socket | null>(null);
-  const [groupSocket, setGroupSocket] = useState<Socket | null>(null);
+  const [hallSocket, setGroupSocket] = useState<Socket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordingChunksRef = useRef<Blob[]>([]);
   const recordingStreamRef = useRef<MediaStream | null>(null);
@@ -184,7 +184,7 @@ export default function HallsPage() {
   }, []);
 
   useEffect(() => {
-    const value = groupCode.trim();
+    const value = hallCode.trim();
     if (!value) { setGroupCodeStatus("idle"); setGroupCodeMessage(""); return; }
     if (!/^\d{8}$/.test(value)) { setGroupCodeStatus("invalid"); setGroupCodeMessage("Enter exactly 8 digits to check availability."); return; }
     const controller = new AbortController();
@@ -206,7 +206,7 @@ export default function HallsPage() {
       }
     }, 450);
     return () => { window.clearTimeout(timer); controller.abort(); };
-  }, [groupCode]);
+  }, [hallCode]);
 
   useLayoutEffect(() => {
     if (!confirmAction || !confirmAnchor) return;
@@ -249,11 +249,11 @@ export default function HallsPage() {
     return () => { cancelled = true; };
   }, [request]);
 
-  const loadGroups = useCallback(async (activeTab: Tab, showLoader = true) => {
+  const loadHalls = useCallback(async (activeTab: Tab, showLoader = true) => {
     if (showLoader) setLoading(true);
     try {
       const payload = await request("/api/groups?view=" + activeTab);
-      setGroups(Array.isArray(payload.groups) ? payload.groups : []);
+      setHalls(Array.isArray(payload.groups) ? payload.groups : []);
       setError("");
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to load Halls."); }
     finally { if (showLoader) setLoading(false); }
@@ -272,20 +272,20 @@ export default function HallsPage() {
   }, [request]);
 
   useEffect(() => {
-    void loadGroups(tab);
+    void loadHalls(tab);
     const token = localStorage.getItem("hallschat_token");
     if (!token) return;
     let hasConnected = false;
     const socket = io(apiBase, { auth: { token }, transports: ["websocket", "polling"] });
     socket.on("connect", () => {
-      if (hasConnected) void loadGroups(tab, false);
+      if (hasConnected) void loadHalls(tab, false);
       hasConnected = true;
     });
-    socket.on("groups:list:update", () => { void loadGroups(tab, false); });
+    socket.on("groups:list:update", () => { void loadHalls(tab, false); });
     return () => { socket.removeAllListeners(); socket.disconnect(); };
-  }, [tab, loadGroups]);
+  }, [tab, loadHalls]);
   useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); }, [activeId, loadDetail]);
-  useEffect(() => { const list = groupMessageListRef.current; if (list) list.scrollTop = list.scrollHeight; }, [activeId, messages.length]);
+  useEffect(() => { const list = hallMessageListRef.current; if (list) list.scrollTop = list.scrollHeight; }, [activeId, messages.length]);
   useEffect(() => {
     if (!activeId) { socketRef.current?.disconnect(); socketRef.current = null; setGroupSocket(null); return; }
     const token = localStorage.getItem("hallschat_token");
@@ -305,7 +305,7 @@ export default function HallsPage() {
     socket.on("group:avatar:update", (event: { groupId?: string; avatar?: string; updatedAt?: string }) => {
       if (event.groupId !== activeId || typeof event.avatar !== "string") return;
       setDetail(current => current && current.id === activeId ? { ...current, avatar: event.avatar, updatedAt: event.updatedAt || current.updatedAt } : current);
-      setGroups(current => current.map(group => group.id === activeId ? { ...group, avatar: event.avatar, updatedAt: event.updatedAt || group.updatedAt } : group));
+      setHalls(current => current.map(group => group.id === activeId ? { ...group, avatar: event.avatar, updatedAt: event.updatedAt || group.updatedAt } : group));
     });
     socket.on("group:message", (message: HallMessage) => {
       setMessages(current => current.some(item => item.id === message.id) ? current.map(item => item.id === message.id ? { ...item, ...message } : item) : [...current, message].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
@@ -369,18 +369,18 @@ export default function HallsPage() {
     if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
   }, []);
 
-  const filteredGroups = useMemo(() => { const query = search.trim().toLowerCase(); if (!query) return groups; return groups.filter(group => [group.name, group.description, group.lastMessage?.text || "", group.lastMessage?.senderName || ""].join(" ").toLowerCase().includes(query)); }, [groups, search]);
+  const filteredHalls = useMemo(() => { const query = search.trim().toLowerCase(); if (!query) return halls; return halls.filter(group => [group.name, group.description, group.lastMessage?.text || "", group.lastMessage?.senderName || ""].join(" ").toLowerCase().includes(query)); }, [halls, search]);
 
   function cancelGroupAvatarCrop() {
-    if (groupAvatarCropSource) URL.revokeObjectURL(groupAvatarCropSource);
+    if (hallAvatarCropSource) URL.revokeObjectURL(hallAvatarCropSource);
     setGroupAvatarCropSource(null);
   }
 
   async function confirmGroupAvatarCrop(croppedFile: File) {
-    if (groupAvatarCropSource) URL.revokeObjectURL(groupAvatarCropSource);
+    if (hallAvatarCropSource) URL.revokeObjectURL(hallAvatarCropSource);
     setGroupAvatarCropSource(null);
     await new Promise<void>(resolve => window.setTimeout(resolve, 0));
-    if (groupAvatarPreview) URL.revokeObjectURL(groupAvatarPreview);
+    if (hallAvatarPreview) URL.revokeObjectURL(hallAvatarPreview);
     setGroupAvatarFile(croppedFile);
     setGroupAvatarPreview(URL.createObjectURL(croppedFile));
     setError("");
@@ -393,31 +393,31 @@ export default function HallsPage() {
     setError("");
     if (!file.type.startsWith("image/")) { setError("Choose an image file for the Hall logo."); return; }
     if (file.size > 10 * 1024 * 1024) { setError("Hall logo must be 10 MB or smaller."); return; }
-    if (groupLogoCropSource) URL.revokeObjectURL(groupLogoCropSource);
+    if (hallLogoCropSource) URL.revokeObjectURL(hallLogoCropSource);
     setGroupLogoCropSource(URL.createObjectURL(file));
   }
 
   function cancelGroupLogoCrop() {
-    if (groupLogoCropSource) URL.revokeObjectURL(groupLogoCropSource);
+    if (hallLogoCropSource) URL.revokeObjectURL(hallLogoCropSource);
     setGroupLogoCropSource(null);
   }
 
   async function confirmGroupLogoCrop(croppedFile: File) {
-    if (groupLogoCropSource) URL.revokeObjectURL(groupLogoCropSource);
+    if (hallLogoCropSource) URL.revokeObjectURL(hallLogoCropSource);
     setGroupLogoCropSource(null);
     await new Promise<void>(resolve => window.setTimeout(resolve, 0));
     await saveGroupLogo(croppedFile);
   }
 
   async function saveGroupLogo(croppedFile: File) {
-    if (!activeId || !detail || !["owner", "admin"].includes(detail.role || "") || groupLogoBusy) return;
+    if (!activeId || !detail || !["owner", "admin"].includes(detail.role || "") || hallLogoBusy) return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) { window.location.href = "/signin"; return; }
     setGroupLogoBusy(true);
     setError("");
     const taskId = startBackgroundTask("Updating Hall logo", "Preparing Hall logo upload…");
     try {
-      const avatar = await uploadGroupMedia(croppedFile, token);
+      const avatar = await uploadHallMedia(croppedFile, token);
       updateBackgroundTask(taskId, "Saving Hall logo…");
       const payload = await request("/api/groups/" + encodeURIComponent(activeId) + "/avatar", {
         method: "PATCH",
@@ -425,7 +425,7 @@ export default function HallsPage() {
       });
       const updated = payload.group || { ...detail, avatar };
       setDetail(current => current && current.id === activeId ? { ...current, avatar: updated.avatar || avatar, updatedAt: updated.updatedAt || current.updatedAt } : current);
-      setGroups(current => current.map(group => group.id === activeId ? { ...group, avatar: updated.avatar || avatar, updatedAt: updated.updatedAt || group.updatedAt } : group));
+      setHalls(current => current.map(group => group.id === activeId ? { ...group, avatar: updated.avatar || avatar, updatedAt: updated.updatedAt || group.updatedAt } : group));
       setNotice("Hall logo updated.");
       finishBackgroundTask(taskId);
     } catch (err) {
@@ -437,36 +437,36 @@ export default function HallsPage() {
     }
   }
 
-  async function createGroup(event: React.FormEvent) {
+  async function createHall(event: React.FormEvent) {
     event.preventDefault();
     if (name.trim().length < 2) { setError("Hall name must be at least 2 characters."); return; }
-    if (!/^\d{8}$/.test(groupCode)) { setError("Choose a Hall ID made of exactly 8 digits."); return; }
-    if (groupCodeStatus !== "available") { setError(groupCodeStatus === "checking" ? "Please wait while we check your Hall ID." : groupCodeStatus === "taken" ? "That Hall ID is already taken. Choose another one." : groupCodeStatus === "error" ? "We couldn’t check Hall ID availability. Please try again." : "Please enter a valid, available Hall ID."); return; }
+    if (!/^\d{8}$/.test(hallCode)) { setError("Choose a Hall ID made of exactly 8 digits."); return; }
+    if (hallCodeStatus !== "available") { setError(hallCodeStatus === "checking" ? "Please wait while we check your Hall ID." : hallCodeStatus === "taken" ? "That Hall ID is already taken. Choose another one." : hallCodeStatus === "error" ? "We couldn’t check Hall ID availability. Please try again." : "Please enter a valid, available Hall ID."); return; }
     setBusy(true); setError(""); setNotice("");
     try {
       let avatar = "";
       const token = localStorage.getItem("hallschat_token");
-      if (groupAvatarFile && token) avatar = await uploadGroupMedia(groupAvatarFile, token);
-       const payload = await request("/api/groups", { method: "POST", body: JSON.stringify({ name: name.trim(), description: description.trim(), visibility, groupCode, ...(avatar ? { avatar } : {}) }) });
+      if (hallAvatarFile && token) avatar = await uploadHallMedia(hallAvatarFile, token);
+       const payload = await request("/api/groups", { method: "POST", body: JSON.stringify({ name: name.trim(), description: description.trim(), visibility, groupCode: hallCode, ...(avatar ? { avatar } : {}) }) });
       setShowCreate(false); setName(""); setDescription(""); setGroupCode(""); setGroupCodeStatus("idle"); setGroupCodeMessage(""); setVisibility("public"); setGroupAvatarFile(null); setGroupAvatarPreview("");
       setTab("mine");
-      await loadGroups("mine"); if (payload.group?.id) setActiveId(payload.group.id);
+      await loadHalls("mine"); if (payload.group?.id) setActiveId(payload.group.id);
       setNotice(payload.group?.inviteCode ? "Hall created. Your 8-digit Hall ID is " + payload.group.inviteCode + ". Save it to share with people." : "Your Hall is ready.");
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to create Hall."); }
     finally { setBusy(false); }
   }
 
-  async function joinGroup(id?: string, code?: string) {
+  async function joinHall(id?: string, code?: string) {
     setBusy(true); setError(""); setNotice("");
     try {
       const payload = await request("/api/groups/join", { method: "POST", body: JSON.stringify(id ? { groupId: id } : { groupCode: code }) });
       setShowJoin(false); setInviteCode(""); setNotice("You joined " + (payload.group?.name || "the Hall") + ".");
-      setTab("mine"); await loadGroups("mine"); if (payload.group?.id) setActiveId(payload.group.id);
+      setTab("mine"); await loadHalls("mine"); if (payload.group?.id) setActiveId(payload.group.id);
     } catch (err) { setError(err instanceof Error ? err.message : "Unable to join this Hall."); }
     finally { setBusy(false); }
   }
 
-  async function uploadGroupMedia(file: File, savedToken: string): Promise<string> {
+  async function uploadHallMedia(file: File, savedToken: string): Promise<string> {
     const authResponse = await fetch(`${apiBase}/api/media/imagekit-auth`, { headers: { Authorization: `Bearer ${savedToken}` } });
     const auth = await authResponse.json().catch(() => ({}));
     if (!authResponse.ok) throw new Error(auth.message || "Media uploads are not configured yet.");
@@ -551,15 +551,15 @@ export default function HallsPage() {
       const images: string[] = [];
       for (const [index, file] of files.entries()) {
         updateBackgroundTask(backgroundTaskId, `Uploading Hall attachment ${index + 1} of ${files.length}…`);
-        images.push(await uploadGroupMedia(file, savedToken));
+        images.push(await uploadHallMedia(file, savedToken));
       }
-      const audioUrl = voiceFile ? (updateBackgroundTask(backgroundTaskId, "Uploading Halls voice note…"), await uploadGroupMedia(voiceFile, savedToken)) : "";
+      const audioUrl = voiceFile ? (updateBackgroundTask(backgroundTaskId, "Uploading Halls voice note…"), await uploadHallMedia(voiceFile, savedToken)) : "";
       updateBackgroundTask(backgroundTaskId, "Sending message to Halls…");
       const payload = await request(`/api/groups/${encodeURIComponent(groupId)}/messages`, { method: "POST", body: JSON.stringify({ text, images, audioUrl, ...(replyTarget ? { replyToId: replyTarget.id } : {}) }) });
       const sent = payload.message as HallMessage;
       if (!sent?.id) throw new Error("The server didn't confirm your message.");
       setMessages(current => [...current.filter(message => message.id !== pendingId && message.id !== sent.id), sent].sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
-      await loadGroups("mine", false);
+      await loadHalls("mine", false);
       previews.forEach(url => URL.revokeObjectURL(url));
       setNotice("");
       finishBackgroundTask(backgroundTaskId);
@@ -617,18 +617,18 @@ export default function HallsPage() {
 
   async function sendMessage(event: React.FormEvent) { event.preventDefault(); if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current); socketRef.current?.emit("group:typing", { groupId: activeId, isTyping: false }); await sendHallMessage(); }
 
-  async function leaveGroup() {
+  async function leaveHall() {
     if (!activeId) return;
     setBusy(true);
-    try { await request("/api/groups/" + encodeURIComponent(activeId) + "/leave", { method: "POST" }); setActiveId(""); setDetail(null); await loadGroups("mine"); setNotice("You left the Hall."); }
+    try { await request("/api/groups/" + encodeURIComponent(activeId) + "/leave", { method: "POST" }); setActiveId(""); setDetail(null); await loadHalls("mine"); setNotice("You left the Hall."); }
     catch (err) { setError(err instanceof Error ? err.message : "Unable to leave this Hall."); }
     finally { setBusy(false); }
   }
 
-  async function deleteGroup() {
+  async function deleteHall() {
     if (!activeId) return;
     setBusy(true);
-    try { await request("/api/groups/" + encodeURIComponent(activeId), { method: "DELETE" }); setActiveId(""); setDetail(null); await loadGroups("mine"); setNotice("Hall deleted."); }
+    try { await request("/api/groups/" + encodeURIComponent(activeId), { method: "DELETE" }); setActiveId(""); setDetail(null); await loadHalls("mine"); setNotice("Hall deleted."); }
     catch (err) { setError(err instanceof Error ? err.message : "Unable to delete this Hall."); }
     finally { setBusy(false); }
   }
@@ -669,16 +669,16 @@ export default function HallsPage() {
               <strong>{detail.name}</strong>
               <span>{detail.memberCount} members · {detail.visibility === "private" ? "Private Hall" : "Public Hall"}</span>
             </div>
-            <HallsCallPanel socket={groupSocket} groupId={activeId} groupName={detail.name} currentUserId={currentUserId}/>
+            <HallsCallPanel socket={hallSocket} groupId={activeId} groupName={detail.name} currentUserId={currentUserId}/>
             <button type="button" className="chat-back-button" onClick={() => setMemberPanel(value => !value)} aria-label="Hall details" aria-expanded={memberPanel} title="Hall details"><UsersRound size={18}/></button>
           </header>
           {memberPanel && <div role="dialog" aria-modal="true" aria-label="Hall details and members" style={{ position: "fixed", zIndex: 5000, inset: 0, width: "100%", height: "100dvh", maxHeight: "100dvh", boxSizing: "border-box", overflowY: "auto", overscrollBehavior: "contain", padding: "calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 20px)", border: 0, borderRadius: 0, background: "var(--theme-bg)", color: "var(--theme-text)", boxShadow: "none", backdropFilter: "none" }}>
             <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", margin: "-4px -4px 12px" }}><button type="button" aria-label="Close Hall management" title="Close Hall management" onClick={() => setMemberPanel(false)} style={{ ...secondary, width: 42, minWidth: 42, height: 42, padding: 0, border: 0, background: "transparent" }}><X size={23}/></button></div>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-              <button type="button" onClick={() => { if (isAdmin && !groupLogoBusy) groupLogoInputRef.current?.click(); }} disabled={!isAdmin || groupLogoBusy} aria-label={isAdmin ? "Change Hall logo" : "Hall logo"} title={isAdmin ? "Change Hall logo" : "Hall logo"} style={{ position: "relative", width: 62, height: 62, flexBasis: 62, flexShrink: 0, borderRadius: 18, overflow: "hidden", border: isAdmin ? "1px solid var(--theme-accent-border)" : "1px solid var(--theme-line)", padding: 0, background: "linear-gradient(145deg,var(--theme-accent-soft),var(--theme-surface))", color: "var(--theme-avatar-fallback-text)", display: "grid", placeItems: "center", cursor: isAdmin ? "pointer" : "default" }}>{detail.avatar ? <img src={detail.avatar} alt={detail.name + " Hall logo"} style={{ width: "100%", height: "100%", objectFit: "cover" }}/> : initials(detail.name)}{isAdmin && <span style={{ position: "absolute", right: 3, bottom: 3, width: 21, height: 21, borderRadius: 7, display: "grid", placeItems: "center", background: "var(--theme-popover-bg)", color: "var(--theme-danger)", border: "1px solid var(--theme-accent-border)" }}>{groupLogoBusy ? <LoadingDots/> : <Camera size={12}/>}</span>}</button>
-              <input ref={groupLogoInputRef} type="file" accept="image/*" hidden onChange={selectGroupLogo}/>
+              <button type="button" onClick={() => { if (isAdmin && !hallLogoBusy) hallLogoInputRef.current?.click(); }} disabled={!isAdmin || hallLogoBusy} aria-label={isAdmin ? "Change Hall logo" : "Hall logo"} title={isAdmin ? "Change Hall logo" : "Hall logo"} style={{ position: "relative", width: 62, height: 62, flexBasis: 62, flexShrink: 0, borderRadius: 18, overflow: "hidden", border: isAdmin ? "1px solid var(--theme-accent-border)" : "1px solid var(--theme-line)", padding: 0, background: "linear-gradient(145deg,var(--theme-accent-soft),var(--theme-surface))", color: "var(--theme-avatar-fallback-text)", display: "grid", placeItems: "center", cursor: isAdmin ? "pointer" : "default" }}>{detail.avatar ? <img src={detail.avatar} alt={detail.name + " Hall logo"} style={{ width: "100%", height: "100%", objectFit: "cover" }}/> : initials(detail.name)}{isAdmin && <span style={{ position: "absolute", right: 3, bottom: 3, width: 21, height: 21, borderRadius: 7, display: "grid", placeItems: "center", background: "var(--theme-popover-bg)", color: "var(--theme-danger)", border: "1px solid var(--theme-accent-border)" }}>{hallLogoBusy ? <LoadingDots/> : <Camera size={12}/>}</span>}</button>
+              <input ref={hallLogoInputRef} type="file" accept="image/*" hidden onChange={selectGroupLogo}/>
               <div style={{ minWidth: 0, flex: 1 }}><strong style={{ display: "block", overflowWrap: "anywhere" }}>{detail.name}</strong><span style={{ ...muted, display: "block", fontSize: ".72rem", marginTop: 4 }}>{detail.memberCount} members · {detail.visibility === "private" ? "Private Hall" : "Public Hall"}</span></div>
-              {detail.role === "owner" && <button type="button" className="halls-confirm-trigger" aria-label="Delete Hall" title="Delete Hall" disabled={busy} onClick={event => askConfirm("Delete this Hall and all its messages? This cannot be undone.", deleteGroup, event.currentTarget)} style={{ width: 38, height: 38, minWidth: 38, display: "grid", placeItems: "center", padding: 0, borderRadius: 10, border: "1px solid var(--theme-danger-action-border)", background: "var(--theme-danger-action-bg)", color: "var(--theme-danger)" }}><Trash2 size={18}/></button>}
+              {detail.role === "owner" && <button type="button" className="halls-confirm-trigger" aria-label="Delete Hall" title="Delete Hall" disabled={busy} onClick={event => askConfirm("Delete this Hall and all its messages? This cannot be undone.", deleteHall, event.currentTarget)} style={{ width: 38, height: 38, minWidth: 38, display: "grid", placeItems: "center", padding: 0, borderRadius: 10, border: "1px solid var(--theme-danger-action-border)", background: "var(--theme-danger-action-bg)", color: "var(--theme-danger)" }}><Trash2 size={18}/></button>}
             </div>
             {detail.description && <p style={{ ...muted, margin: "0 0 12px", fontSize: ".8rem", lineHeight: 1.5 }}>{detail.description}</p>}
             {detail.inviteCode && <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: 10, border: "1px solid var(--theme-line)", borderRadius: 10 }}><LockKeyhole size={15} color="var(--theme-danger)"/><div style={{ flex: 1, minWidth: 0 }}><div style={{ ...muted, fontSize: ".7rem" }}>Hall ID</div><strong style={{ overflowWrap: "anywhere", fontSize: ".8rem", letterSpacing: ".12em", fontVariantNumeric: "tabular-nums" }}>{detail.inviteCode}</strong></div><button type="button" aria-label="Copy Hall ID" title="Copy Hall ID" style={{ ...secondary, width: 38, minWidth: 38, height: 38, padding: 0 }} onClick={() => { void navigator.clipboard?.writeText(detail.inviteCode || ""); setNotice("Hall ID copied."); }}><Copy size={16}/></button></div>}
@@ -689,11 +689,11 @@ export default function HallsPage() {
               {detail.role === "owner" && member.role !== "owner" && <button type="button" aria-label={member.role === "admin" ? "Remove admin privileges from @" + member.username : "Make @" + member.username + " an admin"} title={member.role === "admin" ? "Remove admin" : "Make admin"} disabled={busy} style={{ ...secondary, width: 36, minWidth: 36, height: 36, padding: 0, opacity: busy ? .65 : 1, color: member.role === "admin" ? "var(--theme-danger)" : "var(--theme-danger)" }} className={member.role === "admin" ? undefined : "halls-confirm-trigger"} onClick={event => { if (member.role === "admin") { void changeRole(member, "member"); } else { askConfirm("Make @" + member.username + " an admin? They will be able to help manage this group.", () => changeRole(member, "admin"), event.currentTarget); } }}>{member.role === "admin" ? <ShieldMinus size={16}/> : <ShieldCheck size={16}/>}</button>}
               {isAdmin && member.role !== "owner" && member.id !== detail.ownerId && !(detail.role === "admin" && member.role === "admin") && <button type="button" aria-label={"Remove " + member.name} style={{ ...secondary, padding: 8 }} className="halls-confirm-trigger" onClick={event => askConfirm("Remove @" + member.username + " from this Hall?", () => removeMember(member), event.currentTarget)}><Trash2 size={15}/></button>}
             </div>)}</div>
-            {detail.role !== "owner" && <div style={{ display: "flex", marginTop: 14 }}><button type="button" style={{ ...secondary, flex: 1, color: "var(--theme-danger)" }} disabled={busy} className="halls-confirm-trigger" onClick={event => { askConfirm("Leave this Hall? You will need to join again to read new messages.", leaveGroup, event.currentTarget); }}><LogOut size={15}/> Leave Hall</button></div>}
+            {detail.role !== "owner" && <div style={{ display: "flex", marginTop: 14 }}><button type="button" style={{ ...secondary, flex: 1, color: "var(--theme-danger)" }} disabled={busy} className="halls-confirm-trigger" onClick={event => { askConfirm("Leave this Hall? You will need to join again to read new messages.", leaveHall, event.currentTarget); }}><LogOut size={15}/> Leave Hall</button></div>}
           </div>}
           <input ref={imageInputRef} type="file" accept="image/*" multiple hidden onChange={handleImageSelection}/>
           <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" hidden onChange={handleImageSelection}/>
-          <div ref={groupMessageListRef} className="chat-message-list" style={{ flex: "1 1 0", minHeight: 0, height: "auto", maxHeight: "none" }} onClick={() => { setReactionPickerFor(null); setActionMenuFor(null); }}>
+          <div ref={hallMessageListRef} className="chat-message-list" style={{ flex: "1 1 0", minHeight: 0, height: "auto", maxHeight: "none" }} onClick={() => { setReactionPickerFor(null); setActionMenuFor(null); }}>
             {detailLoading && !messages.length ? <div className="chat-message-loading"><LoadingDots/></div> : messages.length ? messages.map(message => {
               const mine = Boolean(currentUserId) && (message.sender?.id === currentUserId || (message as HallMessage & { senderId?: string }).senderId === currentUserId);
               const imgs = message.images?.length ? message.images : message.imageUrl ? [message.imageUrl] : [];
@@ -743,7 +743,7 @@ export default function HallsPage() {
                   <div className="chat-message-body">
                     {!mine && <span style={{ display: "block", color: "var(--theme-danger)", fontSize: ".69rem", fontWeight: 800, marginBottom: 3 }}>{message.sender?.name || "Hall member"} <span style={{ color: "var(--theme-muted)", fontWeight: 500 }}>@{message.sender?.username || "member"}</span></span>}
                     {message.deletedForEveryone ? <p className="chat-message-text" style={{ opacity: .65, fontStyle: "italic" }}>This message was deleted</p> : <>
-                      {quoted && <button type="button" onClick={() => { const node = document.getElementById("chat-message-" + quoted.id); const list = groupMessageListRef.current; if (node && list) { list.scrollTo({ top: Math.max(0, list.scrollTop + node.getBoundingClientRect().top - list.getBoundingClientRect().top - 80), behavior: "smooth" }); node.style.outline = "2px solid var(--theme-focus)"; window.setTimeout(() => { node.style.outline = ""; }, 1300); } }} style={{ display: "grid", width: "100%", gap: 3, textAlign: "left", padding: "7px 9px", marginBottom: 6, border: 0, borderLeft: "3px solid var(--theme-focus)", borderRadius: "5px 8px 8px 5px", background: "var(--theme-accent-soft)", color: "inherit" }}><strong style={{ fontSize: ".68rem", color: "var(--theme-danger)" }}>{quoted.senderId === currentUserId ? "You" : (detail.members.find(member => member.id === quoted.senderId)?.name || "Hall member")}</strong><span style={{ fontSize: ".75rem", opacity: .78, overflowWrap: "anywhere" }}>{quoted.deleted ? "This message was deleted" : quoted.text || (quoted.audioUrl ? "🎤 Voice note" : quoted.imageUrl ? "📷 Photo" : "Message")}</span></button>}
+                      {quoted && <button type="button" onClick={() => { const node = document.getElementById("chat-message-" + quoted.id); const list = hallMessageListRef.current; if (node && list) { list.scrollTo({ top: Math.max(0, list.scrollTop + node.getBoundingClientRect().top - list.getBoundingClientRect().top - 80), behavior: "smooth" }); node.style.outline = "2px solid var(--theme-focus)"; window.setTimeout(() => { node.style.outline = ""; }, 1300); } }} style={{ display: "grid", width: "100%", gap: 3, textAlign: "left", padding: "7px 9px", marginBottom: 6, border: 0, borderLeft: "3px solid var(--theme-focus)", borderRadius: "5px 8px 8px 5px", background: "var(--theme-accent-soft)", color: "inherit" }}><strong style={{ fontSize: ".68rem", color: "var(--theme-danger)" }}>{quoted.senderId === currentUserId ? "You" : (detail.members.find(member => member.id === quoted.senderId)?.name || "Hall member")}</strong><span style={{ fontSize: ".75rem", opacity: .78, overflowWrap: "anywhere" }}>{quoted.deleted ? "This message was deleted" : quoted.text || (quoted.audioUrl ? "🎤 Voice note" : quoted.imageUrl ? "📷 Photo" : "Message")}</span></button>}
                       {editingMessageId === message.id ? <form onSubmit={event => { event.preventDefault(); void saveMessageEdit(message); }} style={{ display: "grid", gap: 7 }}><textarea value={editMessageDraft} onChange={event => setEditMessageDraft(event.target.value)} maxLength={4000} autoFocus rows={3} style={{ ...field, resize: "vertical" }}/><div style={{ display: "flex", gap: 7 }}><button type="button" style={{ ...secondary, flex: 1 }} onClick={() => { setEditingMessageId(null); setEditMessageDraft(""); }}>Cancel</button><button type="submit" style={{ ...primary, flex: 1 }} disabled={!editMessageDraft.trim()}>Save</button></div></form> : message.text && <p className="chat-message-text">{message.text}</p>}
                       {imgs.length > 0 && <div className={`chat-image-grid ${imgs.length === 1 ? "chat-image-grid-single" : ""}`}>{imgs.map((url, index) => <button key={`${url}-${index}`} type="button" className="chat-image-bubble" onClick={() => setViewingImageUrl(url)} aria-label={`View image ${index + 1}`}><img src={url} alt={message.text || `Shared image ${index + 1}`} loading="lazy" /></button>)}</div>}
                       {message.audioUrl && <HallVoiceNotePlayer src={message.audioUrl} pending={Boolean(message.pending)}/>}
@@ -785,8 +785,8 @@ export default function HallsPage() {
             <button type="button" onClick={() => setShowJoin(true)} style={{ ...secondary, flex: 1, minWidth: 0 }}><UserPlus size={16}/> Join Hall</button>
             <button type="button" onClick={() => setShowCreate(true)} style={{ ...secondary, flex: 1, minWidth: 0 }}><Plus size={17}/> Create Hall</button>
           </div>
-          {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 34 }}><LoadingDots/></div> : filteredGroups.length ? <div className="halls-list" style={{ display: "grid", gap: 10 }}>{filteredGroups.map(group => <div key={group.id} className="halls-list-row" style={{ ...panel, padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
-            <Avatar name={group.name} src={group.avatar} size={49}/><div style={{ flex: 1, minWidth: 0, textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: ".9rem", fontWeight: 850, color: "var(--theme-text)" }}>{group.name}{group.visibility === "private" ? <LockKeyhole size={13} color="var(--theme-danger)"/> : null}</span><span style={{ display: "block", ...muted, fontSize: ".75rem", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{group.lastMessage ? (group.lastMessage.senderName ? group.lastMessage.senderName + ": " : "") + group.lastMessage.text : group.description || "No messages yet"}</span><span style={{ display: "block", ...muted, fontSize: ".7rem", marginTop: 5 }}>{group.memberCount} members · {group.role || "Public"}{group.lastMessage ? " · " + formatTime(group.lastMessage.createdAt) : ""}</span></div>{tab === "discover" ? <button type="button" style={primary} disabled={busy} onClick={() => void joinGroup(group.id)}>Join</button> : <button type="button" aria-label={"Open " + group.name} title={"Open " + group.name} style={{ ...secondary, width: 38, minWidth: 38, padding: 0 }} onClick={() => setActiveId(group.id)}><ArrowLeft size={17} style={{ transform: "rotate(180deg)" }}/></button>}
+          {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 34 }}><LoadingDots/></div> : filteredHalls.length ? <div className="halls-list" style={{ display: "grid", gap: 10 }}>{filteredHalls.map(group => <div key={group.id} className="halls-list-row" style={{ ...panel, padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
+            <Avatar name={group.name} src={group.avatar} size={49}/><div style={{ flex: 1, minWidth: 0, textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: ".9rem", fontWeight: 850, color: "var(--theme-text)" }}>{group.name}{group.visibility === "private" ? <LockKeyhole size={13} color="var(--theme-danger)"/> : null}</span><span style={{ display: "block", ...muted, fontSize: ".75rem", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{group.lastMessage ? (group.lastMessage.senderName ? group.lastMessage.senderName + ": " : "") + group.lastMessage.text : group.description || "No messages yet"}</span><span style={{ display: "block", ...muted, fontSize: ".7rem", marginTop: 5 }}>{group.memberCount} members · {group.role || "Public"}{group.lastMessage ? " · " + formatTime(group.lastMessage.createdAt) : ""}</span></div>{tab === "discover" ? <button type="button" style={primary} disabled={busy} onClick={() => void joinHall(group.id)}>Join</button> : <button type="button" aria-label={"Open " + group.name} title={"Open " + group.name} style={{ ...secondary, width: 38, minWidth: 38, padding: 0 }} onClick={() => setActiveId(group.id)}><ArrowLeft size={17} style={{ transform: "rotate(180deg)" }}/></button>}
           </div>)}</div> : <div className="halls-list-empty" style={{ ...panel, textAlign: "center", padding: "32px 18px" }}><div className="halls-list-empty-icon" style={{ width: 49, height: 49, margin: "0 auto 12px", borderRadius: 16, display: "grid", placeItems: "center", background: "var(--theme-danger-action-bg)", color: "var(--theme-danger)" }}><UsersRound size={23}/></div><strong style={{ display: "block", fontSize: ".92rem" }}>{search.trim() ? "No matching Halls" : tab === "mine" ? "Your Hall story starts here" : "No Halls to discover yet"}</strong><p style={{ ...muted, margin: "7px auto 14px", maxWidth: 320, fontSize: ".8rem", lineHeight: 1.6 }}>{search.trim() ? "Try a different Hall name, description, or recent message." : tab === "mine" ? "Create a Hall for friends, family, classmates, or your community." : "Public Halls will appear here when they are available."}</p>{search.trim() ? <button type="button" style={secondary} onClick={() => setSearch("")}><X size={15}/> Clear search</button> : tab === "mine" && <button type="button" style={primary} onClick={() => setShowCreate(true)}><Plus size={16}/> Create your first Hall</button>}</div>}
         </>}
       </div>
@@ -796,19 +796,19 @@ export default function HallsPage() {
         <button type="button" aria-label="Close create Hall" onClick={() => { setShowCreate(false); setError(""); }} style={{ ...secondary, width: 42, minWidth: 42, height: 42, padding: 0, border: 0, background: "transparent" }}><X size={23}/></button>
       </header>
       <div className="halls-create-scroll" style={{ flex: 1, minHeight: 0, overflowY: "auto", overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", padding: "8px 16px calc(18px + env(safe-area-inset-bottom, 0px))" }}>
-        <form className="halls-create-form" onSubmit={createGroup} style={{ display: "grid", gap: 13, maxWidth: 560, margin: "0 auto" }}>
+        <form className="halls-create-form" onSubmit={createHall} style={{ display: "grid", gap: 13, maxWidth: 560, margin: "0 auto" }}>
           <div className="halls-create-picture" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: "8px 0 4px", textAlign: "center" }}>
-            <button type="button" onClick={() => groupAvatarInputRef.current?.click()} aria-label="Upload Hall profile picture" style={{ position: "relative", width: 104, height: 104, minWidth: 104, borderRadius: 22, overflow: "hidden", border: "1px dashed var(--theme-accent-border)", background: "linear-gradient(145deg,var(--theme-accent-soft),var(--theme-surface))", color: "var(--theme-danger)", display: "grid", placeItems: "center", padding: 0 }}>
-              {groupAvatarPreview ? <img src={groupAvatarPreview} alt="Hall profile preview" style={{ width: "100%", height: "100%", objectFit: "cover" }}/> : <div style={{ display: "grid", justifyItems: "center", gap: 7 }}><Camera size={28}/><span style={{ fontSize: ".9rem", fontWeight: 750 }}>Add photo</span></div>}
+            <button type="button" onClick={() => hallAvatarInputRef.current?.click()} aria-label="Upload Hall profile picture" style={{ position: "relative", width: 104, height: 104, minWidth: 104, borderRadius: 22, overflow: "hidden", border: "1px dashed var(--theme-accent-border)", background: "linear-gradient(145deg,var(--theme-accent-soft),var(--theme-surface))", color: "var(--theme-danger)", display: "grid", placeItems: "center", padding: 0 }}>
+              {hallAvatarPreview ? <img src={hallAvatarPreview} alt="Hall profile preview" style={{ width: "100%", height: "100%", objectFit: "cover" }}/> : <div style={{ display: "grid", justifyItems: "center", gap: 7 }}><Camera size={28}/><span style={{ fontSize: ".9rem", fontWeight: 750 }}>Add photo</span></div>}
               <span style={{ position: "absolute", right: 5, bottom: 5, width: 26, height: 26, display: "grid", placeItems: "center", borderRadius: 10, background: "var(--theme-primary)", color: "var(--theme-primary-contrast)", border: "2px solid var(--theme-bg)" }}><Plus size={15}/></span>
             </button>
             <span style={{ ...muted, fontSize: ".86rem" }}>Hall picture · optional</span>
-            <input ref={groupAvatarInputRef} type="file" accept="image/*" hidden onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; setError(""); if (!file.type.startsWith("image/")) { setError("Choose an image file for the Hall picture."); return; } if (file.size > 10 * 1024 * 1024) { setError("Hall picture must be 10 MB or smaller."); return; } if (groupAvatarCropSource) URL.revokeObjectURL(groupAvatarCropSource); setGroupAvatarCropSource(URL.createObjectURL(file)); }}/>
-            {groupAvatarPreview && <button type="button" onClick={() => { URL.revokeObjectURL(groupAvatarPreview); setGroupAvatarFile(null); setGroupAvatarPreview(""); if (groupAvatarInputRef.current) groupAvatarInputRef.current.value = ""; }} style={{ ...secondary, minHeight: 32, padding: "6px 10px" }}>Remove photo</button>}
+            <input ref={hallAvatarInputRef} type="file" accept="image/*" hidden onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; if (!file) return; setError(""); if (!file.type.startsWith("image/")) { setError("Choose an image file for the Hall picture."); return; } if (file.size > 10 * 1024 * 1024) { setError("Hall picture must be 10 MB or smaller."); return; } if (hallAvatarCropSource) URL.revokeObjectURL(hallAvatarCropSource); setGroupAvatarCropSource(URL.createObjectURL(file)); }}/>
+            {hallAvatarPreview && <button type="button" onClick={() => { URL.revokeObjectURL(hallAvatarPreview); setGroupAvatarFile(null); setGroupAvatarPreview(""); if (hallAvatarInputRef.current) hallAvatarInputRef.current.value = ""; }} style={{ ...secondary, minHeight: 32, padding: "6px 10px" }}>Remove photo</button>}
           </div>
           <label style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Hall name <span style={{ ...muted, fontWeight: 500 }}>Required</span><input required minLength={2} maxLength={80} value={name} onChange={event => setName(event.target.value)} placeholder="e.g. Weekend Football Crew" style={field}/></label>
           <label style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Description <span style={{ ...muted, fontWeight: 500 }}>Optional</span><textarea maxLength={500} value={description} onChange={event => setDescription(event.target.value)} placeholder="Tell people what your Hall is about…" rows={2} style={{ ...field, resize: "none", minHeight: 76, padding: "11px 13px" }}/></label>
-          <label className="halls-create-id-field" style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Hall ID <span style={{ ...muted, fontWeight: 500 }}>Choose your own unique 8-digit code</span><span style={{ position: "relative", display: "flex", alignItems: "center", width: "100%", minWidth: 0 }}><input required type="text" inputMode="numeric" autoComplete="off" pattern="[0-9]{8}" minLength={8} maxLength={8} value={groupCode} aria-describedby="hall-id-availability" aria-invalid={groupCodeStatus === "taken" || groupCodeStatus === "invalid"} onChange={event => { setGroupCode(event.target.value.replace(/\D/g, "").slice(0, 8)); setError(""); }} placeholder="e.g. 48271630" style={{ ...field, paddingRight: 42, letterSpacing: ".18em", fontVariantNumeric: "tabular-nums" }}/>{groupCodeStatus === "checking" ? <span aria-label="Checking Hall ID" style={{ position: "absolute", right: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", color: "var(--theme-focus)", lineHeight: 0 }}><LoadingDots /></span> : groupCodeStatus === "available" ? <Check size={16} aria-label="Hall ID available" style={{ position: "absolute", right: 12, color: "var(--theme-success)", pointerEvents: "none" }} /> : null}</span><span id="hall-id-availability" aria-live="polite" style={{ minHeight: 13, lineHeight: 1.45, fontSize: ".72rem", fontWeight: 500, color: groupCodeStatus === "available" ? "var(--theme-success)" : groupCodeStatus === "checking" || groupCodeStatus === "idle" ? "var(--theme-muted)" : "var(--theme-danger)" }}>{groupCodeMessage || "Unique 8-digit code used to find or join your Hall."}</span></label>
+          <label className="halls-create-id-field" style={{ display: "grid", gap: 6, fontSize: ".9rem", fontWeight: 750 }}>Hall ID <span style={{ ...muted, fontWeight: 500 }}>Choose your own unique 8-digit code</span><span style={{ position: "relative", display: "flex", alignItems: "center", width: "100%", minWidth: 0 }}><input required type="text" inputMode="numeric" autoComplete="off" pattern="[0-9]{8}" minLength={8} maxLength={8} value={hallCode} aria-describedby="hall-id-availability" aria-invalid={hallCodeStatus === "taken" || hallCodeStatus === "invalid"} onChange={event => { setGroupCode(event.target.value.replace(/\D/g, "").slice(0, 8)); setError(""); }} placeholder="e.g. 48271630" style={{ ...field, paddingRight: 42, letterSpacing: ".18em", fontVariantNumeric: "tabular-nums" }}/>{hallCodeStatus === "checking" ? <span aria-label="Checking Hall ID" style={{ position: "absolute", right: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", color: "var(--theme-focus)", lineHeight: 0 }}><LoadingDots /></span> : hallCodeStatus === "available" ? <Check size={16} aria-label="Hall ID available" style={{ position: "absolute", right: 12, color: "var(--theme-success)", pointerEvents: "none" }} /> : null}</span><span id="hall-id-availability" aria-live="polite" style={{ minHeight: 13, lineHeight: 1.45, fontSize: ".72rem", fontWeight: 500, color: hallCodeStatus === "available" ? "var(--theme-success)" : hallCodeStatus === "checking" || hallCodeStatus === "idle" ? "var(--theme-muted)" : "var(--theme-danger)" }}>{hallCodeMessage || "Unique 8-digit code used to find or join your Hall."}</span></label>
           <section className="halls-create-privacy" style={{ display: "grid", gap: 9 }}>
             <strong style={{ fontSize: ".82rem" }}>Hall privacy</strong>
             <span style={{ ...muted, fontSize: ".76rem", lineHeight: 1.35 }}>Choose who can discover and join your Hall.</span>
@@ -816,20 +816,20 @@ export default function HallsPage() {
               {([{ id: "public", label: "Public", detail: "Anyone can discover", icon: UsersRound }, { id: "private", label: "Private", detail: "Hall ID required", icon: LockKeyhole }] as const).map(({ id, label, detail: privacyDetail, icon: Icon }) => <button key={id} type="button" onClick={() => setVisibility(id)} aria-pressed={visibility === id} style={{ display: "grid", justifyItems: "start", gap: 6, minWidth: 0, padding: "12px 10px", borderRadius: 11, border: visibility === id ? "1px solid var(--theme-accent-border)" : "1px solid var(--theme-line)", background: visibility === id ? "var(--theme-selection-bg)" : "var(--theme-surface-subtle)", color: visibility === id ? "var(--theme-danger)" : "var(--theme-text)", textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: ".8rem", fontWeight: 800 }}><Icon size={15}/>{label}{visibility === id && <Check size={14}/>}</span><span style={{ ...muted, fontSize: ".7rem", lineHeight: 1.35 }}>{privacyDetail}</span></button>)}
             </div>
           </section>
-          <button type="submit" disabled={busy || name.trim().length < 2 || !/^\d{8}$/.test(groupCode) || groupCodeStatus !== "available"} style={{ ...primary, width: "100%", minHeight: 50, position: "static", boxShadow: "none", opacity: busy || name.trim().length < 2 || !/^\d{8}$/.test(groupCode) || groupCodeStatus !== "available" ? .6 : 1 }}>{busy ? <LoadingDots/> : <><Plus size={17}/> Create Hall</>}</button>
+          <button type="submit" disabled={busy || name.trim().length < 2 || !/^\d{8}$/.test(hallCode) || hallCodeStatus !== "available"} style={{ ...primary, width: "100%", minHeight: 50, position: "static", boxShadow: "none", opacity: busy || name.trim().length < 2 || !/^\d{8}$/.test(hallCode) || hallCodeStatus !== "available" ? .6 : 1 }}>{busy ? <LoadingDots/> : <><Plus size={17}/> Create Hall</>}</button>
         </form>
       </div>
     </div>}
     {showJoin && <div role="dialog" aria-modal="true" aria-label="Join a Hall using Hall ID" onClick={event => { if (event.target === event.currentTarget) setShowJoin(false); }} style={{ position: "fixed", inset: 0, zIndex: 4000, display: "grid", placeItems: "center", padding: 18, background: "var(--theme-overlay)", backdropFilter: "blur(8px)" }}>
       <div style={{ ...panel, width: "100%", maxWidth: 430, padding: 18, boxShadow: "var(--theme-shadow-card-soft)" }}>
         <div style={{ display: "flex", alignItems: "center", marginBottom: 15 }}><strong style={{ fontSize: "1rem" }}>Join a Hall</strong></div>
-        <form onSubmit={event => { event.preventDefault(); void joinGroup(undefined, inviteCode); }} style={{ display: "grid", gap: 12 }}><p style={{ ...muted, margin: 0, fontSize: ".82rem", lineHeight: 1.55 }}>Enter the 8-digit Hall ID shared by the Hall owner or an admin.</p><input required value={inviteCode} onChange={event => setInviteCode(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" maxLength={8} placeholder="Enter 8-digit Hall ID" style={field}/><button type="submit" disabled={busy || inviteCode.length !== 8} style={{ ...primary, width: "100%" }}>{busy ? <LoadingDots/> : <><UserPlus size={16}/> Join Hall</>}</button></form>
+        <form onSubmit={event => { event.preventDefault(); void joinHall(undefined, inviteCode); }} style={{ display: "grid", gap: 12 }}><p style={{ ...muted, margin: 0, fontSize: ".82rem", lineHeight: 1.55 }}>Enter the 8-digit Hall ID shared by the Hall owner or an admin.</p><input required value={inviteCode} onChange={event => setInviteCode(event.target.value.replace(/\D/g, "").slice(0, 8))} inputMode="numeric" maxLength={8} placeholder="Enter 8-digit Hall ID" style={field}/><button type="submit" disabled={busy || inviteCode.length !== 8} style={{ ...primary, width: "100%" }}>{busy ? <LoadingDots/> : <><UserPlus size={16}/> Join Hall</>}</button></form>
       </div>
     </div>}
     {confirmAction && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label="Confirm Hall action"><strong>Are you sure?</strong><span>{confirmMessage}</span><div><button type="button" className="halls-call-confirm-cancel" onClick={closeConfirmation}>Cancel</button><button type="button" className="halls-call-confirm-start" disabled={busy} onClick={() => { const action = confirmAction; closeConfirmation(); if (action) void action(); }}><Check size={14}/> Confirm</button></div></div>}
     {(error || notice) && <div className={"halls-toast " + (error ? "halls-toast-error" : "halls-toast-success")} role={error ? "alert" : "status"}><span>{error || notice}</span><button type="button" aria-label="Dismiss notification" onClick={() => { setError(""); setNotice(""); }}>×</button></div>}
-    {groupAvatarCropSource && <StoryImageCropModal imageUrl={groupAvatarCropSource} onCancel={cancelGroupAvatarCrop} onDone={confirmGroupAvatarCrop} title="Edit Hall picture" aspectRatio={1} />}
-    {groupLogoCropSource && <StoryImageCropModal imageUrl={groupLogoCropSource} onCancel={cancelGroupLogoCrop} onDone={confirmGroupLogoCrop} title="Edit Hall picture" aspectRatio={1} />}
+    {hallAvatarCropSource && <StoryImageCropModal imageUrl={hallAvatarCropSource} onCancel={cancelGroupAvatarCrop} onDone={confirmGroupAvatarCrop} title="Edit Hall picture" aspectRatio={1} />}
+    {hallLogoCropSource && <StoryImageCropModal imageUrl={hallLogoCropSource} onCancel={cancelGroupLogoCrop} onDone={confirmGroupLogoCrop} title="Edit Hall picture" aspectRatio={1} />}
     {viewingImageUrl && <ImagePreviewModal imageUrl={viewingImageUrl} onClose={() => setViewingImageUrl(null)} />}
     {!activeId && <NowBar />}
   </main>;
