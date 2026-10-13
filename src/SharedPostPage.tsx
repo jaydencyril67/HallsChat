@@ -18,8 +18,8 @@ type SharedPost = {
 type SharedAuthor = { id: string; name: string; username: string; profilePicture?: string };
 type SharedPayload = { author: SharedAuthor; canView: boolean; isFollowing: boolean; post: SharedPost | null; message?: string };
 
-const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\\/$/, "");
-const initials = (name: string) => name.trim().split(/\\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
+const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
 
 export default function SharedPostPage({ postId }: { postId: string }) {
   const token = localStorage.getItem("hallschat_token");
