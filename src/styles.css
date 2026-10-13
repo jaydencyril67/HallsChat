@@ -494,7 +494,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-add-image-icon-only{width:38px;min-width:38px;height:38px;min-height:38px;padding:0;border-radius:11px}
 .social-add-image-icon-only input{inset:0}
 .social-composer-mode-button{display:inline-grid;place-items:center;width:38px;height:38px;min-width:38px;padding:0;border:1px solid var(--theme-line);border-radius:11px;background:transparent;color:var(--theme-text);cursor:pointer}
-.social-composer-mode-button:hover,.social-composer-mode-button[aria-pressed="true"]{background:var(--theme-surface-raised);border-color:var(--theme-accent-border-strong);color:var(--theme-primary)}
+.social-composer-mode-button:hover,.social-composer-mode-button[aria-pressed="true"]{background:var(--theme-surface-raised);border-color:var(--theme-border-strong);color:var(--theme-primary)}
 .social-composer-poll-mode{padding-top:16px}
 .social-poll-builder{display:flex;flex-direction:column;gap:10px;padding:3px 0 14px}
 .social-poll-builder-heading{display:flex;align-items:center;gap:11px;padding-bottom:12px;border-bottom:1px solid var(--theme-line);color:var(--theme-primary)}
@@ -515,7 +515,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-poll-card h3{margin:0 0 13px;color:var(--theme-text);font-size:15px;line-height:1.5;overflow-wrap:anywhere}
 .social-poll-results{display:grid;gap:8px}
 .social-poll-result{display:grid;gap:8px;width:100%;padding:10px 11px;border:1px solid var(--theme-line);border-radius:10px;background:var(--theme-surface-subtle);color:var(--theme-text);text-align:left}
-.social-poll-result:hover,.social-poll-result.is-voted{border-color:var(--theme-accent-border-strong);background:var(--theme-accent-soft)}
+.social-poll-result:hover,.social-poll-result.is-voted{border-color:var(--theme-border-strong);background:var(--theme-accent-soft)}
 .social-poll-result:disabled{opacity:.7}
 .social-poll-result-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:11px}
 .social-poll-result-top span{overflow-wrap:anywhere}
