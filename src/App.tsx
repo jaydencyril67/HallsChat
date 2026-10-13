@@ -20,6 +20,7 @@ import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
 import AppThemeProvider from "./components/AppTheme";
 import SharedPostPage from "./SharedPostPage";
+import AppUpdateMonitor from "./AppUpdateMonitor";
 
 const navigationSections: Record<string, { title: string; description: string }> = {
   "/rooms": { title: "Rooms", description: "Your conversations will live here." },
@@ -266,5 +267,5 @@ export default function App() {
     page = <NavigationSectionPage title={section.title} description={section.description} />;
   } else page = <LandingPage onSignup={() => navigate("/signup")} />;
 
-  return <AppThemeProvider><>{page}<GlobalModalScrollLock /></></AppThemeProvider>;
+  return <AppThemeProvider><>{page}<GlobalModalScrollLock /><AppUpdateMonitor /></></AppThemeProvider>;
 }
