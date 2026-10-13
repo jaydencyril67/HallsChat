@@ -4175,8 +4175,9 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
 .settings-alert-types-menu{width:224px;max-height:min(70vh,520px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
 .settings-alert-types-menu::-webkit-scrollbar{display:none;}
 
-/* Keep the Alert Types popout compact; scroll within the menu instead of stretching the page. */
-.settings-alert-types-menu{gap:2px;padding:5px;max-height:min(52vh,360px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;}
-.settings-alert-types-menu::-webkit-scrollbar{display:none;}
+/* Alert Types: force a bounded block scroll area on mobile instead of inheriting the shared grid menu layout. */
+.settings-alert-types-menu{display:block;box-sizing:border-box;width:224px;height:auto;max-height:min(42vh,300px);overflow-x:hidden;overflow-y:scroll;overscroll-behavior:contain;scrollbar-width:none;padding:5px;}
+.settings-alert-types-menu::-webkit-scrollbar{display:none;width:0;height:0;}
+.settings-alert-types-menu>div+div{margin-top:2px;}
 .settings-alert-types-menu .settings-theme-menu-group-label{padding:4px 8px 2px;font-size:9px;line-height:1.2;}
-.settings-alert-types-menu .settings-theme-menu-option{min-height:27px;padding:4px 8px;gap:7px;font-size:10px;line-height:1.2;}
+.settings-alert-types-menu .settings-theme-menu-option{box-sizing:border-box;min-height:25px;padding:3px 8px;gap:6px;font-size:10px;line-height:1.2;}
