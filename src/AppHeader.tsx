@@ -19,7 +19,7 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
   const headerStatus = activeTask
     ? (uploadRelated(activeTask.label, activeTask.status) ? "Uploading" : "Sending")
     : taskResult
-      ? taskResult.error ? "Upload Failed" : uploadRelated(taskResult.label, taskResult.status) ? "Uploaded" : "Sent"
+      ? taskResult.error ? (uploadRelated(taskResult.label, taskResult.status) ? "Upload Failed" : "Send Failed") : uploadRelated(taskResult.label, taskResult.status) ? "Uploaded" : "Sent"
       : "";
 
   useEffect(() => {
