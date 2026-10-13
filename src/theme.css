@@ -80,6 +80,19 @@
   --theme-progress-fill: var(--theme-primary-hover);
   --theme-call-accept: #42c88a;
   --theme-call-end: #e34b62;
+  /* Call dialogs: theme-aware audio surfaces and intentionally dark video stage. */
+  --theme-call-video-bg: #080709;
+  --theme-call-video-overlay: rgba(8, 5, 8, 0.58);
+  --theme-call-video-control-bg: rgba(17, 12, 16, 0.76);
+  --theme-call-video-control-active-bg: #75616a;
+  --theme-call-video-border: rgba(255, 255, 255, 0.20);
+  --theme-call-video-local-bg: #191519;
+  --theme-call-video-text-shadow: 0 2px 10px #000, 0 1px 3px #000;
+  --theme-call-video-shadow: 0 8px 28px rgba(0, 0, 0, 0.36);
+  --theme-call-video-error-bg: rgba(67, 10, 22, 0.88);
+  --theme-call-video-error-border: rgba(255, 130, 145, 0.45);
+  --theme-call-video-error-text: #ffe7eb;
+  --theme-call-video-focus: #ffb2be;
   --theme-avatar-fallback-bg: var(--theme-surface-raised);
   --theme-avatar-fallback-text: var(--theme-text);
   --theme-surface-subtle: rgba(255, 255, 255, 0.018);
