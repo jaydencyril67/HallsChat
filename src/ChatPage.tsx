@@ -17,6 +17,7 @@ type ChatPerson = {
   username: string;
   profilePicture?: string;
   isOnline?: boolean;
+  activeStatusHidden?: boolean;
   canMessage: boolean;
   lastMessage?: string;
   lastMessageAt?: string | null;
@@ -551,9 +552,13 @@ export default function ChatPage() {
       }
       hasConnected = true;
     });
-    socket.on("presence:update", (payload: { userId?: string; isOnline?: boolean }) => {
-      if (!payload?.userId || typeof payload.isOnline !== "boolean") return;
-      setPeople(current => current.map(person => person.id === payload.userId ? { ...person, isOnline: payload.isOnline } : person));
+    socket.on("presence:update", (payload: { userId?: string; isOnline?: boolean; activeStatusHidden?: boolean }) => {
+      if (!payload?.userId) return;
+      if (payload.activeStatusHidden === true) {
+        setPeople(current => current.map(person => person.id === payload.userId ? { ...person, activeStatusHidden: true, isOnline: undefined } : person));
+        return;
+      }
+      if (typeof payload.isOnline === "boolean") setPeople(current => current.map(person => person.id === payload.userId ? { ...person, activeStatusHidden: false, isOnline: payload.isOnline } : person));
     });
     socket.on("connect_error", () => {
       // REST history remains available while the socket reconnects.
@@ -1063,7 +1068,7 @@ export default function ChatPage() {
             {visiblePeople.map(person => <article key={person.id} className={`chat-person-row ${activeId === person.id ? "chat-person-row-active" : ""} ${conversationMenuFor === person.id ? "chat-person-row-menu-open" : ""}`} onClick={() => setConversationMenuFor(current => current === person.id ? null : person.id)}>
               <button type="button" className="chat-person-avatar-link" onClick={event => { event.stopPropagation(); navigate("/users/" + encodeURIComponent(person.id)); }} aria-label={"View " + person.name + " profile"}><Avatar person={person} /></button>
               <div className="chat-person-copy" aria-label={`Conversation details for ${person.name}`}>
-                <strong>{person.name}</strong><small>@{person.username} · {person.isOnline ? "Online" : "Offline"}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
+                <strong>{person.name}</strong><small>@{person.username} · {person.activeStatusHidden ? "Recent" : person.isOnline ? "Online" : "Offline"}</small><span className="chat-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </div>
               <span className="chat-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="chat-lock-dot" title="Messaging unavailable">•</span>}</span>
               <button type="button" className="chat-open-button" onClick={event => { event.stopPropagation(); setConversationMenuFor(null); scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open chat"><MessageCircle size={18} /></button>
@@ -1078,7 +1083,7 @@ export default function ChatPage() {
               <button className="chat-back-button" type="button" onClick={() => { stopTyping(); setOtherTyping(false); setMobileConversationOpen(false); setActiveId(""); }} aria-label="Back to messages"><ArrowLeft size={19} /></button>
               <button type="button" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} aria-label={"View " + activePerson.name + " profile"} style={{ padding: 0, border: 0, background: "transparent", borderRadius: "50%", flexShrink: 0 }}><Avatar person={activePerson} size="large" /></button>
               <button type="button" className="chat-conversation-person" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} style={{ minWidth: 0, padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left", cursor: "pointer" }} aria-label={"View " + activePerson.name + " profile"}><strong>{activePerson.name}</strong><span className={otherTyping ? "chat-typing-label" : ""}>{otherTyping ? "Typing…" : "@" + activePerson.username}</span></button>
-              <span className={`chat-access-pill ${activePerson.isOnline ? "chat-status-online" : "chat-status-offline"}`} aria-label={activePerson.isOnline ? "Online" : "Offline"}>{activePerson.isOnline ? "Online" : "Offline"}</span>
+              <span className={`chat-access-pill ${activePerson.activeStatusHidden ? "chat-status-recent" : activePerson.isOnline ? "chat-status-online" : "chat-status-offline"}`} aria-label={activePerson.activeStatusHidden ? "Recent" : activePerson.isOnline ? "Online" : "Offline"}>{activePerson.activeStatusHidden ? "Recent" : activePerson.isOnline ? "Online" : "Offline"}</span>
               <CallsPanel socket={liveSocket} person={activePerson} />
             </header>
             <div className="chat-message-list" ref={chatMessageListRef}>
