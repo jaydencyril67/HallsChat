@@ -77,6 +77,11 @@
   --theme-status-incoming: #4ed39b;
   --theme-status-outgoing: #c4b4ff;
   --theme-avatar-gradient: linear-gradient(145deg, rgba(196, 43, 70, 0.28), rgba(88, 44, 112, 0.35));
+  --theme-avatar-border: rgba(255, 255, 255, 0.11);
+  --theme-shadow-control-soft: 0 1px 2px rgba(0, 0, 0, 0.20);
+  --theme-shadow-card-soft: 0 5px 18px rgba(0, 0, 0, 0.18);
+  --theme-shadow-focus-soft: 0 0 0 3px rgba(184, 32, 50, 0.18);
+  --theme-shadow-selected: 0 1px 4px rgba(0, 0, 0, 0.20), inset 0 0 0 1px var(--theme-accent-border);
 }
 
 /* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
@@ -189,6 +194,11 @@
   --theme-status-incoming: var(--theme-success);
   --theme-status-outgoing: #8c4b7a;
   --theme-avatar-gradient: linear-gradient(145deg, #f4dfe3, #e9cbd1);
+  --theme-avatar-border: #e3c9ce;
+  --theme-shadow-control-soft: 0 1px 2px rgba(65, 28, 37, 0.035);
+  --theme-shadow-card-soft: 0 5px 18px rgba(61, 24, 33, 0.035);
+  --theme-shadow-focus-soft: 0 0 0 3px rgba(169, 31, 53, 0.08);
+  --theme-shadow-selected: 0 1px 4px rgba(75, 32, 43, 0.11), inset 0 0 0 1px rgba(169, 31, 53, 0.14);
 }
 :root[data-theme="light"] body { background: var(--theme-bg); color: var(--theme-text); }
 :root[data-theme="light"] .topbar .header-brand strong { color: var(--theme-text); }
