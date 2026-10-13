@@ -294,7 +294,7 @@ export default function ChatPage() {
     }
   }
 
-  function messagePreview  function messagePreview(message: Pick<ChatMessage, "text" | "images" | "imageUrl" | "audioUrl" | "deletedForEveryone">) {
+  function messagePreview(message: Pick<ChatMessage, "text" | "images" | "imageUrl" | "audioUrl" | "deletedForEveryone">) {
     if (message.deletedForEveryone) return "This message was deleted";
     if (message.text?.trim()) return message.text;
     if (message.audioUrl) return "🎤 Voice note";
