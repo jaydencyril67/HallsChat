@@ -98,8 +98,8 @@
   --theme-danger-action-hover-bg: var(--theme-surface-raised);
 }
 
-/* Light appearance palette. The original dark tokens above remain unchanged. */
-:root[data-theme="light"] {
+/* Light tokens are opt-in: only the Calls page receives them. Other pages keep the dark root tokens until they explicitly adopt theme tokens. */
+html[data-theme="light"] .halls-calls-page {
   color-scheme: light;
   --theme-bg: #f8f3f1;
   --theme-surface: #fffdfc;
