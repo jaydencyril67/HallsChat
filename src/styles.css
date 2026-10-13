@@ -5258,225 +5258,53 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 
 
-/* Calls page light-theme pass — history, filters, search and empty/error states.
-   Every selector is explicitly light-only; existing dark-theme styling is untouched. */
-:root[data-theme="light"] .home-page.halls-calls-page {
-  background: var(--theme-bg);
-  color: var(--theme-text);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-shell,
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-toolbar {
-  background: var(--theme-bg);
-  color: var(--theme-text);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs {
-  background: var(--theme-call-tabs-bg);
-  border-color: var(--theme-border);
-  box-shadow: var(--theme-shadow-control-soft);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button {
-  color: var(--theme-text-secondary);
-  transition: background-color .16s ease, color .16s ease;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button:hover:not(.is-active) {
-  background: var(--theme-accent-soft);
-  color: var(--theme-text-primary);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button.is-active {
-  background: var(--theme-card);
-  color: var(--theme-text-accent-soft);
-  box-shadow: var(--theme-shadow-selected);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button span {
-  background: var(--theme-primary);
-  color: var(--theme-primary-contrast);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search {
-  background: var(--theme-card);
-  border-color: var(--theme-border);
-  color: var(--theme-call-search-text);
-  box-shadow: var(--theme-shadow-control-soft);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search:focus-within {
-  border-color: var(--theme-focus);
-  box-shadow: var(--theme-shadow-focus-soft);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search input {
-  background: transparent;
-  color: var(--theme-text);
-  caret-color: var(--theme-primary);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search input::placeholder {
-  color: var(--theme-text-placeholder);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-list,
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state {
-  background: var(--theme-card);
-  border-color: var(--theme-border-subtle);
-  box-shadow: var(--theme-shadow-card-soft);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
-  background: transparent;
-  border-bottom-color: var(--theme-border-soft);
-  color: var(--theme-text);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row:hover:not(:disabled) {
-  background: var(--theme-surface-hover);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row:focus-visible {
-  outline: 2px solid var(--theme-focus);
-  outline-offset: -3px;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-avatar {
-  border-color: var(--theme-avatar-border);
-  background: var(--theme-avatar-gradient);
-  color: var(--theme-avatar-initials-text);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy>strong {
-  color: var(--theme-text-primary);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy>strong.is-missed,
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta .is-missed {
-  color: var(--theme-call-missed);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta {
-  color: var(--theme-text-secondary);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta .is-incoming {
-  color: var(--theme-status-incoming);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta .is-outgoing {
-  color: var(--theme-status-outgoing);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta i {
-  color: var(--theme-text-muted);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time {
-  color: var(--theme-call-time-text);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time svg {
-  color: var(--theme-call-icon-text);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state {
-  color: var(--theme-text-secondary);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state>svg {
-  color: var(--theme-call-empty-icon);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state strong {
-  color: var(--theme-text-primary);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state span {
-  color: var(--theme-text-secondary);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button {
-  background: var(--theme-danger-action-bg);
-  border-color: var(--theme-danger-action-border);
-  color: var(--theme-danger-action-text);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button:hover {
-  background: var(--theme-danger-action-hover-bg);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-error {
-  color: var(--theme-call-error);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-note {
-  color: var(--theme-text-secondary);
-}
-@media (max-width: 520px) {
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs {
-    background: var(--theme-call-tabs-bg);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button {
-    transition: none;
-  }
-}
-
-
-/* Calls page light-theme pass 2 — tighter mobile rows, accessible focus and
-   consistent interaction states. All rules remain isolated to light mode. */
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs::-webkit-scrollbar {
-  display: none;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button,
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button,
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
-  -webkit-tap-highlight-color: transparent;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button:focus-visible,
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search:focus-within,
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button:focus-visible {
+/* Calls-page keyboard focus treatment uses the shared theme token in both themes. */
+.halls-call-history-row:focus-visible,
+.halls-call-history-tabs button:focus-visible,
+.halls-call-history-search:focus-within,
+.halls-call-history-state button:focus-visible {
   outline: 2px solid var(--theme-focus);
   outline-offset: 2px;
 }
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
-  transition: background-color .16s ease;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-avatar img {
-  display: block;
-  background: var(--theme-surface-raised);
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy,
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta {
-  min-width: 0;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta > span {
-  min-width: 0;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time {
-  max-width: 35%;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time small {
-  color: inherit;
-  font-variant-numeric: tabular-nums;
-}
-:root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-note svg {
-  flex-shrink: 0;
+
+/* Responsive and accessibility-only Calls-page adjustments; colors come from theme tokens. */
+@media (prefers-reduced-motion: reduce) {
+  .home-page.halls-calls-page .halls-call-history-tabs button,
+  .home-page.halls-calls-page .halls-call-history-row {
+    transition: none;
+  }
 }
 @media (max-width: 420px) {
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
+  .home-page.halls-calls-page .halls-call-history-row {
     gap: 8px;
     padding: 11px 8px;
   }
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-avatar {
+  .home-page.halls-calls-page .halls-call-history-avatar {
     flex-basis: 39px;
     width: 39px;
     height: 39px;
     font-size: 11px;
   }
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy {
+  .home-page.halls-calls-page .halls-call-history-copy {
     gap: 5px;
   }
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta {
+  .home-page.halls-calls-page .halls-call-history-meta {
     flex-wrap: wrap;
     line-height: 1.4;
   }
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta > span {
+  .home-page.halls-calls-page .halls-call-history-meta > span {
     white-space: normal;
   }
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time {
+  .home-page.halls-calls-page .halls-call-history-time {
     max-width: 31%;
     gap: 5px;
   }
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time small {
+  .home-page.halls-calls-page .halls-call-history-time small {
     white-space: normal;
     text-align: right;
     line-height: 1.35;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-row {
-    transition: none;
-  }
-}
-
-
 /* Groups page light-theme pass 1 — scoped to this page only.
    Existing dark-theme colors and shared pages are intentionally unchanged. */
 :root[data-theme="light"] .halls-groups-page {
