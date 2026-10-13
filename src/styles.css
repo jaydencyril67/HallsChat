@@ -1818,8 +1818,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* HallsChat voice/video calls */
 .halls-call-triggers{display:flex;align-items:center;gap:7px;margin-left:auto;flex-shrink:0}
-.halls-call-triggers button{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--theme-line,rgba(255,255,255,.12));border-radius:12px;background:var(--theme-surface,rgba(255,255,255,.04));color:var(--theme-text,var(--theme-text));transition:background .16s,transform .16s}
-.halls-call-triggers button:hover{background:var(--theme-primary,#b82032);color:var(--theme-text)}
+.halls-call-triggers button{width:36px;height:36px;display:grid;place-items:center;border:1px solid var(--theme-line);border-radius:12px;background:var(--theme-surface);color:var(--theme-text);transition:background .16s,transform .16s}
+.halls-call-triggers button:hover{background:var(--theme-primary);color:var(--theme-primary-contrast)}
 .halls-call-triggers button:disabled{opacity:.45}
 .halls-call-backdrop{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:18px;background:var(--theme-overlay);backdrop-filter:blur(18px)}
 .halls-call-card,.halls-call-stage{position:relative;width:min(100%,390px);min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:30px 24px;border:1px solid var(--theme-line);border-radius:26px;background:var(--theme-surface);color:var(--theme-text);box-shadow:var(--theme-shadow-card-soft)}
@@ -1831,18 +1831,18 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-actions,.halls-call-controls{display:flex;align-items:center;justify-content:center;gap:25px;margin-top:34px}
 .halls-call-actions button,.halls-call-controls button{width:54px;height:54px;display:grid;place-items:center;border:0;border-radius:50%;background:var(--theme-surface-raised);color:var(--theme-primary-contrast)}
 .halls-call-actions svg,.halls-call-controls svg{width:22px;height:22px}
-.halls-call-actions .halls-call-decline,.halls-call-controls .halls-call-hangup{background:var(--theme-call-end);color:var(--theme-text)}
-.halls-call-actions .halls-call-accept{background:var(--theme-call-accept);color:var(--theme-text)}
+.halls-call-actions .halls-call-decline,.halls-call-controls .halls-call-hangup{background:var(--theme-call-end);color:var(--theme-primary-contrast)}
+.halls-call-actions .halls-call-accept{background:var(--theme-call-accept);color:var(--theme-primary-contrast)}
 .halls-call-stage{width:min(100%,520px);min-height:500px;overflow:hidden}
-.halls-call-stage-video{width:min(100%,900px);height:min(90dvh,760px);min-height:400px;padding:0;background:var(--theme-call-video-bg)}
+.halls-call-stage-video{width:min(100%,900px);height:min(90dvh,760px);min-height:400px;padding:0;background:var(--theme-call-video-bg);color:var(--theme-call-video-text)}
 .halls-call-remote-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--theme-call-video-bg)}
-.halls-call-local-video{position:absolute;top:16px;right:16px;width:clamp(90px,25%,180px);aspect-ratio:3/4;object-fit:cover;border:1px solid var(--theme-call-video-border);border-radius:15px;background:#222;z-index:2}
-.halls-call-stage-video>.halls-call-eyebrow,.halls-call-stage-video>h2,.halls-call-stage-video>p{position:relative;z-index:2;text-shadow:0 2px 8px #000;background:var(--theme-call-video-overlay);padding:3px 8px;border-radius:6px}
+.halls-call-local-video{position:absolute;top:16px;right:16px;width:clamp(90px,25%,180px);aspect-ratio:3/4;object-fit:cover;border:1px solid var(--theme-call-video-border);border-radius:15px;background:var(--theme-call-video-local-bg);z-index:2}
+.halls-call-stage-video>.halls-call-eyebrow,.halls-call-stage-video>h2,.halls-call-stage-video>p{position:relative;z-index:2;text-shadow:var(--theme-call-video-text-shadow);background:var(--theme-call-video-overlay);padding:3px 8px;border-radius:6px}
 .halls-call-stage-video>.halls-call-controls{position:absolute;z-index:3;bottom:26px;margin:0}
-.halls-call-close{position:absolute;right:15px;top:15px;z-index:5;width:38px;height:38px;border:0;border-radius:50%;background:var(--theme-call-video-control-bg);color:var(--theme-text)}
+.halls-call-close{position:absolute;right:15px;top:15px;z-index:5;width:38px;height:38px;border:0;border-radius:50%;background:var(--theme-call-video-control-bg);color:var(--theme-call-video-text)}
 .halls-call-controls button.is-active{background:var(--theme-call-video-control-active-bg)}
 .halls-call-error{color:var(--theme-toast-error-text)!important;text-align:center}
-.halls-call-toast{position:fixed;z-index:1100;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:15px;align-items:center;max-width:calc(100% - 24px);padding:12px 15px;border:1px solid var(--theme-toast-error-border);border-radius:13px;background:var(--theme-toast-bg);color:var(--theme-text);font-size:12px;box-shadow:0 8px 35px #0007}
+.halls-call-toast{position:fixed;z-index:1100;left:50%;bottom:24px;transform:translateX(-50%);display:flex;gap:15px;align-items:center;max-width:calc(100% - 24px);padding:12px 15px;border:1px solid var(--theme-toast-error-border);border-radius:13px;background:var(--theme-toast-bg);color:var(--theme-text);font-size:12px;box-shadow:var(--theme-shadow-card-soft)}
 .halls-call-toast button{border:0;background:transparent;color:var(--theme-text);font-size:20px}
 @media(max-width:520px){.halls-call-card,.halls-call-stage{min-height:390px;border-radius:22px}.halls-call-stage-video{height:calc(100dvh - 24px);min-height:420px}.halls-call-triggers{gap:4px}.halls-call-triggers button{width:32px;height:32px}}
 
