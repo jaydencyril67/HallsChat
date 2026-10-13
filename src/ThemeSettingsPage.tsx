@@ -42,6 +42,7 @@ export default function ThemeSettingsPage() {
     <section className="home-shell social-shell settings-shell">
       <section className="settings-theme-card" aria-label="App theme">
         <span className="settings-theme-title">App theme</span>
+        <span className="settings-theme-current" aria-live="polite">{currentThemeLabel}</span>
         <div className="settings-theme-menu-anchor" ref={themeMenuRef}>
           <button
             type="button"
@@ -71,7 +72,6 @@ export default function ThemeSettingsPage() {
             </button>)}
           </div>}
         </div>
-        <span className="settings-theme-current" aria-live="polite">{currentThemeLabel}</span>
       </section>
     </section>
     <NowBar />
