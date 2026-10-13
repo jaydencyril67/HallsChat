@@ -68,6 +68,15 @@
   --theme-call-end: #e34b62;
   --theme-avatar-fallback-bg: var(--theme-surface-raised);
   --theme-avatar-fallback-text: var(--theme-text);
+  --theme-surface-subtle: rgba(255, 255, 255, 0.018);
+  --theme-surface-hover: rgba(255, 255, 255, 0.035);
+  --theme-border-subtle: rgba(255, 255, 255, 0.075);
+  --theme-border-soft: rgba(255, 255, 255, 0.055);
+  --theme-accent-soft: rgba(202, 49, 73, 0.18);
+  --theme-accent-border: rgba(226, 75, 99, 0.18);
+  --theme-status-incoming: #4ed39b;
+  --theme-status-outgoing: #c4b4ff;
+  --theme-avatar-gradient: linear-gradient(145deg, rgba(196, 43, 70, 0.28), rgba(88, 44, 112, 0.35));
 }
 
 /* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
@@ -171,6 +180,15 @@
   --theme-call-end: #b4233b;
   --theme-avatar-fallback-bg: var(--theme-surface-raised);
   --theme-avatar-fallback-text: var(--theme-text);
+  --theme-surface-subtle: #fffdfc;
+  --theme-surface-hover: #f9eeee;
+  --theme-border-subtle: #e6d8d7;
+  --theme-border-soft: #eee2e1;
+  --theme-accent-soft: rgba(169, 31, 53, 0.07);
+  --theme-accent-border: rgba(169, 31, 53, 0.14);
+  --theme-status-incoming: var(--theme-success);
+  --theme-status-outgoing: #8c4b7a;
+  --theme-avatar-gradient: linear-gradient(145deg, #f4dfe3, #e9cbd1);
 }
 :root[data-theme="light"] body { background: var(--theme-bg); color: var(--theme-text); }
 :root[data-theme="light"] .topbar .header-brand strong { color: var(--theme-text); }
