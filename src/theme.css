@@ -2,6 +2,7 @@
 :root {
   color-scheme: dark;
   --theme-bg: #19070b;
+  --theme-bg-light: #f8f3f1;
   --theme-surface: #21090f;
   --theme-surface-raised: #2b0d15;
   --theme-line: rgba(255, 229, 232, 0.09);
@@ -102,6 +103,7 @@
 html[data-theme="light"] .theme-token-scope {
   color-scheme: light;
   --theme-bg: #f8f3f1;
+  --theme-bg-light: #f8f3f1;
   --theme-surface: #fffdfc;
   --theme-surface-raised: #f1e7e5;
   --theme-line: rgba(83, 31, 42, 0.13);
