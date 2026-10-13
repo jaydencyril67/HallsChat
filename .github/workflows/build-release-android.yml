@@ -107,6 +107,11 @@ jobs:
               android:height="432dp"
               android:viewportWidth="192"
               android:viewportHeight="192">
+              <group
+                  android:pivotX="96"
+                  android:pivotY="96"
+                  android:scaleX="0.48"
+                  android:scaleY="0.48">
               <path
                   android:fillColor="#210812"
                   android:pathData="M96,8 A88,88 0,1 0,96,184 A88,88 0,1 0,96,8" />
@@ -128,6 +133,7 @@ jobs:
               <path
                   android:fillColor="#74213F"
                   android:pathData="M55,75 A4,4 0,1 0,63,75 A4,4 0,1 0,55,75 M83,64 A4,4 0,1 0,91,64 A4,4 0,1 0,83,64 M113,64 A4,4 0,1 0,121,64 A4,4 0,1 0,113,64 M126,75 A4,4 0,1 0,134,75 A4,4 0,1 0,126,75" />
+              </group>
           </vector>
           XML
 
@@ -138,7 +144,7 @@ jobs:
                   text-anchor="middle"
                   fill="#FFF8F2"
                   font-family="sans-serif"
-                  font-size="86"
+                  font-size="101"
                   font-weight="700">HallsChat</text>
           </svg>
           SVG
