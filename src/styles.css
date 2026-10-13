@@ -1911,9 +1911,9 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-history-title p:last-child{margin:5px 0 0;color:var(--theme-text-secondary);font-size:12px;line-height:1.5}
 .halls-call-history-count{display:flex;align-items:center;gap:7px;flex-shrink:0;padding:8px 11px;border:1px solid var(--theme-border);border-radius:999px;background:var(--theme-surface-hover);color:var(--theme-text-secondary);font-size:11px;font-weight:700}
 .halls-call-history-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.halls-call-history-tabs{display:flex;align-items:center;gap:5px;padding:4px;border:1px solid var(--theme-border);border-radius:14px;background:var(--theme-card-raised)}
+.halls-call-history-tabs{display:flex;align-items:center;gap:5px;padding:4px;border:1px solid var(--theme-border);border-radius:14px;background:var(--theme-call-tabs-bg)}
 .halls-call-history-tabs button{display:flex;align-items:center;gap:7px;min-height:34px;padding:0 15px;border:0;border-radius:10px;background:transparent;color:var(--theme-text-secondary);font-size:12px;font-weight:700}
-.halls-call-history-tabs button.is-active{background:var(--theme-accent-soft);color:var(--theme-primary-contrast);box-shadow:inset 0 0 0 1px var(--theme-accent-border)}
+.halls-call-history-tabs button.is-active{background:var(--theme-accent-soft);color:var(--theme-text-accent-soft);box-shadow:inset 0 0 0 1px var(--theme-accent-border)}
 .halls-call-history-tabs button span{display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--theme-primary);color:var(--theme-primary-contrast);font-size:10px}
 .halls-call-history-search{display:flex;align-items:center;gap:9px;width:min(100%,280px);min-height:40px;padding:0 12px;border:1px solid var(--theme-border);border-radius:12px;background:var(--theme-surface-hover);color:var(--theme-text-secondary)}
 .halls-call-history-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--theme-text-primary);font-size:12px}
@@ -1927,23 +1927,23 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-history-avatar img{width:100%;height:100%;object-fit:cover}
 .halls-call-history-copy{display:flex;flex:1;flex-direction:column;gap:7px;min-width:0}
 .halls-call-history-copy>strong{overflow:hidden;color:var(--theme-text-primary);font-size:13px;font-weight:750;text-overflow:ellipsis;white-space:nowrap}
-.halls-call-history-copy>strong.is-missed{color:var(--theme-danger)}
+.halls-call-history-copy>strong.is-missed{.halls-call-history-copy>strong.is-missed{color:var(--theme-call-missed)}
 .halls-call-history-meta{display:flex;align-items:center;gap:6px;min-width:0;color:var(--theme-text-secondary);font-size:11px}
 .halls-call-history-meta>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .halls-call-history-meta svg{flex-shrink:0}
 .halls-call-history-meta .is-incoming{color:var(--theme-status-incoming)}
 .halls-call-history-meta .is-outgoing{color:var(--theme-status-outgoing)}
-.halls-call-history-meta .is-missed{color:var(--theme-danger)}
+.halls-call-history-meta .is-missed{color:var(--theme-call-missed)}
 .halls-call-history-meta i{color:var(--theme-text-muted);font-style:normal}
-.halls-call-history-time{display:flex;align-items:flex-end;gap:8px;flex-direction:column;flex-shrink:0;color:var(--theme-text-secondary)}
+.halls-call-history-time{display:flex;align-items:flex-end;gap:8px;flex-direction:column;flex-shrink:0;color:var(--theme-call-time-text)}
 .halls-call-history-time small{font-size:10px;white-space:nowrap}
-.halls-call-history-time svg{color:var(--theme-text-secondary)}
+.halls-call-history-time svg{color:var(--theme-call-icon-text)}
 .halls-call-history-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:245px;padding:28px 20px;border:1px solid var(--theme-border-subtle);border-radius:17px;background:var(--theme-surface-subtle);text-align:center;color:var(--theme-text-secondary)}
-.halls-call-history-state>svg{color:var(--theme-primary-hover)}
+.halls-call-history-state>svg{color:var(--theme-call-empty-icon)}
 .halls-call-history-state strong{color:var(--theme-text-primary);font-size:14px}
 .halls-call-history-state span{max-width:290px;color:var(--theme-text-secondary);font-size:12px;line-height:1.55}
-.halls-call-history-state button{margin-top:3px;padding:9px 14px;border:1px solid var(--theme-accent-border);border-radius:10px;background:var(--theme-status-danger-bg);color:var(--theme-danger);font-size:12px}
-.halls-call-history-error{color:var(--theme-danger)}
+.halls-call-history-state button{margin-top:3px;padding:9px 14px;.halls-call-history-state button{margin-top:3px;padding:9px 14px;border:1px solid var(--theme-danger-action-border);border-radius:10px;background:var(--theme-danger-action-bg);color:var(--theme-danger-action-text);font-size:12px}
+.halls-call-history-error{color:var(--theme-call-error)}
 .halls-call-history-note{display:flex;align-items:center;justify-content:center;gap:6px;margin:15px 0 0;color:var(--theme-text-secondary);font-size:10px;text-align:center}
 @media(max-width:560px){
  .halls-call-history-shell{width:calc(100% - 26px);padding-top:14px}
@@ -5270,7 +5270,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   color: var(--theme-text);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs {
-  background: var(--theme-card-raised);
+  background: var(--theme-call-tabs-bg);
   border-color: var(--theme-border);
   box-shadow: var(--theme-shadow-control-soft);
 }
@@ -5284,7 +5284,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button.is-active {
   background: var(--theme-card);
-  color: var(--theme-danger-strong);
+  color: var(--theme-text-accent-soft);
   box-shadow: var(--theme-shadow-selected);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs button span {
@@ -5304,7 +5304,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search input {
   background: transparent;
   color: var(--theme-text);
-  caret-color: var(--theme-primary);
+  caret-color: var(--theme-call-empty-icon);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search input::placeholder {
   color: var(--theme-text-placeholder);
@@ -5337,7 +5337,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy>strong.is-missed,
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta .is-missed {
-  color: var(--theme-danger);
+  color: var(--theme-call-missed);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-meta {
   color: var(--theme-text-secondary);
@@ -5352,10 +5352,10 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   color: var(--theme-text-muted);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time {
-  color: var(--theme-text-secondary);
+  color: var(--theme-call-time-text);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-time svg {
-  color: var(--theme-text-secondary);
+  color: var(--theme-call-icon-text);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state {
   color: var(--theme-text-secondary);
@@ -5371,14 +5371,14 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button {
   background: var(--theme-action-secondary-bg);
-  border-color: var(--theme-action-secondary-border);
+  border-color: var(--theme-danger-action-border);
   color: var(--theme-danger-strong);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button:hover {
   background: var(--theme-surface-raised);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-error {
-  color: var(--theme-danger);
+  color: var(--theme-call-error);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-note {
   color: var(--theme-text-secondary);
