@@ -18,6 +18,7 @@ type SocialPost = {
   images?: string[];
   poll?: { question: string; options: { id: string; text: string; voteCount: number; votedByMe: boolean }[] } | null;
   backgroundColor?: string;
+  allowComments?: boolean;
   createdAt: string;
   author: { id: string; name: string; username: string; profilePicture?: string } | null;
   likeCount: number;
@@ -1246,14 +1247,14 @@ export default function HomePage() {
                         </article>)}
                       </div>) : commentsByPost[post.id] && !commentErrors[post.id] && !commentsLoading.includes(post.id) ? <p className="social-comments-empty">No comments yet. Start the conversation.</p> : null}
                     </div>
-                    <div className="social-comments-composer-wrap">
+                    {post.allowComments !== false && <div className="social-comments-composer-wrap">
                       {replyTargets[post.id] && <div className="social-replying-to"><span>Replying to <strong>@{replyTargets[post.id]?.author?.username || "member"}</strong></span><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: null }))} aria-label="Cancel reply"><X size={14}/></button></div>}
                       <form className="social-comment-form" onSubmit={event => void submitComment(event, post)}>
                         <button type="button" className="social-comment-compose-avatar-link" onClick={() => navigate("/profile")} aria-label="View your profile">{user?.profilePicture ? <img className="social-comment-compose-avatar" src={user.profilePicture} alt="" /> : <span className="social-comment-compose-avatar">{initials(user?.name || "You")}</span>}</button>
                         <textarea value={commentDrafts[post.id] || ""} onChange={event => setCommentDrafts(current => ({ ...current, [post.id]: event.target.value }))} placeholder={replyTargets[post.id] ? "Write a reply…" : "Add a comment…"} rows={1} maxLength={2000} aria-label={replyTargets[post.id] ? "Write a reply" : "Write a comment"} />
                         <button type="submit" disabled={!(commentDrafts[post.id] || "").trim() || commentSending.includes(post.id)} aria-label={replyTargets[post.id] ? "Publish reply" : "Publish comment"}>{commentSending.includes(post.id) ? <LoadingDots /> : <Send size={17} />}</button>
                       </form>
-                    </div>
+                    </div>}
                   </div>
                 </section>}
               </article>)}
