@@ -5304,7 +5304,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search input {
   background: transparent;
   color: var(--theme-text);
-  caret-color: var(--theme-call-empty-icon);
+  caret-color: var(--theme-primary);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search input::placeholder {
   color: var(--theme-text-placeholder);
@@ -5328,9 +5328,9 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   outline-offset: -3px;
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-avatar {
-  border-color: var(--theme-border);
+  border-color: var(--theme-avatar-border);
   background: var(--theme-avatar-gradient);
-  color: var(--theme-danger-strong);
+  color: var(--theme-avatar-initials-text);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-copy>strong {
   color: var(--theme-text-primary);
@@ -5361,7 +5361,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   color: var(--theme-text-secondary);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state>svg {
-  color: var(--theme-primary);
+  color: var(--theme-call-empty-icon);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state strong {
   color: var(--theme-text-primary);
@@ -5370,12 +5370,12 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   color: var(--theme-text-secondary);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button {
-  background: var(--theme-action-secondary-bg);
+  background: var(--theme-danger-action-bg);
   border-color: var(--theme-danger-action-border);
-  color: var(--theme-danger-strong);
+  color: var(--theme-danger-action-text);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-state button:hover {
-  background: var(--theme-surface-raised);
+  background: var(--theme-danger-action-hover-bg);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-error {
   color: var(--theme-call-error);
@@ -5385,7 +5385,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 @media (max-width: 520px) {
   :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-tabs {
-    background: var(--theme-card-raised);
+    background: var(--theme-call-tabs-bg);
   }
 }
 @media (prefers-reduced-motion: reduce) {
