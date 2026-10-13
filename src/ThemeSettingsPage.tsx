@@ -12,12 +12,6 @@ export default function ThemeSettingsPage() {
   return <main className="home-page social-home settings-page theme-token-scope">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell settings-shell">
-      <div className="settings-heading">
-        <span className="settings-eyebrow">YOUR EXPERIENCE</span>
-        <h1>Settings</h1>
-        <p>Make HallsChat feel right for you.</p>
-      </div>
-
       <section className="settings-card" aria-labelledby="appearance-heading">
         <div className="settings-card-heading">
           <span className="settings-section-icon"><Sun size={18} /></span>
