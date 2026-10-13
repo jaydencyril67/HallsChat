@@ -92,6 +92,8 @@
   --theme-danger-action-text: #ffdfe4;
   --theme-call-time-text: #b7a8ae;
   --theme-call-icon-text: #c6b7bd;
+  --theme-call-search-text: #bcaeb4;
+  --theme-text-subtle: #b9a6ac;
   --theme-avatar-initials-text: #fff;
   --theme-danger-action-hover-bg: var(--theme-surface-raised);
 }
@@ -220,7 +222,9 @@
   --theme-danger-action-border: #e6c3ca;
   --theme-danger-action-text: #8f2035;
   --theme-call-time-text: var(--theme-text-secondary);
-  --theme-call-icon-text: var(--theme-text-secondary);
+  --theme-call-icon-text: #92747b;
+  --theme-call-search-text: #87656d;
+  --theme-text-subtle: var(--theme-text-secondary);
   --theme-avatar-initials-text: #84263a;
   --theme-danger-action-hover-bg: #f2dfe3;
 }
