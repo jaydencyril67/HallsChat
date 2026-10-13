@@ -158,6 +158,24 @@
   --theme-feed-poll-bg: rgba(12, 3, 7, 0.25);
   --theme-feed-poll-option-bg: rgba(255, 255, 255, 0.018);
   --theme-feed-poll-track: rgba(255, 255, 255, 0.08);
+  --theme-feed-comment-inline-bg: rgba(12, 4, 7, 0.2);
+  --theme-feed-comment-sheet-bg: linear-gradient(160deg, #260c14 0%, #17070d 65%, #10060a 100%);
+  --theme-feed-comment-sheet-border: rgba(255, 183, 196, 0.16);
+  --theme-feed-comment-border: rgba(255, 210, 219, 0.12);
+  --theme-feed-comment-bubble-bg: rgba(255, 255, 255, 0.035);
+  --theme-feed-comment-composer-bg: rgba(10, 3, 6, 0.42);
+  --theme-feed-comment-avatar-bg: linear-gradient(145deg, #713040, #35121d);
+  --theme-feed-comment-avatar-border: rgba(236, 102, 121, 0.25);
+  --theme-feed-comment-avatar-text: #ffe4e9;
+  --theme-feed-comment-name: #e9aab5;
+  --theme-feed-comment-text: #f8e9ec;
+  --theme-feed-comment-meta: rgba(246, 220, 225, 0.56);
+  --theme-feed-comment-action: rgba(246, 220, 225, 0.72);
+  --theme-feed-comment-grabber: rgba(255, 220, 226, 0.35);
+  --theme-feed-comment-link: #ff9cac;
+  --theme-feed-comment-link-hover: #ffd4dc;
+  --theme-feed-comment-delete-border: rgba(255, 129, 146, 0.35);
+  --theme-feed-comment-delete-hover-bg: rgba(220, 55, 78, 0.22);
 }
 
 /* Hybrid theme architecture: any page or component can opt into the shared light palette by adding .theme-token-scope. Unsubscribed areas keep the dark root tokens and all existing hardcoded colors. */
@@ -292,6 +310,24 @@ html[data-theme="light"] .theme-token-scope {
   --theme-feed-poll-bg: #fffdfc;
   --theme-feed-poll-option-bg: rgba(83, 31, 42, 0.025);
   --theme-feed-poll-track: rgba(83, 31, 42, 0.1);
+  --theme-feed-comment-inline-bg: var(--theme-card);
+  --theme-feed-comment-sheet-bg: var(--theme-card);
+  --theme-feed-comment-sheet-border: var(--theme-line);
+  --theme-feed-comment-border: var(--theme-line);
+  --theme-feed-comment-bubble-bg: var(--theme-surface-hover);
+  --theme-feed-comment-composer-bg: var(--theme-input-bg);
+  --theme-feed-comment-avatar-bg: var(--theme-feed-avatar-gradient);
+  --theme-feed-comment-avatar-border: var(--theme-feed-avatar-border);
+  --theme-feed-comment-avatar-text: var(--theme-feed-avatar-text);
+  --theme-feed-comment-name: var(--theme-primary);
+  --theme-feed-comment-text: var(--theme-text);
+  --theme-feed-comment-meta: var(--theme-text-secondary);
+  --theme-feed-comment-action: var(--theme-text-secondary);
+  --theme-feed-comment-grabber: var(--theme-line);
+  --theme-feed-comment-link: var(--theme-primary);
+  --theme-feed-comment-link-hover: var(--theme-primary-hover);
+  --theme-feed-comment-delete-border: var(--theme-danger-action-border);
+  --theme-feed-comment-delete-hover-bg: var(--theme-danger-action-bg);
 }
 
 /* Shared button foundations. Page-specific classes can adjust layout, not brand styling. */
