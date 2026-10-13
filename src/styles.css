@@ -4168,3 +4168,5 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
 }
 
 /* Idle Logout reuses the existing theme-token settings card and anchored popout. */
+
+.settings-theme-menu-group-label{padding:7px 9px 3px;color:var(--theme-muted);font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
