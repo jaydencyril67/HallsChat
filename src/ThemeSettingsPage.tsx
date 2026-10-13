@@ -5,6 +5,16 @@ import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 
+type AlertTypeKey = "chats" | "posts" | "stories" | "comments" | "follows" | "likes" | "calls" | "mentions" | "communities" | "systemUpdates" | "accountSecurity";
+const DEFAULT_ALERT_TYPES: Record<AlertTypeKey, boolean> = {
+  chats: true, posts: true, stories: true, comments: true, follows: true, likes: true, calls: true, mentions: true, communities: true, systemUpdates: true, accountSecurity: true
+};
+const ALERT_TYPE_GROUPS: { label: string; options: { value: AlertTypeKey; label: string }[] }[] = [
+  { label: "Social", options: [{ value: "chats", label: "Chats" }, { value: "posts", label: "Posts" }, { value: "stories", label: "Stories" }, { value: "communities", label: "Communities" }] },
+  { label: "Interactions", options: [{ value: "comments", label: "Comments & replies" }, { value: "likes", label: "Likes" }, { value: "follows", label: "Follows" }, { value: "mentions", label: "Mentions" }, { value: "calls", label: "Calls & missed calls" }] },
+  { label: "System", options: [{ value: "systemUpdates", label: "App updates & notices" }, { value: "accountSecurity", label: "Account & security" }] }
+];
+
 export default function ThemeSettingsPage() {
   const { themePreference, setThemePreference } = useAppTheme();
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
@@ -26,6 +36,11 @@ export default function ThemeSettingsPage() {
     }
   });
   const [alertChannelMenuOpen, setAlertChannelMenuOpen] = useState(false);
+  const [alertTypes, setAlertTypes] = useState<Record<AlertTypeKey, boolean>>(DEFAULT_ALERT_TYPES);
+  const [alertTypesMenuOpen, setAlertTypesMenuOpen] = useState(false);
+  const [alertTypesSaving, setAlertTypesSaving] = useState(false);
+  const [alertTypesError, setAlertTypesError] = useState("");
+  const alertTypesMenuRef = useRef<HTMLDivElement>(null);
   const [alertChannelsLoaded, setAlertChannelsLoaded] = useState(false);
   const [alertChannelsSaving, setAlertChannelsSaving] = useState(false);
   const [alertChannelsError, setAlertChannelsError] = useState("");
@@ -109,6 +124,34 @@ export default function ThemeSettingsPage() {
   }, [alertChannelMenuOpen]);
 
   useEffect(() => {
+    if (!alertTypesMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (alertTypesMenuRef.current && !alertTypesMenuRef.current.contains(event.target as Node)) setAlertTypesMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setAlertTypesMenuOpen(false); };
+    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [alertTypesMenuOpen]);
+
+  const chooseAlertType = async (type: AlertTypeKey) => {
+    const token = localStorage.getItem("hallschat_token");
+    if (!token || alertTypesSaving || !alertChannelsLoaded) return;
+    const next = { ...alertTypes, [type]: !alertTypes[type] };
+    setAlertTypesSaving(true);
+    setAlertTypesError("");
+    try {
+      const response = await fetch(apiBase + "/api/settings/alert-types", { method: "PATCH", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ alertTypes: next }) });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Unable to update alert types.");
+      const saved = { ...DEFAULT_ALERT_TYPES, ...(payload.alertTypes || next) };
+      setAlertTypes(saved);
+      window.dispatchEvent(new CustomEvent("hallschat:alert-types-changed", { detail: saved }));
+    } catch (error) {
+      setAlertTypesError(error instanceof Error ? error.message : "Unable to update alert types.");
+    } finally {
+      setAlertTypesSaving(false);
+    }
+  };
+
+  useEffect(() => {
     const token = localStorage.getItem("hallschat_token");
     if (!token) { navigate("/signin", { replace: true }); return; }
     let cancelled = false;
@@ -119,6 +162,13 @@ export default function ThemeSettingsPage() {
         if (!cancelled) {
           const channels = payload.alertChannels || {};
           setAlertChannels({ email: channels.email === true, inApp: channels.inApp !== false, push: channels.push === true });
+          const types = payload.alertTypes || {};
+          setAlertTypes({
+            chats: types.chats !== false, posts: types.posts !== false, stories: types.stories !== false,
+            comments: types.comments !== false, follows: types.follows !== false, likes: types.likes !== false,
+            calls: types.calls !== false, mentions: types.mentions !== false, communities: types.communities !== false,
+            systemUpdates: types.systemUpdates !== false, accountSecurity: types.accountSecurity !== false
+          });
           setPushVapidKey(typeof payload.vapidPublicKey === "string" ? payload.vapidPublicKey : null);
           localStorage.setItem("hallschat_alert_channels", JSON.stringify({ email: channels.email === true, inApp: channels.inApp !== false, push: channels.push === true }));
         }
@@ -703,6 +753,33 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <section className="settings-theme-card" aria-label="Alert Types">
+        <span className="settings-theme-title">Alert Types</span>
+        <span className="settings-theme-current" aria-live="polite">{!alertChannelsLoaded ? "Loading…" : `${Object.values(alertTypes).filter(Boolean).length} of ${Object.keys(DEFAULT_ALERT_TYPES).length} enabled`}</span>
+        <div className="settings-theme-menu-anchor" ref={alertTypesMenuRef}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Alert Types options" aria-haspopup="menu" aria-expanded={alertTypesMenuOpen} disabled={!alertChannelsLoaded || alertTypesSaving} onClick={() => setAlertTypesMenuOpen(open => !open)}>
+            <MoreHorizontal size={21} />
+          </button>
+          {alertTypesMenuOpen && <div className="settings-theme-menu settings-alert-types-menu" role="menu" aria-label="Alert Types options">
+            {ALERT_TYPE_GROUPS.map(group => <div key={group.label}>
+              <div className="settings-theme-menu-group-label">{group.label}</div>
+              {group.options.map(option => <button
+                key={option.value}
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={alertTypes[option.value]}
+                className={"settings-theme-menu-option" + (alertTypes[option.value] ? " is-selected" : "")}
+                disabled={alertTypesSaving}
+                onClick={() => void chooseAlertType(option.value)}
+              >
+                <span>{option.label}</span>
+                <span>{alertTypes[option.value] ? "On" : "Off"}</span>
+                {alertTypes[option.value] && <Check size={15} aria-hidden="true" />}
+              </button>)}
+            </div>)}
+          </div>}
+        </div>
+      </section>
       <section className="settings-theme-card" aria-label="Idle Logout">
         <span className="settings-theme-title">Idle Logout</span>
         <span className="settings-theme-current" aria-live="polite">{idleLogoutMinutes === 0 ? "Disabled" : `${idleLogoutMinutes} Minutes`}</span>
@@ -736,6 +813,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      {alertTypesError && <p className="settings-theme-current" role="status">{alertTypesError}</p>
       {alertChannelsError && <p className="settings-theme-current" role="status">{alertChannelsError}</p>}
       {commentingError && <p className="settings-theme-current" role="status">{commentingError}</p>}
       {readReceiptsError && <p className="settings-theme-current" role="status">{readReceiptsError}</p>}
