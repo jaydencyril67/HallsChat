@@ -77,7 +77,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar, *::-webkit-scrollbar, *::befor
 .signup-feedback-success{border-color:var(--theme-status-success-bg);background:var(--theme-status-success-bg);color:var(--theme-success)}
 .signup-submit{width:100%;min-height:46px;justify-content:center;margin-top:1px}
 .signup-form-note{display:flex;align-items:center;justify-content:center;gap:7px;margin:0;color:var(--theme-soft);font-size:9px;line-height:1.6;text-align:center}
-.signup-form-note svg{flex-shrink:0;color:#bc7c88}
+.signup-form-note svg{flex-shrink:0;color:var(--theme-primary-hover)}
 .signup-bottom-note{margin-top:24px;padding-top:19px;border-top:1px solid var(--theme-border-soft);color:var(--theme-muted);font-size:10px;line-height:1.8;text-align:center}
 .signup-bottom-note>span{color:var(--theme-muted)}
 .signup-page-footer{width:min(1120px,calc(100% - 64px));min-height:54px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:15px;border-top:1px solid var(--theme-border-soft);color:var(--theme-soft);font-size:9px}
@@ -3140,7 +3140,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
 }
 .forgot-password-page .auth-form-panel .signup-password-wrap > svg {
   flex: 0 0 auto;
-  color: #d77b89;
+  color: var(--theme-primary-hover);
 }
 .forgot-password-page .auth-form-panel .signup-password-wrap input {
   min-width: 0;
