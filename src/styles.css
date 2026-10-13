@@ -3860,3 +3860,59 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
   background: var(--theme-bg);
   color: var(--theme-text);
 }
+
+/* Token-only styling for the actual reset-password form (the URL-token state). */
+.password-reset-page .auth-story,
+.password-reset-page .auth-form-panel,
+.password-reset-page .auth-form-panel * {
+  min-width: 0;
+}
+.password-reset-page .auth-form-panel .signup-field > input {
+  min-height: 46px;
+  border-color: var(--theme-line);
+  background: var(--theme-input-bg);
+  color: var(--theme-text);
+}
+.password-reset-page .auth-form-panel .signup-field > input::placeholder {
+  color: var(--theme-soft);
+  opacity: 1;
+}
+.password-reset-page .auth-form-panel .signup-field > input:focus-visible {
+  border-color: var(--theme-focus);
+  box-shadow: 0 0 0 3px var(--theme-accent-soft);
+}
+.password-reset-page .auth-form-panel .signup-form-note {
+  justify-content: flex-start;
+  color: var(--theme-muted);
+  text-align: left;
+}
+.password-reset-page .auth-form-panel .signup-form-note svg {
+  color: var(--theme-primary-hover);
+}
+.password-reset-page .auth-form-panel .signup-feedback-success {
+  border-color: var(--theme-success);
+  background: var(--theme-status-success-bg);
+  color: var(--theme-success);
+}
+.password-reset-page .auth-form-panel .signup-feedback-error {
+  border-color: var(--theme-danger);
+  background: var(--theme-status-danger-bg);
+  color: var(--theme-danger);
+}
+.password-reset-page .auth-form-panel :is(input, button, a):focus-visible {
+  outline-color: var(--theme-focus);
+}
+.password-reset-page .auth-form-panel input:-webkit-autofill,
+.password-reset-page .auth-form-panel input:-webkit-autofill:hover,
+.password-reset-page .auth-form-panel input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--theme-text);
+  caret-color: var(--theme-text);
+  -webkit-box-shadow: 0 0 0 1000px var(--theme-input-bg) inset;
+  box-shadow: 0 0 0 1000px var(--theme-input-bg) inset;
+}
+@media (max-width: 520px) {
+  .password-reset-page .auth-form-panel .signup-field > input {
+    min-height: 45px;
+  }
+}
+
