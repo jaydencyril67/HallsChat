@@ -120,6 +120,35 @@ export default function ThemeSettingsPage() {
   }, [visibilityMenuOpen]);
 
   useEffect(() => {
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken) { navigate("/signin", { replace: true }); return; }
+    let cancelled = false;
+    fetch(apiBase + "/api/settings/read-receipts", { headers: { Authorization: "Bearer " + savedToken } })
+      .then(async response => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || "Unable to load read receipt settings.");
+        if (!cancelled) setReadReceiptsVisible(payload.readReceiptsVisible !== false);
+      })
+      .catch(error => { if (!cancelled) setReadReceiptsError(error instanceof Error ? error.message : "Unable to load read receipt settings."); })
+      .finally(() => { if (!cancelled) setReadReceiptsLoaded(true); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!readReceiptsMenuOpen) return;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (readReceiptsMenuRef.current && !readReceiptsMenuRef.current.contains(event.target as Node)) setReadReceiptsMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setReadReceiptsMenuOpen(false); };
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [readReceiptsMenuOpen]);
+
+  useEffect(() => {
     if (!callsPrivacyMenuOpen) return;
     const closeOnOutsidePress = (event: PointerEvent) => {
       if (callsPrivacyMenuRef.current && !callsPrivacyMenuRef.current.contains(event.target as Node)) setCallsPrivacyMenuOpen(false);
@@ -211,6 +240,28 @@ export default function ThemeSettingsPage() {
       setVisibilityError(error instanceof Error ? error.message : "Unable to update visibility.");
     } finally {
       setVisibilitySaving(false);
+    }
+  };
+
+  const chooseReadReceipts = async (visible: boolean) => {
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken || readReceiptsSaving || !readReceiptsLoaded) return;
+    setReadReceiptsSaving(true);
+    setReadReceiptsError("");
+    try {
+      const response = await fetch(apiBase + "/api/settings/read-receipts", {
+        method: "PATCH",
+        headers: { Authorization: "Bearer " + savedToken, "Content-Type": "application/json" },
+        body: JSON.stringify({ readReceiptsVisible: visible })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Unable to update read receipt settings.");
+      setReadReceiptsVisible(payload.readReceiptsVisible !== false);
+      setReadReceiptsMenuOpen(false);
+    } catch (error) {
+      setReadReceiptsError(error instanceof Error ? error.message : "Unable to update read receipt settings.");
+    } finally {
+      setReadReceiptsSaving(false);
     }
   };
 
@@ -361,6 +412,41 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <section className="settings-theme-card" aria-label="Read Receipt">
+        <span className="settings-theme-title">Read Receipt</span>
+        <span className="settings-theme-current" aria-live="polite">{!readReceiptsLoaded ? "Loading…" : readReceiptsVisible ? "Shown" : "Hidden"}</span>
+        <div className="settings-theme-menu-anchor" ref={readReceiptsMenuRef}>
+          <button
+            type="button"
+            className="settings-theme-menu-trigger"
+            aria-label="Read receipt options"
+            aria-haspopup="menu"
+            aria-expanded={readReceiptsMenuOpen}
+            disabled={!readReceiptsLoaded || readReceiptsSaving}
+            onClick={() => setReadReceiptsMenuOpen(open => !open)}
+          >
+            <MoreHorizontal size={21} />
+          </button>
+          {readReceiptsMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Read receipt options">
+            {([
+              { value: false, label: "Hide" },
+              { value: true, label: "Show" },
+            ] as const).map(option => <button
+              key={String(option.value)}
+              type="button"
+              role="menuitemradio"
+              aria-checked={readReceiptsVisible === option.value}
+              className={"settings-theme-menu-option" + (readReceiptsVisible === option.value ? " is-selected" : "")}
+              disabled={readReceiptsSaving}
+              onClick={() => void chooseReadReceipts(option.value)}
+            >
+              <span>{option.label}</span>
+              {readReceiptsVisible === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+          </div>}
+        </div>
+      </section>
+      {readReceiptsError && <p className="settings-theme-current" role="status">{readReceiptsError}</p>}
       {visibilityError && <p className="settings-theme-current" role="status">{visibilityError}</p>}
       {callsPrivacyError && <p className="settings-theme-current" role="status">{callsPrivacyError}</p>}
       {activeStatusError && <p className="settings-theme-current" role="status">{activeStatusError}</p>}
