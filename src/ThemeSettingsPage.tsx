@@ -27,6 +27,12 @@ export default function ThemeSettingsPage() {
   const [visibilitySaving, setVisibilitySaving] = useState(false);
   const [visibilityError, setVisibilityError] = useState("");
   const visibilityMenuRef = useRef<HTMLDivElement>(null);
+  const [readReceiptsVisible, setReadReceiptsVisible] = useState(true);
+  const [readReceiptsLoaded, setReadReceiptsLoaded] = useState(false);
+  const [readReceiptsMenuOpen, setReadReceiptsMenuOpen] = useState(false);
+  const [readReceiptsSaving, setReadReceiptsSaving] = useState(false);
+  const [readReceiptsError, setReadReceiptsError] = useState("");
+  const readReceiptsMenuRef = useRef<HTMLDivElement>(null);
   const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
   const currentThemeLabel = themePreference === "system"
     ? "System"
