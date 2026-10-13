@@ -33,6 +33,12 @@ export default function ThemeSettingsPage() {
   const [readReceiptsSaving, setReadReceiptsSaving] = useState(false);
   const [readReceiptsError, setReadReceiptsError] = useState("");
   const readReceiptsMenuRef = useRef<HTMLDivElement>(null);
+  const [commentsEnabled, setCommentsEnabled] = useState(true);
+  const [commentingLoaded, setCommentingLoaded] = useState(false);
+  const [commentingMenuOpen, setCommentingMenuOpen] = useState(false);
+  const [commentingSaving, setCommentingSaving] = useState(false);
+  const [commentingError, setCommentingError] = useState("");
+  const commentingMenuRef = useRef<HTMLDivElement>(null);
   const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
   const currentThemeLabel = themePreference === "system"
     ? "System"
@@ -133,6 +139,35 @@ export default function ThemeSettingsPage() {
       .finally(() => { if (!cancelled) setReadReceiptsLoaded(true); });
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken) { navigate("/signin", { replace: true }); return; }
+    let cancelled = false;
+    fetch(apiBase + "/api/settings/commenting", { headers: { Authorization: "Bearer " + savedToken } })
+      .then(async response => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.message || "Unable to load commenting settings.");
+        if (!cancelled) setCommentsEnabled(payload.commentsEnabled !== false);
+      })
+      .catch(error => { if (!cancelled) setCommentingError(error instanceof Error ? error.message : "Unable to load commenting settings."); })
+      .finally(() => { if (!cancelled) setCommentingLoaded(true); });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!commentingMenuOpen) return;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (commentingMenuRef.current && !commentingMenuRef.current.contains(event.target as Node)) setCommentingMenuOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => { if (event.key === "Escape") setCommentingMenuOpen(false); };
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [commentingMenuOpen]);
 
   useEffect(() => {
     if (!readReceiptsMenuOpen) return;
@@ -240,6 +275,28 @@ export default function ThemeSettingsPage() {
       setVisibilityError(error instanceof Error ? error.message : "Unable to update visibility.");
     } finally {
       setVisibilitySaving(false);
+    }
+  };
+
+  const chooseCommenting = async (enabled: boolean) => {
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken || commentingSaving || !commentingLoaded) return;
+    setCommentingSaving(true);
+    setCommentingError("");
+    try {
+      const response = await fetch(apiBase + "/api/settings/commenting", {
+        method: "PATCH",
+        headers: { Authorization: "Bearer " + savedToken, "Content-Type": "application/json" },
+        body: JSON.stringify({ commentsEnabled: enabled })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Unable to update commenting settings.");
+      setCommentsEnabled(payload.commentsEnabled !== false);
+      setCommentingMenuOpen(false);
+    } catch (error) {
+      setCommentingError(error instanceof Error ? error.message : "Unable to update commenting settings.");
+    } finally {
+      setCommentingSaving(false);
     }
   };
 
@@ -446,6 +503,41 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <section className="settings-theme-card" aria-label="Commenting">
+        <span className="settings-theme-title">Commenting</span>
+        <span className="settings-theme-current" aria-live="polite">{!commentingLoaded ? "Loading…" : commentsEnabled ? "Turned On" : "Turned Off"}</span>
+        <div className="settings-theme-menu-anchor" ref={commentingMenuRef}>
+          <button
+            type="button"
+            className="settings-theme-menu-trigger"
+            aria-label="Commenting options"
+            aria-haspopup="menu"
+            aria-expanded={commentingMenuOpen}
+            disabled={!commentingLoaded || commentingSaving}
+            onClick={() => setCommentingMenuOpen(open => !open)}
+          >
+            <MoreHorizontal size={21} />
+          </button>
+          {commentingMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Commenting options">
+            {([
+              { value: true, label: "Turn On" },
+              { value: false, label: "Turn Off" },
+            ] as const).map(option => <button
+              key={String(option.value)}
+              type="button"
+              role="menuitemradio"
+              aria-checked={commentsEnabled === option.value}
+              className={"settings-theme-menu-option" + (commentsEnabled === option.value ? " is-selected" : "")}
+              disabled={commentingSaving}
+              onClick={() => void chooseCommenting(option.value)}
+            >
+              <span>{option.label}</span>
+              {commentsEnabled === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+          </div>}
+        </div>
+      </section>
+      {commentingError && <p className="settings-theme-current" role="status">{commentingError}</p>}
       {readReceiptsError && <p className="settings-theme-current" role="status">{readReceiptsError}</p>}
       {visibilityError && <p className="settings-theme-current" role="status">{visibilityError}</p>}
       {callsPrivacyError && <p className="settings-theme-current" role="status">{callsPrivacyError}</p>}
