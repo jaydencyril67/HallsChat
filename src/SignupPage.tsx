@@ -179,7 +179,7 @@ export default function SignupPage() {
     }
   }
 
-  return <main className="signup-page">
+  return <main className="signup-page theme-token-scope">
     <div className="signup-glow signup-glow-top" aria-hidden="true" />
     <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
     <AppHeader homeHref="/" />
