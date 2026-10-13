@@ -419,7 +419,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-profile-card{overflow:hidden}
 .social-profile-cover{height:73px;background:radial-gradient(ellipse at 80% 20%,rgba(231,82,104,.28),transparent 50%),linear-gradient(125deg,#48121f,#21090f 75%);border-bottom:1px solid rgba(255,255,255,.06)}
 .social-profile-body{position:relative;padding:0 16px 16px}
-.social-avatar-profile{width:53px;height:53px;margin-top:-27px;border:3px solid #21090f;border-radius:17px;font-size:14px}
+.social-avatar-profile{width:53px;height:53px;margin-top:-27px;border:3px solid var(--theme-card);border-radius:17px;font-size:14px}
 .social-profile-body h2{margin:10px 0 3px;color:var(--theme-text);font-size:16px;overflow-wrap:anywhere}
 .social-profile-body>p{margin:0;color:var(--theme-muted);font-size:11px}
 .social-profile-divider{height:1px;margin:15px 0 12px;background:var(--theme-line)}
@@ -432,10 +432,10 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-side-title h3{margin:0;color:#f3e3e6;font-size:13px}
 .social-side-card>p{margin:12px 0;color:var(--theme-muted);font-size:11px;line-height:1.8}
 .social-coming-soon{display:flex;align-items:center;gap:6px;color:#d69aa4;font-size:10px}
-.social-side-note{display:flex;align-items:flex-start;gap:10px;padding:13px;color:#d59aa4}
+.social-side-note{display:flex;align-items:flex-start;gap:10px;padding:13px;color:var(--theme-feed-text-action)}
 .social-side-note>svg{flex-shrink:0;margin-top:2px}
 .social-side-note p{margin:0;color:var(--theme-muted);font-size:10px;line-height:1.8}
-.social-side-note strong{color:#ead5d9;font-size:11px}
+.social-side-note strong{color:var(--theme-feed-text-heading);font-size:11px}
 @media(max-width:820px){.social-shell{width:calc(100% - 32px)}.social-layout{grid-template-columns:minmax(0,1fr);gap:13px}.social-composer,.social-post{padding-left:14px;padding-right:14px}}
 @media(max-width:640px){.social-shell{width:calc(100% - 26px);padding-top:94px}.social-layout{grid-template-columns:minmax(0,1fr)}.social-sidebar{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}.social-profile-card{grid-column:1/-1}.social-side-note{grid-column:1/-1}.social-composer{padding:11px 13px 9px}.social-composer-label{font-size:11px}.social-composer textarea{font-size:12px;min-height:210px;margin-top:6px}.social-visibility select{max-width:112px;font-size:10px}.social-char-count{font-size:9px}.social-publish{min-height:35px;padding:0 11px;font-size:10px}.social-post{padding:14px 13px 10px}.social-post-content{height:200px;max-height:200px;font-size:12px}.social-feed-heading h2{font-size:20px}.social-side-card{padding:13px}.social-side-title{align-items:flex-start}.social-side-title h3{font-size:11px}.social-side-card>p{font-size:10px}.social-coming-soon{align-items:flex-start;font-size:9px;line-height:1.5}}
 @media(max-width:380px){.social-composer-bottom{gap:7px}.social-visibility{gap:4px}.social-visibility select{max-width:100px}.social-char-count{font-size:8px}.social-publish{gap:5px;padding:0 8px}.social-sidebar{grid-template-columns:minmax(0,1fr)}.social-profile-card,.social-side-note{grid-column:auto}}
@@ -564,7 +564,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-comment-error button{margin-left:5px;padding:0;border:0;background:none;color:#ffd4db;text-decoration:underline}
 
 .social-post-actions .social-post-action-muted{padding:5px 2px;border:0;background:transparent;text-align:left;cursor:pointer}
-.social-post-actions .social-post-action-muted:hover,.social-post-actions .social-post-action-muted[aria-expanded="true"]{color:#f08b9b}
+.social-post-actions .social-post-action-muted:hover,.social-post-actions .social-post-action-muted[aria-expanded="true"]{color:var(--theme-feed-accent-text)}
 
 
 /* TikTok-inspired HallsChat comment bottom sheet */
@@ -1627,12 +1627,12 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .social-composer-quick-top{display:flex;align-items:center;gap:10px;min-width:0}
 .social-composer-quick-top .social-avatar{overflow:hidden;flex:0 0 40px;width:40px;height:40px;border-radius:50%}
 .social-composer-quick-top .social-avatar img,.social-story-add-media img,.social-story-ring img,.social-story-viewer-avatar img{display:block;width:100%;height:100%;object-fit:cover}
-.social-composer-open{flex:1;min-width:0;padding:11px 14px;border:1px solid rgba(255,226,231,.11);border-radius:999px;background:rgba(10,3,6,.3);color:#d8bdc3;text-align:left;font:12px 'DM Sans',sans-serif}
-.social-composer-open:hover{background:rgba(255,255,255,.045);border-color:rgba(214,74,91,.3)}
+.social-composer-open{flex:1;min-width:0;padding:11px 14px;border:1px solid var(--theme-feed-input-border);border-radius:999px;background:var(--theme-feed-input-bg);color:var(--theme-feed-text-action);text-align:left;font:12px 'DM Sans',sans-serif}
+.social-composer-open:hover{background:var(--theme-surface-hover);border-color:var(--theme-feed-focus-border)}
 .social-composer-quick-tools{display:flex;align-items:center;gap:8px;padding-top:9px;border-top:1px solid var(--theme-line)}
-.social-composer-quick-tools button{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-width:0;padding:8px 5px;border:0;border-radius:9px;background:transparent;color:#d8bdc3;font-size:11px;font-weight:650}
-.social-composer-quick-tools button:hover{background:rgba(255,255,255,.045)}
-.social-composer-quick-tools button svg{color:#f07889;flex-shrink:0}
+.social-composer-quick-tools button{display:flex;align-items:center;justify-content:center;gap:6px;flex:1;min-width:0;padding:8px 5px;border:0;border-radius:9px;background:transparent;color:var(--theme-feed-text-action);font-size:11px;font-weight:650}
+.social-composer-quick-tools button:hover{background:var(--theme-surface-hover)}
+.social-composer-quick-tools button svg{color:var(--theme-feed-accent-strong);flex-shrink:0}
 .social-stories{display:flex;gap:10px;width:100%;margin:0 0 12px;padding:11px;overflow-x:auto;overscroll-behavior-x:contain;border:1px solid var(--theme-line);border-radius:15px;background:linear-gradient(145deg,rgba(42,13,21,.86),rgba(22,7,12,.92));scrollbar-width:thin;scrollbar-color:rgba(214,74,91,.35) transparent}
 .social-story-add,.social-story-item{display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 0 76px;width:76px;min-width:0;padding:0;border:0;background:transparent;color:var(--theme-text);text-align:center;cursor:pointer}
 .social-story-add-media{position:relative;display:grid;place-items:center;flex:0 0 68px;width:68px;height:68px;overflow:hidden;border:1px solid rgba(255,210,219,.14);border-radius:13px;background:linear-gradient(145deg,#4b1725,#21090f);color:#ffe9ed;font-size:16px;font-weight:750}
@@ -2392,7 +2392,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
 .social-post-images-1 .social-post-image-link img{max-height:420px;aspect-ratio:auto;object-fit:contain;background:rgba(0,0,0,.12)}
 .social-post-actions{justify-content:space-around;gap:8px;padding-top:9px;margin-top:7px}
 .social-post-actions .social-post-action-muted,.social-like{justify-content:center;flex:1;min-height:32px;padding:5px 3px;border-radius:6px;font-size:12px}
-.social-post-actions .social-post-action-muted:hover,.social-post-actions .social-post-action-muted[aria-expanded="true"]{background:rgba(255,255,255,.045)}
+.social-post-actions .social-post-action-muted:hover,.social-post-actions .social-post-action-muted[aria-expanded="true"]{background:var(--theme-surface-hover)}
 .social-poll-card{margin:10px 0 12px}
 @media(max-width:520px){
   .social-post-list{gap:9px}
