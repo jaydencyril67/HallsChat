@@ -3843,3 +3843,95 @@ html[data-theme="light"] .home-page.halls-page {
 /* Public profile page canvas follows the active theme; fixed-dark header and NowBar keep their own styling. */
 .public-profile-page{background:var(--theme-bg);}
 html[data-theme="light"] .public-profile-page{background:var(--theme-bg-light);}
+
+
+/* Chat page light-theme contrast pass.
+   Every rule is scoped to this page's opt-in theme scope; dark mode remains unchanged. */
+html[data-theme="light"] .chat-page.theme-token-scope .chat-conversation-person span:not(.chat-typing-label) {
+  color: var(--theme-text-secondary);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-content-theirs {
+  background: var(--theme-message-other-bg);
+  color: var(--theme-text-primary);
+  border-color: var(--theme-border);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-content-mine {
+  background: var(--theme-message-own-bg);
+  color: var(--theme-text-primary);
+  border-color: var(--theme-border-strong);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-footer time,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-call-bubble .chat-message-footer time {
+  color: var(--theme-text-secondary);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-composer {
+  background: var(--theme-card);
+  border-color: var(--theme-border);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-composer textarea {
+  color: var(--theme-text-primary);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-composer textarea::placeholder {
+  color: var(--theme-text-placeholder);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-recording-status,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-voice-draft-preview {
+  color: var(--theme-text-primary);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-voice-waveform span {
+  background: var(--theme-wave-track);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-voice-waveform span.is-played {
+  background: var(--theme-wave-progress);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-attachment-menu,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-actions,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-reaction-picker {
+  background: var(--theme-popover-bg) !important;
+  border-color: var(--theme-border-strong) !important;
+  color: var(--theme-text-primary) !important;
+  box-shadow: var(--theme-shadow-card-soft);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-attachment-menu button,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-actions button {
+  color: var(--theme-text-primary);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-attachment-menu button svg,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-actions button svg {
+  color: var(--theme-primary);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-actions .chat-message-action-delete {
+  color: var(--theme-danger);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-delete-popout {
+  background: var(--theme-popover-bg) !important;
+  border-color: var(--theme-border-strong) !important;
+  color: var(--theme-text-primary) !important;
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-delete-popout div[style*="color: rgb"],
+html[data-theme="light"] .chat-page.theme-token-scope .chat-delete-popout div[style*="color: #e8c6ce"] {
+  color: var(--theme-text-secondary) !important;
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-delete-popout button:first-child {
+  background: var(--theme-action-secondary-bg) !important;
+  border-color: var(--theme-action-secondary-border) !important;
+  color: var(--theme-action-secondary-text) !important;
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-reply-quote,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-reply-composer {
+  background: var(--theme-surface-raised);
+  color: var(--theme-text-primary);
+  border-color: var(--theme-border);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-reply-quote strong,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-reply-composer-copy strong {
+  color: var(--theme-primary);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-more:hover,
+html[data-theme="light"] .chat-page.theme-token-scope .chat-message-more:focus-visible {
+  background: var(--theme-surface-hover);
+}
+html[data-theme="light"] .chat-page.theme-token-scope .chat-reaction-pill {
+  color: var(--theme-text-primary);
+  border-color: var(--theme-border-strong);
+}
