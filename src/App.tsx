@@ -17,6 +17,7 @@ import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
+import AppThemeProvider from "./components/AppTheme";
 import { dismissSocialPostPublishStatus, getSocialPostPublishState, subscribeSocialPostPublishing, type SocialPostPublishState } from "./utils/socialPostPublisher";
 import { dismissBackgroundTaskResult, getBackgroundTaskState, subscribeBackgroundTasks, type BackgroundTaskSnapshot } from "./utils/backgroundTasks";
 
@@ -277,5 +278,5 @@ export default function App() {
     page = <NavigationSectionPage title={section.title} description={section.description} />;
   } else page = <LandingPage onSignup={() => navigate("/signup")} />;
 
-  return <>{page}<GlobalModalScrollLock /><GlobalPostPublishingStatus /><GlobalBackgroundTaskStatus /></>;
+  return <AppThemeProvider><>{page}<GlobalModalScrollLock /><GlobalPostPublishingStatus /><GlobalBackgroundTaskStatus /></></AppThemeProvider>;
 }
