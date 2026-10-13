@@ -34,7 +34,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -69,9 +68,7 @@ jobs:
             appId: 'com.kingshall.hallschat',
             appName: 'HallsChat',
             webDir: 'dist',
-            server: {
-              androidScheme: 'https'
-            }
+            server: { androidScheme: 'https' }
           };
 
           export default config;
@@ -101,10 +98,9 @@ jobs:
           if code_count != 1 or name_count != 1:
               raise SystemExit("Unable to set Android versionCode/versionName safely")
           path.write_text(text)
-          print(f"Building HallsChat {version} (code {os.environ['APP_VERSION_CODE']})")
           PY
 
-      - name: Verify signing secrets are configured
+      - name: Load and verify permanent release keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.HALLSCHAT_ANDROID_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.HALLSCHAT_ANDROID_KEYSTORE_PASSWORD }}
@@ -114,25 +110,30 @@ jobs:
           set -euo pipefail
           for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
             if [ -z "${!name}" ]; then
-              echo "::error::Missing GitHub Actions secret for ${name}. Configure HALLSCHAT_ANDROID_KEYSTORE_BASE64, HALLSCHAT_ANDROID_KEYSTORE_PASSWORD, HALLSCHAT_ANDROID_KEY_ALIAS, and HALLSCHAT_ANDROID_KEY_PASSWORD."
+              echo "::error::Missing HallsChat signing secret. Configure HALLSCHAT_ANDROID_KEYSTORE_BASE64, HALLSCHAT_ANDROID_KEYSTORE_PASSWORD, HALLSCHAT_ANDROID_KEY_ALIAS, and HALLSCHAT_ANDROID_KEY_PASSWORD in repository Actions secrets."
               exit 1
             fi
           done
           echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/hallschat-release.keystore"
           keytool -list -keystore "$RUNNER_TEMP/hallschat-release.keystore" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
-          echo "HALLSCHAT_KEYSTORE_PATH=$RUNNER_TEMP/hallschat-release.keystore" >> "$GITHUB_ENV"
+          {
+            echo "HALLSCHAT_KEYSTORE_PATH=$RUNNER_TEMP/hallschat-release.keystore"
+            echo "HALLSCHAT_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "HALLSCHAT_KEY_ALIAS=$KEY_ALIAS"
+            echo "HALLSCHAT_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
 
-      - name: Configure Gradle signing
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.HALLSCHAT_ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.HALLSCHAT_ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.HALLSCHAT_ANDROID_KEY_PASSWORD }}
+      - name: Configure Gradle release signing
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
           p = Path("android/app/build.gradle")
           s = p.read_text()
-          signing = """
+          if "signingConfigs {" not in s:
+              marker = "android {"
+              if marker not in s: raise SystemExit("Android Gradle android block not found")
+              s = s.replace(marker, marker + """
               signingConfigs {
                   release {
                       storeFile file(System.getenv('HALLSCHAT_KEYSTORE_PATH'))
@@ -141,26 +142,16 @@ jobs:
                       keyPassword System.getenv('HALLSCHAT_KEY_PASSWORD')
                   }
               }
-          """
-          if "signingConfigs {" not in s:
-              marker = "android {"
-              if marker not in s: raise SystemExit("Android Gradle android block not found")
-              s = s.replace(marker, marker + signing, 1)
-          release_marker = "buildTypes {"
-          if release_marker not in s: raise SystemExit("Android Gradle buildTypes block not found")
-          if "signingConfig signingConfigs.release" not in s:
-              s = s.replace(release_marker, release_marker + """
-                  release {
-                      signingConfig signingConfigs.release
-                  }
-              """, 1)
+          """, 1)
+          pattern = r"(?ms)(buildTypes\s*\{\s*release\s*\{)(.*?)(\n\s*\})"
+          match = re.search(pattern, s)
+          if not match: raise SystemExit("Could not find generated release build type")
+          body = match.group(2)
+          if "signingConfig signingConfigs.release" not in body:
+              body += "\n            signingConfig signingConfigs.release"
+              s = s[:match.start(2)] + body + s[match.end(2):]
           p.write_text(s)
           PY
-          {
-            echo "HALLSCHAT_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
-            echo "HALLSCHAT_KEY_ALIAS=$KEY_ALIAS"
-            echo "HALLSCHAT_KEY_PASSWORD=$KEY_PASSWORD"
-          } >> "$GITHUB_ENV"
 
       - name: Sync bundled web assets
         run: npx cap sync android
@@ -170,7 +161,7 @@ jobs:
           cd android
           ./gradlew --no-daemon assembleRelease
 
-      - name: Verify APK signature
+      - name: Verify APK signature and prepare downloads
         run: |
           APK="android/app/build/outputs/apk/release/app-release.apk"
           test -s "$APK"
