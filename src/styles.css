@@ -4166,3 +4166,5 @@ html[data-theme="light"] .chat-page{background:var(--theme-bg-light);}
 @media (prefers-reduced-motion: reduce) {
   .shared-post-backdrop { backdrop-filter: none; -webkit-backdrop-filter: none; }
 }
+
+/* Idle Logout reuses the existing theme-token settings card and anchored popout. */
