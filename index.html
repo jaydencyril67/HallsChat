@@ -22,7 +22,6 @@
             (choice === "system" && window.matchMedia("(prefers-color-scheme: light)").matches);
           if (light) {
             document.documentElement.dataset.theme = "light";
-            document.documentElement.style.colorScheme = "light";
             document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#f8f3f1");
           }
         } catch {
