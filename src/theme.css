@@ -22,6 +22,14 @@
   --theme-header-bg: linear-gradient(180deg, #080709 0%, #030304 100%);
   --theme-header-border: #918B8D;
   --theme-header-shadow: 0 14px 34px rgba(0, 0, 0, 0.48), 0 2px 10px rgba(0, 0, 0, 0.28);
+  /* Fixed-dark chrome tokens: deliberately never overridden by light-theme scopes. */
+  --theme-fixed-dark-header-bg: var(--theme-header-bg);
+  --theme-fixed-dark-header-border: var(--theme-header-border);
+  --theme-fixed-dark-header-shadow: var(--theme-header-shadow);
+  --theme-fixed-dark-text: #f8f0f1;
+  --theme-fixed-dark-line: rgba(255, 229, 232, 0.09);
+  --theme-fixed-dark-primary: #b82032;
+  --theme-fixed-dark-primary-hover: #d23b4e;
 
   /* Semantic colour groups — shared roles, not one token per component. */
   --theme-bg-page: var(--theme-bg);
