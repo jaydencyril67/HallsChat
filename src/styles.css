@@ -1915,7 +1915,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-history-tabs button{display:flex;align-items:center;gap:7px;min-height:34px;padding:0 15px;border:0;border-radius:10px;background:transparent;color:var(--theme-text-secondary);font-size:12px;font-weight:700}
 .halls-call-history-tabs button.is-active{background:var(--theme-accent-soft);color:var(--theme-text-accent-soft);box-shadow:inset 0 0 0 1px var(--theme-accent-border)}
 .halls-call-history-tabs button span{display:grid;place-items:center;min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--theme-primary);color:var(--theme-primary-contrast);font-size:10px}
-.halls-call-history-search{display:flex;align-items:center;gap:9px;width:min(100%,280px);min-height:40px;padding:0 12px;border:1px solid var(--theme-border);border-radius:12px;background:var(--theme-surface-hover);color:var(--theme-text-secondary)}
+.halls-call-history-search{display:flex;align-items:center;gap:9px;width:min(100%,280px);min-height:40px;padding:0 12px;border:1px solid var(--theme-border);border-radius:12px;background:var(--theme-surface-hover);color:var(--theme-call-search-text)}
 .halls-call-history-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--theme-text-primary);font-size:12px}
 .halls-call-history-search input::placeholder{color:var(--theme-text-placeholder)}
 .halls-call-history-list{overflow:hidden;border:1px solid var(--theme-border-subtle);border-radius:17px;background:var(--theme-surface-subtle)}
@@ -1938,7 +1938,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .halls-call-history-time{display:flex;align-items:flex-end;gap:8px;flex-direction:column;flex-shrink:0;color:var(--theme-call-time-text)}
 .halls-call-history-time small{font-size:10px;white-space:nowrap}
 .halls-call-history-time svg{color:var(--theme-call-icon-text)}
-.halls-call-history-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:245px;padding:28px 20px;border:1px solid var(--theme-border-subtle);border-radius:17px;background:var(--theme-surface-subtle);text-align:center;color:var(--theme-text-secondary)}
+.halls-call-history-state{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:245px;padding:28px 20px;border:1px solid var(--theme-border-subtle);border-radius:17px;background:var(--theme-surface-subtle);text-align:center;color:var(--theme-text-subtle)}
 .halls-call-history-state>svg{color:var(--theme-call-empty-icon)}
 .halls-call-history-state strong{color:var(--theme-text-primary);font-size:14px}
 .halls-call-history-state span{max-width:290px;color:var(--theme-text-secondary);font-size:12px;line-height:1.55}
@@ -5294,7 +5294,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search {
   background: var(--theme-card);
   border-color: var(--theme-border);
-  color: var(--theme-text-secondary);
+  color: var(--theme-call-search-text);
   box-shadow: var(--theme-shadow-control-soft);
 }
 :root[data-theme="light"] .home-page.halls-calls-page .halls-call-history-search:focus-within {
