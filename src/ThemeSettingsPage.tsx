@@ -17,6 +17,16 @@ export default function ThemeSettingsPage() {
   const [nowbarExpandEnabled, setNowbarExpandEnabled] = useState(() => localStorage.getItem("hallschat_nowbar_expand_enabled") !== "false");
   const [nowbarToggleMenuOpen, setNowbarToggleMenuOpen] = useState(false);
   const nowbarToggleMenuRef = useRef<HTMLDivElement>(null);
+  const [alertChannels, setAlertChannels] = useState<{ email: boolean; inApp: boolean; push: boolean }>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("hallschat_alert_channels") || "{}");
+      return { email: saved.email !== false, inApp: saved.inApp !== false, push: saved.push !== false };
+    } catch {
+      return { email: true, inApp: true, push: true };
+    }
+  });
+  const [alertChannelMenuOpen, setAlertChannelMenuOpen] = useState(false);
+  const alertChannelMenuRef = useRef<HTMLDivElement>(null);
   const idleLogoutMenuRef = useRef<HTMLDivElement>(null);
   const themeMenuRef = useRef<HTMLDivElement>(null);
   const [activeStatusVisible, setActiveStatusVisible] = useState(true);
@@ -85,6 +95,21 @@ export default function ThemeSettingsPage() {
     document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
     return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
   }, [nowbarToggleMenuOpen]);
+
+  useEffect(() => {
+    if (!alertChannelMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (alertChannelMenuRef.current && !alertChannelMenuRef.current.contains(event.target as Node)) setAlertChannelMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setAlertChannelMenuOpen(false); };
+    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [alertChannelMenuOpen]);
+
+  const chooseAlertChannel = (channel: "email" | "inApp" | "push") => {
+    const next = { ...alertChannels, [channel]: !alertChannels[channel] };
+    setAlertChannels(next);
+    localStorage.setItem("hallschat_alert_channels", JSON.stringify(next));
+    window.dispatchEvent(new CustomEvent("hallschat:alert-channels-changed", { detail: next }));
+  };
 
   const chooseNowbarToggle = (feature: "swipe" | "expand", enabled: boolean) => {
     if (feature === "swipe") { setNowbarSwipeEnabled(enabled); localStorage.setItem("hallschat_nowbar_swipe_enabled", String(enabled)); }
@@ -579,6 +604,33 @@ export default function ThemeSettingsPage() {
             >
               <span>{option.label}</span>
               {commentsEnabled === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+          </div>}
+        </div>
+      </section>
+      <section className="settings-theme-card" aria-label="Alert Channel">
+        <span className="settings-theme-title">Alert Channel</span>
+        <span className="settings-theme-current" aria-live="polite">{[alertChannels.email && "Email", alertChannels.inApp && "In-App", alertChannels.push && "Push"].filter(Boolean).join(" · ") || "All Off"}</span>
+        <div className="settings-theme-menu-anchor" ref={alertChannelMenuRef}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Alert Channel options" aria-haspopup="menu" aria-expanded={alertChannelMenuOpen} onClick={() => setAlertChannelMenuOpen(open => !open)}>
+            <MoreHorizontal size={21} />
+          </button>
+          {alertChannelMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Alert Channel options">
+            {([
+              { value: "email", label: "Email" },
+              { value: "inApp", label: "In-App" },
+              { value: "push", label: "Push" },
+            ] as const).map(option => <button
+              key={option.value}
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={alertChannels[option.value]}
+              className={"settings-theme-menu-option" + (alertChannels[option.value] ? " is-selected" : "")}
+              onClick={() => chooseAlertChannel(option.value)}
+            >
+              <span>{option.label}</span>
+              <span>{alertChannels[option.value] ? "On" : "Off"}</span>
+              {alertChannels[option.value] && <Check size={15} aria-hidden="true" />}
             </button>)}
           </div>}
         </div>
