@@ -6,7 +6,7 @@ import HomePage from "./HomePage";
 import GlobePage from "./GlobePage";
 import DevPage from "./DevPage";
 import HallsPage from "./HallsPage";
-import ChatPage from "./ChatPage";
+import RoomsPage from "./RoomsPage";
 import CallsPage from "./CallsPage";
 import ProfilePage from "./ProfilePage";
 import AlertsPage from "./AlertsPage";
@@ -254,7 +254,7 @@ export default function App() {
   else if (normalizedPath === "/home") page = <HomePage />;
   else if (normalizedPath === "/halls") page = <GlobePage />;
   else if (normalizedPath === "/groups") page = <HallsPage />;
-  else if (normalizedPath === "/chats") page = <ChatPage />;
+  else if (normalizedPath === "/chats") page = <RoomsPage />;
   else if (normalizedPath === "/calls") page = <CallsPage />;
   else if (normalizedPath === "/profile") page = <ProfilePage />;
   else if (normalizedPath === "/settings") page = <ThemeSettingsPage />;
