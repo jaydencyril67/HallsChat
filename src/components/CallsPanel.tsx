@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import LoadingDots from "./LoadingDots";
-import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
+import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, X, Minus, Maximize2 } from "lucide-react";
 
 type Person = { id: string; name: string; username: string; profilePicture?: string; canMessage: boolean };
 type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; createdAt: number };
@@ -55,6 +55,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
   const [cameraOff, setCameraOff] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [callError, setCallError] = useState("");
+  const [minimized, setMinimized] = useState(false);
   const [nativeCallAction, setNativeCallAction] = useState<{ action: "answer" | "decline"; callId: string } | null>(null);
   const [pendingCallKind, setPendingCallKind] = useState<"audio" | "video" | null>(null);
   const audioTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -117,7 +118,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
     if (localAudio.current) localAudio.current.srcObject = null;
     if (remoteAudio.current) remoteAudio.current.srcObject = null;
     activeCallRef.current = "";
-    setCallId(""); setIncoming(null); setPhase("idle"); setMuted(false); setCameraOff(false); setSeconds(0);
+    setCallId(""); setIncoming(null); setPhase("idle"); setMuted(false); setCameraOff(false); setSeconds(0); setMinimized(false);
     if (reason) setCallError(reason);
   }, []);
 
@@ -403,11 +404,18 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         </div>
       </div>
     </div>}
-    {phase !== "idle" && phase !== "incoming" && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label={kind + " call"}>
+    {phase !== "idle" && phase !== "incoming" && minimized && <div role="dialog" aria-label={kind + " call minimized"} style={{ position: "fixed", zIndex: 10030, right: 12, bottom: "calc(env(safe-area-inset-bottom, 0px) + 84px)", width: 220, padding: 10, borderRadius: 16, display: "flex", alignItems: "center", gap: 8, background: "var(--theme-surface-raised)", color: "var(--theme-text)", border: "1px solid var(--theme-line)", boxShadow: "0 8px 28px rgba(0,0,0,.32)" }}>
+      <button type="button" onClick={() => setMinimized(false)} aria-label="Expand call" style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}>
+        <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, flexShrink: 0, borderRadius: "50%", background: "var(--theme-primary)", color: "var(--theme-primary-contrast)" }}>{kind === "video" ? <Video size={17}/> : <Phone size={17}/>}</span>
+        <span style={{ minWidth: 0 }}><strong style={{ display: "block", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: ".8rem" }}>{peerName}</strong><span style={{ display: "block", color: "var(--theme-muted)", fontSize: ".7rem" }}>{phase === "connected" ? formatDuration(seconds) : phase === "outgoing" ? "Ringing…" : "Connecting…"}</span></span>
+      </button>
+      <button type="button" onClick={endCall} aria-label="End call" className="halls-call-hangup" style={{ border: 0, borderRadius: "50%", width: 36, height: 36, flexShrink: 0 }}><PhoneOff size={17}/></button>
+    </div>}
+    {phase !== "idle" && phase !== "incoming" && !minimized && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label={kind + " call"}>
       <div className={"halls-call-stage " + (kind === "video" ? "halls-call-stage-video" : "")}>
         {kind === "video" && <><video ref={remoteVideo} className="halls-call-remote-video" autoPlay playsInline /><video ref={localVideo} className="halls-call-local-video" autoPlay muted playsInline /></>}
         <audio ref={remoteAudio} autoPlay playsInline /><audio ref={localAudio} autoPlay muted playsInline />
-        <button className="halls-call-close" type="button" onClick={endCall} aria-label="Close call"><X /></button>
+        <button type="button" onClick={() => setMinimized(true)} aria-label="Minimize call" title="Minimize call" style={{ position: "absolute", top: 14, right: 14, zIndex: 3, display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--theme-line)", background: "var(--theme-surface-hover)", color: "var(--theme-text)" }}><Minus size={20}/></button>
         {kind === "audio" && <div className="halls-call-avatar halls-call-avatar-large">{peerName.slice(0,1).toUpperCase()}</div>}
         <span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2>{peerName}</h2>
         <p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? <LoadingDots /> : formatDuration(seconds)}</p>
