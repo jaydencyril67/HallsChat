@@ -33,6 +33,29 @@ export default function ThemeSettingsPage() {
   const [alertColorModalOpen, setAlertColorModalOpen] = useState(false);
   const alertColorMenuRef = useRef<HTMLDivElement>(null);
   const closeAlertColorModal = useCallback(() => setAlertColorModalOpen(false), []);
+  const [nowbarColorEnabled, setNowbarColorEnabled] = useState(() => localStorage.getItem("hallschat_nowbar_color_enabled") === "true");
+  const [nowbarColor, setNowbarColor] = useState(() => {
+    const saved = localStorage.getItem("hallschat_nowbar_color");
+    return saved && /^#[0-9a-f]{6}$/i.test(saved) ? saved.toLowerCase() : "#38bdf8";
+  });
+  const [nowbarLightStyle, setNowbarLightStyle] = useState(() => {
+    const saved = localStorage.getItem("hallschat_nowbar_light_style");
+    return ["stable-light", "stable", "blink-light", "blink", "pulse-light", "pulse", "color-light", "color"].includes(saved || "") ? saved! : "stable";
+  });
+  const [nowbarColorMenuOpen, setNowbarColorMenuOpen] = useState(false);
+  const [nowbarColorModalOpen, setNowbarColorModalOpen] = useState(false);
+  const nowbarColorMenuRef = useRef<HTMLDivElement>(null);
+  const closeNowbarColorModal = useCallback(() => setNowbarColorModalOpen(false), []);
+  const NOWBAR_LIGHT_STYLES = [
+    { value: "stable-light", label: "Steady Light", description: "A clean edge with no glow" },
+    { value: "stable", label: "Steady Glow", description: "A constant colored glow" },
+    { value: "blink-light", label: "Blink Light", description: "A gentle light blink" },
+    { value: "blink", label: "Blink Glow", description: "A blinking colored glow" },
+    { value: "pulse-light", label: "Pulse Light", description: "A soft breathing edge" },
+    { value: "pulse", label: "Pulse Glow", description: "A stronger breathing glow" },
+    { value: "color-light", label: "Rainbow Light", description: "Cycles through edge colors" },
+    { value: "color", label: "Rainbow Glow", description: "Cycles through glowing colors" }
+  ] as const;
   const [downloadAppMenuOpen, setDownloadAppMenuOpen] = useState(false);
   const downloadAppMenuRef = useRef<HTMLDivElement>(null);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -113,6 +136,14 @@ export default function ThemeSettingsPage() {
     return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
   }, [alertColorMenuOpen]);
 
+  useEffect(() => {
+    if (!nowbarColorMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (nowbarColorMenuRef.current && !nowbarColorMenuRef.current.contains(event.target as Node)) setNowbarColorMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setNowbarColorMenuOpen(false); };
+    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [nowbarColorMenuOpen]);
+
   const saveAlertColorEnabled = (enabled: boolean) => {
     setAlertColorEnabled(enabled);
     localStorage.setItem("hallschat_alert_color_enabled", String(enabled));
@@ -124,6 +155,25 @@ export default function ThemeSettingsPage() {
     setAlertColor(color);
     localStorage.setItem("hallschat_alert_color", color);
     window.dispatchEvent(new Event("hallschat:alert-color-changed"));
+  };
+
+  const saveNowbarColorEnabled = (enabled: boolean) => {
+    setNowbarColorEnabled(enabled);
+    localStorage.setItem("hallschat_nowbar_color_enabled", String(enabled));
+    window.dispatchEvent(new Event("hallschat:nowbar-color-changed"));
+    setNowbarColorMenuOpen(false);
+  };
+
+  const saveNowbarColor = (color: string) => {
+    setNowbarColor(color);
+    localStorage.setItem("hallschat_nowbar_color", color);
+    window.dispatchEvent(new Event("hallschat:nowbar-color-changed"));
+  };
+
+  const saveNowbarLightStyle = (style: string) => {
+    setNowbarLightStyle(style);
+    localStorage.setItem("hallschat_nowbar_light_style", style);
+    window.dispatchEvent(new Event("hallschat:nowbar-color-changed"));
   };
 
   useEffect(() => {
@@ -709,6 +759,25 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <section className="settings-theme-card" aria-label="Nowbar Color">
+        <span className="settings-theme-title">Nowbar Color</span>
+        <span className="settings-theme-current" aria-live="polite"><span className="settings-alert-color-swatch" style={{ background: nowbarColor }} aria-hidden="true" />{nowbarColorEnabled ? "Enabled" : "Disabled"} · {NOWBAR_LIGHT_STYLES.find(option => option.value === nowbarLightStyle)?.label || "Steady Glow"}</span>
+        <div className="settings-theme-menu-anchor" ref={nowbarColorMenuRef}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Nowbar Color options" aria-haspopup="menu" aria-expanded={nowbarColorMenuOpen} onClick={() => setNowbarColorMenuOpen(open => !open)}><MoreHorizontal size={21} /></button>
+          {nowbarColorMenuOpen && <div className="settings-theme-menu settings-nowbar-color-menu" role="menu" aria-label="Nowbar Color options">
+            <button type="button" role="menuitemcheckbox" aria-checked={nowbarColorEnabled} className={"settings-theme-menu-option" + (nowbarColorEnabled ? " is-selected" : "")} onClick={() => saveNowbarColorEnabled(!nowbarColorEnabled)}>
+              <span>{nowbarColorEnabled ? "Disable" : "Enable"}</span><span>{nowbarColorEnabled ? "On" : "Off"}</span>{nowbarColorEnabled && <Check size={15} aria-hidden="true" />}
+            </button>
+            <button type="button" role="menuitem" className="settings-theme-menu-option" onClick={() => { setNowbarColorMenuOpen(false); setNowbarColorModalOpen(true); }}>
+              <span>Choose Color</span><span className="settings-alert-color-swatch" style={{ background: nowbarColor }} aria-hidden="true" />
+            </button>
+            <div className="settings-theme-menu-group-label">Light Style</div>
+            {NOWBAR_LIGHT_STYLES.map(option => <button key={option.value} type="button" role="menuitemradio" aria-checked={nowbarLightStyle === option.value} title={option.description} className={"settings-theme-menu-option settings-nowbar-light-option" + (nowbarLightStyle === option.value ? " is-selected" : "")} onClick={() => saveNowbarLightStyle(option.value)}>
+              <span><span className={"settings-nowbar-style-preview settings-nowbar-style-" + option.value} style={{ "--nowbar-preview-color": nowbarColor } as React.CSSProperties} aria-hidden="true" />{option.label}</span>{nowbarLightStyle === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+          </div>}
+        </div>
+      </section>
       <section className="settings-theme-card" aria-label="Active status">
         <span className="settings-theme-title">Active Status</span>
         <span className="settings-theme-current" aria-live="polite">{!activeStatusLoaded ? "Loading…" : activeStatusVisible ? "Shown" : "Hidden"}</span>
@@ -1019,6 +1088,7 @@ export default function ThemeSettingsPage() {
       </section>
     </section>
     {alertColorModalOpen && <AlertColorModal color={alertColor} onChange={saveAlertColor} onClose={closeAlertColorModal} />}
+    {nowbarColorModalOpen && <AlertColorModal color={nowbarColor} onChange={saveNowbarColor} onClose={closeNowbarColorModal} title="Choose Nowbar Color" description="Choose the edge-light color used by your Nowbar. Your choice saves immediately." />}
     <NowBar />
   </main>;
 }
