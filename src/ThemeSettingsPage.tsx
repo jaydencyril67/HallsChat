@@ -860,26 +860,6 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
-      <section className="settings-theme-card" aria-label="Max Device">
-        <span className="settings-theme-title">Max Device</span>
-        <span className="settings-theme-current" aria-live="polite">{!maxDeviceLoaded ? "Loading…" : `${maxDeviceMode === "flex" ? "Flex" : "Fixed"} · ${maxDevices} ${maxDevices === 1 ? "session" : "sessions"}`}</span>
-        <div className="settings-theme-menu-anchor" ref={maxDeviceMenuRef}>
-          <button type="button" className="settings-theme-menu-trigger" aria-label="Max Device options" aria-haspopup="menu" aria-expanded={maxDeviceMenuOpen} disabled={!maxDeviceLoaded || maxDeviceSaving} onClick={() => setMaxDeviceMenuOpen(open => !open)}>
-            <MoreHorizontal size={21} />
-          </button>
-          {maxDeviceMenuOpen && <div className="settings-theme-menu settings-max-device-menu" role="menu" aria-label="Max Device options">
-            <div className="settings-theme-menu-group-label">When the limit is reached</div>
-            {([{ value: "flex", label: "Flex" }, { value: "fixed", label: "Fixed" }] as const).map(option => <button key={option.value} type="button" role="menuitemradio" aria-checked={maxDeviceMode === option.value} className={"settings-theme-menu-option" + (maxDeviceMode === option.value ? " is-selected" : "")} disabled={maxDeviceSaving} onClick={() => void chooseMaxDevice({ mode: option.value })}>
-              <span>{option.label}</span>{maxDeviceMode === option.value && <Check size={15} aria-hidden="true" />}
-            </button>)}
-            <div className="settings-theme-menu-group-label">Maximum active sessions</div>
-            <div className="settings-max-device-number-grid">
-              {[1, 2, 3, 4, 5].map(value => <button key={value} type="button" role="menuitemradio" aria-checked={maxDevices === value} className={"settings-max-device-number" + (maxDevices === value ? " is-selected" : "")} disabled={maxDeviceSaving} onClick={() => void chooseMaxDevice({ maxDevices: value })}>{value}{maxDevices === value && <Check size={13} aria-hidden="true" />}</button>)}
-            </div>
-            <div className="settings-theme-menu-group-label">Currently active: {activeDeviceSessions}</div>
-          </div>}
-        </div>
-      </section>
       {maxDeviceMessage && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{maxDeviceMessage}</span><button type="button" onClick={() => setMaxDeviceMessage("")} aria-label="Dismiss notification">×</button></div>}
       <section className="settings-theme-card" aria-label="Alert Color">
         <span className="settings-theme-title">Alert Color</span>
@@ -1192,13 +1172,34 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
-      {alertTypesError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{alertTypesError}</span><button type="button" onClick={() => setAlertTypesError("")} aria-label="Dismiss notification">×</button></div>}
+{maxDeviceMessage && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{maxDeviceMessage}</span><button type="button" onClick={() => setMaxDeviceMessage("")} aria-label="Dismiss notification">×</button></div>}
+            {alertTypesError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{alertTypesError}</span><button type="button" onClick={() => setAlertTypesError("")} aria-label="Dismiss notification">×</button></div>}
       {alertChannelsError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{alertChannelsError}</span><button type="button" onClick={() => setAlertChannelsError("")} aria-label="Dismiss notification">×</button></div>}
       {commentingError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{commentingError}</span><button type="button" onClick={() => setCommentingError("")} aria-label="Dismiss notification">×</button></div>}
       {readReceiptsError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{readReceiptsError}</span><button type="button" onClick={() => setReadReceiptsError("")} aria-label="Dismiss notification">×</button></div>}
       {visibilityError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{visibilityError}</span><button type="button" onClick={() => setVisibilityError("")} aria-label="Dismiss notification">×</button></div>}
       {callsPrivacyError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{callsPrivacyError}</span><button type="button" onClick={() => setCallsPrivacyError("")} aria-label="Dismiss notification">×</button></div>}
       {activeStatusError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{activeStatusError}</span><button type="button" onClick={() => setActiveStatusError("")} aria-label="Dismiss notification">×</button></div>}
+      <section className="settings-theme-card" aria-label="Max Device">
+        <span className="settings-theme-title">Max Device</span>
+        <span className="settings-theme-current" aria-live="polite">{!maxDeviceLoaded ? "Loading…" : `${maxDeviceMode === "flex" ? "Flex" : "Fixed"} · ${maxDevices} ${maxDevices === 1 ? "session" : "sessions"}`}</span>
+        <div className="settings-theme-menu-anchor" ref={maxDeviceMenuRef}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Max Device options" aria-haspopup="menu" aria-expanded={maxDeviceMenuOpen} disabled={!maxDeviceLoaded || maxDeviceSaving} onClick={() => setMaxDeviceMenuOpen(open => !open)}>
+            <MoreHorizontal size={21} />
+          </button>
+          {maxDeviceMenuOpen && <div className="settings-theme-menu settings-max-device-menu" role="menu" aria-label="Max Device options">
+            <div className="settings-theme-menu-group-label">When the limit is reached</div>
+            {([{ value: "flex", label: "Flex" }, { value: "fixed", label: "Fixed" }] as const).map(option => <button key={option.value} type="button" role="menuitemradio" aria-checked={maxDeviceMode === option.value} className={"settings-theme-menu-option" + (maxDeviceMode === option.value ? " is-selected" : "")} disabled={maxDeviceSaving} onClick={() => void chooseMaxDevice({ mode: option.value })}>
+              <span>{option.label}</span>{maxDeviceMode === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+            <div className="settings-theme-menu-group-label">Maximum active sessions</div>
+            <div className="settings-max-device-number-grid">
+              {[1, 2, 3, 4, 5].map(value => <button key={value} type="button" role="menuitemradio" aria-checked={maxDevices === value} className={"settings-max-device-number" + (maxDevices === value ? " is-selected" : "")} disabled={maxDeviceSaving} onClick={() => void chooseMaxDevice({ maxDevices: value })}>{value}{maxDevices === value && <Check size={13} aria-hidden="true" />}</button>)}
+            </div>
+            <div className="settings-theme-menu-group-label">Currently active: {activeDeviceSessions}</div>
+          </div>}
+        </div>
+      </section>
       <section className="settings-theme-card settings-download-app-card" aria-label="Download App">
         <div className="settings-download-app-details">
           <span className="settings-theme-title">Download App</span>
