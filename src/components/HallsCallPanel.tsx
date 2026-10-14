@@ -108,10 +108,11 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
     }
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
-        echoCancellation: true,
-        noiseSuppression: true,
-        // Avoid aggressive gain pumping, which can create the "wawawa" effect.
-        autoGainControl: false
+        // Ask Android/WebView for its built-in acoustic echo canceller and denoiser.
+        echoCancellation: { ideal: true },
+        noiseSuppression: { ideal: true },
+        autoGainControl: { ideal: true },
+        channelCount: { ideal: 1 }
       },
       video: callKind === "video" ? {
         width: { ideal: 640, max: 640 },
@@ -336,7 +337,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
         {kind === "video" && <div style={{ position: "relative", minHeight: 150, aspectRatio: "3 / 4", overflow: "hidden", borderRadius: 15, background: "var(--theme-surface-raised)" }}><video ref={localVideoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }}/><span style={{ position: "absolute", left: 8, bottom: 8, fontSize: ".75rem", color: "var(--theme-call-video-text)", textShadow: "var(--theme-call-video-text-shadow)", background: "var(--theme-call-video-overlay)", padding: "3px 6px", borderRadius: 6 }}>You</span></div>}
         {participants.map(person => <div key={person.id} style={{ position: "relative", minHeight: kind === "video" ? 150 : 110, aspectRatio: kind === "video" ? "3 / 4" : undefined, overflow: "hidden", borderRadius: 15, background: "var(--theme-surface-raised)", display: "grid", placeItems: "center" }}>
           {streams[person.id] && kind === "video" ? <video autoPlay playsInline muted ref={el => { if (el && el.srcObject !== streams[person.id]) { el.muted = true; el.srcObject = streams[person.id]; void el.play().catch(() => {}); } }} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}/> : <div style={{ width: 50, height: 50, display: "grid", placeItems: "center", borderRadius: "50%", background: "var(--theme-avatar-gradient)", color: "var(--theme-avatar-fallback-text)", fontSize: "1.2rem", fontWeight: 800 }}>{(person.name || person.username || "P").slice(0,1).toUpperCase()}</div>}
-          {streams[person.id] && <audio autoPlay ref={el => { const remote = streams[person.id]; if (el && remote) { const existing = el.srcObject as MediaStream | null; const audioTrackId = remote.getAudioTracks()[0]?.id; if (!existing || existing.getAudioTracks()[0]?.id !== audioTrackId) { el.srcObject = new MediaStream(remote.getAudioTracks()); void el.play().catch(() => {}); } } }} />}
+          {streams[person.id] && <audio autoPlay ref={el => { const remote = streams[person.id]; if (el && remote) { const existing = el.srcObject as MediaStream | null; const audioTrackId = remote.getAudioTracks()[0]?.id; if (!existing || existing.getAudioTracks()[0]?.id !== audioTrackId) { el.srcObject = new MediaStream(remote.getAudioTracks()); el.volume = 0.8; void el.play().catch(() => {}); } } }} />}
           <span style={{ position: "absolute", left: 8, bottom: 8, fontSize: ".75rem", color: "var(--theme-call-video-text)", textShadow: "var(--theme-call-video-text-shadow)", background: "var(--theme-call-video-overlay)", padding: "3px 6px", borderRadius: 6 }}>{person.name || person.username || "Participant"}</span>
         </div>)}
         {kind === "audio" && <video ref={localVideoRef} autoPlay playsInline muted style={{ display: "none" }}/>}
