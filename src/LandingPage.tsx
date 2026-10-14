@@ -57,9 +57,9 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
           <div className="landing-preview-content">
             <div className="landing-preview-greeting"><small>MONDAY, 9:41 AM</small><h3>A good day to<br />check in. <span>♥</span></h3><p>Little moments make a big difference.</p></div>
             <div className="landing-preview-section-label">RECENT CONVERSATIONS <span>•••</span></div>
-            <div className="landing-preview-chat"><div className="landing-person landing-person-rose">AO</div><div className="landing-preview-chat-copy"><strong>Amara Okafor</strong><span>That photo came out so good 😂</span></div><time>9:28</time><i className="landing-unread">2</i></div>
-            <div className="landing-preview-chat"><div className="landing-person landing-person-blue">DM</div><div className="landing-preview-chat-copy"><strong>David Mensah</strong><span>Sent you a voice message</span></div><time>9:12</time></div>
-            <div className="landing-preview-chat"><div className="landing-person landing-person-gold">M</div><div className="landing-preview-chat-copy"><strong>Mum ❤️</strong><span>Have you eaten, my dear?</span></div><time>Yesterday</time></div>
+            <div className="landing-preview-chat"><div className="landing-person landing-person-rose">EC</div><div className="landing-preview-chat-copy"><strong>Emily Carter</strong><span>That photo came out so good 😂</span></div><time>9:28</time><i className="landing-unread">2</i></div>
+            <div className="landing-preview-chat"><div className="landing-person landing-person-blue">JW</div><div className="landing-preview-chat-copy"><strong>James Wilson</strong><span>Sent you a voice message</span></div><time>9:12</time></div>
+            <div className="landing-preview-chat"><div className="landing-person landing-person-gold">OB</div><div className="landing-preview-chat-copy"><strong>Olivia Bennett</strong><span>Are we still on for this weekend? 😊</span></div><time>Yesterday</time></div>
             <div className="landing-preview-message"><span>✦</span><p>Some messages are small.<br /><strong>The feeling isn't.</strong></p></div>
           </div>
           <div className="landing-preview-bottom"><span className="landing-preview-nav-active"><MessageCircle size={15} /> Chats</span><span><Users size={15} /> People</span><span><Video size={15} /> Calls</span></div>
