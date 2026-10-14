@@ -4364,3 +4364,13 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 .landing-demo-hall-icon-blue{background:color-mix(in srgb,#6487b1 18%,transparent);color:#789ac1}
 .landing-demo-hall-icon-rose{background:color-mix(in srgb,#b76b83 18%,transparent);color:#b76b83}
 @media(max-width:700px){.landing-demo-body{overscroll-behavior-y:contain}.landing-demo-conversation{min-height:100%}}
+
+
+/* Public profiles open as a full-screen overlay so the previous page and scroll position stay mounted. */
+.social-public-profile-modal{position:fixed;inset:0;z-index:9990;display:flex;align-items:stretch;justify-content:stretch;background:var(--theme-overlay);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:var(--theme-text)}
+.public-profile-modal-panel{width:100%;height:100vh;height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden;padding-top:0!important}
+.social-public-profile-modal-header{position:relative;z-index:2;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--theme-border-subtle);background:var(--theme-header-bg,var(--theme-surface));color:var(--theme-text-primary)}
+.social-public-profile-modal-header strong{font-size:.9rem;font-weight:800}
+.social-public-profile-modal-header button{width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--theme-accent-border);border-radius:13px;background:var(--theme-surface-hover);color:var(--theme-text-primary)}
+.public-profile-modal-scroll{flex:1;min-height:0;width:100%;max-width:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:16px!important;scrollbar-width:none}
+.public-profile-modal-scroll::-webkit-scrollbar{display:none}
