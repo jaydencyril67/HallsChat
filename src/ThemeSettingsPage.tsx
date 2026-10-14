@@ -4,7 +4,7 @@ import { PushNotifications } from "@capacitor/push-notifications";
 import { NativeAppUpdate } from "./utils/nativeAppUpdate";
 import AlertColorModal from "./AlertColorModal";
 import { navigate } from "./utils/navigate";
-import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type CSSProperties } from "react";
 import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -773,7 +773,7 @@ export default function ThemeSettingsPage() {
             </button>
             <div className="settings-theme-menu-group-label">Light Style</div>
             {NOWBAR_LIGHT_STYLES.map(option => <button key={option.value} type="button" role="menuitemradio" aria-checked={nowbarLightStyle === option.value} title={option.description} className={"settings-theme-menu-option settings-nowbar-light-option" + (nowbarLightStyle === option.value ? " is-selected" : "")} onClick={() => saveNowbarLightStyle(option.value)}>
-              <span><span className={"settings-nowbar-style-preview settings-nowbar-style-" + option.value} style={{ "--nowbar-preview-color": nowbarColor } as React.CSSProperties} aria-hidden="true" />{option.label}</span>{nowbarLightStyle === option.value && <Check size={15} aria-hidden="true" />}
+              <span><span className={"settings-nowbar-style-preview settings-nowbar-style-" + option.value} style={{ "--nowbar-preview-color": nowbarColor } as CSSProperties} aria-hidden="true" />{option.label}</span>{nowbarLightStyle === option.value && <Check size={15} aria-hidden="true" />}
             </button>)}
           </div>}
         </div>
