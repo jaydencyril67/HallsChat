@@ -142,9 +142,10 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         autoGainControl: false
       },
       video: video ? {
-        width: { ideal: 1280, max: 1280 },
-        height: { ideal: 720, max: 720 },
-        frameRate: { ideal: 24, max: 30 },
+        // Start at a mobile-friendly size; avoid forcing HD on low-end phones.
+        width: { ideal: 640, max: 640 },
+        height: { ideal: 480, max: 480 },
+        frameRate: { ideal: 20, max: 24 },
         facingMode: "user"
       } : false
     });
@@ -167,8 +168,9 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
       } else if (track.kind === "video") {
         const parameters = sender.getParameters();
         parameters.encodings = parameters.encodings?.length ? parameters.encodings : [{}];
-        parameters.encodings[0].maxBitrate = 1200000;
-        parameters.encodings[0].maxFramerate = 24;
+        parameters.encodings[0].maxBitrate = 600000;
+        parameters.encodings[0].maxFramerate = 20;
+        parameters.degradationPreference = "maintain-framerate";
         void sender.setParameters(parameters).catch(() => {
           // Keep the call working if the WebView does not support these hints.
         });
