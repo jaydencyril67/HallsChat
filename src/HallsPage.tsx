@@ -111,6 +111,9 @@ export default function HallsPage() {
   const [activeId, setActiveId] = useState("");
   const [detail, setDetail] = useState<HallDetail | null>(null);
   const [messages, setMessages] = useState<HallMessage[]>([]);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+  const hallHighlightTimerRef = useRef<number | null>(null);
+  const alertGroupHandledRef = useRef("");
   const hallMessageListRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -272,7 +275,14 @@ export default function HallsPage() {
   }, [request]);
 
   useEffect(() => {
-    void loadHalls(tab);
+    void loadHalls(tab).then(() => {
+      const params = new URLSearchParams(window.location.search);
+      const requestedGroupId = params.get("group") || "";
+      if (requestedGroupId) {
+        alertGroupHandledRef.current = "";
+        setActiveId(requestedGroupId);
+      }
+    });
     const token = localStorage.getItem("hallschat_token");
     if (!token) return;
     let hasConnected = false;
@@ -286,6 +296,31 @@ export default function HallsPage() {
   }, [tab, loadHalls]);
   useEffect(() => { if (!activeId) { setDetail(null); setMessages([]); return; } void loadDetail(activeId); }, [activeId, loadDetail]);
   useEffect(() => { const list = hallMessageListRef.current; if (list) list.scrollTop = list.scrollHeight; }, [activeId, messages.length]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedGroupId = params.get("group") || "";
+    const requestedMessageId = params.get("message") || "";
+    const jumpKey = requestedGroupId + ":" + requestedMessageId;
+    if (!requestedGroupId || !requestedMessageId || activeId !== requestedGroupId ||
+        detailLoading || !messages.some(message => message.id === requestedMessageId) ||
+        alertGroupHandledRef.current === jumpKey) return;
+    const list = hallMessageListRef.current;
+    const target = document.getElementById("chat-message-" + requestedMessageId);
+    if (!list || !target || !list.contains(target)) return;
+    alertGroupHandledRef.current = jumpKey;
+    const listRect = list.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    list.scrollTo({ top: Math.max(0, list.scrollTop + targetRect.top - listRect.top - (list.clientHeight - targetRect.height) / 2), behavior: "smooth" });
+    setHighlightedMessageId(requestedMessageId);
+    if (hallHighlightTimerRef.current !== null) window.clearTimeout(hallHighlightTimerRef.current);
+    hallHighlightTimerRef.current = window.setTimeout(() => {
+      setHighlightedMessageId(current => current === requestedMessageId ? null : current);
+      hallHighlightTimerRef.current = null;
+    }, 1900);
+  }, [activeId, messages, detailLoading]);
+  useEffect(() => () => {
+    if (hallHighlightTimerRef.current !== null) window.clearTimeout(hallHighlightTimerRef.current);
+  }, []);
   useEffect(() => {
     if (!activeId) { socketRef.current?.disconnect(); socketRef.current = null; setGroupSocket(null); return; }
     const token = localStorage.getItem("hallschat_token");
@@ -714,7 +749,7 @@ export default function HallsPage() {
                    </div>
                  </div>;
                }
-               return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "")} id={"chat-message-" + message.id}
+               return <div key={message.id} className={"chat-message-line" + (mine ? " chat-message-line-mine" : "") + (highlightedMessageId === message.id ? " chat-message-highlighted" : "")} id={"chat-message-" + message.id}
                 onContextMenu={event => { event.preventDefault(); setActionMenuFor(message.id); }}
                 onPointerDown={event => {
                   if (event.pointerType === "mouse" && event.button !== 0) return;
