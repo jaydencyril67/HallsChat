@@ -422,7 +422,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         <button ref={audioTriggerRef} className="halls-call-trigger-audio" type="button" title={"Audio call " + person.name} aria-label={"Audio call " + person.name} onClick={() => setPendingCallKind(current => current === "audio" ? null : "audio")} disabled={phase !== "idle"}><Phone size={18} /><span>Audio call</span></button>
         {pendingCallKind === "audio" && phase === "idle" && <div ref={confirmPopoutRef} className="halls-call-confirm-popout" style={confirmPopoutPosition} role="dialog" aria-label="Confirm audio call">
           <strong>Start audio call?</strong>
-          <span>Call <b>{person.name}</b> now?</span>
+          <span>Call <b style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>{person.name}{person.isVerified && person.verifiedAt && <VerificationBadge size={12} />}</b> now?</span>
           <div><button type="button" className="halls-call-confirm-cancel" onClick={() => setPendingCallKind(null)}>Cancel</button><button type="button" className="halls-call-confirm-start" onClick={() => { setPendingCallKind(null); startCall("audio"); }}><Phone size={14} /> Start call</button></div>
         </div>}
       </div>
@@ -449,7 +449,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
     {phase !== "idle" && phase !== "incoming" && minimized && <div role="dialog" aria-label={kind + " call minimized"} style={{ position: "fixed", zIndex: 10030, right: 12, bottom: "calc(env(safe-area-inset-bottom, 0px) + 84px)", width: 220, padding: 10, borderRadius: 16, display: "flex", alignItems: "center", gap: 8, background: "var(--theme-surface-raised)", color: "var(--theme-text)", border: "1px solid var(--theme-line)", boxShadow: "0 8px 28px rgba(0,0,0,.32)" }}>
       <button type="button" onClick={() => setMinimized(false)} aria-label="Expand call" style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}>
         <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, flexShrink: 0, borderRadius: "50%", background: "var(--theme-primary)", color: "var(--theme-primary-contrast)" }}>{kind === "video" ? <Video size={17}/> : <Phone size={17}/>}</span>
-        <span style={{ minWidth: 0 }}><strong style={{ display: "block", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: ".8rem" }}>{peerName}</strong><span style={{ display: "block", color: "var(--theme-muted)", fontSize: ".7rem" }}>{phase === "connected" ? formatDuration(seconds) : phase === "outgoing" ? "Ringing…" : "Connecting…"}</span></span>
+        <span style={{ minWidth: 0 }}><strong style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 0, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: ".8rem" }}>{peerName}{person?.isVerified && person.verifiedAt && <VerificationBadge size={12} />}</strong><span style={{ display: "block", color: "var(--theme-muted)", fontSize: ".7rem" }}>{phase === "connected" ? formatDuration(seconds) : phase === "outgoing" ? "Ringing…" : "Connecting…"}</span></span>
       </button>
       <button type="button" onClick={endCall} aria-label="End call" className="halls-call-hangup" style={{ border: 0, borderRadius: "50%", width: 36, height: 36, flexShrink: 0 }}><PhoneOff size={17}/></button>
     </div>}
@@ -459,7 +459,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         <audio ref={remoteAudio} autoPlay playsInline /><audio ref={localAudio} autoPlay muted playsInline />
         <button type="button" onClick={() => setMinimized(true)} aria-label="Minimize call" title="Minimize call" style={{ position: "absolute", top: 14, right: 14, zIndex: 3, display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--theme-line)", background: "var(--theme-surface-hover)", color: "var(--theme-text)" }}><Minus size={20}/></button>
         {kind === "audio" && <div className="halls-call-avatar halls-call-avatar-large">{peerPicture ? <img src={peerPicture} alt={peerName + " profile"} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} /> : peerName.slice(0,1).toUpperCase()}</div>}
-        {(kind !== "video" || remoteVideoReady) && <><span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2>{peerName}</h2><p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? <LoadingDots /> : formatDuration(seconds)}</p></>}
+        {(kind !== "video" || remoteVideoReady) && <><span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2 style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 5 }}>{peerName}{person?.isVerified && person.verifiedAt && <VerificationBadge size={18} />}</h2><p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? <LoadingDots /> : formatDuration(seconds)}</p></>}
         {callError && <p className="halls-call-error">{callError}</p>}
         <div className="halls-call-controls">
           <button type="button" className={muted ? "is-active" : ""} onClick={toggleMute} aria-label={muted ? "Unmute microphone" : "Mute microphone"}>{muted ? <MicOff /> : <Mic />}</button>
