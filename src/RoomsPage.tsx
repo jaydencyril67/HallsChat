@@ -146,6 +146,7 @@ export default function RoomsPage() {
   const [draft, setDraft] = useState("");
   const [replyingTo, setReplyingTo] = useState<RoomMessage | null>(null);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+  const alertJumpHandledRef = useRef("");
   const [actionMenuFor, setActionMenuFor] = useState<string | null>(null);
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -732,6 +733,22 @@ export default function RoomsPage() {
       if (list) list.scrollTop = list.scrollHeight;
       scrollOnOpenRef.current = false;
     });
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeId, messages, messagesLoading, historyLoadedFor]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedUserId = params.get("user") || "";
+    const requestedMessageId = params.get("message") || "";
+    const jumpKey = requestedUserId + ":" + requestedMessageId;
+    if (!requestedUserId || !requestedMessageId || activeId !== requestedUserId ||
+        messagesLoading || historyLoadedFor !== activeId ||
+        !messages.some(message => message.id === requestedMessageId) ||
+        alertJumpHandledRef.current === jumpKey) return;
+
+    // Reuse the same contained-scroll and temporary highlight used by reply quotes.
+    alertJumpHandledRef.current = jumpKey;
+    const frame = window.requestAnimationFrame(() => jumpToRepliedMessage(requestedMessageId));
     return () => window.cancelAnimationFrame(frame);
   }, [activeId, messages, messagesLoading, historyLoadedFor]);
 
