@@ -176,7 +176,7 @@ export default function AboutPage() {
   const sections = tab === "about" ? aboutSections : standardsSections;
 
   return (
-    <main className="home-page social-home halls-about-page">
+    <main className="home-page social-home halls-about-page theme-token-scope">
       <AppHeader homeHref="/home" />
       <section className="home-shell social-shell halls-about-shell theme-token-scope">
         <div className="globe-directory-tabs halls-about-tabs" role="tablist" aria-label="About and standards" style={{ border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)", padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
