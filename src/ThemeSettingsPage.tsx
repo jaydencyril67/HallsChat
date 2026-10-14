@@ -810,7 +810,7 @@ export default function ThemeSettingsPage() {
       </section>
       <section className="settings-theme-card" aria-label="Nowbar Button Color">
         <span className="settings-theme-title">Nowbar Button Color</span>
-        <span className="settings-theme-current" aria-live="polite"><span className="settings-alert-color-swatch" style={{ background: nowbarButtonColor }} aria-hidden="true" />{nowbarButtonColorEnabled ? "Enabled" : "Disabled"} · Navigation button borders</span>
+        <span className="settings-theme-current" aria-live="polite"><span className="settings-alert-color-swatch" style={{ background: nowbarButtonColor }} aria-hidden="true" />{nowbarButtonColorEnabled ? "Enabled" : "Disabled"}</span>
         <div className="settings-theme-menu-anchor" ref={nowbarButtonColorMenuRef}>
           <button type="button" className="settings-theme-menu-trigger" aria-label="Nowbar Button Color options" aria-haspopup="menu" aria-expanded={nowbarButtonColorMenuOpen} onClick={() => setNowbarButtonColorMenuOpen(open => !open)}><MoreHorizontal size={21} /></button>
           {nowbarButtonColorMenuOpen && <div className="settings-theme-menu settings-nowbar-button-color-menu" role="menu" aria-label="Nowbar Button Color options">
