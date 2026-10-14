@@ -178,7 +178,7 @@ export default function AboutPage() {
   return (
     <main className="home-page social-home halls-about-page">
       <AppHeader homeHref="/home" />
-      <section className="home-shell social-shell halls-about-shell">
+      <section className="home-shell social-shell halls-about-shell theme-token-scope">
         <div className="halls-about-tabs halls-list-tabs" role="tablist" aria-label="About and standards">
           <button type="button" role="tab" id="halls-about-tab" aria-controls="halls-about-panel" aria-selected={tab === "about"} className={tab === "about" ? "is-active" : ""} onClick={() => setTab("about")}>
             <BookOpen size={16} /> About
