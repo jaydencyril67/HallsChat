@@ -1,4 +1,5 @@
-import { ArrowDownRight, ArrowRight, Check, Heart, LockKeyhole, MessageCircle, Smartphone, Users, Video } from "lucide-react";
+import { ArrowDownRight, ArrowLeft, ArrowRight, Bell, Check, Heart, Home, LockKeyhole, MessageCircle, MoreHorizontal, Plus, Send, Smartphone, Users, Video, UsersRound, Compass, Sparkles } from "lucide-react";
+import { useState } from "react";
 import AppHeader from "./AppHeader";
 import { navigate } from "./utils/navigate";
 
@@ -18,6 +19,14 @@ function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 export default function LandingPage({ onSignup }: LandingPageProps) {
+  const [demoTab, setDemoTab] = useState<"chats" | "feed" | "halls" | "profile">("chats");
+  const [demoChat, setDemoChat] = useState<{ name: string; message: string } | null>(null);
+  const [demoDraft, setDemoDraft] = useState("");
+  const [demoSent, setDemoSent] = useState<string[]>([]);
+  const [demoLiked, setDemoLiked] = useState(false);
+  const [demoJoined, setDemoJoined] = useState(false);
+  const [demoNotice, setDemoNotice] = useState("");
+
   const handleLogin = () => {
     // The backend is authoritative for session validity. A client-side expiry
     // parse must not send a user to sign-in when a saved session still exists.
@@ -46,26 +55,70 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
         </div>
       </div>
 
-      <div className="landing-visual" aria-label="Preview of the HallsChat conversation interface">
+      <div className="landing-visual landing-demo-visual" aria-label="Interactive HallsChat demo phone">
         <div className="landing-orbit landing-orbit-one" />
         <div className="landing-orbit landing-orbit-two" />
-        <div className="landing-preview-window">
-          <div className="landing-preview-top">
-            <Brand compact />
-            <span className="landing-preview-status"><i /> YOUR SPACE</span>
+        <div className="landing-demo-phone">
+          <div className="landing-demo-hardware"><span /><i /></div>
+          <div className="landing-demo-screen">
+            <div className="landing-demo-status"><span>9:41</span><span>● ● ● <b>▰</b></span></div>
+            <div className="landing-demo-appbar">
+              {demoChat ? <button className="landing-demo-icon-btn" onClick={() => setDemoChat(null)} aria-label="Back to chats"><ArrowLeft size={17} /></button> : <span className="landing-demo-mini-mark"><img src="/crown-chat.svg?v=7" alt="" /></span>}
+              <div className="landing-demo-app-title"><strong>{demoChat ? demoChat.name : "HallsChat"}</strong><small>{demoChat ? "demo conversation" : "Your people, closer."}</small></div>
+              <button className="landing-demo-icon-btn" onClick={() => setDemoNotice("You're exploring a sample phone — nothing leaves this demo.")} aria-label="Demo information"><MoreHorizontal size={19} /></button>
+            </div>
+            {demoChat ? (
+              <div className="landing-demo-conversation">
+                <div className="landing-demo-date">TODAY · SAMPLE CHAT</div>
+                <div className="landing-demo-bubble landing-demo-theirs">{demoChat.message}</div>
+                <div className="landing-demo-bubble landing-demo-mine">This looks so good! 😊</div>
+                {demoSent.map((message, index) => <div className="landing-demo-bubble landing-demo-mine" key={index}>{message}</div>)}
+                <form className="landing-demo-composer" onSubmit={event => { event.preventDefault(); if (demoDraft.trim()) { setDemoSent(items => [...items, demoDraft.trim()]); setDemoDraft(""); setDemoNotice("Demo message sent locally ✨"); } }}>
+                  <input value={demoDraft} onChange={event => setDemoDraft(event.target.value)} placeholder="Try a message…" aria-label="Type a demo message" />
+                  <button type="submit" aria-label="Send demo message"><Send size={15} /></button>
+                </form>
+                <p className="landing-demo-local-note"><LockKeyhole size={10} /> Demo only · Messages aren't delivered</p>
+              </div>
+            ) : (
+              <>
+                <div className="landing-demo-welcome"><div><span>YOUR LITTLE CORNER OF THE WORLD</span><h3>Good morning,<br /><em>you.</em> ✨</h3><p>There's always someone to check in on.</p></div><div className="landing-demo-avatar landing-demo-avatar-you">Y</div></div>
+                <div className="landing-demo-stories-label"><strong>People moments</strong><button onClick={() => setDemoNotice("Stories in this preview are just examples.")}>See all</button></div>
+                <div className="landing-demo-stories">
+                  <button className="landing-demo-story" onClick={() => setDemoNotice("Your story composer would open in the real app.")}><span className="landing-demo-story-ring landing-demo-story-add"><Plus size={16} /></span><small>Your story</small></button>
+                  <button className="landing-demo-story" onClick={() => setDemoNotice("Emily's sample story ✨")}><span className="landing-demo-story-ring landing-demo-story-one">EC</span><small>Emily</small></button>
+                  <button className="landing-demo-story" onClick={() => setDemoNotice("James's sample story 📸")}><span className="landing-demo-story-ring landing-demo-story-two">JW</span><small>James</small></button>
+                  <button className="landing-demo-story" onClick={() => setDemoNotice("Olivia's sample story 💛")}><span className="landing-demo-story-ring landing-demo-story-three">OB</span><small>Olivia</small></button>
+                </div>
+                <div className="landing-demo-section-title"><strong>{demoTab === "chats" ? "Recent conversations" : demoTab === "feed" ? "Around your world" : demoTab === "halls" ? "Find your people" : "Your demo profile"}</strong><span>•••</span></div>
+                {demoTab === "chats" && <div className="landing-demo-chat-list">
+                  <button className="landing-demo-chat-row" onClick={() => { setDemoChat({name:"Emily Carter",message:"That photo came out so good 😂"}); setDemoSent([]); }}><span className="landing-demo-person landing-demo-person-rose">EC</span><span className="landing-demo-chat-copy"><strong>Emily Carter</strong><small>That photo came out so good 😂</small></span><time>9:28</time><i>2</i></button>
+                  <button className="landing-demo-chat-row" onClick={() => { setDemoChat({name:"James Wilson",message:"You have to see this place we found."}); setDemoSent([]); }}><span className="landing-demo-person landing-demo-person-blue">JW</span><span className="landing-demo-chat-copy"><strong>James Wilson</strong><small><Video size={11} /> Voice message · 0:18</small></span><time>9:12</time></button>
+                  <button className="landing-demo-chat-row" onClick={() => { setDemoChat({name:"Olivia Bennett",message:"Are we still on for this weekend? 😊"}); setDemoSent([]); }}><span className="landing-demo-person landing-demo-person-gold">OB</span><span className="landing-demo-chat-copy"><strong>Olivia Bennett</strong><small>Are we still on for this weekend? 😊</small></span><time>Yesterday</time></button>
+                </div>}
+                {demoTab === "feed" && <div className="landing-demo-feed">
+                  <article><div className="landing-demo-feed-author"><span className="landing-demo-person landing-demo-person-rose">EC</span><span><strong>Emily Carter</strong><small>12 minutes ago · Everyone</small></span></div><p>Little things lately have been the big things. 🤎</p><div className="landing-demo-feed-photo">☀️<span>slow mornings, good coffee</span></div><button onClick={() => setDemoLiked(value => !value)} className={demoLiked ? "is-liked" : ""}><Heart size={14} fill={demoLiked ? "currentColor" : "none"} /> {demoLiked ? "You and 24 others" : "24"} · Like</button></article>
+                  <div className="landing-demo-feed-tip"><Sparkles size={14} /> A feed for the moments worth sharing.</div>
+                </div>}
+                {demoTab === "halls" && <div className="landing-demo-halls">
+                  <article><span className="landing-demo-hall-icon">✦</span><div><strong>The Cozy Corner</strong><small>Friends · 1.2k members</small></div><button onClick={() => setDemoJoined(value => !value)}>{demoJoined ? "Joined ✓" : "Join"}</button></article>
+                  <article><span className="landing-demo-hall-icon landing-demo-hall-icon-warm">☕</span><div><strong>Daily Good Things</strong><small>Lifestyle · 860 members</small></div><button onClick={() => setDemoNotice("Welcome to Daily Good Things — demo only!")}>Explore</button></article>
+                  <p>Shared interests. Familiar faces. Room to belong.</p>
+                </div>}
+                {demoTab === "profile" && <div className="landing-demo-profile"><div className="landing-demo-profile-cover"><span>✦</span></div><div className="landing-demo-profile-avatar">Y</div><strong>Your demo profile</strong><small>@yourcorner</small><p>Your people, your stories, your space.</p><div><span><b>18</b> posts</span><span><b>246</b> followers</span><span><b>180</b> following</span></div><button onClick={() => setDemoNotice("Profile editing is disabled in this interactive preview.")}>Edit profile</button></div>}
+              </>
+            )}
+            {!demoChat && <div className="landing-demo-bottom-nav">
+              <button className={demoTab === "chats" ? "active" : ""} onClick={() => setDemoTab("chats")}><MessageCircle size={16} /><small>Chats</small></button>
+              <button className={demoTab === "feed" ? "active" : ""} onClick={() => setDemoTab("feed")}><Home size={16} /><small>Feed</small></button>
+              <button className={demoTab === "halls" ? "active" : ""} onClick={() => setDemoTab("halls")}><UsersRound size={16} /><small>Halls</small></button>
+              <button className={demoTab === "profile" ? "active" : ""} onClick={() => setDemoTab("profile")}><Users size={16} /><small>You</small></button>
+            </div>}
+            {demoNotice && <button className="landing-demo-toast" onClick={() => setDemoNotice("")}>{demoNotice}<span>×</span></button>}
           </div>
-          <div className="landing-preview-content">
-            <div className="landing-preview-greeting"><small>MONDAY, 9:41 AM</small><h3>A good day to<br />check in. <span>♥</span></h3><p>Little moments make a big difference.</p></div>
-            <div className="landing-preview-section-label">RECENT CONVERSATIONS <span>•••</span></div>
-            <div className="landing-preview-chat"><div className="landing-person landing-person-rose">EC</div><div className="landing-preview-chat-copy"><strong>Emily Carter</strong><span>That photo came out so good 😂</span></div><time>9:28</time><i className="landing-unread">2</i></div>
-            <div className="landing-preview-chat"><div className="landing-person landing-person-blue">JW</div><div className="landing-preview-chat-copy"><strong>James Wilson</strong><span>Sent you a voice message</span></div><time>9:12</time></div>
-            <div className="landing-preview-chat"><div className="landing-person landing-person-gold">OB</div><div className="landing-preview-chat-copy"><strong>Olivia Bennett</strong><span>Are we still on for this weekend? 😊</span></div><time>Yesterday</time></div>
-            <div className="landing-preview-message"><span>✦</span><p>Some messages are small.<br /><strong>The feeling isn't.</strong></p></div>
-          </div>
-          <div className="landing-preview-bottom"><span className="landing-preview-nav-active"><MessageCircle size={15} /> Chats</span><span><Users size={15} /> People</span><span><Video size={15} /> Calls</span></div>
+          <div className="landing-demo-home-indicator" />
         </div>
-        <div className="landing-float-card landing-float-top"><span className="landing-float-icon"><Heart size={15} fill="currentColor" /></span><span><strong>Stay connected</strong><small>Even in the little moments</small></span></div>
-        <div className="landing-float-card landing-float-bottom"><span className="landing-float-icon landing-float-icon-light"><LockKeyhole size={15} /></span><span><strong>Your space, your pace</strong><small>A calmer way to catch up</small></span><Check size={15} className="landing-float-check" /></div>
+        <div className="landing-float-card landing-float-top"><span className="landing-float-icon"><Heart size={15} fill="currentColor" /></span><span><strong>Made for your people</strong><small>Little moments, kept close</small></span></div>
+        <div className="landing-float-card landing-float-bottom"><span className="landing-float-icon landing-float-icon-light"><LockKeyhole size={15} /></span><span><strong>Just a little preview</strong><small>Explore freely — it's all pretend</small></span><Check size={15} className="landing-float-check" /></div>
       </div>
       <a href="#why-hallschat" className="landing-scroll-hint"><span /> SCROLL TO EXPLORE</a>
     </section>
