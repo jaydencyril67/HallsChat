@@ -76,10 +76,7 @@ export default function PublicProfilePage({ userId, onClose }: { userId: string;
 
   return <div className="social-public-profile-modal" role="dialog" aria-modal="true" aria-label="Public profile" onClick={onClose}>
     <main className="home-page social-home public-profile-page theme-token-scope public-profile-modal-panel" onClick={event => event.stopPropagation()}>
-      <header className="social-public-profile-modal-header">
-        <strong>Profile</strong>
-        <button type="button" onClick={onClose} aria-label="Close public profile" title="Close profile"><X size={21} /></button>
-      </header>
+      <button className="public-profile-modal-close" type="button" onClick={onClose} aria-label="Close public profile" title="Close profile"><X size={22} /></button>
     <section className="home-shell social-shell theme-token-scope public-profile-modal-scroll" style={{ paddingBottom: 24 }}>
       <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "0 0 24px", boxSizing: "border-box" }}>
         {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", minHeight: 260 }}><LoadingDots /></div> :
