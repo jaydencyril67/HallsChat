@@ -7,7 +7,8 @@ type IncomingHallCall = { callId: string; groupId: string; kind: "audio" | "vide
 type PeerState = { pc: RTCPeerConnection; stream?: MediaStream };
 type Props = { socket: Socket | null; hallId: string; hallName: string; currentUserId: string };
 
-const rtcConfig: RTCConfiguration = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }] };
+const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+const fallbackIceServers: RTCIceServer[] = [{ urls: "stun:stun.l.google.com:19302" }, { urls: "stun:stun1.l.google.com:19302" }];
 
 export default function HallsCallPanel({ socket, hallId, hallName, currentUserId }: Props) {
   const [incoming, setIncoming] = useState<IncomingHallCall | null>(null);
@@ -25,6 +26,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
   const confirmPopoutRef = useRef<HTMLDivElement | null>(null);
   const [confirmPopoutPosition, setConfirmPopoutPosition] = useState({ left: 8, top: 8 });
   const localStreamRef = useRef<MediaStream | null>(null);
+  const iceServersRef = useRef<RTCIceServer[]>(fallbackIceServers);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const peersRef = useRef<Map<string, PeerState>>(new Map());
   const pendingIceRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
@@ -61,7 +63,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
   const ensurePeer = useCallback((peerId: string) => {
     const existing = peersRef.current.get(peerId);
     if (existing) return existing.pc;
-    const pc = new RTCPeerConnection(rtcConfig);
+    const pc = new RTCPeerConnection({ iceServers: iceServersRef.current });
     localStreamRef.current?.getTracks().forEach(track => pc.addTrack(track, localStreamRef.current as MediaStream));
     pc.onicecandidate = event => {
       if (event.candidate) socketRef.current?.emit("group-call:signal", { callId: callIdRef.current, toUserId: peerId, signalType: "ice", payload: event.candidate.toJSON() });
@@ -86,6 +88,22 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
   }, []);
 
   const startLocalMedia = useCallback(async (callKind: "audio" | "video") => {
+    // Reuse the backend's ICE/TURN configuration for Hall calls, not STUN-only
+    // connectivity. Fall back to public STUN if the ICE endpoint is unavailable.
+    const token = localStorage.getItem("hallschat_token");
+    if (token) {
+      try {
+        const response = await fetch(`${apiBase}/api/calls/ice-servers`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const payload = await response.json().catch(() => ({})) as { iceServers?: RTCIceServer[] };
+        if (response.ok && Array.isArray(payload.iceServers) && payload.iceServers.length) {
+          iceServersRef.current = payload.iceServers;
+        }
+      } catch {
+        iceServersRef.current = fallbackIceServers;
+      }
+    }
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         echoCancellation: true,
