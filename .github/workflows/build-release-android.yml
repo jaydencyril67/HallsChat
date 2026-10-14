@@ -182,29 +182,83 @@ jobs:
           set -euo pipefail
           mkdir -p android/app/src/main/res/drawable-nodpi android/app/src/main/res/values-v31
 
-          # Render the exact same SVG used by the HallsChat PWA/app icon.
-          # Do not redraw the crown-chat artwork as a separate Android vector.
-          node - <<'NODE'
-          const sharp = require('sharp');
-          // Keep the Android 11 full splash logo at its existing size.
-          sharp('public/crown-chat.svg')
-            // Android 11 displays this image inside a 213dp layer item. Keep the
-            // full 512px canvas, but scale the visible artwork to 50% to match
-            // CryBots' internally scaled native splash vector.
-            .resize(256, 256, { fit: 'contain' })
-            .extend({ top: 128, bottom: 128, left: 128, right: 128, background: { r: 0, g: 0, b: 0, alpha: 0 } })
-            .png()
-            .toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png')
-            .then(() => sharp('public/crown-chat.svg')
-              // Android 12 treats the drawable's intrinsic size as the splash icon.
-              // Preserve the existing 432px canvas with a 224px visible mark.
-              .resize(224, 224, { fit: 'contain' })
-              .extend({ top: 104, bottom: 104, left: 104, right: 104, background: { r: 0, g: 0, b: 0, alpha: 0 } })
-              .png()
-              .toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_icon.png'))
-            .then(() => console.log('Generated HallsChat splash assets from public/crown-chat.svg'))
-            .catch((err) => { console.error(err); process.exit(1); });
-          NODE
+          # Use native Android VectorDrawable assets on BOTH legacy and Android 12+.
+          # They reproduce public/crown-chat.svg with vector paths and gradients;
+          # no PNG splash-logo assets are generated. The art scale matches the
+          # existing 256/512 legacy canvas and 224/432 Android 12+ canvas.
+          cat > android/app/src/main/res/drawable/hallschat_splash_logo.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:aapt="http://schemas.android.com/aapt"
+              android:width="432dp"
+              android:height="432dp"
+              android:viewportWidth="512"
+              android:viewportHeight="512">
+              <group android:translateX="160" android:translateY="160" android:scaleX="0.5" android:scaleY="0.5">
+                  <path android:pathData="M43,0 H149 A43,43 0 0 1 192,43 V149 A43,43 0 0 1 149,192 H43 A43,43 0 0 1 0,149 V43 A43,43 0 0 1 43,0 Z">
+                      <aapt:attr name="android:fillColor">
+                          <gradient android:type="linear" android:startX="12" android:startY="8" android:endX="180" android:endY="184">
+                              <item android:color="#54152D" android:offset="0" />
+                              <item android:color="#210812" android:offset="1" />
+                          </gradient>
+                      </aapt:attr>
+                  </path>
+                  <group android:translateX="17.904" android:translateY="18.904" android:scaleX="0.81225" android:scaleY="0.81225">
+                      <group android:translateY="2">
+                          <path android:pathData="M42,42h108c11,0 20,9 20,20v54c0,11 -9,20 -20,20H91l-29,22 6,-22H42c-11,0 -20,-9 -20,-20V62c0,-11 9,-20 20,-20Z" android:fillColor="#12060D" android:fillAlpha="0.25" android:translateY="4" />
+                      </group>
+                      <path android:pathData="M42,37h108c11,0 20,9 20,20v54c0,11 -9,20 -20,20H91l-29,22 6,-22H42c-11,0 -20,-9 -20,-20V57c0,-11 9,-20 20,-20Z" android:strokeColor="#FFF9F5" android:strokeWidth="2">
+                          <aapt:attr name="android:fillColor">
+                              <gradient android:type="linear" android:startX="48" android:startY="47" android:endX="145" android:endY="139">
+                                  <item android:color="#FFF8F2" android:offset="0" />
+                                  <item android:color="#EFC1CF" android:offset="1" />
+                              </gradient>
+                          </aapt:attr>
+                      </path>
+                      <path android:pathData="M52,75 68,89 87,61 105,89 124,61 141,75 132,105H61Z" android:fillColor="#74213F" android:strokeColor="#74213F" android:strokeLineJoin="round" android:strokeWidth="3" />
+                      <path android:pathData="M61,113h71" android:fillColor="#00000000" android:strokeColor="#74213F" android:strokeWidth="6" android:strokeLineCap="round" />
+                      <path android:pathData="M57,75a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M92,61a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M129,61a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M146,75a5,5 0 1,1 -10,0a5,5 0 1,1 10,0" android:fillColor="#74213F" />
+                  </group>
+              </group>
+          </vector>
+          XML
+
+          cat > android/app/src/main/res/drawable/hallschat_splash_icon.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:aapt="http://schemas.android.com/aapt"
+              android:width="432dp"
+              android:height="432dp"
+              android:viewportWidth="432"
+              android:viewportHeight="432">
+              <group android:translateX="104" android:translateY="104" android:scaleX="1.1666667" android:scaleY="1.1666667">
+                  <path android:pathData="M43,0 H149 A43,43 0 0 1 192,43 V149 A43,43 0 0 1 149,192 H43 A43,43 0 0 1 0,149 V43 A43,43 0 0 1 43,0 Z">
+                      <aapt:attr name="android:fillColor">
+                          <gradient android:type="linear" android:startX="12" android:startY="8" android:endX="180" android:endY="184">
+                              <item android:color="#54152D" android:offset="0" />
+                              <item android:color="#210812" android:offset="1" />
+                          </gradient>
+                      </aapt:attr>
+                  </path>
+                  <group android:translateX="17.904" android:translateY="18.904" android:scaleX="0.81225" android:scaleY="0.81225">
+                      <group android:translateY="2">
+                          <path android:pathData="M42,42h108c11,0 20,9 20,20v54c0,11 -9,20 -20,20H91l-29,22 6,-22H42c-11,0 -20,-9 -20,-20V62c0,-11 9,-20 20,-20Z" android:fillColor="#12060D" android:fillAlpha="0.25" android:translateY="4" />
+                      </group>
+                      <path android:pathData="M42,37h108c11,0 20,9 20,20v54c0,11 -9,20 -20,20H91l-29,22 6,-22H42c-11,0 -20,-9 -20,-20V57c0,-11 9,-20 20,-20Z" android:strokeColor="#FFF9F5" android:strokeWidth="2">
+                          <aapt:attr name="android:fillColor">
+                              <gradient android:type="linear" android:startX="48" android:startY="47" android:endX="145" android:endY="139">
+                                  <item android:color="#FFF8F2" android:offset="0" />
+                                  <item android:color="#EFC1CF" android:offset="1" />
+                              </gradient>
+                          </aapt:attr>
+                      </path>
+                      <path android:pathData="M52,75 68,89 87,61 105,89 124,61 141,75 132,105H61Z" android:fillColor="#74213F" android:strokeColor="#74213F" android:strokeLineJoin="round" android:strokeWidth="3" />
+                      <path android:pathData="M61,113h71" android:fillColor="#00000000" android:strokeColor="#74213F" android:strokeWidth="6" android:strokeLineCap="round" />
+                      <path android:pathData="M57,75a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M92,61a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M129,61a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M146,75a5,5 0 1,1 -10,0a5,5 0 1,1 10,0" android:fillColor="#74213F" />
+                  </group>
+              </group>
+          </vector>
+          XML
 
           cat > /tmp/hallschat_branding.svg <<'SVG'
           <svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320">
