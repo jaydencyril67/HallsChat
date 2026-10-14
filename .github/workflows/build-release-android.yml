@@ -102,11 +102,19 @@ jobs:
           # Do not redraw the crown-chat artwork as a separate Android vector.
           node - <<'NODE'
           const sharp = require('sharp');
+          // Keep the Android 11 full splash logo at its existing size.
           sharp('public/crown-chat.svg')
             .resize(512, 512, { fit: 'contain' })
             .png()
             .toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png')
-            .then(() => console.log('Generated native splash from public/crown-chat.svg'))
+            .then(() => sharp('public/crown-chat.svg')
+              // Android 12 treats the drawable's intrinsic size as the splash icon.
+              // Match CryBots' 432dp canvas with a ~224dp visible mark, not a full-canvas logo.
+              .resize(224, 224, { fit: 'contain' })
+              .extend({ top: 104, bottom: 104, left: 104, right: 104, background: { r: 0, g: 0, b: 0, alpha: 0 } })
+              .png()
+              .toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_icon.png'))
+            .then(() => console.log('Generated HallsChat splash assets from public/crown-chat.svg'))
             .catch((err) => { console.error(err); process.exit(1); });
           NODE
 
@@ -181,7 +189,7 @@ jobs:
           <resources>
               <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
                   <item name="android:windowSplashScreenBackground">@color/hallschat_splash_background</item>
-                  <item name="android:windowSplashScreenAnimatedIcon">@drawable/hallschat_splash_logo</item>
+                  <item name="android:windowSplashScreenAnimatedIcon">@drawable/hallschat_splash_icon</item>
                   <item name="android:windowSplashScreenBrandingImage">@drawable/hallschat_branding</item>
                   <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
               </style>
