@@ -1,4 +1,4 @@
-const CACHE_NAME = "hallschat-pwa-v40";
+const CACHE_NAME = "hallschat-pwa-v41";
 const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest?v=5", "/crown-chat.svg?v=11"];
 const CACHEABLE_EXTENSIONS = [".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".webp", ".ico", ".woff", ".woff2"];
 
@@ -32,7 +32,17 @@ self.addEventListener("push", (event) => {
     tag: typeof payload.tag === "string" ? payload.tag : "hallschat-alert",
     data: { url: typeof payload.url === "string" && payload.url.startsWith("/") && !payload.url.startsWith("//") ? payload.url : "/notifications" },
     icon: "/crown-chat.svg?v=11",
-    badge: "/crown-chat.svg?v=11"
+    badge: "/crown-chat.svg?v=11",
+    requireInteraction: payload.type === "incoming-call",
+    renotify: payload.type === "incoming-call",
+    vibrate: payload.type === "incoming-call" ? [350, 180, 350, 180, 700] : [180, 100, 180],
+    data: {
+      url: typeof payload.url === "string" && payload.url.startsWith("/") && !payload.url.startsWith("//") ? payload.url : "/notifications",
+      type: typeof payload.type === "string" ? payload.type : "alert",
+      callId: typeof payload.callId === "string" ? payload.callId : "",
+      callerId: typeof payload.callerId === "string" ? payload.callerId : "",
+      kind: typeof payload.kind === "string" ? payload.kind : ""
+    }
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
