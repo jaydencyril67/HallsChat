@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, Plus, Pencil, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical, Phone, Video } from "lucide-react";
+import { ArrowLeft, ArrowUp, Plus, Pencil, Pin, PinOff, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical, Phone, Video } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -140,6 +140,7 @@ function VoiceNotePlayer({ src, pending = false }: { src: string; pending?: bool
 export default function RoomsPage() {
   const [people, setPeople] = useState<RoomPerson[]>([]);
   const [conversationMenuFor, setConversationMenuFor] = useState<string | null>(null);
+  const [pinnedConversationIds, setPinnedConversationIds] = useState<string[]>([]);
   const [activeId, setActiveId] = useState("");
   const [messages, setMessages] = useState<RoomMessage[]>([]);
   const [conversationCalls, setConversationCalls] = useState<RoomCall[]>([]);
@@ -211,7 +212,30 @@ export default function RoomsPage() {
   const [swipingMessageId, setSwipingMessageId] = useState<string | null>(null);
   const [messageSwipeOffset, setMessageSwipeOffset] = useState(0);
   const activePerson = useMemo(() => people.find(person => person.id === activeId) || null, [people, activeId]);
-  const visiblePeople = people;
+  const visiblePeople = useMemo(() => [...people].sort((a, b) => {
+    const aPinned = pinnedConversationIds.includes(a.id);
+    const bPinned = pinnedConversationIds.includes(b.id);
+    return aPinned === bPinned ? 0 : aPinned ? -1 : 1;
+  }), [people, pinnedConversationIds]);
+
+  useEffect(() => {
+    if (!currentUserId) { setPinnedConversationIds([]); return; }
+    try {
+      const saved = localStorage.getItem("hallschat_pinned_conversations:" + currentUserId);
+      const parsed: unknown = saved ? JSON.parse(saved) : [];
+      setPinnedConversationIds(Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : []);
+    } catch { setPinnedConversationIds([]); }
+  }, [currentUserId]);
+
+  function togglePinnedConversation(personId: string) {
+    if (!currentUserId) { setError("Your account is still loading. Please try again."); return; }
+    setPinnedConversationIds(current => {
+      const next = current.includes(personId) ? current.filter(id => id !== personId) : [personId, ...current];
+      try { localStorage.setItem("hallschat_pinned_conversations:" + currentUserId, JSON.stringify(next)); } catch { setError("Pinned conversations couldn't be saved on this device."); }
+      return next;
+    });
+    setConversationMenuFor(null);
+  }
   activeIdRef.current = activeId;
   currentUserIdRef.current = currentUserId;
 
@@ -1085,11 +1109,11 @@ export default function RoomsPage() {
             {visiblePeople.map(person => <article key={person.id} className={`rooms-person-row ${activeId === person.id ? "rooms-person-row-active" : ""} ${conversationMenuFor === person.id ? "rooms-person-row-menu-open" : ""}`} onClick={() => setConversationMenuFor(current => current === person.id ? null : person.id)}>
               <button type="button" className="rooms-person-avatar-link" onClick={event => { event.stopPropagation(); navigate("/users/" + encodeURIComponent(person.id)); }} aria-label={"View " + person.name + " profile"}><Avatar person={person} /></button>
               <div className="rooms-person-copy" aria-label={`Conversation details for ${person.name}`}>
-                <strong>{person.name}</strong><small>@{person.username} · {person.activeStatusHidden ? "Recent" : person.isOnline ? "Online" : "Offline"}</small><span className="rooms-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
+                <strong>{person.name}{pinnedConversationIds.includes(person.id) && <Pin size={12} className="rooms-pinned-indicator" aria-label="Pinned conversation" />}</strong><small>@{person.username} · {person.activeStatusHidden ? "Recent" : person.isOnline ? "Online" : "Offline"}</small><span className="rooms-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </div>
               <span className="rooms-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="rooms-lock-dot" title="Messaging unavailable">•</span>}</span>
               <button type="button" className="rooms-open-button" onClick={event => { event.stopPropagation(); setConversationMenuFor(null); scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open Room"><MessageCircle size={18} /></button>
-              {conversationMenuFor === person.id && <div className="rooms-conversation-menu-anchor" onClick={event => event.stopPropagation()}><div className="rooms-conversation-delete-popout" role="menu" aria-label={`Conversation options for ${person.name}`}><button type="button" role="menuitem" onClick={() => deleteConversationForMe(person.id, person.name)}><Trash2 size={15} />Delete conversation</button></div></div>}
+              {conversationMenuFor === person.id && <div className="rooms-conversation-menu-anchor" onClick={event => event.stopPropagation()}><div className="rooms-conversation-delete-popout" role="menu" aria-label={`Conversation options for ${person.name}`}><button type="button" role="menuitem" onClick={() => togglePinnedConversation(person.id)}>{pinnedConversationIds.includes(person.id) ? <PinOff size={15} /> : <Pin size={15} />}{pinnedConversationIds.includes(person.id) ? "Unpin conversation" : "Pin conversation"}</button><button type="button" role="menuitem" onClick={() => deleteConversationForMe(person.id, person.name)}><Trash2 size={15} />Delete conversation</button></div></div>}
             </article>)}
           </div> : <div className="rooms-list-empty"><UsersRound size={24} /><strong>{people.length ? "No conversations here" : "No followers yet"}</strong><p>{people.length ? "Your message list is clear. New conversations will appear here." : "When someone follows you, you can start a conversation with them here."}</p></div>}
         </aside>
