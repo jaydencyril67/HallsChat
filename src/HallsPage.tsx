@@ -17,7 +17,7 @@ type HallSummary = { id: string; name: string; description: string; visibility: 
 type Member = { id: string; name: string; username: string; profilePicture?: string; isVerified?: boolean; verifiedAt?: string | null; role: "owner" | "admin" | "member"; joinedAt?: string };
 type HallReply = { id: string; senderId: string; text?: string; imageUrl?: string; audioUrl?: string; deleted?: boolean };
 type HallReaction = { userId: string; emoji: string };
-type HallMessage = { id: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: HallReply | null; reactions?: HallReaction[]; deletedForEveryone?: boolean; createdAt: string; editedAt?: string | null; pending?: boolean; callLog?: { kind: "audio" | "video"; status: "ringing" | "missed" | "declined" | "cancelled" | "completed" | "failed"; durationSeconds: number; callerId: string; startedAt?: string; endedAt?: string } | null; sender: { id: string; name: string; username: string; profilePicture?: string } | null };
+type HallMessage = { id: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: HallReply | null; reactions?: HallReaction[]; deletedForEveryone?: boolean; createdAt: string; editedAt?: string | null; pending?: boolean; callLog?: { kind: "audio" | "video"; status: "ringing" | "missed" | "declined" | "cancelled" | "completed" | "failed"; durationSeconds: number; callerId: string; startedAt?: string; endedAt?: string } | null; sender: { id: string; name: string; username: string; profilePicture?: string; isVerified?: boolean; verifiedAt?: string | null } | null };
 type HallDetail = HallSummary & { members: Member[] };
 type Tab = "mine" | "discover";
 
