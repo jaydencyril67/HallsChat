@@ -17,8 +17,15 @@ function startCallTone(kind: "incoming" | "outgoing") {
   const playBurst = () => {
     if (stopped || context.state === "closed") return;
     const now = context.currentTime;
+    // Incoming calls use a familiar telephone-style double ring. Keep the
+    // outgoing dialer tone exactly as it was.
     const notes = kind === "incoming"
-      ? [{ at: 0, duration: 0.32, frequency: 440 }, { at: 0.42, duration: 0.32, frequency: 480 }, { at: 0.9, duration: 0.32, frequency: 440 }]
+      ? [
+          { at: 0, duration: 0.42, frequency: 440 },
+          { at: 0, duration: 0.42, frequency: 480 },
+          { at: 0.62, duration: 0.42, frequency: 440 },
+          { at: 0.62, duration: 0.42, frequency: 480 }
+        ]
       : [{ at: 0, duration: 1.15, frequency: 440 }, { at: 0, duration: 1.15, frequency: 480 }];
     notes.forEach(note => {
       const oscillator = context.createOscillator();
