@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { FileText, Camera, Trash2, LogOut, Eye, Mail } from "lucide-react";
+import { FileText, Camera, Trash2, LogOut, Eye, Mail, Pencil, Check } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -8,7 +8,7 @@ import StoryImageCropModal from "./components/StoryImageCropModal";
 import { navigate } from "./utils/navigate";
 import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
 
-type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string; coverPhoto?: string; followersCount?: number };
+type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string; coverPhoto?: string; followersCount?: number; profileDetailsUpdatedAt?: string | null };
 type Post = { id: string; content: string; createdAt: string; author: { id: string; name: string; username: string } | null; likeCount?: number; images?: string[]; poll?: { question: string; options?: { id: string; text: string; voteCount: number; votedByMe?: boolean }[] } | null };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -32,6 +32,10 @@ export default function ProfilePage() {
   const [coverDeleteConfirm, setCoverDeleteConfirm] = useState(false);
   const [coverBusy, setCoverBusy] = useState(false);
   const [coverCropSource, setCoverCropSource] = useState<string | null>(null);
+  const [editingProfileDetails, setEditingProfileDetails] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editUsername, setEditUsername] = useState("");
+  const [profileDetailsBusy, setProfileDetailsBusy] = useState(false);
   const coverInput = useRef<HTMLInputElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -116,6 +120,48 @@ export default function ProfilePage() {
   const initials = user?.name?.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
   const panel: React.CSSProperties = { border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)" };
   const muted: React.CSSProperties = { color: "var(--theme-muted)" };
+
+  function formatProfileName(value: string) {
+    return value.toLocaleLowerCase().replace(/(^|\s)(\S)/g, (_match, space: string, character: string) => space + character.toLocaleUpperCase()).trim();
+  }
+
+  async function saveProfileDetails() {
+    if (profileDetailsBusy) return;
+    const name = formatProfileName(editName);
+    const username = editUsername.trim().toLowerCase();
+    if (name.length < 2 || name.length > 80) { setPictureError("Enter a full name between 2 and 80 characters."); return; }
+    if (!/^[a-z0-9_.]{3,24}$/.test(username)) { setPictureError("Username must be 3–24 lowercase letters, numbers, underscores or periods."); return; }
+    if (!user) return;
+    if (name === user.name && username === user.username) { setEditingProfileDetails(false); return; }
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { navigate("/signin", { replace: true }); return; }
+    setProfileDetailsBusy(true);
+    setPictureError("");
+    try {
+      if (username !== user.username) {
+        const availabilityResponse = await fetch(`${apiBase}/api/auth/username-availability?username=${encodeURIComponent(username)}`);
+        const availability = await availabilityResponse.json().catch(() => ({}));
+        if (!availabilityResponse.ok) throw new Error(availability.message || "Username availability could not be checked.");
+        if (availability.valid === false || !availability.available) throw new Error(availability.message || "That username is already taken.");
+      }
+      const response = await fetch(`${apiBase}/api/auth/profile-details`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name, username })
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Your profile details couldn't be updated.");
+      setUser(current => current ? { ...current, name: payload.user.name, username: payload.user.username, profileDetailsUpdatedAt: payload.user.profileDetailsUpdatedAt } : current);
+      setAllPosts(current => current.map(post => post.author ? { ...post, author: { ...post.author, name: payload.user.name, username: payload.user.username } } : post));
+      setEditName(payload.user.name);
+      setEditUsername(payload.user.username);
+      setEditingProfileDetails(false);
+    } catch (err) {
+      setPictureError(err instanceof Error ? err.message : "Your profile details couldn't be updated.");
+    } finally {
+      setProfileDetailsBusy(false);
+    }
+  }
 
   function selectCoverPhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -322,8 +368,20 @@ export default function ProfilePage() {
                 </div>
                 <span style={{ marginBottom: 7, padding: "6px 9px", border: "1px solid var(--theme-accent-border)", borderRadius: 999, color: "var(--theme-primary-hover)", fontSize: ".68rem", fontWeight: 800, letterSpacing: ".06em" }}>MY PROFILE</span>
               </div>
-              <h1 style={{ margin: "13px 0 4px", color: "var(--theme-text-primary)", fontSize: "clamp(1.4rem,5vw,1.9rem)", letterSpacing: "-.04em", overflowWrap: "anywhere" }}>{loading ? <LoadingDots /> : user?.name || "HallsChat member"}</h1>
-              <p style={{ margin: 0, color: "var(--theme-primary-hover)", fontSize: ".88rem" }}>{user?.username ? `@${user.username}` : "Your HallsChat account"}</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 9, marginTop: 13 }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  {editingProfileDetails ? <>
+                    <input aria-label="Full name" autoComplete="name" maxLength={80} value={editName} onChange={event => setEditName(event.target.value.toLocaleLowerCase().replace(/(^|\s)(\S)/g, (_match, space: string, character: string) => space + character.toLocaleUpperCase()))} placeholder="Full name" style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "9px 11px", border: "1px solid var(--theme-border-strong)", borderRadius: 10, background: "var(--theme-surface)", color: "var(--theme-text-primary)", font: "inherit", fontSize: "clamp(1rem,4vw,1.3rem)", fontWeight: 750 }} />
+                    <input aria-label="Username" autoComplete="username" minLength={3} maxLength={24} value={editUsername} onChange={event => setEditUsername(event.target.value.toLowerCase().replace(/\s/g, ""))} placeholder="Username" style={{ display: "block", width: "100%", boxSizing: "border-box", marginTop: 7, padding: "8px 10px", border: "1px solid var(--theme-border-strong)", borderRadius: 10, background: "var(--theme-surface)", color: "var(--theme-primary-hover)", font: "inherit", fontSize: ".88rem" }} />
+                    <small style={{ display: "block", marginTop: 6, color: "var(--theme-muted)", fontSize: ".7rem", textAlign: "left" }}>Username: 3–24 lowercase letters, numbers, underscores or periods.</small>
+                  </> : <>
+                    <h1 style={{ margin: 0, color: "var(--theme-text-primary)", fontSize: "clamp(1.4rem,5vw,1.9rem)", letterSpacing: "-.04em", overflowWrap: "anywhere" }}>{loading ? <LoadingDots /> : user?.name || "HallsChat member"}</h1>
+                    <p style={{ margin: "4px 0 0", color: "var(--theme-primary-hover)", fontSize: ".88rem", overflowWrap: "anywhere" }}>{user?.username ? `@${user.username}` : "Your HallsChat account"}</p>
+                  </>}
+                </div>
+                <button type="button" aria-label={editingProfileDetails ? "Save profile details" : "Edit full name and username"} title={editingProfileDetails ? "Save changes" : user?.profileDetailsUpdatedAt && Date.now() < new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000 ? `You can edit again on ${new Date(new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}` : "Edit full name and username"} disabled={loading || profileDetailsBusy || (!editingProfileDetails && Boolean(user?.profileDetailsUpdatedAt && Date.now() < new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000))} onClick={() => { if (editingProfileDetails) void saveProfileDetails(); else { setEditName(user?.name || ""); setEditUsername(user?.username || ""); setEditingProfileDetails(true); setPictureError(""); } }} style={{ flexShrink: 0, width: 38, height: 38, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 11, background: editingProfileDetails ? "var(--theme-primary)" : "var(--theme-action-secondary-bg)", color: editingProfileDetails ? "var(--theme-primary-contrast)" : "var(--theme-text-primary)", cursor: profileDetailsBusy ? "wait" : "pointer", opacity: loading || profileDetailsBusy || (!editingProfileDetails && Boolean(user?.profileDetailsUpdatedAt && Date.now() < new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000)) ? .55 : 1 }} aria-busy={profileDetailsBusy}>{profileDetailsBusy ? <LoadingDots /> : editingProfileDetails ? <Check size={19} /> : <Pencil size={17} />}</button>
+              </div>
+              {!editingProfileDetails && user?.profileDetailsUpdatedAt && Date.now() < new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000 && <p style={{ margin: "7px 0 0", color: "var(--theme-muted)", fontSize: ".7rem" }}>Name and username can be changed again on {new Date(new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}</p>}
               {pictureBusy && <p role="status" style={{ margin: "12px 0 0", color: "var(--theme-primary-hover)", fontSize: ".8rem" }}><LoadingDots /></p>}
               {coverBusy && <p role="status" style={{ margin: "8px 0 0", color: "var(--theme-primary-hover)", fontSize: ".8rem" }}><LoadingDots /></p>}
             </div>
