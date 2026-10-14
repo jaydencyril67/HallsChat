@@ -125,12 +125,12 @@ jobs:
           end = text.find('}', start)
           block = text[start:end]
           if 'com.google.gms:google-services' not in block:
-              text = text[:end] + "\\n        classpath 'com.google.gms:google-services:4.4.2'" + text[end:]
+              text = text[:end] + "\n        classpath 'com.google.gms:google-services:4.4.2'" + text[end:]
           root.write_text(text)
           app = Path('android/app/build.gradle')
           text = app.read_text()
           if "apply plugin: 'com.google.gms.google-services'" not in text:
-              text += "\\napply plugin: 'com.google.gms.google-services'\\n"
+              text += "\napply plugin: 'com.google.gms.google-services'\n"
           dep = "implementation platform('com.google.firebase:firebase-bom:33.7.0')"
           msg = "implementation 'com.google.firebase:firebase-messaging'"
           if dep not in text or msg not in text:
@@ -138,7 +138,7 @@ jobs:
               start = text.find(marker)
               if start < 0: raise SystemExit('Could not find app dependencies block')
               end = text.find('}', start)
-              text = text[:end] + "\\n    " + dep + "\\n    " + msg + text[end:]
+              text = text[:end] + "\n    " + dep + "\n    " + msg + text[end:]
           app.write_text(text)
           print('Configured Google Services plugin and Firebase Messaging dependency')
           PY
