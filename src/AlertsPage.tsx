@@ -16,7 +16,7 @@ type AlertItem = {
   href: string;
   readAt: string | null;
   createdAt: string;
-  actor?: { id: string; name: string; username: string; profilePicture?: string } | null;
+  actor?: { id: string; name: string; username: string; profilePicture?: string; isVerified?: boolean; verifiedAt?: string | null } | null;
 };
 type AlertFilter = "all" | "unread";
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
