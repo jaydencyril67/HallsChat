@@ -28,6 +28,7 @@ import AppThemeProvider from "./components/AppTheme";
 import SharedPostPage from "./SharedPostPage";
 import AboutPage from "./AboutPage";
 import AppUpdateMonitor from "./AppUpdateMonitor";
+import NativeFilePickerBridge from "./components/NativeFilePickerBridge";
 
 const navigationSections: Record<string, { title: string; description: string }> = {
   "/rooms": { title: "Rooms", description: "Your conversations will live here." },
@@ -386,5 +387,5 @@ export default function App() {
     page = <NavigationSectionPage title={section.title} description={section.description} />;
   } else page = <LandingPage onSignup={() => navigate("/signup")} />;
 
-  return <AppThemeProvider><>{page}<CallsPanel socket={globalCallSocket} person={null} /><GlobalModalScrollLock /><AppUpdateMonitor /></></AppThemeProvider>;
+  return <AppThemeProvider><>{page}<CallsPanel socket={globalCallSocket} person={null} /><GlobalModalScrollLock /><AppUpdateMonitor /><NativeFilePickerBridge /></></AppThemeProvider>;
 }

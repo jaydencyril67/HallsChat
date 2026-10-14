@@ -720,6 +720,168 @@ jobs:
               }
           }
           JAVA
+          cat > android/app/src/main/java/com/kingshall/hallschat/NativeGalleryPlugin.java <<'JAVA'
+          package com.kingshall.hallschat;
+          
+          import android.Manifest;
+          import android.content.ContentUris;
+          import android.database.Cursor;
+          import android.graphics.Bitmap;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.provider.MediaStore;
+          import android.util.Base64;
+          import android.util.Size;
+          
+          import com.getcapacitor.JSArray;
+          import com.getcapacitor.JSObject;
+          import com.getcapacitor.PermissionState;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import com.getcapacitor.annotation.Permission;
+          import com.getcapacitor.annotation.PermissionCallback;
+          import com.getcapacitor.PluginMethod;
+          
+          import java.io.ByteArrayOutputStream;
+          import java.io.InputStream;
+          import java.util.concurrent.ExecutorService;
+          import java.util.concurrent.Executors;
+          
+          @CapacitorPlugin(
+              name = "NativeGallery",
+              permissions = {
+                  @Permission(alias = "photosLegacy", strings = { Manifest.permission.READ_EXTERNAL_STORAGE }),
+                  @Permission(alias = "photosModern", strings = { Manifest.permission.READ_MEDIA_IMAGES })
+              }
+          )
+          public class NativeGalleryPlugin extends Plugin {
+              private final ExecutorService worker = Executors.newSingleThreadExecutor();
+          
+              private String photoPermissionAlias() {
+                  return Build.VERSION.SDK_INT >= 33 ? "photosModern" : "photosLegacy";
+              }
+          
+              private boolean hasPhotoPermission() {
+                  return getPermissionState(photoPermissionAlias()) == PermissionState.GRANTED;
+              }
+          
+              @PluginMethod
+              public void getPhotos(PluginCall call) {
+                  if (!hasPhotoPermission()) {
+                      requestPermissionForAlias(photoPermissionAlias(), call, "photosPermissionResult");
+                      return;
+                  }
+                  loadPhotos(call);
+              }
+          
+              @PermissionCallback
+              private void photosPermissionResult(PluginCall call) {
+                  if (!hasPhotoPermission()) {
+                      call.reject("Photo library permission is required to show your gallery.");
+                      return;
+                  }
+                  loadPhotos(call);
+              }
+          
+              private void loadPhotos(PluginCall call) {
+                  worker.execute(() -> {
+                      JSArray photos = new JSArray();
+                      String[] projection = {
+                          MediaStore.Images.Media._ID,
+                          MediaStore.Images.Media.DISPLAY_NAME,
+                          MediaStore.Images.Media.DATE_ADDED,
+                          MediaStore.Images.Media.BUCKET_DISPLAY_NAME
+                      };
+                      String sortOrder = MediaStore.Images.Media.DATE_ADDED + " DESC";
+                      try (Cursor cursor = getContext().getContentResolver().query(
+                              MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                              projection, null, null, sortOrder)) {
+                          if (cursor != null) {
+                              int idIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
+                              int nameIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
+                              int dateIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATE_ADDED);
+                              int bucketIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+                              while (cursor.moveToNext() && photos.length() < 200) {
+                                  long id = cursor.getLong(idIndex);
+                                  Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
+                                  JSObject item = new JSObject();
+                                  item.put("id", String.valueOf(id));
+                                  item.put("name", cursor.getString(nameIndex) == null ? "Photo" : cursor.getString(nameIndex));
+                                  item.put("dateAdded", cursor.getLong(dateIndex));
+                                  item.put("album", cursor.getString(bucketIndex) == null ? "Other" : cursor.getString(bucketIndex));
+                                  String thumbnail = makeThumbnail(uri);
+                                  if (thumbnail != null) item.put("thumbnail", "data:image/jpeg;base64," + thumbnail);
+                                  photos.put(item);
+                              }
+                          }
+                          JSObject result = new JSObject();
+                          result.put("photos", photos);
+                          call.resolve(result);
+                      } catch (Exception error) {
+                          call.reject("Unable to read photos from this device.", error);
+                      }
+                  });
+              }
+          
+              @PluginMethod
+              public void getImage(PluginCall call) {
+                  if (!hasPhotoPermission()) {
+                      call.reject("Photo library permission is required to open this image.");
+                      return;
+                  }
+                  String id = call.getString("id");
+                  if (id == null || id.isEmpty()) {
+                      call.reject("A photo identifier is required.");
+                      return;
+                  }
+                  worker.execute(() -> {
+                      try {
+                          Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, Long.parseLong(id));
+                          try (InputStream input = getContext().getContentResolver().openInputStream(uri);
+                               ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                              if (input == null) throw new IllegalStateException("Photo could not be opened.");
+                              byte[] buffer = new byte[16384];
+                              int count;
+                              while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+                              JSObject result = new JSObject();
+                              String mimeType = getContext().getContentResolver().getType(uri);
+                              if (mimeType == null || !mimeType.startsWith("image/")) mimeType = "image/jpeg";
+                              String extension = mimeType.equals("image/png") ? ".png" : mimeType.equals("image/webp") ? ".webp" : ".jpg";
+                              result.put("dataUrl", "data:" + mimeType + ";base64," + Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP));
+                              result.put("name", "photo-" + id + extension);
+                              call.resolve(result);
+                          }
+                      } catch (Exception error) {
+                          call.reject("Unable to open the selected photo.", error);
+                      }
+                  });
+              }
+          
+              private String makeThumbnail(Uri uri) {
+                  Bitmap bitmap = null;
+                  try {
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                          bitmap = getContext().getContentResolver().loadThumbnail(uri, new Size(160, 160), null);
+                      } else {
+                          long id = ContentUris.parseId(uri);
+                          bitmap = MediaStore.Images.Thumbnails.getThumbnail(
+                              getContext().getContentResolver(), id,
+                              MediaStore.Images.Thumbnails.MINI_KIND, null
+                          );
+                      }
+                      if (bitmap == null) return null;
+                      ByteArrayOutputStream output = new ByteArrayOutputStream();
+                      bitmap.compress(Bitmap.CompressFormat.JPEG, 55, output);
+                      return Base64.encodeToString(output.toByteArray(), Base64.NO_WRAP);
+                  } catch (Exception ignored) {
+                      return null;
+                  } finally {
+                      if (bitmap != null && !bitmap.isRecycled()) bitmap.recycle();
+                  }
+              }
+          }
+          JAVA
           cat > android/app/src/main/java/com/kingshall/hallschat/MainActivity.java <<'JAVA'
           package com.kingshall.hallschat;
           
@@ -730,6 +892,7 @@ jobs:
               @Override
               public void onCreate(Bundle savedInstanceState) {
                   registerPlugin(NativeAppUpdatePlugin.class);
+                  registerPlugin(NativeGalleryPlugin.class);
                   super.onCreate(savedInstanceState);
                   if (getBridge() != null && getBridge().getWebView() != null) {
                       getBridge().getWebView().setVerticalScrollBarEnabled(false);
@@ -743,6 +906,8 @@ jobs:
           path = Path('android/app/src/main/AndroidManifest.xml')
           text = path.read_text()
           permissions = [
+              '    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />',
+              '    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />',
               '    <uses-permission android:name="android.permission.CAMERA" />',
               '    <uses-permission android:name="android.permission.RECORD_AUDIO" />',
               '    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />',
