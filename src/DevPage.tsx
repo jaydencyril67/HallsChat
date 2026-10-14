@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent, type CSSProperties, type ReactNode } from "react";
-import { ArrowLeft, Check, ChevronRight, Code2, Copy, Eye, EyeOff, KeyRound, Plus, RefreshCw, RotateCw, Send, ShieldCheck, Trash2, Webhook as WebhookIcon, X } from "lucide-react";
+import { Check, ChevronRight, Code2, Copy, Eye, EyeOff, KeyRound, Plus, RefreshCw, RotateCw, Send, ShieldCheck, Trash2, Webhook as WebhookIcon, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
