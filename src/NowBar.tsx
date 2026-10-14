@@ -62,6 +62,8 @@ function getPageTitle() {
   if (path.startsWith("/notifications")) return "ALERT";
   if (path.startsWith("/settings")) return "SETTINGS";
   if (path.startsWith("/help")) return "HELP";
+  if (path === "/dev/api-keys") return "API KEYS";
+  if (path === "/dev/webhooks") return "WEBHOOKS";
   if (path.startsWith("/dev")) return "DEV";
   return "HALLSCHAT";
 }
