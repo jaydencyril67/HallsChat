@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { io } from "socket.io-client";
+import { Capacitor } from "@capacitor/core";
+import { PushNotifications } from "@capacitor/push-notifications";
 import type { Socket } from "socket.io-client";
 import CallsPanel from "./components/CallsPanel";
 import LandingPage from "./LandingPage";
@@ -130,6 +132,24 @@ export default function App() {
   const [path, setPath] = useState(() => window.location.pathname);
   const [globalCallSocket, setGlobalCallSocket] = useState<Socket | null>(null);
   const signedIn = Boolean(localStorage.getItem("hallschat_token"));
+
+  // Handle notification taps from Android even when Settings was not the open page.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return;
+    let disposed = false;
+    let listener: { remove: () => Promise<void> } | null = null;
+    void PushNotifications.addListener("pushNotificationActionPerformed", action => {
+      const target = action.notification.data?.url;
+      if (typeof target === "string" && target.startsWith("/") && !target.startsWith("//")) navigate(target);
+    }).then(handle => {
+      if (disposed) void handle.remove();
+      else listener = handle;
+    }).catch(error => console.error("Unable to attach Android notification action handler:", error));
+    return () => {
+      disposed = true;
+      if (listener) void listener.remove();
+    };
+  }, []);
 
   // Keep call signaling alive above the page router so incoming calls work on every screen.
   useEffect(() => {
