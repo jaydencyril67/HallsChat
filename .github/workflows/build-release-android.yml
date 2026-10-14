@@ -1023,7 +1023,7 @@ jobs:
           ]
           for permission in permissions:
               if permission not in text:
-                  text = text.replace("</manifest>", f'    <uses-permission android:name="{permission}" />\\n</manifest>', 1)
+                  text = text.replace("</manifest>", f'    <uses-permission android:name="{permission}" />\n</manifest>', 1)
 
           if "NativeIncomingCallMessagingService" not in text:
               declarations = '''
@@ -1035,10 +1035,10 @@ jobs:
                   </service>
                   <activity android:name=".IncomingCallActivity" android:exported="false" android:excludeFromRecents="true" android:launchMode="singleTop" android:showWhenLocked="true" android:turnScreenOn="true" android:theme="@android:style/Theme.Material.NoActionBar" />
               '''
-              text = text.replace("</application>", declarations + "\\n</application>", 1)
+              text = text.replace("</application>", declarations + "\n</application>", 1)
 
           if 'android:scheme="hallschat"' not in text:
-              match = re.search(r'<activity\\b(?=[^>]*android:name="\\.MainActivity")[\\s\\S]*?</activity>', text)
+              match = re.search(r'<activity\b(?=[^>]*android:name="\.MainActivity")[\s\S]*?</activity>', text)
               if not match:
                   raise SystemExit("Could not locate MainActivity in AndroidManifest.xml")
               block = match.group(0)
@@ -1054,7 +1054,7 @@ jobs:
                           <data android:scheme="hallschat" android:host="call" />
                       </intent-filter>
               '''
-              block = block.replace("</activity>", deep_link + "\\n</activity>", 1)
+              block = block.replace("</activity>", deep_link + "\n</activity>", 1)
               text = text[:match.start()] + block + text[match.end():]
 
           path.write_text(text)
