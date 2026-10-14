@@ -48,7 +48,7 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
     borderColor: alertColor + "b8",
     boxShadow: "0 0 0 1px color-mix(in srgb, " + alertColor + " 72%, transparent), 0 0 18px color-mix(in srgb, " + alertColor + " 48%, transparent), 0 14px 30px rgba(0,0,0,0.24)",
     animation: "halls-alert-color-pulse 1.2s ease-in-out infinite",
-    ["--halls-alert-color" as string]: alertColor,
+    ...({ "--halls-alert-color": alertColor } as CSSProperties),
   } : undefined;
 
   useEffect(() => {
