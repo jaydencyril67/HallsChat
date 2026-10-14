@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { io } from "socket.io-client";
 import { ArrowUpRight, Camera, ChartNoAxesColumn, Compass, Download, Share2, Link as LinkIcon, Heart, ImagePlus, MessageCircle, Plus, Send, ShieldCheck, UsersRound, UserRound, X, Trash2, Pencil, Check, MoreHorizontal, Eye, Palette, PaintBucket, CaseSensitive, Type } from "lucide-react";
 import AppHeader from "./AppHeader";
+import VerificationBadge from "./VerificationBadge";
 import NowBar from "./NowBar";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import StoryImageCropModal from "./components/StoryImageCropModal";
@@ -20,7 +21,7 @@ type SocialPost = {
   backgroundColor?: string;
   allowComments?: boolean;
   createdAt: string;
-  author: { id: string; name: string; username: string; profilePicture?: string } | null;
+  author: { id: string; name: string; username: string; profilePicture?: string; isVerified?: boolean } | null;
   likeCount: number;
   likedByMe: boolean;
   commentCount?: number;
@@ -1265,7 +1266,7 @@ export default function HomePage() {
             <div className="social-feed-heading"><div><span className="signup-form-kicker">THE LATEST</span><h2>Your feed</h2></div><span className="social-feed-count">{posts.length} {posts.length === 1 ? "post" : "posts"}</span></div>
             {!feedLoading && posts.length > 0 && <div className="social-post-list">
               {posts.map(post => <article className="social-post" id={`post-${post.id}`} key={post.id}>
-                <div className="social-post-head">{post.author?.profilePicture ? <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, overflow: "hidden", cursor: "pointer" }}><img src={post.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></button> : <span className="social-avatar" aria-hidden="true">{initials(post.author?.name || "HallsChat member")}</span>}<div className="social-post-author" style={{ padding: 0, border: 0, background: "var(--theme-transparent)", color: "inherit", textAlign: "left" }}><strong>{post.author?.name || "HallsChat member"}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div><div className="social-post-delete-wrap" style={{ position: "relative", marginLeft: "auto", flexShrink: 0 }}>
+                <div className="social-post-head">{post.author?.profilePicture ? <button type="button" className="social-avatar" onClick={() => post.author?.id && navigate("/users/" + encodeURIComponent(post.author.id))} aria-label={"View " + (post.author?.name || "member") + " profile"} style={{ border: 0, padding: 0, overflow: "hidden", cursor: "pointer" }}><img src={post.author.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover" }} /></button> : <span className="social-avatar" aria-hidden="true">{initials(post.author?.name || "HallsChat member")}</span>}<div className="social-post-author" style={{ padding: 0, border: 0, background: "var(--theme-transparent)", color: "inherit", textAlign: "left" }}><strong style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>{post.author?.name || "HallsChat member"}{post.author?.isVerified && <VerificationBadge size={15} />}</strong><span>@{post.author?.username || "member"} · {timeAgo(post.createdAt)}</span></div><div className="social-post-delete-wrap" style={{ position: "relative", marginLeft: "auto", flexShrink: 0 }}>
 <button type="button" className="social-post-action-muted" onClick={() => { setPostActionMenuId(current => current === post.id ? null : post.id); setPostDeleteConfirmId(null); }} aria-label="Post options" aria-haspopup="menu" aria-expanded={postActionMenuId === post.id} title="Post options" style={{ width: 36, height: 36, minWidth: 36, padding: 0, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 10, background: "var(--theme-surface-hover)", color: "var(--theme-text)", cursor: "pointer" }}><MoreHorizontal size={19} /></button>
 {postActionMenuId === post.id && <div role="menu" aria-label="Post options" style={{ position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 9, width: 190, padding: 6, display: "grid", gap: 4, border: "1px solid var(--theme-border)", borderRadius: 12, background: "var(--theme-popover-bg)", boxShadow: "var(--theme-shadow-card-soft)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
 <button type="button" role="menuitem" onClick={() => void sharePost(post)} style={{ minHeight: 36, display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", border: 0, borderRadius: 8, background: "var(--theme-transparent)", color: "var(--theme-text)", textAlign: "left", cursor: "pointer", fontSize: ".8rem" }}><Share2 size={15} /> Share post</button>
