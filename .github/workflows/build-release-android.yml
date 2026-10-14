@@ -755,6 +755,311 @@ jobs:
           path.write_text(text)
           PY
 
+      - name: Add native Android incoming-call screen and actions
+        run: |
+          set -euo pipefail
+          mkdir -p android/app/src/main/java/com/kingshall/hallschat
+          cat > android/app/src/main/java/com/kingshall/hallschat/NativeIncomingCallMessagingService.java <<'JAVA'
+          package com.kingshall.hallschat;
+
+          import android.app.Notification;
+          import android.app.NotificationChannel;
+          import android.app.NotificationManager;
+          import android.app.PendingIntent;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.graphics.Color;
+          import android.os.Build;
+          import android.media.AudioAttributes;
+          import android.net.Uri;
+          import com.capacitorjs.plugins.pushnotifications.MessagingService;
+          import com.google.firebase.messaging.RemoteMessage;
+          import java.util.Map;
+
+          public class NativeIncomingCallMessagingService extends MessagingService {
+              private static final String CHANNEL_ID = "hallschat_incoming_calls";
+
+              @Override
+              public void onMessageReceived(RemoteMessage message) {
+                  Map<String, String> data = message.getData();
+                  if (!"incoming-call".equals(data.get("type"))) {
+                      super.onMessageReceived(message);
+                      return;
+                  }
+
+                  String callId = data.get("callId");
+                  if (callId == null || callId.trim().isEmpty()) return;
+                  String caller = data.get("callerName");
+                  if (caller == null || caller.trim().isEmpty()) caller = "HallsChat user";
+                  String kind = "video".equals(data.get("kind")) ? "video" : "audio";
+                  String title = data.get("title");
+                  if (title == null || title.trim().isEmpty()) title = "Incoming " + kind + " call";
+                  String body = data.get("body");
+                  if (body == null || body.trim().isEmpty()) body = caller + " is calling you on HallsChat.";
+
+                  Context context = getApplicationContext();
+                  NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                  if (manager == null) return;
+                  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                      NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Incoming calls", NotificationManager.IMPORTANCE_HIGH);
+                      channel.setDescription("Incoming HallsChat audio and video calls");
+                      channel.enableVibration(true);
+                      channel.setVibrationPattern(new long[] {0, 350, 180, 350, 180, 700});
+                      channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+                      channel.setBypassDnd(false);
+                      manager.createNotificationChannel(channel);
+                  }
+
+                  int notificationId = callId.hashCode();
+                  Intent screenIntent = new Intent(context, IncomingCallActivity.class);
+                  screenIntent.putExtra("callId", callId);
+                  screenIntent.putExtra("callerName", caller);
+                  screenIntent.putExtra("kind", kind);
+                  screenIntent.setAction("hallschat.call.screen." + callId);
+                  PendingIntent fullScreen = PendingIntent.getActivity(context, notificationId,
+                      screenIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                  Intent answerIntent = new Intent(context, IncomingCallActivity.class);
+                  answerIntent.putExtras(screenIntent);
+                  answerIntent.putExtra("callAction", "answer");
+                  answerIntent.setAction("hallschat.call.answer." + callId);
+                  PendingIntent answer = PendingIntent.getActivity(context, notificationId + 1,
+                      answerIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                  Intent declineIntent = new Intent(context, IncomingCallActivity.class);
+                  declineIntent.putExtras(screenIntent);
+                  declineIntent.putExtra("callAction", "decline");
+                  declineIntent.setAction("hallschat.call.decline." + callId);
+                  PendingIntent decline = PendingIntent.getActivity(context, notificationId + 2,
+                      declineIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+                  Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                      ? new Notification.Builder(context, CHANNEL_ID)
+                      : new Notification.Builder(context);
+                  builder.setSmallIcon(android.R.drawable.sym_call_incoming)
+                      .setContentTitle(title)
+                      .setContentText(body)
+                      .setCategory(Notification.CATEGORY_CALL)
+                      .setVisibility(Notification.VISIBILITY_PUBLIC)
+                      .setPriority(Notification.PRIORITY_MAX)
+                      .setAutoCancel(false)
+                      .setOngoing(true)
+                      .setTimeoutAfter(60000)
+                      .setVibrate(new long[] {0, 350, 180, 350, 180, 700})
+                      .setContentIntent(fullScreen)
+                      .setFullScreenIntent(fullScreen, true)
+                      .addAction(new Notification.Action.Builder(android.R.drawable.sym_action_call, "Answer", answer).build())
+                      .addAction(new Notification.Action.Builder(android.R.drawable.ic_menu_close_clear_cancel, "Decline", decline).build());
+                  manager.notify(notificationId, builder.build());
+              }
+          }
+          JAVA
+
+          cat > android/app/src/main/java/com/kingshall/hallschat/IncomingCallActivity.java <<'JAVA'
+          package com.kingshall.hallschat;
+
+          import android.app.Activity;
+          import android.app.NotificationManager;
+          import android.content.Context;
+          import android.content.Intent;
+          import android.graphics.Color;
+          import android.graphics.Typeface;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.os.Bundle;
+          import android.view.Gravity;
+          import android.view.WindowManager;
+          import android.widget.Button;
+          import android.widget.LinearLayout;
+          import android.widget.TextView;
+
+          public class IncomingCallActivity extends Activity {
+              private String callId = "";
+              private String callerName = "HallsChat user";
+              private String kind = "audio";
+
+              @Override
+              protected void onCreate(Bundle state) {
+                  super.onCreate(state);
+                  if (Build.VERSION.SDK_INT >= 27) {
+                      setShowWhenLocked(true);
+                      setTurnScreenOn(true);
+                  }
+                  getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+                      | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                      | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                      | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+
+                  Intent intent = getIntent();
+                  callId = value(intent.getStringExtra("callId"), "");
+                  callerName = value(intent.getStringExtra("callerName"), "HallsChat user");
+                  kind = "video".equals(intent.getStringExtra("kind")) ? "video" : "audio";
+                  String action = intent.getStringExtra("callAction");
+                  if ("answer".equals(action) || "decline".equals(action)) {
+                      openApp(action);
+                      return;
+                  }
+                  renderCallScreen();
+              }
+
+              private String value(String value, String fallback) {
+                  return value == null || value.trim().isEmpty() ? fallback : value;
+              }
+
+              private void renderCallScreen() {
+                  getWindow().getDecorView().setSystemUiVisibility(0);
+                  getWindow().setStatusBarColor(Color.rgb(25, 7, 11));
+                  getWindow().setNavigationBarColor(Color.rgb(25, 7, 11));
+                  LinearLayout root = new LinearLayout(this);
+                  root.setOrientation(LinearLayout.VERTICAL);
+                  root.setGravity(Gravity.CENTER);
+                  root.setPadding(32, 48, 32, 48);
+                  root.setBackgroundColor(Color.rgb(25, 7, 11));
+
+                  TextView brand = new TextView(this);
+                  brand.setText("HallsChat");
+                  brand.setTextColor(Color.rgb(239, 193, 207));
+                  brand.setTextSize(15);
+                  brand.setLetterSpacing(0.12f);
+                  brand.setGravity(Gravity.CENTER);
+                  root.addView(brand, new LinearLayout.LayoutParams(-1, -2));
+
+                  TextView avatar = new TextView(this);
+                  avatar.setText(callerName.isEmpty() ? "H" : callerName.substring(0, 1).toUpperCase());
+                  avatar.setTextColor(Color.rgb(255, 248, 242));
+                  avatar.setTextSize(38);
+                  avatar.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+                  avatar.setGravity(Gravity.CENTER);
+                  avatar.setBackgroundColor(Color.rgb(84, 21, 45));
+                  LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(112, 112);
+                  avatarParams.gravity = Gravity.CENTER;
+                  avatarParams.topMargin = 64;
+                  avatarParams.bottomMargin = 28;
+                  root.addView(avatar, avatarParams);
+
+                  TextView name = new TextView(this);
+                  name.setText(callerName);
+                  name.setTextColor(Color.rgb(255, 248, 242));
+                  name.setTextSize(26);
+                  name.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+                  name.setGravity(Gravity.CENTER);
+                  root.addView(name, new LinearLayout.LayoutParams(-1, -2));
+
+                  TextView label = new TextView(this);
+                  label.setText("Incoming " + kind + " call");
+                  label.setTextColor(Color.rgb(239, 193, 207));
+                  label.setTextSize(16);
+                  label.setGravity(Gravity.CENTER);
+                  LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(-1, -2);
+                  labelParams.topMargin = 12;
+                  labelParams.bottomMargin = 72;
+                  root.addView(label, labelParams);
+
+                  Button answer = new Button(this);
+                  answer.setText("Answer");
+                  answer.setTextColor(Color.WHITE);
+                  answer.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.rgb(35, 135, 85)));
+                  root.addView(answer, buttonParams());
+                  answer.setOnClickListener(v -> openApp("answer"));
+
+                  Button decline = new Button(this);
+                  decline.setText("Decline");
+                  decline.setTextColor(Color.WHITE);
+                  decline.setBackgroundTintList(android.content.res.ColorStateList.valueOf(Color.rgb(160, 43, 67)));
+                  LinearLayout.LayoutParams declineParams = buttonParams();
+                  declineParams.topMargin = 16;
+                  root.addView(decline, declineParams);
+                  decline.setOnClickListener(v -> openApp("decline"));
+
+                  setContentView(root);
+              }
+
+              private LinearLayout.LayoutParams buttonParams() {
+                  LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, 58);
+                  params.gravity = Gravity.CENTER;
+                  return params;
+              }
+
+              private void openApp(String action) {
+                  if (callId.isEmpty()) {
+                      finish();
+                      return;
+                  }
+                  NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                  if (manager != null) manager.cancel(callId.hashCode());
+                  Uri uri = new Uri.Builder().scheme("hallschat").authority("call")
+                      .appendQueryParameter("action", action)
+                      .appendQueryParameter("callId", callId)
+                      .appendQueryParameter("callerName", callerName)
+                      .appendQueryParameter("kind", kind)
+                      .build();
+                  Intent launch = getPackageManager().getLaunchIntentForPackage(getPackageName());
+                  if (launch == null) {
+                      finish();
+                      return;
+                  }
+                  launch.setAction(Intent.ACTION_VIEW);
+                  launch.setData(uri);
+                  launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                  startActivity(launch);
+                  finish();
+              }
+          }
+          JAVA
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          path = Path("android/app/src/main/AndroidManifest.xml")
+          text = path.read_text()
+          if 'xmlns:tools=' not in text:
+              text = text.replace('xmlns:android="http://schemas.android.com/apk/res/android"', 'xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"', 1)
+
+          permissions = [
+              "android.permission.USE_FULL_SCREEN_INTENT",
+              "android.permission.WAKE_LOCK",
+              "android.permission.VIBRATE",
+              "android.permission.POST_NOTIFICATIONS",
+          ]
+          for permission in permissions:
+              if permission not in text:
+                  text = text.replace("</manifest>", f'    <uses-permission android:name="{permission}" />\\n</manifest>', 1)
+
+          if "NativeIncomingCallMessagingService" not in text:
+              declarations = '''
+                  <service android:name="com.capacitorjs.plugins.pushnotifications.MessagingService" tools:node="remove" />
+                  <service android:name=".NativeIncomingCallMessagingService" android:exported="false">
+                      <intent-filter>
+                          <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                      </intent-filter>
+                  </service>
+                  <activity android:name=".IncomingCallActivity" android:exported="false" android:excludeFromRecents="true" android:launchMode="singleTop" android:showWhenLocked="true" android:turnScreenOn="true" android:theme="@android:style/Theme.Material.NoActionBar" />
+              '''
+              text = text.replace("</application>", declarations + "\\n</application>", 1)
+
+          if 'android:scheme="hallschat"' not in text:
+              match = re.search(r'<activity\\b(?=[^>]*android:name="\\.MainActivity")[\\s\\S]*?</activity>', text)
+              if not match:
+                  raise SystemExit("Could not locate MainActivity in AndroidManifest.xml")
+              block = match.group(0)
+              opening = block[:block.find(">") + 1]
+              if 'android:launchMode=' not in opening:
+                  opening = opening[:-1] + ' android:launchMode="singleTask">'
+                  block = opening + block[len(block[:block.find(">") + 1]):]
+              deep_link = '''
+                      <intent-filter android:autoVerify="false">
+                          <action android:name="android.intent.action.VIEW" />
+                          <category android:name="android.intent.category.DEFAULT" />
+                          <category android:name="android.intent.category.BROWSABLE" />
+                          <data android:scheme="hallschat" android:host="call" />
+                      </intent-filter>
+              '''
+              block = block.replace("</activity>", deep_link + "\\n</activity>", 1)
+              text = text[:match.start()] + block + text[match.end():]
+
+          path.write_text(text)
+          print("Configured native incoming-call screen, full-screen notification actions, and hallschat://call deep links")
+          PY
       - name: Prepare release signing
         env:
           GH_TOKEN: ${{ github.token }}
