@@ -1121,9 +1121,12 @@ export default function ThemeSettingsPage() {
       {visibilityError && <p className="settings-theme-current" role="status">{visibilityError}</p>}
       {callsPrivacyError && <p className="settings-theme-current" role="status">{callsPrivacyError}</p>}
       {activeStatusError && <p className="settings-theme-current" role="status">{activeStatusError}</p>}
-      <section className="settings-theme-card" aria-label="Download App">
-        <span className="settings-theme-title">Download App</span>
-        <span className="settings-theme-current" aria-live="polite">{pwaInstalled ? "PWA installed" : "APK · Web App"}</span>
+      <section className="settings-theme-card settings-download-app-card" aria-label="Download App">
+        <div className="settings-download-app-details">
+          <span className="settings-theme-title">Download App</span>
+          <span className="settings-theme-current" aria-live="polite">{pwaInstalled ? "PWA installed" : "APK · Web App"}</span>
+          {Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && <span className="settings-theme-current" aria-live="polite">{apkUpdate.status === "checking" ? "Checking APK version…" : apkUpdate.status === "update" ? "Update available · v" + (apkUpdate.latestVersion || "latest") : apkUpdate.status === "current" ? "Latest APK installed · v" + (apkUpdate.installedVersion || "") : "APK version unavailable"}</span>}
+        </div>
         <div className="settings-theme-menu-anchor" ref={downloadAppMenuRef}>
           <button
             type="button"
@@ -1160,7 +1163,6 @@ export default function ThemeSettingsPage() {
             </button>
           </div>}
         </div>
-        {Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && <span className="settings-theme-current" aria-live="polite">{apkUpdate.status === "checking" ? "Checking APK version…" : apkUpdate.status === "update" ? "Update available · v" + (apkUpdate.latestVersion || "latest") : apkUpdate.status === "current" ? "Latest APK installed · v" + (apkUpdate.installedVersion || "") : "APK version unavailable"}</span>}
       </section>
     </section>
     {alertColorModalOpen && <AlertColorModal color={alertColor} onChange={saveAlertColor} onClose={closeAlertColorModal} />}
