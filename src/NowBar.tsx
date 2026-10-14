@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, CircleHelp, Code2, ContactRound, Globe, Home, MessagesSquare, Phone, Settings, UsersRound, UserRound } from "lucide-react";
+import { ChevronDown, CircleHelp, Code2, ContactRound, Globe, Home, Info, MessagesSquare, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
 const getNowbarFeature = (key: string) => { try { return window.localStorage.getItem(key) !== "false"; } catch { return true; } };
-const swipeRoutes = ["/home", "/rooms", "/halls", "/profile", "/calls", "/groups", "/settings", "/help", "/dev"];
+const swipeRoutes = ["/home", "/rooms", "/halls", "/profile", "/calls", "/groups", "/settings", "/help", "/about", "/dev"];
 
 type View = "title" | "actions";
 type Mode = "compact" | "expanded";
@@ -44,6 +44,7 @@ const actions = [
   { label: "HALLS", icon: UsersRound },
   { label: "SETTINGS", icon: Settings },
   { label: "HELP", icon: CircleHelp },
+  { label: "ABOUT", icon: Info },
   { label: "DEV", icon: Code2 },
 ];
 
@@ -62,6 +63,7 @@ function getPageTitle() {
   if (path.startsWith("/notifications")) return "ALERT";
   if (path.startsWith("/settings")) return "SETTINGS";
   if (path.startsWith("/help")) return "HELP";
+  if (path.startsWith("/about")) return "ABOUT";
   if (path === "/dev/api-keys") return "API KEYS";
   if (path === "/dev/webhooks") return "WEBHOOKS";
   if (path.startsWith("/dev")) return "DEV";
@@ -250,6 +252,7 @@ export default function NowBar() {
       HALLS: "/groups",
       SETTINGS: "/settings",
       HELP: "/help",
+      ABOUT: "/about",
       DEV: "/dev",
     };
     setActiveAction(label);
