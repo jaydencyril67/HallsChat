@@ -116,7 +116,6 @@ export default function VerificationPanel() {
           <form onSubmit={event => { event.preventDefault(); void submitRequest(); }} style={{ display: "grid", gap: 10 }}>
             <input aria-label="Email verification code" autoComplete="one-time-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={event => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit email code" style={fieldStyle} />
             <button type="submit" disabled={busy || !/^\d{6}$/.test(code)} style={{ ...buttonStyle, width: "100%", background: "var(--theme-primary)", color: "var(--theme-primary-contrast)", borderColor: "var(--theme-primary)", opacity: busy || !/^\d{6}$/.test(code) ? .6 : 1 }}>{busy ? <LoadingDots /> : <><Send size={15} /> Submit verification request</>}</button>
-            <button type="button" onClick={() => { setCodeSent(false); setCode(""); setMessage(""); }} disabled={busy} style={{ ...buttonStyle, width: "100%" }}>Cancel</button>
           </form>}
       </>}
     {message && <p role="status" style={{ margin: 0, color: "var(--theme-success)", fontSize: ".8rem" }}>{message}</p>}
