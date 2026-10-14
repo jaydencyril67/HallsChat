@@ -4243,3 +4243,14 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
     margin-right: 0 !important;
   }
 }
+
+
+/* Developer API keys and webhooks: full-width actions with equal-width row buttons. */
+.dev-tools-page button{box-sizing:border-box;min-width:0;max-width:100%;}
+.dev-tools-page form button,
+.dev-tools-page article button{width:100%;}
+.dev-tools-page form [style*="display: grid"]>button,
+.dev-tools-page article [style*="display: grid"]>button,
+.dev-tools-page [style*="display: flex"]>button{flex:1 1 0;width:100%;min-width:0;}
+.dev-tools-page [role="tablist"]>button{flex:1 1 0;width:100%;min-width:0;}
+.dev-tools-page article [style*="justifyContent: \"space-between\""]>button{flex:0 1 auto;}
