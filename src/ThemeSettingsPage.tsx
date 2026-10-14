@@ -1,5 +1,6 @@
 import { Check, Download, Globe, MoreHorizontal, Smartphone, Store } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
+import { PushNotifications } from "@capacitor/push-notifications";
 import { NativeAppUpdate } from "./utils/nativeAppUpdate";
 import { navigate } from "./utils/navigate";
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
@@ -254,20 +255,56 @@ export default function ThemeSettingsPage() {
     if (!token || alertChannelsSaving || !alertChannelsLoaded) return;
     setAlertChannelsSaving(true);
     setAlertChannelsError("");
+    let nativeToken = localStorage.getItem("hallschat_native_push_token");
     try {
-      let pushSubscription: PushSubscription | null = null;
       if (channel === "push" && !alertChannels.push) {
-        if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) throw new Error("Push alerts are not supported by this browser.");
-        if (!pushVapidKey) throw new Error("Push alerts need the VAPID public/private keys configured on the HallsChat backend first.");
-        const permission = await Notification.requestPermission();
-        if (permission !== "granted") throw new Error("Allow notifications in your browser settings to enable push alerts.");
-        const registration = await navigator.serviceWorker.register("/sw.js");
-        await navigator.serviceWorker.ready;
-        pushSubscription = await registration.pushManager.getSubscription();
-        if (!pushSubscription) pushSubscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decodeVapidKey(pushVapidKey) });
-        const saveSubscription = await fetch(apiBase + "/api/alerts/push-subscription", { method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ subscription: pushSubscription.toJSON() }) });
-        const savePayload = await saveSubscription.json().catch(() => ({}));
-        if (!saveSubscription.ok) throw new Error(savePayload.message || "Unable to register this device for push alerts.");
+        if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android") {
+          const permission = await PushNotifications.requestPermissions();
+          if (permission.receive !== "granted") throw new Error("Allow notifications for HallsChat in Android settings to enable push alerts.");
+          const fcmToken = await new Promise<string>(async (resolve, reject) => {
+            let settled = false;
+            const registrationListener = await PushNotifications.addListener("registration", result => {
+              if (settled) return;
+              settled = true;
+              void registrationListener.remove();
+              void errorListener.remove();
+              resolve(result.value);
+            });
+            const errorListener = await PushNotifications.addListener("registrationError", error => {
+              if (settled) return;
+              settled = true;
+              void registrationListener.remove();
+              void errorListener.remove();
+              reject(new Error(error.error || "Android could not register this device for push notifications."));
+            });
+            await PushNotifications.register();
+          });
+          const saveToken = await fetch(apiBase + "/api/alerts/native-push-token", {
+            method: "POST",
+            headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+            body: JSON.stringify({ token: fcmToken })
+          });
+          const tokenPayload = await saveToken.json().catch(() => ({}));
+          if (!saveToken.ok) throw new Error(tokenPayload.message || "Unable to register this Android device for push alerts.");
+          nativeToken = fcmToken;
+          localStorage.setItem("hallschat_native_push_token", fcmToken);
+          await PushNotifications.addListener("pushNotificationActionPerformed", action => {
+            const target = action.notification.data?.url;
+            if (typeof target === "string" && target.startsWith("/")) navigate(target);
+          });
+        } else {
+          if (!( "serviceWorker" in navigator) || !( "PushManager" in window) || !( "Notification" in window)) throw new Error("Push alerts are not supported by this browser.");
+          if (!pushVapidKey) throw new Error("Push alerts need the VAPID public/private keys configured on the HallsChat backend first.");
+          const permission = await Notification.requestPermission();
+          if (permission !== "granted") throw new Error("Allow notifications in your browser settings to enable push alerts.");
+          const registration = await navigator.serviceWorker.register("/sw.js");
+          await navigator.serviceWorker.ready;
+          let pushSubscription = await registration.pushManager.getSubscription();
+          if (!pushSubscription) pushSubscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: decodeVapidKey(pushVapidKey) });
+          const saveSubscription = await fetch(apiBase + "/api/alerts/push-subscription", { method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ subscription: pushSubscription.toJSON() }) });
+          const savePayload = await saveSubscription.json().catch(() => ({}));
+          if (!saveSubscription.ok) throw new Error(savePayload.message || "Unable to register this device for push alerts.");
+        }
       }
       const next = { ...alertChannels, [channel]: !alertChannels[channel] };
       const response = await fetch(apiBase + "/api/settings/alert-channels", { method: "PATCH", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ alertChannels: next }) });
@@ -275,12 +312,17 @@ export default function ThemeSettingsPage() {
       if (!response.ok) throw new Error(payload.message || "Unable to update alert channel settings.");
       setAlertChannels(payload.alertChannels || next);
       localStorage.setItem("hallschat_alert_channels", JSON.stringify(payload.alertChannels || next));
-      if (channel === "push" && next.push === false && "serviceWorker" in navigator) {
-        const registration = await navigator.serviceWorker.getRegistration("/");
-        const subscription = await registration?.pushManager.getSubscription();
-        if (subscription) {
-          await fetch(apiBase + "/api/alerts/push-subscription", { method: "DELETE", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ endpoint: subscription.endpoint }) }).catch(() => undefined);
-          await subscription.unsubscribe().catch(() => false);
+      if (channel === "push" && next.push === false) {
+        if (Capacitor.isNativePlatform() && nativeToken) {
+          await fetch(apiBase + "/api/alerts/native-push-token", { method: "DELETE", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ token: nativeToken }) }).catch(() => undefined);
+          localStorage.removeItem("hallschat_native_push_token");
+        } else if ("serviceWorker" in navigator) {
+          const registration = await navigator.serviceWorker.getRegistration("/");
+          const subscription = await registration?.pushManager.getSubscription();
+          if (subscription) {
+            await fetch(apiBase + "/api/alerts/push-subscription", { method: "DELETE", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ endpoint: subscription.endpoint }) }).catch(() => undefined);
+            await subscription.unsubscribe().catch(() => false);
+          }
         }
       }
       window.dispatchEvent(new CustomEvent("hallschat:alert-channels-changed", { detail: payload.alertChannels || next }));
