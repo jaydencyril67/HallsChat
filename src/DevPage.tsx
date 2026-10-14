@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type FormEvent, type CSSProperties, type ReactNode } from "react";
 import { ArrowLeft, Check, ChevronRight, Code2, Copy, Eye, EyeOff, KeyRound, Plus, RefreshCw, RotateCw, Send, ShieldCheck, Trash2, Webhook as WebhookIcon, X } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -73,7 +73,7 @@ export default function DevPage() {
  const deleteHook = async (id: string) => { setBusy("delete:" + id); try { await api("/api/developer/webhooks/" + encodeURIComponent(id), { method: "DELETE", body: "{}" }); setHooks(v => v.filter(h => h.id !== id)); setHistory(v => { const n = { ...v }; delete n[id]; return n; }); setDeleting(null); setNotice("Webhook deleted."); } catch (e) { setError(e instanceof Error ? e.message : "Could not delete webhook."); } finally { setBusy(""); } };
  const retry = async (id: string, d: Delivery) => { const deliveryId = d._id || d.id || ""; setBusy("retry:" + deliveryId); try { await api("/api/developer/webhooks/" + encodeURIComponent(id) + "/deliveries/" + encodeURIComponent(deliveryId) + "/retry", { method: "POST", body: "{}" }); setNotice("Retry queued."); await loadHistory(id); } catch (e) { setError(e instanceof Error ? e.message : "Could not retry delivery."); } finally { setBusy(""); } };
  const title = section === "keys" ? "API Keys" : section === "hooks" ? "Webhooks" : "Developer tools";
- const box = (children: React.ReactNode) => <div style={{ ...panel, display: "grid", gap: 10 }}>{children}</div>;
+ const box = (children: ReactNode) => <div style={{ ...panel, display: "grid", gap: 10 }}>{children}</div>;
  const permissionForm = (value: Permissions, setter: (v: Permissions) => void) => <div style={{ display: "grid", gap: 8 }}>{areas.map(a => <div key={a.key} style={{ ...panel, padding: 10 }}><strong style={{ fontSize: 12 }}>{a.label}</strong><p style={muted}>{a.description}</p><div style={{ display: "flex", gap: 18, marginTop: 8 }}>{(["read", "write"] as const).map(action => <label key={action} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12 }}><input type="checkbox" checked={value[a.key][action]} onChange={() => setter({ ...value, [a.key]: { ...value[a.key], [action]: !value[a.key][action] } })} />{action === "read" ? "Read" : "Write"}</label>)}</div></div>)}</div>;
  return <main className="home-page social-home"><AppHeader homeHref="/home" /><section className="home-shell social-shell" aria-label="Developer tools" style={{ display: "grid", gap: 11, paddingBottom: 110 }}>
  {section !== "home" && <button type="button" style={{ ...quiet, justifySelf: "start", minHeight: 31, padding: "5px 10px" }} onClick={() => navigate("/dev")}><ArrowLeft size={14} /> Dev</button>}
