@@ -370,8 +370,12 @@ export default function App() {
   }, []);
 
 
-  const normalizedPath = path.split(/[?#]/)[0].replace(/\/$/, "") || "/";
-  const publicProfileMatch = normalizedPath.match(/^\/users\/([^/]+)$/);
+  const publicProfileMatch = path.split(/[?#]/)[0].replace(/\/$/, "").match(/^\/users\/([^/]+)$/);
+  const savedBackgroundPath = window.history.state?.hallschatProfileModal && typeof window.history.state.backgroundPath === "string"
+    ? window.history.state.backgroundPath
+    : "/halls";
+  const routePath = publicProfileMatch ? savedBackgroundPath : path;
+  const normalizedPath = routePath.split(/[?#]/)[0].replace(/\/$/, "") || "/";
   const sharedPostMatch = normalizedPath.match(/^\/post\/([^/]+)$/);
   let page: ReactNode;
   if (sharedPostMatch) page = <SharedPostPage postId={decodeURIComponent(sharedPostMatch[1])} />;
@@ -389,11 +393,18 @@ export default function App() {
   else if (normalizedPath === "/about") page = <AboutPage />;
   else if (normalizedPath === "/dev" || normalizedPath.startsWith("/dev/")) page = <DevPage />;
   else if (normalizedPath === "/notifications" || normalizedPath === "/alerts") page = <AlertsPage />;
-  else if (publicProfileMatch) page = <PublicProfilePage userId={decodeURIComponent(publicProfileMatch[1])} />;
   else if (navigationSections[normalizedPath]) {
     const section = navigationSections[normalizedPath];
     page = <NavigationSectionPage title={section.title} description={section.description} />;
   } else page = <LandingPage onSignup={() => navigate("/signup")} />;
 
-  return <AppThemeProvider><>{page}<CallsPanel socket={globalCallSocket} person={null} /><GlobalModalScrollLock /><AppUpdateMonitor /><NativeFilePickerBridge /></></AppThemeProvider>;
+  const closePublicProfile = () => {
+    if (window.history.state?.hallschatProfileModal && window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate("/halls", { replace: true });
+    }
+  };
+
+  return <AppThemeProvider><>{page}{publicProfileMatch && <PublicProfilePage key={decodeURIComponent(publicProfileMatch[1])} userId={decodeURIComponent(publicProfileMatch[1])} onClose={closePublicProfile} />}<CallsPanel socket={globalCallSocket} person={null} /><GlobalModalScrollLock /><AppUpdateMonitor /><NativeFilePickerBridge /></></AppThemeProvider>;
 }
