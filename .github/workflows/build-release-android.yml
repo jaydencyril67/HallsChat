@@ -61,6 +61,7 @@ jobs:
             @capacitor/cli@7.6.9 \
             @capacitor/assets@3.0.5 \
             @capacitor/splash-screen@7.0.3 \
+            @capacitor/push-notifications@7.0.2 \
             sharp
 
       - name: Verify HallsChat web build
@@ -92,6 +93,55 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Configure Firebase for Android push
+        env:
+          FIREBASE_GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "${FIREBASE_GOOGLE_SERVICES_JSON_BASE64:-}" ]; then
+            echo "::error::Missing FIREBASE_GOOGLE_SERVICES_JSON_BASE64 repository secret."
+            exit 1
+          fi
+          mkdir -p android/app
+          printf '%s' "$FIREBASE_GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > android/app/google-services.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('android/app/google-services.json').read_text())
+          packages = [item.get('client_info', {}).get('android_client_info', {}).get('package_name') for item in data.get('client', [])]
+          if 'com.kingshall.hallschat' not in packages:
+              raise SystemExit('Firebase config does not contain Android package com.kingshall.hallschat')
+          print('Firebase Android configuration validated for com.kingshall.hallschat')
+          PY
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('android/build.gradle')
+          text = root.read_text()
+          marker = 'dependencies {'
+          if marker not in text:
+              raise SystemExit('Could not find root Android buildscript dependencies block')
+          start = text.find(marker)
+          end = text.find('}', start)
+          block = text[start:end]
+          if 'com.google.gms:google-services' not in block:
+              text = text[:end] + "\\n        classpath 'com.google.gms:google-services:4.4.2'" + text[end:]
+          root.write_text(text)
+          app = Path('android/app/build.gradle')
+          text = app.read_text()
+          if "apply plugin: 'com.google.gms.google-services'" not in text:
+              text += "\\napply plugin: 'com.google.gms.google-services'\\n"
+          dep = "implementation platform('com.google.firebase:firebase-bom:33.7.0')"
+          msg = "implementation 'com.google.firebase:firebase-messaging'"
+          if dep not in text or msg not in text:
+              marker = 'dependencies {'
+              start = text.find(marker)
+              if start < 0: raise SystemExit('Could not find app dependencies block')
+              end = text.find('}', start)
+              text = text[:end] + "\\n    " + dep + "\\n    " + msg + text[end:]
+          app.write_text(text)
+          print('Configured Google Services plugin and Firebase Messaging dependency')
+          PY
 
       - name: Configure unified HallsChat native launch splash
         run: |
