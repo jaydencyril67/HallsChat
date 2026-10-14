@@ -152,6 +152,53 @@ export default function App() {
     };
   }, []);
 
+  // Register Android for incoming-call pushes after sign-in, separately from optional social alerts.
+  useEffect(() => {
+    if (!signedIn || !Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return;
+    let disposed = false;
+    let registrationListener: { remove: () => Promise<void> } | null = null;
+    let errorListener: { remove: () => Promise<void> } | null = null;
+    const registerDevice = async () => {
+      try {
+        let permission = await PushNotifications.checkPermissions();
+        if (permission.receive !== "granted") {
+          if (permission.receive !== "prompt") return;
+          permission = await PushNotifications.requestPermissions();
+        }
+        if (permission.receive !== "granted" || disposed) return;
+        registrationListener = await PushNotifications.addListener("registration", async result => {
+          if (disposed || !result.value) return;
+          try {
+            const savedToken = localStorage.getItem("hallschat_token");
+            if (!savedToken) return;
+            const response = await fetch((import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\\/$/, "") + "/api/alerts/native-push-token", {
+              method: "POST",
+              headers: { Authorization: "Bearer " + savedToken, "Content-Type": "application/json" },
+              body: JSON.stringify({ token: result.value })
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(payload.message || "Android call notifications could not be registered.");
+            localStorage.setItem("hallschat_native_push_token", result.value);
+          } catch (error) {
+            console.error("Android incoming-call push registration failed:", error);
+          }
+        });
+        errorListener = await PushNotifications.addListener("registrationError", error => {
+          console.error("Android push registration failed:", error.error || error);
+        });
+        await PushNotifications.register();
+      } catch (error) {
+        console.error("Unable to prepare Android incoming-call notifications:", error);
+      }
+    };
+    void registerDevice();
+    return () => {
+      disposed = true;
+      if (registrationListener) void registrationListener.remove();
+      if (errorListener) void errorListener.remove();
+    };
+  }, [signedIn]);
+
   // Native Answer/Decline actions reopen HallsChat through the hallschat://call deep link.
   useEffect(() => {
     if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return;
