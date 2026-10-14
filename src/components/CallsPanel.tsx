@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import LoadingDots from "./LoadingDots";
-import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, X, Minus, Maximize2 } from "lucide-react";
+import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, Minus } from "lucide-react";
 
 type Person = { id: string; name: string; username: string; profilePicture?: string; canMessage: boolean };
 type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; createdAt: number };
