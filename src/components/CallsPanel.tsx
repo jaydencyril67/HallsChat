@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import LoadingDots from "./LoadingDots";
+import VerificationBadge from "../VerificationBadge";
 import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, Minus } from "lucide-react";
 
-type Person = { id: string; name: string; username: string; profilePicture?: string; canMessage: boolean };
+type Person = { id: string; name: string; username: string; profilePicture?: string; canMessage: boolean; isVerified?: boolean; verifiedAt?: string | null };
 type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; createdAt: number };
 type Props = { socket: Socket | null; person: Person | null; enableIncoming?: boolean };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -438,7 +439,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
       <div className="halls-call-card">
         <div className="halls-call-avatar">{incoming.caller.profilePicture ? <img src={incoming.caller.profilePicture} alt="" /> : incoming.caller.name.slice(0,1).toUpperCase()}</div>
         <span className="halls-call-eyebrow">INCOMING {incoming.kind.toUpperCase()} CALL</span>
-        <h2>{incoming.caller.name}</h2><p>@{incoming.caller.username}</p><p className="halls-call-ring-time">Ringing…</p>
+        <h2 style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 5 }}>{incoming.caller.name}{incoming.caller.isVerified && incoming.caller.verifiedAt && <VerificationBadge size={18} />}</h2><p>@{incoming.caller.username}</p><p className="halls-call-ring-time">Ringing…</p>
         <div className="halls-call-actions">
           <button className="halls-call-decline" type="button" onClick={() => { socket?.emit("call:decline", { callId: incoming.callId }); cleanup(); }} aria-label="Decline call"><PhoneOff /></button>
           <button className="halls-call-accept" type="button" onClick={() => void acceptCall()} aria-label="Accept call"><PhoneCall /></button>
