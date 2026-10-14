@@ -5,7 +5,7 @@ import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "luc
 
 type Person = { id: string; name: string; username: string; profilePicture?: string; canMessage: boolean };
 type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; createdAt: number };
-type Props = { socket: Socket | null; person: Person | null };
+type Props = { socket: Socket | null; person: Person | null; enableIncoming?: boolean };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
 function startCallTone(kind: "incoming" | "outgoing") {
@@ -45,7 +45,7 @@ function startCallTone(kind: "incoming" | "outgoing") {
   };
 }
 
-export default function CallsPanel({ socket, person }: Props) {
+export default function CallsPanel({ socket, person, enableIncoming = true }: Props) {
   const [incoming, setIncoming] = useState<Incoming | null>(null);
   const [callId, setCallId] = useState("");
   const [kind, setKind] = useState<"audio" | "video">("audio");
@@ -262,6 +262,7 @@ export default function CallsPanel({ socket, person }: Props) {
   useEffect(() => {
     if (!socket) return;
     const onIncoming = (call: Incoming) => {
+      if (!enableIncoming) return;
       if (phaseRef.current !== "idle") {
         socket.emit("call:decline", { callId: call.callId });
         return;
@@ -313,7 +314,7 @@ export default function CallsPanel({ socket, person }: Props) {
       socket.off("call:offer", onOffer); socket.off("call:answer", onAnswer);
       socket.off("call:ice", onIce); socket.off("call:declined", onDeclined); socket.off("call:ended", onEnded);
     };
-  }, [socket, incoming?.callId, cleanup]);
+  }, [socket, incoming?.callId, cleanup, enableIncoming]);
 
   useEffect(() => {
     const toneKind = phase === "incoming" && incoming ? "incoming" : phase === "outgoing" ? "outgoing" : null;
