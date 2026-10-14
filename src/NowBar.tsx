@@ -75,6 +75,18 @@ export default function NowBar() {
   const [swipeEnabled, setSwipeEnabled] = useState(() => getNowbarFeature("hallschat_nowbar_swipe_enabled"));
   const [expandEnabled, setExpandEnabled] = useState(() => getNowbarFeature("hallschat_nowbar_expand_enabled"));
   const [edgeColorVersion, setEdgeColorVersion] = useState(0);
+  const [buttonColorVersion, setButtonColorVersion] = useState(0);
+  const buttonColorSettings = useMemo(() => {
+    try {
+      const color = localStorage.getItem("hallschat_nowbar_button_color");
+      return {
+        enabled: localStorage.getItem("hallschat_nowbar_button_color_enabled") === "true",
+        color: color && /^#[0-9a-f]{6}$/i.test(color) ? color : "#38bdf8"
+      };
+    } catch {
+      return { enabled: false, color: "#38bdf8" };
+    }
+  }, [buttonColorVersion]);
   const edgeColorSettings = useMemo(() => {
     try {
       const color = localStorage.getItem("hallschat_nowbar_color");
@@ -111,6 +123,13 @@ export default function NowBar() {
     window.addEventListener("storage", syncEdgeColor);
     window.addEventListener("hallschat:nowbar-color-changed", syncEdgeColor);
     return () => { window.removeEventListener("storage", syncEdgeColor); window.removeEventListener("hallschat:nowbar-color-changed", syncEdgeColor); };
+  }, []);
+
+  useEffect(() => {
+    const syncButtonColor = () => setButtonColorVersion(version => version + 1);
+    window.addEventListener("storage", syncButtonColor);
+    window.addEventListener("hallschat:nowbar-button-color-changed", syncButtonColor);
+    return () => { window.removeEventListener("storage", syncButtonColor); window.removeEventListener("hallschat:nowbar-button-color-changed", syncButtonColor); };
   }, []);
 
   useEffect(() => {
@@ -280,6 +299,7 @@ export default function NowBar() {
                 <button
                   type="button"
                   className={`nowbar-action ${activeAction === label ? "nowbar-action-active" : ""}`}
+                  style={buttonColorSettings.enabled ? { borderColor: buttonColorSettings.color } : undefined}
                   aria-label={label}
                   onClick={event => {
                     event.stopPropagation();
