@@ -57,6 +57,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
   const [seconds, setSeconds] = useState(0);
   const [callError, setCallError] = useState("");
   const [minimized, setMinimized] = useState(false);
+  const [remoteVideoReady, setRemoteVideoReady] = useState(false);
   const [nativeCallAction, setNativeCallAction] = useState<{ action: "answer" | "decline"; callId: string } | null>(null);
   const [pendingCallKind, setPendingCallKind] = useState<"audio" | "video" | null>(null);
   const audioTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -119,7 +120,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
     if (localAudio.current) localAudio.current.srcObject = null;
     if (remoteAudio.current) remoteAudio.current.srcObject = null;
     activeCallRef.current = "";
-    setCallId(""); setIncoming(null); setPhase("idle"); setMuted(false); setCameraOff(false); setSeconds(0); setMinimized(false);
+    setCallId(""); setIncoming(null); setPhase("idle"); setMuted(false); setCameraOff(false); setSeconds(0); setMinimized(false); setRemoteVideoReady(false);
     if (reason) setCallError(reason);
   }, []);
 
@@ -225,7 +226,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         return;
       }
       activeCallRef.current = response.callId;
-      setCallId(response.callId); setKind(callKind); setPeerName(person.name); setPeerPicture(person.profilePicture || ""); setPhase("outgoing");
+      setCallId(response.callId); setKind(callKind); setPeerName(person.name); setPeerPicture(person.profilePicture || ""); setRemoteVideoReady(false); setPhase("outgoing");
       try {
         const pc = await createPeer(response.callId, callKind === "video");
         const offer = await pc.createOffer();
@@ -414,12 +415,11 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
     </div>}
     {phase !== "idle" && phase !== "incoming" && !minimized && <div className="halls-call-backdrop" role="dialog" aria-modal="true" aria-label={kind + " call"}>
       <div className={"halls-call-stage " + (kind === "video" ? "halls-call-stage-video" : "")}>
-        {kind === "video" && <><video ref={remoteVideo} className="halls-call-remote-video" autoPlay playsInline /><video ref={localVideo} className="halls-call-local-video" autoPlay muted playsInline /></>}
+        {kind === "video" && <><video ref={remoteVideo} className="halls-call-remote-video" autoPlay playsInline onPlaying={() => setRemoteVideoReady(true)} /><video ref={localVideo} className="halls-call-local-video" autoPlay muted playsInline />{!remoteVideoReady && <div className="halls-call-waiting-video" aria-live="polite"><div className="halls-call-waiting-rings"><span /><span /><div className="halls-call-waiting-avatar">{peerPicture ? <img src={peerPicture} alt="" /> : peerName.slice(0, 1).toUpperCase()}</div></div><strong>{peerName}</strong><span>{phase === "outgoing" ? "Calling…" : "Connecting video…"}</span><div className="halls-call-waiting-dots"><i /><i /><i /></div></div>}</>}
         <audio ref={remoteAudio} autoPlay playsInline /><audio ref={localAudio} autoPlay muted playsInline />
         <button type="button" onClick={() => setMinimized(true)} aria-label="Minimize call" title="Minimize call" style={{ position: "absolute", top: 14, right: 14, zIndex: 3, display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--theme-line)", background: "var(--theme-surface-hover)", color: "var(--theme-text)" }}><Minus size={20}/></button>
         {kind === "audio" && <div className="halls-call-avatar halls-call-avatar-large">{peerPicture ? <img src={peerPicture} alt={peerName + " profile"} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} /> : peerName.slice(0,1).toUpperCase()}</div>}
-        <span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2>{peerName}</h2>
-        <p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? <LoadingDots /> : formatDuration(seconds)}</p>
+        {(kind !== "video" || remoteVideoReady) && <><span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2>{peerName}</h2><p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? <LoadingDots /> : formatDuration(seconds)}</p></>}
         {callError && <p className="halls-call-error">{callError}</p>}
         <div className="halls-call-controls">
           <button type="button" className={muted ? "is-active" : ""} onClick={toggleMute} aria-label={muted ? "Unmute microphone" : "Mute microphone"}>{muted ? <MicOff /> : <Mic />}</button>
