@@ -74,6 +74,20 @@ export default function NowBar() {
   const [pageTitle, setPageTitle] = useState(getPageTitle);
   const [swipeEnabled, setSwipeEnabled] = useState(() => getNowbarFeature("hallschat_nowbar_swipe_enabled"));
   const [expandEnabled, setExpandEnabled] = useState(() => getNowbarFeature("hallschat_nowbar_expand_enabled"));
+  const [edgeColorVersion, setEdgeColorVersion] = useState(0);
+  const edgeColorSettings = (() => {
+    try {
+      const color = localStorage.getItem("hallschat_nowbar_color");
+      const mode = localStorage.getItem("hallschat_nowbar_light_style");
+      return {
+        enabled: localStorage.getItem("hallschat_nowbar_color_enabled") === "true",
+        color: color && /^#[0-9a-f]{6}$/i.test(color) ? color : "#38bdf8",
+        mode: ["stable-light", "stable", "blink-light", "blink", "pulse-light", "pulse", "color-light", "color"].includes(mode || "") ? mode! : "stable"
+      };
+    } catch {
+      return { enabled: false, color: "#38bdf8", mode: "stable" };
+    }
+  })();
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const swipeHandled = useRef(false);
   const [activeAction, setActiveAction] = useState(() => {
@@ -90,6 +104,13 @@ export default function NowBar() {
     const syncFeatures = () => { setSwipeEnabled(getNowbarFeature("hallschat_nowbar_swipe_enabled")); setExpandEnabled(getNowbarFeature("hallschat_nowbar_expand_enabled")); };
     window.addEventListener("storage", syncFeatures); window.addEventListener("hallschat:nowbar-settings-changed", syncFeatures);
     return () => { window.removeEventListener("storage", syncFeatures); window.removeEventListener("hallschat:nowbar-settings-changed", syncFeatures); };
+  }, []);
+
+  useEffect(() => {
+    const syncEdgeColor = () => setEdgeColorVersion(version => version + 1);
+    window.addEventListener("storage", syncEdgeColor);
+    window.addEventListener("hallschat:nowbar-color-changed", syncEdgeColor);
+    return () => { window.removeEventListener("storage", syncEdgeColor); window.removeEventListener("hallschat:nowbar-color-changed", syncEdgeColor); };
   }, []);
 
   useEffect(() => {
@@ -225,7 +246,9 @@ export default function NowBar() {
     <div className={`nowbar-dock theme-fixed-dark ${view === "title" ? "nowbar-dock-title" : ""} ${mode === "expanded" && view === "actions" ? "nowbar-dock-expanded" : ""}`}>
       <div
         ref={barRef}
-        className={`nowbar-shell ${view === "title" ? "nowbar-shell-title" : "nowbar-shell-actions"} ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""}`}
+        className={`nowbar-shell ${view === "title" ? "nowbar-shell-title" : "nowbar-shell-actions"} ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""} ${edgeColorSettings.enabled ? "nowbar-edge-enabled nowbar-edge-" + edgeColorSettings.mode : ""}`}
+        style={edgeColorSettings.enabled ? ({ "--nowbar-edge-color": edgeColorSettings.color } as React.CSSProperties) : undefined}
+        data-nowbar-edge-style={edgeColorSettings.enabled ? edgeColorSettings.mode : undefined}
         role="button"
         tabIndex={0}
         aria-label={view === "title" ? `${pageTitle} page. Tap to show navigation buttons; hold to expand.` : "Navigation buttons. Tap to show current page."}
