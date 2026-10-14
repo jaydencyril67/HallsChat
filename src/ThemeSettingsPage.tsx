@@ -2,6 +2,7 @@ import { Check, Download, Globe, MoreHorizontal, Smartphone, Store } from "lucid
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { NativeAppUpdate } from "./utils/nativeAppUpdate";
+import AlertColorModal from "./AlertColorModal";
 import { navigate } from "./utils/navigate";
 import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useAppTheme } from "./components/AppTheme";
@@ -23,6 +24,14 @@ const ALERT_TYPE_GROUPS: { label: string; options: { value: AlertTypeKey; label:
 export default function ThemeSettingsPage() {
   const { themePreference, setThemePreference } = useAppTheme();
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [alertColorEnabled, setAlertColorEnabled] = useState(() => localStorage.getItem("hallschat_alert_color_enabled") !== "false");
+  const [alertColor, setAlertColor] = useState(() => {
+    const saved = localStorage.getItem("hallschat_alert_color");
+    return saved && /^#[0-9a-f]{6}$/i.test(saved) ? saved.toLowerCase() : "#e11d48";
+  });
+  const [alertColorMenuOpen, setAlertColorMenuOpen] = useState(false);
+  const [alertColorModalOpen, setAlertColorModalOpen] = useState(false);
+  const alertColorMenuRef = useRef<HTMLDivElement>(null);
   const [downloadAppMenuOpen, setDownloadAppMenuOpen] = useState(false);
   const downloadAppMenuRef = useRef<HTMLDivElement>(null);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -94,6 +103,27 @@ export default function ThemeSettingsPage() {
     : themePreference === "light"
       ? "Light"
       : "Dark";
+
+  useEffect(() => {
+    if (!alertColorMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (alertColorMenuRef.current && !alertColorMenuRef.current.contains(event.target as Node)) setAlertColorMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setAlertColorMenuOpen(false); };
+    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [alertColorMenuOpen]);
+
+  const saveAlertColorEnabled = (enabled: boolean) => {
+    setAlertColorEnabled(enabled);
+    localStorage.setItem("hallschat_alert_color_enabled", String(enabled));
+    window.dispatchEvent(new Event("hallschat:alert-color-changed"));
+    setAlertColorMenuOpen(false);
+  };
+
+  const saveAlertColor = (color: string) => {
+    setAlertColor(color);
+    localStorage.setItem("hallschat_alert_color", color);
+    window.dispatchEvent(new Event("hallschat:alert-color-changed"));
+  };
 
   useEffect(() => {
     if (!downloadAppMenuOpen) return;
@@ -661,6 +691,23 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <section className="settings-theme-card" aria-label="Alert Color">
+        <span className="settings-theme-title">Alert Color</span>
+        <span className="settings-theme-current" aria-live="polite"><span className="settings-alert-color-swatch" style={{ background: alertColor }} aria-hidden="true" />{alertColorEnabled ? "Enabled" : "Disabled"}</span>
+        <div className="settings-theme-menu-anchor" ref={alertColorMenuRef}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Alert Color options" aria-haspopup="menu" aria-expanded={alertColorMenuOpen} onClick={() => setAlertColorMenuOpen(open => !open)}>
+            <MoreHorizontal size={21} />
+          </button>
+          {alertColorMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Alert Color options">
+            <button type="button" role="menuitemcheckbox" aria-checked={alertColorEnabled} className={"settings-theme-menu-option" + (alertColorEnabled ? " is-selected" : "")} onClick={() => saveAlertColorEnabled(!alertColorEnabled)}>
+              <span>{alertColorEnabled ? "Disable" : "Enable"}</span><span>{alertColorEnabled ? "On" : "Off"}</span>{alertColorEnabled && <Check size={15} aria-hidden="true" />}
+            </button>
+            <button type="button" role="menuitem" className="settings-theme-menu-option" onClick={() => { setAlertColorMenuOpen(false); setAlertColorModalOpen(true); }}>
+              <span>Choose Color</span><span className="settings-alert-color-swatch" style={{ background: alertColor }} aria-hidden="true" />
+            </button>
+          </div>}
+        </div>
+      </section>
       <section className="settings-theme-card" aria-label="Active status">
         <span className="settings-theme-title">Active Status</span>
         <span className="settings-theme-current" aria-live="polite">{!activeStatusLoaded ? "Loading…" : activeStatusVisible ? "Shown" : "Hidden"}</span>
@@ -970,6 +1017,7 @@ export default function ThemeSettingsPage() {
         {downloadAppMessage && <span className="settings-theme-current settings-download-app-status" role="status">{downloadAppMessage}</span>}
       </section>
     </section>
+    {alertColorModalOpen && <AlertColorModal color={alertColor} onChange={saveAlertColor} onClose={() => setAlertColorModalOpen(false)} />}
     <NowBar />
   </main>;
 }
