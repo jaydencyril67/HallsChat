@@ -1,14 +1,20 @@
-import { useEffect, useState, type CSSProperties } from "react";
-import { Bell } from "lucide-react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { io } from "socket.io-client";
 import { navigate } from "./utils/navigate";
 import { dismissBackgroundTaskResult, getBackgroundTaskState, subscribeBackgroundTasks, type BackgroundTaskSnapshot } from "./utils/backgroundTasks";
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
+const UNREAD_CACHE_KEY = "hallschat_header_unread_count";
+const readCachedUnreadCount = () => {
+  if (typeof window === "undefined" || !localStorage.getItem("hallschat_token")) return 0;
+  const cached = Number(localStorage.getItem(UNREAD_CACHE_KEY));
+  return Number.isFinite(cached) && cached >= 0 ? cached : 0;
+};
+
 export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) {
   const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadCount, setUnreadCount] = useState(readCachedUnreadCount);\n  const [isAlertPulseActive, setIsAlertPulseActive] = useState(false);\n  const previousUnreadCount = useRef(readCachedUnreadCount());\n  const hasLoadedUnreadCount = useRef(localStorage.getItem(UNREAD_CACHE_KEY) !== null);\n  const alertPulseTimer = useRef<number | undefined>(undefined);
   const [taskState, setTaskState] = useState<BackgroundTaskSnapshot>(() => getBackgroundTaskState());
   const [alertColor, setAlertColor] = useState(() => {
     const saved = localStorage.getItem("hallschat_alert_color");
@@ -41,15 +47,25 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
       ? taskResult.error ? (uploadRelated(taskResult.label, taskResult.status) ? "Upload Failed" : "Send Failed") : uploadRelated(taskResult.label, taskResult.status) ? "Uploaded" : "Sent"
       : "";
 
-  // Match CryBots: illuminate the header while unread alerts exist, and also
-  // while the upload manager has a live task.
+  // Match CryBots: keep the edge steadily lit while unread alerts exist.
+  // Pulse only when a new alert arrives, never simply because a page mounted.
   const headerAlertActive = alertColorEnabled && (unreadCount > 0 || Boolean(activeTask));
   const headerAlertStyle: CSSProperties | undefined = headerAlertActive ? {
     borderColor: alertColor + "b8",
-    boxShadow: "0 0 0 1px color-mix(in srgb, " + alertColor + " 72%, transparent), 0 0 18px color-mix(in srgb, " + alertColor + " 48%, transparent), 0 14px 30px rgba(0,0,0,0.24)",
-    animation: "halls-alert-color-pulse 1.2s ease-in-out infinite",
+    boxShadow: isAlertPulseActive
+      ? "0 0 0 1px color-mix(in srgb, " + alertColor + " 72%, transparent), 0 0 18px color-mix(in srgb, " + alertColor + " 48%, transparent), 0 14px 30px rgba(0,0,0,0.24)"
+      : "0 0 0 1px color-mix(in srgb, " + alertColor + " 42%, transparent), 0 0 10px color-mix(in srgb, " + alertColor + " 24%, transparent), 0 14px 30px rgba(0,0,0,0.24)",
+    animation: isAlertPulseActive ? "halls-alert-color-pulse 1.2s ease-in-out infinite" : "none",
     ...({ "--halls-alert-color": alertColor } as CSSProperties),
   } : undefined;
+
+  const activateAlertPulse = () => {
+    setIsAlertPulseActive(true);
+    window.clearTimeout(alertPulseTimer.current);
+    alertPulseTimer.current = window.setTimeout(() => setIsAlertPulseActive(false), 10000);
+  };
+
+  useEffect(() => () => window.clearTimeout(alertPulseTimer.current), []);
 
   useEffect(() => {
     if (activeTask || !taskResult) return;
@@ -70,22 +86,39 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
 
   useEffect(() => {
     const token = localStorage.getItem("hallschat_token");
-    if (!token) { setUnreadCount(0); return; }
+    if (!token) {
+      setUnreadCount(0);
+      previousUnreadCount.current = 0;
+      hasLoadedUnreadCount.current = true;
+      localStorage.setItem(UNREAD_CACHE_KEY, "0");
+      return;
+    }
     let cancelled = false;
+    const applyUnreadCount = (value: number, allowPulse = true) => {
+      const nextCount = Math.max(0, Number(value) || 0);
+      if (allowPulse && hasLoadedUnreadCount.current && nextCount > previousUnreadCount.current) activateAlertPulse();
+      previousUnreadCount.current = nextCount;
+      hasLoadedUnreadCount.current = true;
+      localStorage.setItem(UNREAD_CACHE_KEY, String(nextCount));
+      setUnreadCount(nextCount);
+    };
     const loadCount = async () => {
       try {
         const response = await fetch(`${apiBase}/api/alerts/unread-count`, { headers: { Authorization: `Bearer ${token}` } });
         const data = await response.json();
-        if (response.ok && !cancelled) setUnreadCount(Number(data.unreadCount) || 0);
-      } catch { /* Keep the last known badge count while offline. */ }
+        if (response.ok && !cancelled) applyUnreadCount(Number(data.unreadCount) || 0);
+      } catch { /* Keep the last known badge count and steady header glow while offline. */ }
     };
     void loadCount();
     const timer = window.setInterval(() => { void loadCount(); }, 15000);
     const socket = io(apiBase, { auth: { token }, transports: ["websocket", "polling"] });
     socket.on("alert:count", (payload: { unreadCount?: number }) => {
-      if (typeof payload?.unreadCount === "number") setUnreadCount(payload.unreadCount);
+      if (typeof payload?.unreadCount === "number") applyUnreadCount(payload.unreadCount);
     });
-    socket.on("alert:new", () => { void loadCount(); });
+    socket.on("alert:new", () => {
+      activateAlertPulse();
+      void loadCount();
+    });
     return () => {
       cancelled = true;
       window.clearInterval(timer);
