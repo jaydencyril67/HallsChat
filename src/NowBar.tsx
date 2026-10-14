@@ -262,11 +262,32 @@ export default function NowBar() {
   };
 
   return (
-    <div className={`nowbar-dock theme-fixed-dark ${view === "title" ? "nowbar-dock-title" : ""} ${mode === "expanded" && view === "actions" ? "nowbar-dock-expanded" : ""}`}>
+    <>
+      <style>{`@keyframes nowbar-edge-blink-light { 0%, 42%, 100% { border-color: var(--edge-light); box-shadow: 0 18px 50px rgba(0,0,0,.82); } 48%, 94% { border-color: rgba(255,255,255,.88); box-shadow: 0 18px 50px rgba(0,0,0,.82); } }
+
+@keyframes nowbar-edge-blink-light { 0%, 42%, 100% { border-color: var(--edge-light); box-shadow: 0 18px 50px rgba(0,0,0,.82); } 48%, 94% { border-color: rgba(255,255,255,.88); box-shadow: 0 18px 50px rgba(0,0,0,.82); } }
+
+@keyframes nowbar-edge-pulse-light { 0%, 100% { border-color: var(--edge-light); filter: saturate(1); box-shadow: 0 0 0 1px var(--edge-light), 0 0 7px var(--edge-light), 0 18px 50px rgba(0,0,0,.82); } 50% { border-color: var(--edge-light); filter: saturate(1.25); box-shadow: 0 0 0 2px var(--edge-light), 0 0 16px var(--edge-light), 0 18px 50px rgba(0,0,0,.82); } }
+
+@keyframes nowbar-edge-pulse-light { 0%, 100% { border-color: var(--edge-light); filter: saturate(1); box-shadow: 0 0 0 1px var(--edge-light), 0 0 7px var(--edge-light), 0 18px 50px rgba(0,0,0,.82); } 50% { border-color: var(--edge-light); filter: saturate(1.25); box-shadow: 0 0 0 2px var(--edge-light), 0 0 16px var(--edge-light), 0 18px 50px rgba(0,0,0,.82); } }
+
+@keyframes nowbar-edge-color-light { 0% { border-color: #38bdf8; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 4% { border-color: #22d3ee; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 8% { border-color: #14b8a6; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 12% { border-color: #10b981; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 16% { border-color: #84cc16; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 20% { border-color: #eab308; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 24% { border-color: #facc15; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 28% { border-color: #f97316; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 32% { border-color: #ef4444; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 36% { border-color: #e11d48; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 40% { border-color: #db2777; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 44% { border-color: #ec4899; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 48% { border-color: #d946ef; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 52% { border-color: #a855f7; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 56% { border-color: #8b5cf6; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 60% { border-color: #6366f1; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 64% { border-color: #4f46e5; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 68% { border-color: #2563eb; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 72% { border-color: #0ea5e9; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 76% { border-color: #06b6d4; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 80% { border-color: #2dd4bf; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 84% { border-color: #34d399; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 88% { border-color: #a3e635; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 92% { border-color: #fbbf24; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 96% { border-color: #fb923c; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 100% { border-color: #38bdf8; box-shadow: 0 18px 50px rgba(0,0,0,.82); } }
+
+@keyframes nowbar-edge-color-light { 0% { border-color: #38bdf8; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 4% { border-color: #22d3ee; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 8% { border-color: #14b8a6; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 12% { border-color: #10b981; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 16% { border-color: #84cc16; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 20% { border-color: #eab308; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 24% { border-color: #facc15; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 28% { border-color: #f97316; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 32% { border-color: #ef4444; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 36% { border-color: #e11d48; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 40% { border-color: #db2777; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 44% { border-color: #ec4899; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 48% { border-color: #d946ef; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 52% { border-color: #a855f7; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 56% { border-color: #8b5cf6; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 60% { border-color: #6366f1; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 64% { border-color: #4f46e5; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 68% { border-color: #2563eb; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 72% { border-color: #0ea5e9; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 76% { border-color: #06b6d4; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 80% { border-color: #2dd4bf; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 84% { border-color: #34d399; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 88% { border-color: #a3e635; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 92% { border-color: #fbbf24; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 96% { border-color: #fb923c; box-shadow: 0 18px 50px rgba(0,0,0,.82); } 100% { border-color: #38bdf8; box-shadow: 0 18px 50px rgba(0,0,0,.82); } }`}</style>
+      <div className={`nowbar-dock theme-fixed-dark ${view === "title" ? "nowbar-dock-title" : ""} ${mode === "expanded" && view === "actions" ? "nowbar-dock-expanded" : ""}`}>
       <div
         ref={barRef}
         className={`nowbar-shell ${view === "title" ? "nowbar-shell-title" : "nowbar-shell-actions"} ${mode === "expanded" && view === "actions" ? "nowbar-shell-expanded" : ""} ${edgeColorSettings.enabled ? "nowbar-edge-enabled nowbar-edge-" + edgeColorSettings.mode : ""}`}
-        style={edgeColorSettings.enabled ? ({ "--nowbar-edge-color": edgeColorSettings.color } as React.CSSProperties) : undefined}
+        style={edgeColorSettings.enabled ? ({
+          "--edge-light": edgeColorSettings.color,
+          "--edge-light-mode": edgeColorSettings.mode,
+          borderColor: edgeColorSettings.color,
+          ...(edgeColorSettings.mode === "stable-light" ? { boxShadow: "0 18px 50px rgba(0,0,0,.82)" } : {}),
+          ...(edgeColorSettings.mode === "stable" ? { boxShadow: `0 0 0 1px rgba(255,255,255,.12), 0 0 24px ${edgeColorSettings.color}, 0 18px 50px rgba(0,0,0,.82), inset 0 1px 0 rgba(255,255,255,.12)` } : {}),
+          animation: edgeColorSettings.mode === "stable" || edgeColorSettings.mode === "stable-light" ? undefined : `nowbar-edge-${edgeColorSettings.mode} ${["blink", "blink-light", "pulse", "pulse-light"].includes(edgeColorSettings.mode) ? "3.2s" : ["color", "color-light"].includes(edgeColorSettings.mode) ? "6s" : "2.8s"} ease-in-out infinite`,
+          animationFillMode: "both",
+          willChange: "border-color, box-shadow, filter"
+        } as React.CSSProperties) : undefined}
         data-nowbar-edge-style={edgeColorSettings.enabled ? edgeColorSettings.mode : undefined}
         role="button"
         tabIndex={0}
@@ -328,5 +349,6 @@ export default function NowBar() {
         )}
       </div>
     </div>
+    </>
   );
 }
