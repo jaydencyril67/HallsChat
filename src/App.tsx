@@ -171,7 +171,7 @@ export default function App() {
           try {
             const savedToken = localStorage.getItem("hallschat_token");
             if (!savedToken) return;
-            const response = await fetch((import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\\/$/, "") + "/api/alerts/native-push-token", {
+            const response = await fetch((import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(new RegExp("/$"), "") + "/api/alerts/native-push-token", {
               method: "POST",
               headers: { Authorization: "Bearer " + savedToken, "Content-Type": "application/json" },
               body: JSON.stringify({ token: result.value })
