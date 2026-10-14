@@ -75,6 +75,8 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
   const remoteVideo = useRef<HTMLVideoElement | null>(null);
   const localAudio = useRef<HTMLAudioElement | null>(null);
   const remoteAudio = useRef<HTMLAudioElement | null>(null);
+  const remoteVideoStreamRef = useRef<MediaStream | null>(null);
+  const remoteAudioStreamRef = useRef<MediaStream | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const activeCallRef = useRef("");
@@ -126,6 +128,8 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
     if (remoteVideo.current) remoteVideo.current.srcObject = null;
     if (localAudio.current) localAudio.current.srcObject = null;
     if (remoteAudio.current) remoteAudio.current.srcObject = null;
+    remoteVideoStreamRef.current = null;
+    remoteAudioStreamRef.current = null;
     activeCallRef.current = "";
     setCallId(""); setIncoming(null); setPhase("idle"); setMuted(false); setCameraOff(false); setSeconds(0); setMinimized(false); setRemoteVideoReady(false);
     if (reason) setCallError(reason);
@@ -190,22 +194,30 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
       if (event.candidate) socket?.emit("call:ice", { callId: id, candidate: event.candidate.toJSON() });
     };
     pc.ontrack = event => {
-      // Keep incoming audio and video on separate elements. Set video muted BEFORE
-      // attaching a stream, so Android WebViews cannot briefly play its audio too.
-      if (event.track.kind === "audio" && remoteAudio.current) {
+      // Keep incoming audio and video on separate elements. Store streams even if
+      // React has not mounted the call-stage media elements yet (common on mobile).
+      if (event.track.kind === "audio") {
         const audioStream = new MediaStream([event.track]);
-        remoteAudio.current.srcObject = audioStream;
-        remoteAudio.current.muted = false;
-        void remoteAudio.current.play().catch(() => {
-          // Playback may require the user's first interaction in some mobile WebViews.
-        });
+        remoteAudioStreamRef.current = audioStream;
+        if (remoteAudio.current) {
+          remoteAudio.current.srcObject = audioStream;
+          remoteAudio.current.muted = false;
+          void remoteAudio.current.play().catch(() => {
+            // Playback may require the user's first interaction in some mobile WebViews.
+          });
+        }
       }
-      if (event.track.kind === "video" && remoteVideo.current) {
-        remoteVideo.current.muted = true;
-        remoteVideo.current.srcObject = new MediaStream([event.track]);
-        void remoteVideo.current.play().catch(() => {
-          // Ignore autoplay restrictions; the muted video is only the picture.
-        });
+      if (event.track.kind === "video") {
+        const videoStream = new MediaStream([event.track]);
+        remoteVideoStreamRef.current = videoStream;
+        setRemoteVideoReady(true);
+        if (remoteVideo.current) {
+          remoteVideo.current.muted = true;
+          remoteVideo.current.srcObject = videoStream;
+          void remoteVideo.current.play().catch(() => {
+            // Ignore autoplay restrictions; the muted video is only the picture.
+          });
+        }
       }
     };
     pc.onconnectionstatechange = () => {
@@ -360,6 +372,26 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
     if (!toneKind) return;
     return startCallTone(toneKind);
   }, [phase, incoming?.callId]);
+
+  // A remote track can arrive before the call-stage JSX mounts. Reattach any
+  // streams when the stage becomes visible so pickup reliably transitions to video.
+  useEffect(() => {
+    if (phase === "idle" || phase === "incoming") return;
+    if (remoteVideo.current && remoteVideoStreamRef.current) {
+      remoteVideo.current.muted = true;
+      if (remoteVideo.current.srcObject !== remoteVideoStreamRef.current) {
+        remoteVideo.current.srcObject = remoteVideoStreamRef.current;
+      }
+      void remoteVideo.current.play().catch(() => {});
+    }
+    if (remoteAudio.current && remoteAudioStreamRef.current) {
+      remoteAudio.current.muted = false;
+      if (remoteAudio.current.srcObject !== remoteAudioStreamRef.current) {
+        remoteAudio.current.srcObject = remoteAudioStreamRef.current;
+      }
+      void remoteAudio.current.play().catch(() => {});
+    }
+  }, [phase, kind, minimized]);
 
   useEffect(() => {
     if (phase !== "connected") return;
