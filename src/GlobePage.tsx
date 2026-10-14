@@ -5,9 +5,10 @@ import { UsersRound, UserRoundCheck, UserPlus } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
+import VerificationBadge from "./VerificationBadge";
 import { navigate } from "./utils/navigate";
 
-type GlobeUser = { id: string; name: string; username: string; profilePicture?: string; following: boolean; isOnline?: boolean; activeStatusHidden?: boolean };
+type GlobeUser = { id: string; name: string; username: string; profilePicture?: string; isVerified?: boolean; verifiedAt?: string | null; following: boolean; isOnline?: boolean; activeStatusHidden?: boolean };
 type GlobeTab = "discover" | "followers";
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
@@ -118,7 +119,7 @@ export default function GlobePage() {
             {filteredUsers.map((person) => <div className="globe-person-card" key={person.id} style={{ ...panel, display: "flex", alignItems: "center", gap: 11, padding: "13px 12px", boxShadow: "var(--theme-shadow-card-soft)" }}>
               <button className="globe-person-avatar" type="button" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} aria-label={"View " + person.name + " profile"} style={{ width: 44, height: 44, flexShrink: 0, display: "grid", placeItems: "center", overflow: "hidden", borderRadius: "50%", border: "1px solid var(--theme-avatar-border)", background: "var(--theme-avatar-gradient)", color: "var(--theme-avatar-initials-text)", fontSize: ".82rem", fontWeight: 800, padding: 0 }}>{person.profilePicture ? <img src={person.profilePicture} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} /> : initials(person.name)}</button>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <button className="globe-person-name" type="button" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} style={{ display: "block", maxWidth: "100%", padding: 0, border: 0, background: "transparent", color: "var(--theme-text-primary)", fontSize: ".88rem", fontWeight: 750, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</button>
+                <button className="globe-person-name" type="button" onClick={() => navigate("/users/" + encodeURIComponent(person.id))} style={{ display: "flex", alignItems: "center", gap: 4, maxWidth: "100%", padding: 0, border: 0, background: "transparent", color: "var(--theme-text-primary)", fontSize: ".88rem", fontWeight: 750, textAlign: "left", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{person.name}</span>{person.isVerified && person.verifiedAt && <VerificationBadge size={14} />}</button>
                 <div style={{ ...muted, marginTop: 4, fontSize: ".78rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>@{person.username}</div><div className={`presence-label ${person.activeStatusHidden ? "" : person.isOnline ? "presence-online" : "presence-offline"}`}>{!person.activeStatusHidden && <span className="presence-dot" />}{person.activeStatusHidden ? "Recent" : person.isOnline ? "Online" : "Offline"}</div>
               </div>
               <button className={`globe-follow-button ${person.following ? "is-following" : "is-not-following"}`} type="button" disabled={busyId === person.id} onClick={() => void toggleFollow(person)} style={{ minWidth: 94, minHeight: 36, padding: "8px 11px", borderRadius: 999, border: person.following ? "1px solid var(--theme-action-secondary-border)" : "1px solid var(--theme-primary)", background: person.following ? "var(--theme-action-secondary-bg)" : "linear-gradient(135deg,var(--theme-primary-hover),var(--theme-primary))", color: person.following ? "var(--theme-action-secondary-text)" : "var(--theme-primary-contrast)", fontSize: ".75rem", fontWeight: 800, opacity: busyId === person.id ? .7 : 1 }}>
