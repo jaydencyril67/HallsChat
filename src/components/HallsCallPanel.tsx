@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
+import VerificationBadge from "../VerificationBadge";
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X, Minus } from "lucide-react";
 
 type Participant = { id: string; name?: string; username?: string; profilePicture?: string };
@@ -320,7 +321,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
       <div className="halls-call-card">
         <div className="halls-call-avatar">{(incoming.caller?.name || incoming.caller?.username || hallName || "G").slice(0, 1).toUpperCase()}</div>
         <span className="halls-call-eyebrow">INCOMING HALL {incoming.kind.toUpperCase()} CALL</span>
-        <h2>{incoming.caller?.name || incoming.caller?.username || "A Hall member"}</h2>
+        <h2 style={{ display: "flex", alignItems: "center", justifyContent: "center", flexWrap: "wrap", gap: 5 }}>{incoming.caller?.name || incoming.caller?.username || "A Hall member"}{incoming.caller?.isVerified && incoming.caller?.verifiedAt && <VerificationBadge size={18} />}</h2>
         <p>{hallName}</p>
         <p className="halls-call-ring-time">Hall call ringing…</p>
         <div className="halls-call-actions">
@@ -346,7 +347,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
         {participants.map(person => <div key={person.id} style={{ position: "relative", minHeight: kind === "video" ? 150 : 110, aspectRatio: kind === "video" ? "3 / 4" : undefined, overflow: "hidden", borderRadius: 15, background: "var(--theme-surface-raised)", display: "grid", placeItems: "center" }}>
           {streams[person.id] && kind === "video" ? <video autoPlay playsInline muted ref={el => { if (el && el.srcObject !== streams[person.id]) { el.muted = true; el.srcObject = streams[person.id]; void el.play().catch(() => {}); } }} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}/> : <div style={{ width: 50, height: 50, display: "grid", placeItems: "center", borderRadius: "50%", background: "var(--theme-avatar-gradient)", color: "var(--theme-avatar-fallback-text)", fontSize: "1.2rem", fontWeight: 800 }}>{(person.name || person.username || "P").slice(0,1).toUpperCase()}</div>}
           {streams[person.id] && <audio autoPlay ref={el => { const remote = streams[person.id]; if (el && remote) { const existing = el.srcObject as MediaStream | null; const audioTrackId = remote.getAudioTracks()[0]?.id; if (!existing || existing.getAudioTracks()[0]?.id !== audioTrackId) { el.srcObject = new MediaStream(remote.getAudioTracks()); el.volume = 0.8; void el.play().catch(() => {}); } } }} />}
-          <span style={{ position: "absolute", left: 8, bottom: 8, fontSize: ".75rem", color: "var(--theme-call-video-text)", textShadow: "var(--theme-call-video-text-shadow)", background: "var(--theme-call-video-overlay)", padding: "3px 6px", borderRadius: 6 }}>{person.name || person.username || "Participant"}</span>
+          <span style={{ position: "absolute", left: 8, bottom: 8, fontSize: ".75rem", color: "var(--theme-call-video-text)", textShadow: "var(--theme-call-video-text-shadow)", background: "var(--theme-call-video-overlay)", padding: "3px 6px", borderRadius: 6 }}>{person.name || person.username || "Participant"}{person.isVerified && person.verifiedAt && <VerificationBadge size={13} />}</span>
         </div>)}
         {kind === "audio" && <video ref={localVideoRef} autoPlay playsInline muted style={{ display: "none" }}/>}
       </div>
