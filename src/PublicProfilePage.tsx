@@ -1,13 +1,14 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { ArrowLeft, MessageCircle, UserRoundCheck, UserPlus, Image as ImageIcon, CalendarDays } from "lucide-react";
 import AppHeader from "./AppHeader";
+import VerificationBadge from "./VerificationBadge";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
 
 type ProfilePost = { id: string; content: string; images: string[]; createdAt: string; likeCount: number; commentCount: number };
-type PublicUser = { id: string; name: string; username: string; profilePicture?: string; coverPhoto?: string; createdAt?: string; followersCount: number; followingCount: number; isFollowing: boolean; isSelf: boolean; canMessage: boolean; isOnline?: boolean; activeStatusHidden?: boolean };
+type PublicUser = { id: string; name: string; username: string; profilePicture?: string; coverPhoto?: string; createdAt?: string; followersCount: number; followingCount: number; isFollowing: boolean; isSelf: boolean; canMessage: boolean; isOnline?: boolean; activeStatusHidden?: boolean; isVerified?: boolean; verifiedAt?: string | null };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
 const timeAgo = (value: string) => {
@@ -88,7 +89,7 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
                   </div>
                 </div>
                 <div style={{ marginTop: 13 }}>
-                  <h1 style={{ margin: 0, color: "var(--theme-text-primary)", fontSize: "1.25rem", fontWeight: 850, letterSpacing: "-.02em" }}>{profile.name}</h1>
+                  <h1 style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 6, margin: 0, color: "var(--theme-text-primary)", fontSize: "1.25rem", fontWeight: 850, letterSpacing: "-.02em" }}>{profile.name}{profile.isVerified && profile.verifiedAt && <VerificationBadge size={19} />}</h1>
                   <div style={{ ...muted, marginTop: 4, fontSize: ".85rem" }}>@{profile.username}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 9, color: profile.activeStatusHidden ? "var(--theme-muted)" : profile.isOnline ? "var(--theme-presence-online)" : "var(--theme-presence-offline)", fontSize: ".74rem", fontWeight: 650 }}>{!profile.activeStatusHidden && <span style={{ width: 7, height: 7, borderRadius: "50%", background: profile.isOnline ? "var(--theme-presence-online)" : "var(--theme-presence-offline)" }} />}{profile.activeStatusHidden ? "Recent" : profile.isOnline ? "Online now" : "Offline"}</div>
                 </div>
