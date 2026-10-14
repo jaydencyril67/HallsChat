@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
-import { ArrowLeft, Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 
 const isHexColor = (value: string) => /^#[0-9a-f]{6}$/i.test(value);
 const hexToRgb = (hex: string) => ({ r: parseInt(hex.slice(1, 3), 16), g: parseInt(hex.slice(3, 5), 16), b: parseInt(hex.slice(5, 7), 16) });
@@ -68,19 +68,12 @@ export default function AlertColorModal({ color, onChange, onClose }: { color: s
     const next = { ...rgb, [channel]: Math.max(0, Math.min(255, Number(raw) || 0)) };
     setRgb(next); selectColor(rgbToHex(next.r, next.g, next.b));
   };
-  const surface = "var(--theme-surface, #21191d)";
   const raised = "var(--theme-surface-raised, #2a2025)";
   const line = "var(--theme-line, rgba(255,255,255,.14))";
   const text = "var(--theme-text, #fff4f0)";
-  const muted = "var(--theme-muted, #c0afb5)";
   const buttonStyle = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, minHeight: 38, padding: "0 13px", border: `1px solid ${line}`, borderRadius: 10, background: raised, color: text, fontSize: 12, fontWeight: 750, cursor: "pointer" } as const;
-  return <div className="alert-color-modal-backdrop" role="presentation" onClick={onClose}>
+  return <div className="alert-color-modal-backdrop" role="presentation">
     <section className="alert-color-modal theme-token-scope" role="dialog" aria-modal="true" aria-label="Choose alert color" onClick={event => event.stopPropagation()}>
-      <header className="alert-color-modal-header">
-        <button type="button" className="alert-color-modal-back" onClick={onClose}><ArrowLeft size={17}/> Settings</button>
-        <strong>Alert Color</strong>
-        <button type="button" className="alert-color-modal-close" onClick={onClose} aria-label="Close color picker"><X size={18}/></button>
-      </header>
       <div className="alert-color-modal-content">
         <p className="alert-color-modal-intro">Choose the color used to highlight the app header while alerts are unread or an upload is active. Your choice saves immediately.</p>
         <section className="alert-color-preview">
