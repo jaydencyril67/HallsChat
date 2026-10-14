@@ -411,6 +411,8 @@ export default function ProfilePage() {
 
           <div style={{ marginTop: 4 }}>
             <button type="button" className="button button-secondary" onClick={() => {
+              const token = localStorage.getItem("hallschat_token");
+              if (token) void fetch((import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "") + "/api/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + token } }).catch(() => undefined);
               localStorage.removeItem("hallschat_token");
               navigate("/signin", { replace: true });
             }} style={{ width: "100%", minHeight: 44, justifyContent: "center" }}><LogOut size={16} /> Logout</button>
