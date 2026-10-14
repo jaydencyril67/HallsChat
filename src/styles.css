@@ -4374,3 +4374,10 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 .social-public-profile-modal-header button{width:42px;height:42px;display:grid;place-items:center;border:1px solid var(--theme-accent-border);border-radius:13px;background:var(--theme-surface-hover);color:var(--theme-text-primary)}
 .public-profile-modal-scroll{flex:1;min-height:0;width:100%;max-width:none;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:16px!important;scrollbar-width:none}
 .public-profile-modal-scroll::-webkit-scrollbar{display:none}
+
+/* Max Device pop-out: compact, anchored, theme-aware session controls. */
+.settings-max-device-menu{width:220px;max-width:min(260px,calc(100vw - 32px));}
+.settings-max-device-number-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:7px 9px 9px;}
+.settings-max-device-number{min-width:0;min-height:34px;display:flex;align-items:center;justify-content:center;gap:2px;border:1px solid var(--theme-border,rgba(255,255,255,.14));border-radius:8px;background:var(--theme-card,transparent);color:var(--theme-text);font:inherit;font-size:13px;cursor:pointer;}
+.settings-max-device-number.is-selected{border-color:var(--theme-accent,#e07889);background:var(--theme-accent-soft,rgba(224,120,137,.14));}
+.settings-max-device-number:disabled{opacity:.55;cursor:wait;}
