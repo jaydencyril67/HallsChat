@@ -30,7 +30,6 @@ self.addEventListener("push", (event) => {
   const options = {
     body: typeof payload.body === "string" ? payload.body : "You have a new alert.",
     tag: typeof payload.tag === "string" ? payload.tag : "hallschat-alert",
-    data: { url: typeof payload.url === "string" && payload.url.startsWith("/") && !payload.url.startsWith("//") ? payload.url : "/notifications" },
     icon: "/crown-chat.svg?v=11",
     badge: "/crown-chat.svg?v=11",
     requireInteraction: payload.type === "incoming-call",
