@@ -4242,3 +4242,40 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 .alert-color-modal-backdrop{position:fixed;inset:0;z-index:2000;display:flex;align-items:stretch;justify-content:center;background:var(--theme-bg,#170f13);color:var(--theme-text,#fff4f0);overscroll-behavior:contain}
 .alert-color-modal{display:flex;flex-direction:column;width:100%;height:100%;min-height:0;overflow:hidden;border:0;border-radius:0;background:var(--theme-bg,#170f13);color:var(--theme-text,#fff4f0);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);box-sizing:border-box;box-shadow:none}
 .alert-color-modal-content{width:min(620px,100%);margin:0 auto;padding:12px 14px max(12px,env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain;box-sizing:border-box;flex:1;border:0;border-radius:0;background:transparent;box-shadow:none}
+
+
+/* Nowbar Color: CryBots-style edge lighting modes, controlled from Settings. */
+.settings-nowbar-color-menu{width:190px;max-height:min(62vh,430px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.settings-nowbar-color-menu::-webkit-scrollbar{display:none}
+.settings-nowbar-light-option>span:first-child{display:flex;align-items:center;gap:9px;min-width:0}
+.settings-nowbar-style-preview{display:inline-block;width:18px;height:18px;flex:0 0 18px;border:2px solid var(--nowbar-preview-color,#38bdf8);border-radius:6px;box-sizing:border-box}
+.settings-nowbar-style-stable-light{box-shadow:none}
+.settings-nowbar-style-stable{box-shadow:0 0 8px var(--nowbar-preview-color,#38bdf8)}
+.settings-nowbar-style-blink-light{animation:nowbar-preview-blink 1.2s ease-in-out infinite}
+.settings-nowbar-style-blink{animation:nowbar-preview-blink-glow 1.2s ease-in-out infinite}
+.settings-nowbar-style-pulse-light{animation:nowbar-preview-pulse 1.8s ease-in-out infinite}
+.settings-nowbar-style-pulse{animation:nowbar-preview-pulse-glow 1.8s ease-in-out infinite}
+.settings-nowbar-style-color-light{animation:nowbar-preview-rainbow 3s linear infinite}
+.settings-nowbar-style-color{animation:nowbar-preview-rainbow-glow 3s linear infinite}
+@keyframes nowbar-preview-blink{0%,42%,100%{opacity:1}48%,94%{opacity:.28}}
+@keyframes nowbar-preview-blink-glow{0%,42%,100%{box-shadow:0 0 7px var(--nowbar-preview-color,#38bdf8)}48%,94%{box-shadow:none}}
+@keyframes nowbar-preview-pulse{0%,100%{box-shadow:0 0 0 1px var(--nowbar-preview-color,#38bdf8)}50%{box-shadow:0 0 0 3px var(--nowbar-preview-color,#38bdf8)}}
+@keyframes nowbar-preview-pulse-glow{0%,100%{box-shadow:0 0 5px var(--nowbar-preview-color,#38bdf8)}50%{box-shadow:0 0 12px var(--nowbar-preview-color,#38bdf8)}}
+@keyframes nowbar-preview-rainbow{0%{border-color:#38bdf8}25%{border-color:#a855f7}50%{border-color:#ec4899}75%{border-color:#22c55e}100%{border-color:#38bdf8}}
+@keyframes nowbar-preview-rainbow-glow{0%{border-color:#38bdf8;box-shadow:0 0 5px #38bdf8}25%{border-color:#a855f7;box-shadow:0 0 5px #a855f7}50%{border-color:#ec4899;box-shadow:0 0 5px #ec4899}75%{border-color:#22c55e;box-shadow:0 0 5px #22c55e}100%{border-color:#38bdf8;box-shadow:0 0 5px #38bdf8}}
+.nowbar-shell.nowbar-edge-enabled{border-color:var(--nowbar-edge-color)!important;--nowbar-edge-glow:0 0 0 1px color-mix(in srgb,var(--nowbar-edge-color) 75%,transparent),0 0 18px color-mix(in srgb,var(--nowbar-edge-color) 55%,transparent)}
+.nowbar-shell.nowbar-edge-stable-light{box-shadow:var(--theme-header-shadow),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight)!important}
+.nowbar-shell.nowbar-edge-stable{box-shadow:0 0 0 1px var(--nowbar-edge-color),0 0 22px color-mix(in srgb,var(--nowbar-edge-color) 58%,transparent),var(--theme-header-shadow),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight)!important}
+.nowbar-shell.nowbar-edge-blink-light{animation:halls-nowbar-blink-light 3.2s ease-in-out infinite}
+.nowbar-shell.nowbar-edge-blink{animation:halls-nowbar-blink 3.2s ease-in-out infinite}
+.nowbar-shell.nowbar-edge-pulse-light{animation:halls-nowbar-pulse-light 3.2s ease-in-out infinite}
+.nowbar-shell.nowbar-edge-pulse{animation:halls-nowbar-pulse 3.2s ease-in-out infinite}
+.nowbar-shell.nowbar-edge-color-light{animation:halls-nowbar-color-light 6s linear infinite}
+.nowbar-shell.nowbar-edge-color{animation:halls-nowbar-color 6s linear infinite}
+@keyframes halls-nowbar-blink-light{0%,42%,100%{border-color:var(--nowbar-edge-color);box-shadow:var(--theme-header-shadow)}48%,94%{border-color:var(--theme-header-border);box-shadow:var(--theme-header-shadow)}}
+@keyframes halls-nowbar-blink{0%,42%,100%{border-color:var(--nowbar-edge-color);box-shadow:0 0 0 1px var(--nowbar-edge-color),0 0 24px var(--nowbar-edge-color),var(--theme-header-shadow)}48%,94%{border-color:var(--theme-header-border);box-shadow:var(--theme-header-shadow)}}
+@keyframes halls-nowbar-pulse-light{0%,100%{border-color:var(--nowbar-edge-color);box-shadow:var(--theme-header-shadow)}50%{border-color:var(--nowbar-edge-color);box-shadow:0 0 0 2px var(--nowbar-edge-color),var(--theme-header-shadow)}}
+@keyframes halls-nowbar-pulse{0%,100%{border-color:var(--nowbar-edge-color);box-shadow:0 0 0 1px var(--nowbar-edge-color),0 0 12px var(--nowbar-edge-color),var(--theme-header-shadow)}50%{border-color:var(--nowbar-edge-color);box-shadow:0 0 0 3px var(--nowbar-edge-color),0 0 32px var(--nowbar-edge-color),var(--theme-header-shadow)}}
+@keyframes halls-nowbar-color-light{0%{border-color:#38bdf8}25%{border-color:#a855f7}50%{border-color:#ec4899}75%{border-color:#22c55e}100%{border-color:#38bdf8}}
+@keyframes halls-nowbar-color{0%{border-color:#38bdf8;box-shadow:0 0 20px #38bdf8,var(--theme-header-shadow)}25%{border-color:#a855f7;box-shadow:0 0 20px #a855f7,var(--theme-header-shadow)}50%{border-color:#ec4899;box-shadow:0 0 20px #ec4899,var(--theme-header-shadow)}75%{border-color:#22c55e;box-shadow:0 0 20px #22c55e,var(--theme-header-shadow)}100%{border-color:#38bdf8;box-shadow:0 0 20px #38bdf8,var(--theme-header-shadow)}}
+@media(prefers-reduced-motion:reduce){.nowbar-shell[class*="nowbar-edge-"]{animation:none!important}.settings-nowbar-style-preview{animation:none!important}}
