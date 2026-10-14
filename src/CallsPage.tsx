@@ -8,7 +8,7 @@ import { navigate } from "./utils/navigate";
 
 type CallRecord = {
   id: string;
-  person: { id: string; name: string; username: string; profilePicture?: string };
+  person: { id: string; name: string; username: string; profilePicture?: string; isVerified?: boolean; verifiedAt?: string | null };
   direction: "incoming" | "outgoing";
   kind: "audio" | "video";
   status: "ringing" | "missed" | "declined" | "cancelled" | "completed" | "failed";
