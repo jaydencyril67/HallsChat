@@ -309,6 +309,8 @@ export default function App() {
       }
       if (Date.now() - lastActivity >= timeout) {
         hasLoggedOut = true;
+        const token = localStorage.getItem("hallschat_token");
+        if (token) void fetch((import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "") + "/api/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + token } }).catch(() => undefined);
         localStorage.removeItem("hallschat_token");
         localStorage.removeItem(lastActivityKey);
         navigate("/signin", { replace: true });
