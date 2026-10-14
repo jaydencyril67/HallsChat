@@ -1,5 +1,5 @@
-const CACHE_NAME = "hallschat-pwa-v38";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest?v=5", "/crown-chat.svg?v=9"];
+const CACHE_NAME = "hallschat-pwa-v39";
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest?v=5", "/crown-chat.svg?v=10"];
 const CACHEABLE_EXTENSIONS = [".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".webp", ".ico", ".woff", ".woff2"];
 
 self.addEventListener("install", (event) => {
@@ -31,8 +31,8 @@ self.addEventListener("push", (event) => {
     body: typeof payload.body === "string" ? payload.body : "You have a new alert.",
     tag: typeof payload.tag === "string" ? payload.tag : "hallschat-alert",
     data: { url: typeof payload.url === "string" && payload.url.startsWith("/") && !payload.url.startsWith("//") ? payload.url : "/notifications" },
-    icon: "/crown-chat.svg?v=9",
-    badge: "/crown-chat.svg?v=9"
+    icon: "/crown-chat.svg?v=10",
+    badge: "/crown-chat.svg?v=10"
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
