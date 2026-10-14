@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { io } from "socket.io-client";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
+import { App as CapacitorApp } from "@capacitor/app";
 import type { Socket } from "socket.io-client";
 import CallsPanel from "./components/CallsPanel";
 import LandingPage from "./LandingPage";
@@ -148,6 +149,33 @@ export default function App() {
     return () => {
       disposed = true;
       if (listener) void listener.remove();
+    };
+  }, []);
+
+  // Native Answer/Decline actions reopen HallsChat through the hallschat://call deep link.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return;
+    let disposed = false;
+    const handleCallUrl = (url: string) => {
+      try {
+        const parsed = new URL(url);
+        if (parsed.protocol !== "hallschat:" || parsed.hostname !== "call") return;
+        const action = parsed.searchParams.get("action");
+        const callId = parsed.searchParams.get("callId");
+        if ((action !== "answer" && action !== "decline") || !callId) return;
+        window.dispatchEvent(new CustomEvent("hallschat:native-call-action", { detail: { action, callId } }));
+        navigate("/calls?incoming=" + encodeURIComponent(callId));
+      } catch (error) {
+        console.error("Unable to process native incoming-call action:", error);
+      }
+    };
+    const listenerPromise = CapacitorApp.addListener("appUrlOpen", event => handleCallUrl(event.url));
+    void CapacitorApp.getLaunchUrl().then(launch => {
+      if (!disposed && launch?.url) handleCallUrl(launch.url);
+    }).catch(error => console.error("Unable to read the Android call launch URL:", error));
+    return () => {
+      disposed = true;
+      void listenerPromise.then(listener => listener.remove()).catch(() => {});
     };
   }, []);
 
