@@ -1101,7 +1101,7 @@ export default function RoomsPage() {
               <button type="button" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} aria-label={"View " + activePerson.name + " profile"} style={{ padding: 0, border: 0, background: "transparent", borderRadius: "50%", flexShrink: 0 }}><Avatar person={activePerson} size="large" /></button>
               <button type="button" className="rooms-conversation-person" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} style={{ minWidth: 0, padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left", cursor: "pointer" }} aria-label={"View " + activePerson.name + " profile"}><strong>{activePerson.name}</strong><span className={otherTyping ? "rooms-typing-label" : ""}>{otherTyping ? "Typing…" : "@" + activePerson.username}</span></button>
               <span className={`rooms-access-pill ${activePerson.activeStatusHidden ? "rooms-status-offline" : activePerson.isOnline ? "rooms-status-online" : "rooms-status-offline"}`} aria-label={activePerson.activeStatusHidden ? "Recent" : activePerson.isOnline ? "Online" : "Offline"}>{activePerson.activeStatusHidden ? "Recent" : activePerson.isOnline ? "Online" : "Offline"}</span>
-              <CallsPanel socket={liveSocket} person={activePerson} />
+              <CallsPanel socket={liveSocket} person={activePerson} enableIncoming={false} />
             </header>
             <div className="rooms-message-list" ref={roomsMessageListRef}>
               {messagesLoading ? <div className="rooms-message-loading"><LoadingDots /></div> : (messages.length || conversationCalls.length) ? <>{messages.map((message, messageIndex) => {
