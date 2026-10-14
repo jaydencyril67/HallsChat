@@ -4229,3 +4229,12 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 @keyframes halls-call-dot-bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
 @media(prefers-reduced-motion:reduce){.halls-call-waiting-rings>span,.halls-call-waiting-dots i{animation:none}}
 @media(max-width:520px){.halls-call-waiting-video{padding:24px 16px 100px}.halls-call-waiting-rings{width:108px;height:108px}.halls-call-waiting-avatar{width:72px;height:72px}}
+
+
+/* Rooms mobile cards: align list edges with the other full-width page cards. */
+@media (max-width: 700px) {
+  .rooms-page:not(.rooms-page-conversation-open) .rooms-people-list {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+}
