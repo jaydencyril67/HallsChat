@@ -9,6 +9,7 @@ type StatusPayload = { status: "none" | "pending" | "verified" | "rejected"; req
 
 export default function VerificationPanel() {
   const [data, setData] = useState<StatusPayload>({ status: "none" });
+  const [statusLoading, setStatusLoading] = useState(true);
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [note, setNote] = useState("");
@@ -17,8 +18,9 @@ export default function VerificationPanel() {
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
+    setStatusLoading(true);
     const token = localStorage.getItem("hallschat_token");
-    if (!token) return;
+    if (!token) { setStatusLoading(false); return; }
     try {
       const response = await fetch(apiBase + "/api/verification/me", { headers: { Authorization: "Bearer " + token } });
       const payload = await response.json().catch(() => ({}));
@@ -26,6 +28,8 @@ export default function VerificationPanel() {
       setData(payload as StatusPayload);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Verification status could not be loaded.");
+    } finally {
+      setStatusLoading(false);
     }
   }, []);
 
@@ -101,9 +105,10 @@ export default function VerificationPanel() {
         <strong style={{ display: "block", fontSize: ".92rem" }}>Account verification</strong>
         <span style={{ color: "var(--theme-muted)", fontSize: ".75rem" }}>Confirm your account by email</span>
       </div>
-      {data.status === "verified" && <VerificationBadge size={22} />}
+      {!statusLoading && data.status === "verified" && <VerificationBadge size={22} />}
     </div>
 
+    {statusLoading ? <div style={{ minHeight: 96, display: "grid", placeItems: "center" }}><LoadingDots /></div> : <>
     {data.status === "verified" ? <p style={{ margin: 0, color: "var(--theme-success)", fontSize: ".84rem", display: "flex", alignItems: "center", gap: 7 }}><BadgeCheck size={17} /> Your account is verified. Your full name and username are permanently locked.</p> :
       data.status === "pending" ? <p style={{ margin: 0, color: "var(--theme-primary-hover)", fontSize: ".84rem", display: "flex", alignItems: "center", gap: 7 }}><Clock3 size={17} /> Your verification request is waiting for review.</p> :
       <>
@@ -132,5 +137,6 @@ export default function VerificationPanel() {
       </article>)}
       <button type="button" onClick={() => void load()} disabled={busy} style={buttonStyle}>Refresh requests</button>
     </div>}
+    </>}
   </section>;
 }
