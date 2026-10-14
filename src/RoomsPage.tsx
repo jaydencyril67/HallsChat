@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import type { ChangeEvent, FormEvent } from "react";
 import { ArrowLeft, ArrowUp, Plus, Pencil, Pin, PinOff, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical, Phone, Video } from "lucide-react";
 import AppHeader from "./AppHeader";
+import VerificationBadge from "./VerificationBadge";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
@@ -12,6 +13,8 @@ import type { Socket } from "socket.io-client";
 import CallsPanel from "./components/CallsPanel";
 
 type RoomPerson = {
+  isVerified?: boolean;
+  verifiedAt?: string | null;
   id: string;
   name: string;
   username: string;
@@ -1109,7 +1112,7 @@ export default function RoomsPage() {
             {visiblePeople.map(person => <article key={person.id} className={`rooms-person-row ${activeId === person.id ? "rooms-person-row-active" : ""} ${conversationMenuFor === person.id ? "rooms-person-row-menu-open" : ""}`} onClick={() => setConversationMenuFor(current => current === person.id ? null : person.id)}>
               <button type="button" className="rooms-person-avatar-link" onClick={event => { event.stopPropagation(); navigate("/users/" + encodeURIComponent(person.id)); }} aria-label={"View " + person.name + " profile"}><Avatar person={person} /></button>
               <div className="rooms-person-copy" aria-label={`Conversation details for ${person.name}`}>
-                <strong>{person.name}{pinnedConversationIds.includes(person.id) && <Pin size={12} className="rooms-pinned-indicator" aria-label="Pinned conversation" />}</strong><small>@{person.username} · {person.activeStatusHidden ? "Recent" : person.isOnline ? "Online" : "Offline"}</small><span className="rooms-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
+                <strong style={{ display: "inline-flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>{person.name}{person.isVerified && person.verifiedAt && <VerificationBadge size={13} />}{pinnedConversationIds.includes(person.id) && <Pin size={12} className="rooms-pinned-indicator" aria-label="Pinned conversation" />}</strong><small>@{person.username} · {person.activeStatusHidden ? "Recent" : person.isOnline ? "Online" : "Offline"}</small><span className="rooms-last-message">{person.canMessage ? (person.lastMessage || "Start a conversation") : (person.lastMessage || "No longer follows you")}</span>
               </div>
               <span className="rooms-person-meta">{formatTime(person.lastMessageAt)}{!person.canMessage && <span className="rooms-lock-dot" title="Messaging unavailable">•</span>}</span>
               <button type="button" className="rooms-open-button" onClick={event => { event.stopPropagation(); setConversationMenuFor(null); scrollOnOpenRef.current = true; setActiveId(person.id); setMobileConversationOpen(true); setError(""); }} aria-label={`Open conversation with ${person.name}`} title="Open Room"><MessageCircle size={18} /></button>
@@ -1123,7 +1126,7 @@ export default function RoomsPage() {
             <header className="rooms-conversation-header">
               <button className="rooms-back-button" type="button" onClick={() => { stopTyping(); setOtherTyping(false); setMobileConversationOpen(false); setActiveId(""); }} aria-label="Back to Rooms"><ArrowLeft size={19} /></button>
               <button type="button" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} aria-label={"View " + activePerson.name + " profile"} style={{ padding: 0, border: 0, background: "transparent", borderRadius: "50%", flexShrink: 0 }}><Avatar person={activePerson} size="large" /></button>
-              <button type="button" className="rooms-conversation-person" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} style={{ minWidth: 0, padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left", cursor: "pointer" }} aria-label={"View " + activePerson.name + " profile"}><strong>{activePerson.name}</strong><span className={otherTyping ? "rooms-typing-label" : ""}>{otherTyping ? "Typing…" : "@" + activePerson.username}</span></button>
+              <button type="button" className="rooms-conversation-person" onClick={() => navigate("/users/" + encodeURIComponent(activePerson.id))} style={{ minWidth: 0, padding: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left", cursor: "pointer" }} aria-label={"View " + activePerson.name + " profile"}><strong style={{ display: "inline-flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>{activePerson.name}{activePerson.isVerified && activePerson.verifiedAt && <VerificationBadge size={14} />}</strong><span className={otherTyping ? "rooms-typing-label" : ""}>{otherTyping ? "Typing…" : "@" + activePerson.username}</span></button>
               <span className={`rooms-access-pill ${activePerson.activeStatusHidden ? "rooms-status-offline" : activePerson.isOnline ? "rooms-status-online" : "rooms-status-offline"}`} aria-label={activePerson.activeStatusHidden ? "Recent" : activePerson.isOnline ? "Online" : "Offline"}>{activePerson.activeStatusHidden ? "Recent" : activePerson.isOnline ? "Online" : "Offline"}</span>
               <CallsPanel socket={liveSocket} person={activePerson} enableIncoming={false} />
             </header>
