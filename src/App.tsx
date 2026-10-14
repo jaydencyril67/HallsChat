@@ -1,4 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { io } from "socket.io-client";
+import type { Socket } from "socket.io-client";
+import CallsPanel from "./components/CallsPanel";
 import LandingPage from "./LandingPage";
 import SignupPage from "./SignupPage";
 import SigninPage from "./SigninPage";
@@ -125,6 +128,25 @@ function GlobalModalScrollLock() {
 
 export default function App() {
   const [path, setPath] = useState(() => window.location.pathname);
+  const [globalCallSocket, setGlobalCallSocket] = useState<Socket | null>(null);
+  const signedIn = Boolean(localStorage.getItem("hallschat_token"));
+
+  // Keep call signaling alive above the page router so incoming calls work on every screen.
+  useEffect(() => {
+    const savedToken = localStorage.getItem("hallschat_token");
+    if (!savedToken) {
+      setGlobalCallSocket(null);
+      return;
+    }
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\\/$/, "");
+    const socket = io(apiBase, { auth: { token: savedToken }, transports: ["websocket", "polling"] });
+    setGlobalCallSocket(socket);
+    return () => {
+      socket.removeAllListeners();
+      socket.disconnect();
+      setGlobalCallSocket(current => current === socket ? null : current);
+    };
+  }, [signedIn]);
 
   useEffect(() => {
     if (window.location.pathname !== "/home" || !window.location.hash.startsWith("#post-")) return;
@@ -267,5 +289,5 @@ export default function App() {
     page = <NavigationSectionPage title={section.title} description={section.description} />;
   } else page = <LandingPage onSignup={() => navigate("/signup")} />;
 
-  return <AppThemeProvider><>{page}<GlobalModalScrollLock /><AppUpdateMonitor /></></AppThemeProvider>;
+  return <AppThemeProvider><>{page}<CallsPanel socket={globalCallSocket} person={null} /><GlobalModalScrollLock /><AppUpdateMonitor /></></AppThemeProvider>;
 }
