@@ -55,6 +55,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
   const [cameraOff, setCameraOff] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [callError, setCallError] = useState("");
+  const [nativeCallAction, setNativeCallAction] = useState<{ action: "answer" | "decline"; callId: string } | null>(null);
   const [pendingCallKind, setPendingCallKind] = useState<"audio" | "video" | null>(null);
   const audioTriggerRef = useRef<HTMLButtonElement | null>(null);
   const videoTriggerRef = useRef<HTMLButtonElement | null>(null);
@@ -315,6 +316,32 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
       socket.off("call:ice", onIce); socket.off("call:declined", onDeclined); socket.off("call:ended", onEnded);
     };
   }, [socket, incoming?.callId, cleanup, enableIncoming]);
+
+  // Receive Answer/Decline taps from the native Android lock-screen notification.
+  useEffect(() => {
+    const handleNativeCallAction = (event: Event) => {
+      const detail = (event as CustomEvent<{ action?: string; callId?: string }>).detail;
+      if ((detail?.action === "answer" || detail?.action === "decline") && typeof detail.callId === "string" && detail.callId) {
+        setNativeCallAction({ action: detail.action, callId: detail.callId });
+      }
+    };
+    window.addEventListener("hallschat:native-call-action", handleNativeCallAction);
+    return () => window.removeEventListener("hallschat:native-call-action", handleNativeCallAction);
+  }, []);
+
+  useEffect(() => {
+    if (!incoming || !nativeCallAction || incoming.callId !== nativeCallAction.callId) return;
+    const action = nativeCallAction.action;
+    setNativeCallAction(null);
+    if (action === "decline") {
+      socket?.emit("call:decline", { callId: incoming.callId });
+      setIncoming(null);
+      setPhase("idle");
+      setCallError("");
+      return;
+    }
+    void acceptCall();
+  }, [incoming?.callId, nativeCallAction, socket, acceptCall]);
 
   useEffect(() => {
     const toneKind = phase === "incoming" && incoming ? "incoming" : phase === "outgoing" ? "outgoing" : null;
