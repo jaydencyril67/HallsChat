@@ -3786,6 +3786,7 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   width: max-content;
   max-width: min(240px, calc(100vw - 32px));
 }
+.rooms-pinned-indicator{display:inline-block;vertical-align:middle;margin-left:6px;flex:0 0 auto;color:var(--theme-primary-hover);fill:var(--theme-accent-soft)}
 :is(.rooms-conversation-delete-popout,.chat-conversation-delete-popout) {
   display: flex;
   flex-direction: column;
