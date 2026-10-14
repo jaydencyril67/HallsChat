@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export type ReusableDateTimeModalProps = {
   title: string;
@@ -88,9 +88,9 @@ export default function ReusableDateTimeModal({
   };
   const actionButton: CSSProperties = {
     display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8,
-    minHeight: 44, border: "1px solid var(--theme-line)", borderRadius: 14,
-    padding: "12px 18px", background: "var(--theme-surface-raised)",
-    color: "var(--theme-text)", font: "inherit", fontWeight: 800, cursor: "pointer",
+    width: "100%", minWidth: 0, minHeight: 38, border: "1px solid var(--theme-line)", borderRadius: 12,
+    padding: "9px 12px", background: "var(--theme-surface-raised)",
+    color: "var(--theme-text)", font: "inherit", fontSize: 13, fontWeight: 800, cursor: "pointer", boxSizing: "border-box",
   };
   const fieldLabel: CSSProperties = {
     display: "block", marginBottom: 8, color: "var(--theme-muted)",
@@ -117,9 +117,6 @@ export default function ReusableDateTimeModal({
 
   return <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={event => { if (event.target === event.currentTarget) onCancel(); }} style={{ position: "fixed", inset: 0, zIndex: 10000, width: "100%", height: "100dvh", minHeight: "100%", overflowY: "auto", overscrollBehavior: "contain", background: "var(--theme-bg)", color: "var(--theme-text)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", boxSizing: "border-box" }}>
     <div style={{ minHeight: "100%", maxWidth: 760, margin: "0 auto", display: "flex", flexDirection: "column", padding: "max(8px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom))", boxSizing: "border-box" }}>
-      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", minHeight: 42, flexShrink: 0 }}>
-        <button type="button" aria-label="Close date and time picker" onClick={onCancel} style={{ width: 40, height: 40, display: "grid", placeItems: "center", border: 0, borderRadius: 12, background: "transparent", color: "var(--theme-text)", cursor: "pointer" }}><X size={22} /></button>
-      </div>
       <div style={{ flex: 1, paddingTop: 8 }}>
         {resolvedMode !== "time" && <>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
@@ -151,7 +148,7 @@ export default function ReusableDateTimeModal({
         </div>}
         {label && resolvedMode === "date" && <p style={{ color: "var(--theme-muted)", fontSize: 12 }}>{label}</p>}
       </div>
-      <footer style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 10, paddingTop: 24, marginTop: "auto" }}>
+      <footer style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8, paddingTop: 24, marginTop: "auto", width: "100%" }}>
         <button type="button" style={actionButton} onClick={onCancel}>{cancelLabel}</button>
         <button type="button" disabled={!valid} style={{ ...actionButton, borderColor: "var(--theme-accent-border)", background: "var(--theme-primary)", color: "var(--theme-primary-contrast)", opacity: valid ? 1 : .45 }} onClick={() => onConfirm(output)}>{confirmLabel}</button>
       </footer>
