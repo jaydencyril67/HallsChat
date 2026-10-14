@@ -4170,3 +4170,43 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 /* Nowbar Button Color: bounded popout follows the existing settings menu and shared color modal. */
 .settings-nowbar-button-color-menu{width:190px;max-height:min(62vh,430px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .settings-nowbar-button-color-menu::-webkit-scrollbar{display:none}
+
+
+/* About and Standards page: compact tab navigation and readable long-form sections. */
+.halls-about-shell{padding-top:var(--app-top-gap,75px);padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))}
+.halls-about-heading{display:flex;align-items:flex-start;gap:13px;margin:0 0 18px}
+.halls-about-heading-mark{display:grid;place-items:center;flex:0 0 42px;width:42px;height:42px;border:1px solid var(--theme-accent-border);border-radius:13px;background:var(--theme-accent-soft);color:var(--theme-danger)}
+.halls-about-heading-copy{min-width:0}
+.halls-about-eyebrow{margin:0 0 5px;color:var(--theme-danger);font-size:10px;font-weight:800;letter-spacing:.12em}
+.halls-about-heading h1{margin:0;color:var(--theme-text);font-size:clamp(22px,4vw,29px);font-weight:750;line-height:1.2;letter-spacing:-.45px}
+.halls-about-heading-copy>p:last-child{margin:7px 0 0;color:var(--theme-muted);font-size:12px;line-height:1.65}
+.halls-about-tabs{display:flex;gap:5px;padding:4px;margin:0 0 14px;border:1px solid var(--theme-border);border-radius:14px;background:var(--theme-tabs-bg);overflow:hidden}
+.halls-about-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;flex:1;min-width:0;min-height:39px;padding:8px 12px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--theme-text-secondary);font:700 12px/1.2 'STIX Two Text',serif;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.halls-about-tabs button.is-active,.halls-about-tabs button[aria-selected="true"]{border-color:var(--theme-accent-border);background:var(--theme-accent-soft);color:var(--theme-danger);box-shadow:inset 0 0 0 1px var(--theme-accent-border)}
+.halls-about-tabs button:focus-visible{outline:2px solid var(--theme-focus);outline-offset:2px}
+.halls-about-panel{min-width:0}
+.halls-about-intro{display:flex;align-items:flex-start;gap:11px;padding:15px 16px;margin-bottom:12px;border:1px solid var(--theme-accent-border);border-radius:14px;background:linear-gradient(135deg,var(--theme-accent-soft),var(--theme-card));color:var(--theme-danger)}
+.halls-about-intro>svg{flex-shrink:0;margin-top:2px}
+.halls-about-intro strong{display:block;color:var(--theme-text);font-size:13px;font-weight:750}
+.halls-about-intro p{margin:5px 0 0;color:var(--theme-muted);font-size:11px;line-height:1.65}
+.halls-about-sections{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.halls-about-section{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:start;gap:11px;padding:17px 16px;border:1px solid var(--theme-line);border-radius:15px;background:var(--theme-card);box-shadow:var(--theme-shadow-card-soft)}
+.halls-about-section-number{display:grid;place-items:center;width:29px;height:29px;border:1px solid var(--theme-accent-border);border-radius:9px;background:var(--theme-accent-soft);color:var(--theme-danger);font-size:10px;font-weight:800;font-variant-numeric:tabular-nums}
+.halls-about-section-copy{min-width:0}
+.halls-about-section h2{margin:2px 0 9px;color:var(--theme-text);font-size:15px;font-weight:750;line-height:1.35}
+.halls-about-section p{margin:0 0 10px;color:var(--theme-text-secondary);font-size:12px;line-height:1.8;overflow-wrap:anywhere}
+.halls-about-section p:last-child{margin-bottom:0}
+.halls-about-footer{display:flex;align-items:flex-start;gap:10px;margin-top:12px;padding:14px 15px;border:1px solid var(--theme-line);border-radius:14px;background:var(--theme-surface-hover);color:var(--theme-muted)}
+.halls-about-footer svg{flex-shrink:0;margin-top:2px;color:var(--theme-danger)}
+.halls-about-footer p{margin:0;font-size:11px;line-height:1.7}
+@media(max-width:520px){
+  .social-shell.halls-about-shell{width:calc(100% - 28px)}
+  .halls-about-heading{gap:10px}
+  .halls-about-heading-mark{flex-basis:38px;width:38px;height:38px}
+  .halls-about-section{grid-template-columns:25px minmax(0,1fr);gap:9px;padding:14px 12px}
+  .halls-about-section-number{width:25px;height:25px;border-radius:8px}
+  .halls-about-section h2{font-size:14px}
+  .halls-about-section p{font-size:11.5px;line-height:1.78}
+  .halls-about-tabs button{padding:8px 9px}
+}
+@media(prefers-reduced-motion:reduce){.halls-about-tabs button{transition:none}}
