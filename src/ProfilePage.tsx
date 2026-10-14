@@ -1,5 +1,5 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { FileText, Camera, Trash2, LogOut, Eye, Mail, Pencil, Check } from "lucide-react";
+import { FileText, Camera, Trash2, LogOut, Eye, Mail, Pencil, Check, ShieldCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
@@ -19,7 +19,7 @@ const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024;
 export default function ProfilePage() {
   const [user, setUser] = useState<Account | null>(null);
   const [allPosts, setAllPosts] = useState<Post[]>([]);
-  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "about">("posts");
+  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "about" | "verify">("posts");
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -377,8 +377,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <VerificationPanel />
-
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, padding: "8px 0 20px", color: "var(--theme-text-primary)" }}>
             <div style={{ flex: 1, textAlign: "center", borderRight: "1px solid var(--theme-border)" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{postsLoading ? "—" : posts.length.toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Posts</span></div>
             <button type="button" onClick={() => navigate("/halls?tab=followers")} aria-label="View your followers on Globe" title="View your followers" style={{ flex: 1, minWidth: 0, textAlign: "center", border: 0, borderRight: "1px solid var(--theme-border)", padding: 0, background: "transparent", color: "inherit", cursor: "pointer" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{loading ? "—" : (user?.followersCount ?? 0).toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Followers</span></button>
@@ -386,9 +384,10 @@ export default function ProfilePage() {
           </div>
 
           <section style={{ marginBottom: 18 }}>
-            <div role="tablist" aria-label="Profile sections" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 34, borderBottom: "1px solid var(--theme-border)", marginBottom: 2 }}>
+            <div role="tablist" aria-label="Profile sections" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, borderBottom: "1px solid var(--theme-border)", marginBottom: 2 }}>
               <button type="button" role="tab" aria-selected={activeProfileTab === "posts"} onClick={() => setActiveProfileTab("posts")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", border: 0, borderBottom: activeProfileTab === "posts" ? "2px solid var(--theme-primary-hover)" : "2px solid transparent", marginBottom: -1, background: "transparent", color: activeProfileTab === "posts" ? "var(--theme-text-primary)" : "var(--theme-tabs-text)", fontSize: ".84rem", fontWeight: activeProfileTab === "posts" ? 800 : 700, cursor: "pointer" }}><FileText size={17} /> Posts</button>
               <button type="button" role="tab" aria-selected={activeProfileTab === "about"} onClick={() => setActiveProfileTab("about")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", border: 0, borderBottom: activeProfileTab === "about" ? "2px solid var(--theme-primary-hover)" : "2px solid transparent", marginBottom: -1, background: "transparent", color: activeProfileTab === "about" ? "var(--theme-text-primary)" : "var(--theme-tabs-text)", fontSize: ".84rem", fontWeight: activeProfileTab === "about" ? 800 : 700, cursor: "pointer" }}><Mail size={16} /> About</button>
+              <button type="button" role="tab" aria-selected={activeProfileTab === "verify"} onClick={() => setActiveProfileTab("verify")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", border: 0, borderBottom: activeProfileTab === "verify" ? "2px solid var(--theme-primary-hover)" : "2px solid transparent", marginBottom: -1, background: "transparent", color: activeProfileTab === "verify" ? "var(--theme-text-primary)" : "var(--theme-tabs-text)", fontSize: ".84rem", fontWeight: activeProfileTab === "verify" ? 800 : 700, cursor: "pointer" }}><ShieldCheck size={16} /> Verify</button>
             </div>
             {activeProfileTab === "posts" ? (postsLoading ? <div style={{ display: "grid", placeItems: "center", padding: 35 }}><LoadingDots /></div> : posts.length === 0 ? <div style={{ ...panel, padding: "38px 18px", textAlign: "center", marginTop: 12 }}><FileText size={28} color="var(--theme-empty-state-icon)" /><p style={{ margin: "12px 0 5px", color: "var(--theme-text-primary)", fontWeight: 800 }}>No posts yet</p><p style={{ margin: 0, ...muted, fontSize: ".82rem" }}>Your posts will show up here.</p></div> : <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 3, marginTop: 3 }}>
               {posts.map(post => <article key={post.id} role={post.images?.[0] ? "button" : undefined} tabIndex={post.images?.[0] ? 0 : undefined} aria-label={post.images?.[0] ? "Open post image" : undefined} onClick={post.images?.[0] ? () => setPreviewPicture(post.images![0]) : undefined} onKeyDown={event => { if (post.images?.[0] && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); setPreviewPicture(post.images[0]); } }} style={{ minWidth: 0, aspectRatio: "3 / 4", overflow: "hidden", position: "relative", cursor: post.images?.[0] ? "zoom-in" : "default", background: "var(--theme-card-raised)", border: "1px solid var(--theme-border)", borderRadius: 4, padding: 9, boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
@@ -397,7 +396,7 @@ export default function ProfilePage() {
                 {(!post.images?.[0] && !post.poll) ? <p style={{ position: "relative", zIndex: 1, margin: 0, color: "var(--theme-text-primary)", fontSize: ".78rem", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 7, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{post.content}</p> : null}
                 <div style={{ position: "absolute", inset: "auto 0 0", display: "flex", alignItems: "center", gap: 5, padding: "22px 7px 6px", color: "var(--theme-text-inverse)", fontSize: ".7rem", fontWeight: 750, background: "linear-gradient(transparent,var(--theme-overlay))" }}><Eye size={13} /> {post.likeCount || 0}</div>
               </article>)}
-            </div>) : <div style={{ ...panel, padding: 18, marginTop: 12, display: "grid", gap: 15 }}>
+            </div>) : activeProfileTab === "about" ? <div style={{ ...panel, padding: 18, marginTop: 12, display: "grid", gap: 15 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <strong style={{ color: "var(--theme-text-primary)", fontSize: ".85rem" }}>Personal details</strong>
                 <button type="button" aria-label={editingProfileDetails ? "Save profile details" : "Edit full name and username"} title={editingProfileDetails ? "Save changes" : user?.profileDetailsUpdatedAt && Date.now() < new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000 ? `You can edit again on ${new Date(new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()}` : "Edit full name and username"} disabled={loading || profileDetailsBusy || (!editingProfileDetails && Boolean(user?.profileDetailsUpdatedAt && Date.now() < new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000))} onClick={() => { if (editingProfileDetails) void saveProfileDetails(); else { setEditName(user?.name || ""); setEditUsername(user?.username || ""); setEditingProfileDetails(true); setPictureError(""); } }} style={{ flexShrink: 0, width: 36, height: 36, display: "grid", placeItems: "center", border: "1px solid var(--theme-border)", borderRadius: 10, background: editingProfileDetails ? "var(--theme-primary)" : "var(--theme-action-secondary-bg)", color: editingProfileDetails ? "var(--theme-primary-contrast)" : "var(--theme-text-primary)", cursor: profileDetailsBusy ? "wait" : "pointer", opacity: loading || profileDetailsBusy || (!editingProfileDetails && Boolean(user?.profileDetailsUpdatedAt && Date.now() < new Date(user.profileDetailsUpdatedAt).getTime() + 30 * 24 * 60 * 60 * 1000)) ? .55 : 1 }} aria-busy={profileDetailsBusy}>{profileDetailsBusy ? <LoadingDots /> : editingProfileDetails ? <Check size={18} /> : <Pencil size={16} />}</button>
@@ -407,7 +406,7 @@ export default function ProfilePage() {
               <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Username</div>{editingProfileDetails ? <><input aria-label="Username" autoComplete="username" minLength={3} maxLength={24} value={editUsername} onChange={event => setEditUsername(event.target.value.toLowerCase().replace(/\\s/g, ""))} placeholder="Username" style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "10px 11px", border: "1px solid var(--theme-border-strong)", borderRadius: 10, background: "var(--theme-surface)", color: "var(--theme-primary-hover)", font: "inherit", fontSize: ".92rem" }} /><small style={{ display: "block", marginTop: 6, color: "var(--theme-muted)", fontSize: ".7rem" }}>Use 3–24 lowercase letters, numbers, underscores or periods.</small></> : <div style={{ color: "var(--theme-primary-hover)", fontSize: ".92rem", fontWeight: 700, overflowWrap: "anywhere" }}>{user?.username ? `@${user.username}` : "—"}</div>}</div>
               <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Email</div><div style={{ color: "var(--theme-text-primary)", fontSize: ".92rem", fontWeight: 600, overflowWrap: "anywhere" }}>{user?.email || "—"}</div></div>
               <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Joined HallsChat</div><div style={{ color: "var(--theme-text-primary)", fontSize: ".92rem", fontWeight: 600 }}>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "—"}</div></div>
-            </div>}
+            </div> : <VerificationPanel />}
           </section>
 
           <div style={{ marginTop: 4 }}>
