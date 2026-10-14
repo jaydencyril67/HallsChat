@@ -79,7 +79,7 @@ export default function ReusableDateTimeModal({
     maxHeight: 240, overflowY: "auto", overscrollBehavior: "contain", padding: 6,
     borderRadius: 14, border: "1px solid var(--theme-line)",
     background: "var(--theme-surface)", color: "var(--theme-text)",
-    boxShadow: "0 16px 36px rgba(0,0,0,.24)",
+    boxShadow: "var(--theme-shadow-card-soft)",
   };
   const pickerOption: CSSProperties = {
     display: "block", width: "100%", border: 0, borderRadius: 9,
@@ -115,7 +115,7 @@ export default function ReusableDateTimeModal({
     </div>
   );
 
-  return <div role="dialog" aria-modal="true" aria-label={title} onMouseDown={event => { if (event.target === event.currentTarget) onCancel(); }} style={{ position: "fixed", inset: 0, zIndex: 10000, width: "100%", height: "100dvh", minHeight: "100%", overflowY: "auto", overscrollBehavior: "contain", background: "var(--theme-bg)", color: "var(--theme-text)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", boxSizing: "border-box" }}>
+  return <div className="theme-token-scope" role="dialog" aria-modal="true" aria-label={title} onMouseDown={event => { if (event.target === event.currentTarget) onCancel(); }} style={{ position: "fixed", inset: 0, zIndex: 10000, width: "100%", height: "100dvh", minHeight: "100%", overflowY: "auto", overscrollBehavior: "contain", background: "var(--theme-bg)", color: "var(--theme-text)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)", boxSizing: "border-box" }}>
     <div style={{ minHeight: "100%", maxWidth: 760, margin: "0 auto", display: "flex", flexDirection: "column", padding: "max(8px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom))", boxSizing: "border-box" }}>
       <div style={{ flex: 1, paddingTop: 8 }}>
         {resolvedMode !== "time" && <>
