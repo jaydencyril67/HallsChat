@@ -107,9 +107,17 @@ function GlobalModalScrollLock() {
     };
 
     const observer = new MutationObserver(syncLock);
+    // Modal state can change without inserting/removing its DOM node. Watch aria-modal
+    // as well, so a closed modal cannot leave the page body fixed and unscrollable.
     observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["aria-modal"], subtree: true });
+    const recoverAfterResume = () => syncLock();
+    window.addEventListener("pageshow", recoverAfterResume);
+    document.addEventListener("visibilitychange", recoverAfterResume);
     syncLock();
     return () => {
+      window.removeEventListener("pageshow", recoverAfterResume);
+      document.removeEventListener("visibilitychange", recoverAfterResume);
       observer.disconnect();
       if (locked) {
         const body = document.body;
