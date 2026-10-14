@@ -4245,8 +4245,9 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 
 
 /* Nowbar Color: CryBots-style edge lighting modes, controlled from Settings. */
-.settings-nowbar-color-menu{width:190px;max-height:min(62vh,430px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.settings-nowbar-color-menu::-webkit-scrollbar{display:none}
+/* Nowbar lighting-style popout: bounded, touch-scrollable like Alert Types. */
+.settings-nowbar-color-menu{display:block;box-sizing:border-box;width:190px;height:auto;max-height:min(30vh,220px);overflow-x:hidden;overflow-y:scroll;overscroll-behavior:contain;scrollbar-width:none;-webkit-overflow-scrolling:touch;padding:5px;}
+.settings-nowbar-color-menu::-webkit-scrollbar{display:none;width:0;height:0;}
 .settings-nowbar-light-option>span:first-child{display:flex;align-items:center;gap:9px;min-width:0}
 .settings-nowbar-style-preview{display:inline-block;width:18px;height:18px;flex:0 0 18px;border:2px solid var(--nowbar-preview-color,#38bdf8);border-radius:6px;box-sizing:border-box}
 .settings-nowbar-style-stable-light{box-shadow:none}
