@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
-import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X } from "lucide-react";
+import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X, Minus } from "lucide-react";
 
 type Participant = { id: string; name?: string; username?: string; profilePicture?: string };
 type IncomingHallCall = { callId: string; groupId: string; kind: "audio" | "video"; caller: Participant; startedAt: number };
@@ -21,6 +21,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
   const [busy, setBusy] = useState(false);
   const [confirmKind, setConfirmKind] = useState<"audio" | "video" | null>(null);
   const [error, setError] = useState("");
+  const [minimized, setMinimized] = useState(false);
   const audioTriggerRef = useRef<HTMLButtonElement | null>(null);
   const videoTriggerRef = useRef<HTMLButtonElement | null>(null);
   const confirmPopoutRef = useRef<HTMLDivElement | null>(null);
@@ -56,6 +57,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
     setParticipants([]);
     setMuted(false);
     setCameraOff(false);
+    setMinimized(false);
     closePeers();
     stopLocal();
   }, [closePeers, stopLocal]);
@@ -318,10 +320,17 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
         </div>
       </div>
     </div>}
-    {active && <div role="dialog" aria-modal="true" aria-label="Hall call" style={{ position: "fixed", zIndex: 10025, inset: 0, display: "flex", flexDirection: "column", background: "var(--theme-bg)", color: "var(--theme-text)" }}>
+    {active && minimized && <div role="dialog" aria-label="Hall call minimized" style={{ position: "fixed", zIndex: 10030, right: 12, bottom: "calc(env(safe-area-inset-bottom, 0px) + 84px)", width: 230, padding: 10, borderRadius: 16, display: "flex", alignItems: "center", gap: 8, background: "var(--theme-surface-raised)", color: "var(--theme-text)", border: "1px solid var(--theme-line)", boxShadow: "0 8px 28px rgba(0,0,0,.32)" }}>
+      <button type="button" onClick={() => setMinimized(false)} aria-label="Expand Hall call" style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, minWidth: 0, border: 0, background: "transparent", color: "inherit", textAlign: "left" }}>
+        <span style={{ display: "grid", placeItems: "center", width: 34, height: 34, flexShrink: 0, borderRadius: "50%", background: "var(--theme-primary)", color: "var(--theme-primary-contrast)" }}>{kind === "video" ? <Video size={17}/> : <Phone size={17}/>}</span>
+        <span style={{ minWidth: 0 }}><strong style={{ display: "block", overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis", fontSize: ".8rem" }}>{hallName}</strong><span style={{ display: "block", color: "var(--theme-muted)", fontSize: ".7rem" }}>{participants.length + 1} in call</span></span>
+      </button>
+      <button type="button" onClick={leave} aria-label="Leave Hall call" style={{ border: 0, borderRadius: "50%", width: 36, height: 36, flexShrink: 0, background: "var(--theme-call-end)", color: "var(--theme-primary-contrast)" }}><PhoneOff size={17}/></button>
+    </div>}
+    {active && !minimized && <div role="dialog" aria-modal="true" aria-label="Hall call" style={{ position: "fixed", zIndex: 10025, inset: 0, display: "flex", flexDirection: "column", background: "var(--theme-bg)", color: "var(--theme-text)" }}>
       <header style={{ display: "flex", alignItems: "center", gap: 12, padding: "calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px", borderBottom: "1px solid var(--theme-line)" }}>
         <div style={{ flex: 1, minWidth: 0 }}><strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{hallName}</strong><span style={{ fontSize: ".75rem", color: "var(--theme-muted)" }}>{kind === "video" ? "Video" : "Audio"} call · {participants.length + 1} here</span></div>
-        <button type="button" onClick={leave} aria-label="Close Hall call" style={{ border: 0, background: "transparent", color: "inherit" }}><X size={21}/></button>
+        <button type="button" onClick={() => setMinimized(true)} aria-label="Minimize Hall call" title="Minimize call" style={{ display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--theme-line)", background: "var(--theme-surface-hover)", color: "inherit" }}><Minus size={20}/></button>
       </header>
       <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: 12, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(135px,1fr))", gap: 10, alignContent: "center" }}>
         {kind === "video" && <div style={{ position: "relative", minHeight: 150, aspectRatio: "3 / 4", overflow: "hidden", borderRadius: 15, background: "var(--theme-surface-raised)" }}><video ref={localVideoRef} autoPlay playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }}/><span style={{ position: "absolute", left: 8, bottom: 8, fontSize: ".75rem", color: "var(--theme-call-video-text)", textShadow: "var(--theme-call-video-text-shadow)", background: "var(--theme-call-video-overlay)", padding: "3px 6px", borderRadius: 6 }}>You</span></div>}
