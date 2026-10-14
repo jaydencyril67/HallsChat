@@ -296,6 +296,20 @@ export default function ThemeSettingsPage() {
     return () => window.clearTimeout(timer);
   }, [downloadAppMessage]);
 
+  useEffect(() => {
+    const timers = [
+      maxDeviceMessage && window.setTimeout(() => setMaxDeviceMessage(""), 4500),
+      alertTypesError && window.setTimeout(() => setAlertTypesError(""), 4500),
+      alertChannelsError && window.setTimeout(() => setAlertChannelsError(""), 4500),
+      commentingError && window.setTimeout(() => setCommentingError(""), 4500),
+      readReceiptsError && window.setTimeout(() => setReadReceiptsError(""), 4500),
+      visibilityError && window.setTimeout(() => setVisibilityError(""), 4500),
+      callsPrivacyError && window.setTimeout(() => setCallsPrivacyError(""), 4500),
+      activeStatusError && window.setTimeout(() => setActiveStatusError(""), 4500),
+    ].filter((timer): timer is number => typeof timer === "number");
+    return () => timers.forEach(timer => window.clearTimeout(timer));
+  }, [maxDeviceMessage, alertTypesError, alertChannelsError, commentingError, readReceiptsError, visibilityError, callsPrivacyError, activeStatusError]);
+
   const handleApkDownload = async (event: ReactMouseEvent<HTMLAnchorElement>) => {
     setDownloadAppMenuOpen(false);
     if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") { setDownloadAppMessage("Opening the latest signed HallsChat APK download."); return; }
@@ -866,7 +880,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
-      {maxDeviceMessage && <p className="settings-theme-current" role="status" aria-live="polite">{maxDeviceMessage}</p>}
+      {maxDeviceMessage && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{maxDeviceMessage}</span><button type="button" onClick={() => setMaxDeviceMessage("")} aria-label="Dismiss notification">×</button></div>}
       <section className="settings-theme-card" aria-label="Alert Color">
         <span className="settings-theme-title">Alert Color</span>
         <span className="settings-theme-current" aria-live="polite"><span className="settings-alert-color-swatch" style={{ background: alertColor }} aria-hidden="true" />{alertColorEnabled ? "Enabled" : "Disabled"}</span>
@@ -1178,13 +1192,13 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
-      {alertTypesError && <p className="settings-theme-current" role="status">{alertTypesError}</p>}
-      {alertChannelsError && <p className="settings-theme-current" role="status">{alertChannelsError}</p>}
-      {commentingError && <p className="settings-theme-current" role="status">{commentingError}</p>}
-      {readReceiptsError && <p className="settings-theme-current" role="status">{readReceiptsError}</p>}
-      {visibilityError && <p className="settings-theme-current" role="status">{visibilityError}</p>}
-      {callsPrivacyError && <p className="settings-theme-current" role="status">{callsPrivacyError}</p>}
-      {activeStatusError && <p className="settings-theme-current" role="status">{activeStatusError}</p>}
+      {alertTypesError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{alertTypesError}</span><button type="button" onClick={() => setAlertTypesError("")} aria-label="Dismiss notification">×</button></div>}
+      {alertChannelsError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{alertChannelsError}</span><button type="button" onClick={() => setAlertChannelsError("")} aria-label="Dismiss notification">×</button></div>}
+      {commentingError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{commentingError}</span><button type="button" onClick={() => setCommentingError("")} aria-label="Dismiss notification">×</button></div>}
+      {readReceiptsError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{readReceiptsError}</span><button type="button" onClick={() => setReadReceiptsError("")} aria-label="Dismiss notification">×</button></div>}
+      {visibilityError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{visibilityError}</span><button type="button" onClick={() => setVisibilityError("")} aria-label="Dismiss notification">×</button></div>}
+      {callsPrivacyError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{callsPrivacyError}</span><button type="button" onClick={() => setCallsPrivacyError("")} aria-label="Dismiss notification">×</button></div>}
+      {activeStatusError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{activeStatusError}</span><button type="button" onClick={() => setActiveStatusError("")} aria-label="Dismiss notification">×</button></div>}
       <section className="settings-theme-card settings-download-app-card" aria-label="Download App">
         <div className="settings-download-app-details">
           <span className="settings-theme-title">Download App</span>
