@@ -224,6 +224,14 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
 
   useEffect(() => {
     if (!socket) return;
+    const checkActiveCall = () => {
+      socket.timeout(6000).emit("group-call:check-active", { groupId: hallId }, (timeoutError: Error | null, response: { ok?: boolean; call?: IncomingHallCall | null }) => {
+        if (timeoutError || !response?.ok || !response.call || callIdRef.current) return;
+        if (response.call.groupId === hallId && response.call.caller?.id !== currentUserId) setIncoming(response.call);
+      });
+    };
+    if (socket.connected) checkActiveCall();
+    else socket.once("connect", checkActiveCall);
     const onIncoming = (event: IncomingHallCall) => {
       if (event.groupId !== hallId || event.caller?.id === currentUserId || callIdRef.current) return;
       setIncoming(event);
@@ -273,7 +281,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
     socket.on("group-call:signal", onSignal);
     socket.on("group-call:ended", onEnded);
     return () => {
-      socket.off("group-call:incoming", onIncoming); socket.off("group-call:peer-joined", onPeerJoined);
+      socket.off("group-call:incoming", onIncoming); socket.off("group-call:peer-joined", onPeerJoined); socket.off("connect", checkActiveCall);
       socket.off("group-call:peer-left", onPeerLeft); socket.off("group-call:signal", onSignal); socket.off("group-call:ended", onEnded);
     };
   }, [socket, hallId, currentUserId, ensurePeer, resetCall]);
