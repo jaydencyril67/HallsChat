@@ -138,7 +138,7 @@ export default function App() {
       setGlobalCallSocket(null);
       return;
     }
-    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\\/$/, "");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     const socket = io(apiBase, { auth: { token: savedToken }, transports: ["websocket", "polling"] });
     setGlobalCallSocket(socket);
     return () => {
