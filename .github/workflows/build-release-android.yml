@@ -96,23 +96,57 @@ jobs:
 
       - name: Configure Firebase for Android push
         env:
+          FIREBASE_GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
           FIREBASE_GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON_BASE64 }}
         run: |
           set -euo pipefail
-          if [ -z "${FIREBASE_GOOGLE_SERVICES_JSON_BASE64:-}" ]; then
-            echo "::error::Missing FIREBASE_GOOGLE_SERVICES_JSON_BASE64 repository secret."
-            exit 1
-          fi
           mkdir -p android/app
-          printf '%s' "$FIREBASE_GOOGLE_SERVICES_JSON_BASE64" | base64 --decode > android/app/google-services.json
           python3 - <<'PY'
+          import base64
           import json
+          import os
           from pathlib import Path
-          data = json.loads(Path('android/app/google-services.json').read_text())
-          packages = [item.get('client_info', {}).get('android_client_info', {}).get('package_name') for item in data.get('client', [])]
-          if 'com.kingshall.hallschat' not in packages:
-              raise SystemExit('Firebase config does not contain Android package com.kingshall.hallschat')
-          print('Firebase Android configuration validated for com.kingshall.hallschat')
+
+          raw = os.environ.get("FIREBASE_GOOGLE_SERVICES_JSON", "").strip()
+          encoded = os.environ.get("FIREBASE_GOOGLE_SERVICES_JSON_BASE64", "").strip()
+
+          if raw:
+              content = raw
+              source = "raw JSON secret"
+          elif encoded:
+              try:
+                  content = base64.b64decode(encoded, validate=True).decode("utf-8")
+              except Exception as exc:
+                  raise SystemExit(
+                      "Firebase secret is not valid Base64. Add the raw JSON file content "
+                      "as FIREBASE_GOOGLE_SERVICES_JSON, or fix the existing Base64 secret."
+                  ) from exc
+              source = "Base64 secret"
+          else:
+              raise SystemExit(
+                  "Missing Firebase secret. Add FIREBASE_GOOGLE_SERVICES_JSON with the "
+                  "contents of HallsChat's google-services.json."
+              )
+
+          try:
+              data = json.loads(content)
+          except Exception as exc:
+              raise SystemExit("Firebase secret does not contain valid google-services.json JSON.") from exc
+
+          packages = [
+              item.get("client_info", {}).get("android_client_info", {}).get("package_name")
+              for item in data.get("client", [])
+          ]
+          if "com.kingshall.hallschat" not in packages:
+              raise SystemExit(
+                  "Firebase config does not contain Android package com.kingshall.hallschat"
+              )
+
+          Path("android/app/google-services.json").write_text(
+              json.dumps(data, indent=2) + "\\n",
+              encoding="utf-8",
+          )
+          print(f"Firebase Android configuration validated for com.kingshall.hallschat ({source})")
           PY
           python3 - <<'PY'
           from pathlib import Path
