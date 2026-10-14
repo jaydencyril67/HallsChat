@@ -24,6 +24,14 @@ const ALERT_TYPE_GROUPS: { label: string; options: { value: AlertTypeKey; label:
 export default function ThemeSettingsPage() {
   const { themePreference, setThemePreference } = useAppTheme();
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [maxDeviceMode, setMaxDeviceMode] = useState<"flex" | "fixed">("flex");
+  const [maxDevices, setMaxDevices] = useState(3);
+  const [activeDeviceSessions, setActiveDeviceSessions] = useState(0);
+  const [maxDeviceLoaded, setMaxDeviceLoaded] = useState(false);
+  const [maxDeviceSaving, setMaxDeviceSaving] = useState(false);
+  const [maxDeviceMenuOpen, setMaxDeviceMenuOpen] = useState(false);
+  const [maxDeviceMessage, setMaxDeviceMessage] = useState("");
+  const maxDeviceMenuRef = useRef<HTMLDivElement>(null);
   const [alertColorEnabled, setAlertColorEnabled] = useState(() => localStorage.getItem("hallschat_alert_color_enabled") !== "false");
   const [alertColor, setAlertColor] = useState(() => {
     const saved = localStorage.getItem("hallschat_alert_color");
@@ -137,6 +145,41 @@ export default function ThemeSettingsPage() {
     : themePreference === "light"
       ? "Light"
       : "Dark";
+
+  useEffect(() => {
+    if (!maxDeviceMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (maxDeviceMenuRef.current && !maxDeviceMenuRef.current.contains(event.target as Node)) setMaxDeviceMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setMaxDeviceMenuOpen(false); };
+    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [maxDeviceMenuOpen]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) { setMaxDeviceLoaded(true); setMaxDeviceMessage("Sign in to manage active sessions."); return; }
+    fetch(apiBase + "/api/settings/max-device", { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
+      .then(async response => { const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.message || "Unable to load Max Device settings."); return payload as { mode?: string; maxDevices?: number; activeSessions?: number }; })
+      .then(payload => { if (cancelled) return; setMaxDeviceMode(payload.mode === "fixed" ? "fixed" : "flex"); setMaxDevices(Math.min(5, Math.max(1, Number(payload.maxDevices) || 3))); setActiveDeviceSessions(Math.max(0, Number(payload.activeSessions) || 0)); setMaxDeviceLoaded(true); })
+      .catch(error => { if (cancelled) return; setMaxDeviceLoaded(true); setMaxDeviceMessage(error instanceof Error ? error.message : "Unable to load Max Device settings."); });
+    return () => { cancelled = true; };
+  }, [apiBase]);
+
+  const chooseMaxDevice = async (next: { mode?: "flex" | "fixed"; maxDevices?: number }) => {
+    const mode = next.mode || maxDeviceMode;
+    const limit = next.maxDevices ?? maxDevices;
+    setMaxDeviceSaving(true); setMaxDeviceMessage("");
+    try {
+      const token = localStorage.getItem("hallschat_token");
+      if (!token) throw new Error("Sign in again to change Max Device settings.");
+      const response = await fetch(apiBase + "/api/settings/max-device", { method: "PATCH", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify({ mode, maxDevices: limit }) });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "Unable to save Max Device settings.");
+      setMaxDeviceMode(mode); setMaxDevices(limit); setActiveDeviceSessions(Math.max(0, Number(payload.activeSessions) || 0));
+      setMaxDeviceMessage("Max Device settings saved."); setMaxDeviceMenuOpen(false);
+    } catch (error) { setMaxDeviceMessage(error instanceof Error ? error.message : "Unable to save Max Device settings."); }
+    finally { setMaxDeviceSaving(false); }
+  };
 
   useEffect(() => {
     if (!alertColorMenuOpen) return;
@@ -803,6 +846,27 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <section className="settings-theme-card" aria-label="Max Device">
+        <span className="settings-theme-title">Max Device</span>
+        <span className="settings-theme-current" aria-live="polite">{!maxDeviceLoaded ? "Loading…" : `${maxDeviceMode === "flex" ? "Flex" : "Fixed"} · ${maxDevices} ${maxDevices === 1 ? "session" : "sessions"}`}</span>
+        <div className="settings-theme-menu-anchor" ref={maxDeviceMenuRef}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Max Device options" aria-haspopup="menu" aria-expanded={maxDeviceMenuOpen} disabled={!maxDeviceLoaded || maxDeviceSaving} onClick={() => setMaxDeviceMenuOpen(open => !open)}>
+            <MoreHorizontal size={21} />
+          </button>
+          {maxDeviceMenuOpen && <div className="settings-theme-menu settings-max-device-menu" role="menu" aria-label="Max Device options">
+            <div className="settings-theme-menu-group-label">When the limit is reached</div>
+            {([{ value: "flex", label: "Flex" }, { value: "fixed", label: "Fixed" }] as const).map(option => <button key={option.value} type="button" role="menuitemradio" aria-checked={maxDeviceMode === option.value} className={"settings-theme-menu-option" + (maxDeviceMode === option.value ? " is-selected" : "")} disabled={maxDeviceSaving} onClick={() => void chooseMaxDevice({ mode: option.value })}>
+              <span>{option.label}</span>{maxDeviceMode === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+            <div className="settings-theme-menu-group-label">Maximum active sessions</div>
+            <div className="settings-max-device-number-grid">
+              {[1, 2, 3, 4, 5].map(value => <button key={value} type="button" role="menuitemradio" aria-checked={maxDevices === value} className={"settings-max-device-number" + (maxDevices === value ? " is-selected" : "")} disabled={maxDeviceSaving} onClick={() => void chooseMaxDevice({ maxDevices: value })}>{value}{maxDevices === value && <Check size={13} aria-hidden="true" />}</button>)}
+            </div>
+            <div className="settings-theme-menu-group-label">Currently active: {activeDeviceSessions}</div>
+          </div>}
+        </div>
+      </section>
+      {maxDeviceMessage && <p className="settings-theme-current" role="status" aria-live="polite">{maxDeviceMessage}</p>}
       <section className="settings-theme-card" aria-label="Alert Color">
         <span className="settings-theme-title">Alert Color</span>
         <span className="settings-theme-current" aria-live="polite"><span className="settings-alert-color-swatch" style={{ background: alertColor }} aria-hidden="true" />{alertColorEnabled ? "Enabled" : "Disabled"}</span>
