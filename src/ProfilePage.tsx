@@ -331,7 +331,7 @@ export default function ProfilePage() {
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, padding: "8px 0 20px", color: "var(--theme-text-primary)" }}>
             <div style={{ flex: 1, textAlign: "center", borderRight: "1px solid var(--theme-border)" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{postsLoading ? "—" : posts.length.toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Posts</span></div>
-            <div style={{ flex: 1, textAlign: "center", borderRight: "1px solid var(--theme-border)" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{loading ? "—" : (user?.followersCount ?? 0).toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Followers</span></div>
+            <button type="button" onClick={() => navigate("/halls?tab=followers")} aria-label="View your followers on Globe" title="View your followers" style={{ flex: 1, minWidth: 0, textAlign: "center", border: 0, borderRight: "1px solid var(--theme-border)", padding: 0, background: "transparent", color: "inherit", cursor: "pointer" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{loading ? "—" : (user?.followersCount ?? 0).toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Followers</span></button>
             <div style={{ flex: 1, textAlign: "center" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{postsLoading ? "—" : posts.reduce((sum, post) => sum + (post.likeCount || 0), 0).toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Likes</span></div>
           </div>
 
