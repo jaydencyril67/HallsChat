@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, CircleHelp, Code2, ContactRound, Globe, Home, MessagesSquare, Phone, Settings, UsersRound, UserRound } from "lucide-react";
 import { navigate } from "./utils/navigate";
 const getNowbarFeature = (key: string) => { try { return window.localStorage.getItem(key) !== "false"; } catch { return true; } };
@@ -75,7 +75,7 @@ export default function NowBar() {
   const [swipeEnabled, setSwipeEnabled] = useState(() => getNowbarFeature("hallschat_nowbar_swipe_enabled"));
   const [expandEnabled, setExpandEnabled] = useState(() => getNowbarFeature("hallschat_nowbar_expand_enabled"));
   const [edgeColorVersion, setEdgeColorVersion] = useState(0);
-  const edgeColorSettings = (() => {
+  const edgeColorSettings = useMemo(() => {
     try {
       const color = localStorage.getItem("hallschat_nowbar_color");
       const mode = localStorage.getItem("hallschat_nowbar_light_style");
@@ -87,7 +87,7 @@ export default function NowBar() {
     } catch {
       return { enabled: false, color: "#38bdf8", mode: "stable" };
     }
-  })();
+  }, [edgeColorVersion]);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
   const swipeHandled = useRef(false);
   const [activeAction, setActiveAction] = useState(() => {
