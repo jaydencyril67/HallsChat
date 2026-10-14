@@ -263,18 +263,20 @@ export default function ThemeSettingsPage() {
           if (permission.receive !== "granted") throw new Error("Allow notifications for HallsChat in Android settings to enable push alerts.");
           const fcmToken = await new Promise<string>(async (resolve, reject) => {
             let settled = false;
-            const registrationListener = await PushNotifications.addListener("registration", result => {
+            let registrationListener: { remove: () => Promise<void> } | undefined;
+            let errorListener: { remove: () => Promise<void> } | undefined;
+            registrationListener = await PushNotifications.addListener("registration", result => {
               if (settled) return;
               settled = true;
-              void registrationListener.remove();
-              void errorListener.remove();
+              void registrationListener?.remove();
+              void errorListener?.remove();
               resolve(result.value);
             });
-            const errorListener = await PushNotifications.addListener("registrationError", error => {
+            errorListener = await PushNotifications.addListener("registrationError", error => {
               if (settled) return;
               settled = true;
-              void registrationListener.remove();
-              void errorListener.remove();
+              void registrationListener?.remove();
+              void errorListener?.remove();
               reject(new Error(error.error || "Android could not register this device for push notifications."));
             });
             await PushNotifications.register();
