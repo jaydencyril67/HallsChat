@@ -99,7 +99,8 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
   };
 
   return <header
-    className="topbar hallschat-clickable-header theme-fixed-dark"
+    className={"topbar hallschat-clickable-header theme-fixed-dark" + (headerAlertActive ? " halls-alert-color-active" : "")}
+    style={headerAlertStyle}
     role="button"
     tabIndex={0}
     aria-label={localStorage.getItem("hallschat_token") ? `Open alerts${unreadCount ? `, ${unreadCount} unread` : ""}` : "HallsChat home"}
