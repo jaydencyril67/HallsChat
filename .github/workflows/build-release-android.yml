@@ -188,12 +188,16 @@ jobs:
           const sharp = require('sharp');
           // Keep the Android 11 full splash logo at its existing size.
           sharp('public/crown-chat.svg')
-            .resize(512, 512, { fit: 'contain' })
+            // Android 11 displays this image inside a 213dp layer item. Keep the
+            // full 512px canvas, but scale the visible artwork to 50% to match
+            // CryBots' internally scaled native splash vector.
+            .resize(256, 256, { fit: 'contain' })
+            .extend({ top: 128, bottom: 128, left: 128, right: 128, background: { r: 0, g: 0, b: 0, alpha: 0 } })
             .png()
             .toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png')
             .then(() => sharp('public/crown-chat.svg')
               // Android 12 treats the drawable's intrinsic size as the splash icon.
-              // Match CryBots' 432dp canvas with a ~224dp visible mark, not a full-canvas logo.
+              // Preserve the existing 432px canvas with a 224px visible mark.
               .resize(224, 224, { fit: 'contain' })
               .extend({ top: 104, bottom: 104, left: 104, right: 104, background: { r: 0, g: 0, b: 0, alpha: 0 } })
               .png()
