@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen, CheckCircle2, HeartHandshake, LockKeyhole, MessageCircle, ShieldCheck, UsersRound } from "lucide-react";
+import { BookOpen, CheckCircle2, ShieldCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 
@@ -179,19 +179,6 @@ export default function AboutPage() {
     <main className="home-page social-home halls-about-page">
       <AppHeader homeHref="/home" />
       <section className="home-shell social-shell halls-about-shell">
-        <header className="halls-about-heading">
-          <div className="halls-about-heading-mark" aria-hidden="true">
-            {tab === "about" ? <HeartHandshake size={20} /> : <ShieldCheck size={20} />}
-          </div>
-          <div className="halls-about-heading-copy">
-            <p className="halls-about-eyebrow">HALLSCHAT • ABOUT & POLICIES</p>
-            <h1>{tab === "about" ? "About HallsChat" : "Standards & Policies"}</h1>
-            <p>{tab === "about"
-              ? "What we're building, how the app works, and how to get the most out of your social space."
-              : "The expectations, safety principles and policies that help keep HallsChat useful and respectful."}</p>
-          </div>
-        </header>
-
         <div className="halls-about-tabs halls-list-tabs" role="tablist" aria-label="About and standards">
           <button type="button" role="tab" id="halls-about-tab" aria-controls="halls-about-panel" aria-selected={tab === "about"} className={tab === "about" ? "is-active" : ""} onClick={() => setTab("about")}>
             <BookOpen size={16} /> About
@@ -202,16 +189,6 @@ export default function AboutPage() {
         </div>
 
         <section id="halls-about-panel" className="halls-about-panel" role="tabpanel" aria-labelledby={tab === "about" ? "halls-about-tab" : "halls-standards-tab"}>
-          <div className="halls-about-intro">
-            {tab === "about" ? <MessageCircle size={18} /> : <LockKeyhole size={18} />}
-            <div>
-              <strong>{tab === "about" ? "Social connection, with care." : "A shared responsibility."}</strong>
-              <p>{tab === "about"
-                ? "HallsChat brings posts, stories, conversations, calls and communities into one social experience."
-                : "Last reviewed: October 14, 2026. These standards are a plain-language overview and may be supplemented by separate notices or terms."}</p>
-            </div>
-          </div>
-
           <div className="halls-about-sections">
             {sections.map((section, index) => (
               <article className="halls-about-section" key={section.title}>
