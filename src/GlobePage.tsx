@@ -16,7 +16,7 @@ function initials(name: string) {
 }
 
 export default function GlobePage() {
-  const [tab, setTab] = useState<GlobeTab>("discover");
+  const [tab, setTab] = useState<GlobeTab>(() => new URLSearchParams(window.location.search).get("tab") === "followers" ? "followers" : "discover");
   const [users, setUsers] = useState<GlobeUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
