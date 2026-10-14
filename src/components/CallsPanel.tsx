@@ -51,6 +51,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
   const [kind, setKind] = useState<"audio" | "video">("audio");
   const [phase, setPhase] = useState<"idle" | "outgoing" | "incoming" | "connecting" | "connected">("idle");
   const [peerName, setPeerName] = useState("");
+  const [peerPicture, setPeerPicture] = useState("");
   const [muted, setMuted] = useState(false);
   const [cameraOff, setCameraOff] = useState(false);
   const [seconds, setSeconds] = useState(0);
@@ -224,7 +225,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         return;
       }
       activeCallRef.current = response.callId;
-      setCallId(response.callId); setKind(callKind); setPeerName(person.name); setPhase("outgoing");
+      setCallId(response.callId); setKind(callKind); setPeerName(person.name); setPeerPicture(person.profilePicture || ""); setPhase("outgoing");
       try {
         const pc = await createPeer(response.callId, callKind === "video");
         const offer = await pc.createOffer();
@@ -244,7 +245,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
     try {
       const pc = await createPeer(call.callId, call.kind === "video");
       activeCallRef.current = call.callId;
-      setCallId(call.callId); setKind(call.kind); setPeerName(call.caller.name); setIncoming(null); setPhase("connecting");
+      setCallId(call.callId); setKind(call.kind); setPeerName(call.caller.name); setPeerPicture(call.caller.profilePicture || ""); setIncoming(null); setPhase("connecting");
       socket.timeout(10000).emit("call:accept", { callId: call.callId }, (err: Error | null, response: { ok?: boolean; message?: string }) => {
         if (err || !response?.ok) cleanup(response?.message || "This call is no longer available.");
       });
@@ -271,7 +272,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         socket.emit("call:decline", { callId: call.callId });
         return;
       }
-      setIncoming(call); setKind(call.kind); setPeerName(call.caller.name); setPhase("incoming");
+      setIncoming(call); setKind(call.kind); setPeerName(call.caller.name); setPeerPicture(call.caller.profilePicture || ""); setPhase("incoming");
     };
     const onAccepted = async (payload: { callId: string }) => {
       if (payload.callId !== activeCallRef.current || !pcRef.current) return;
@@ -416,7 +417,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         {kind === "video" && <><video ref={remoteVideo} className="halls-call-remote-video" autoPlay playsInline /><video ref={localVideo} className="halls-call-local-video" autoPlay muted playsInline /></>}
         <audio ref={remoteAudio} autoPlay playsInline /><audio ref={localAudio} autoPlay muted playsInline />
         <button type="button" onClick={() => setMinimized(true)} aria-label="Minimize call" title="Minimize call" style={{ position: "absolute", top: 14, right: 14, zIndex: 3, display: "grid", placeItems: "center", width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--theme-line)", background: "var(--theme-surface-hover)", color: "var(--theme-text)" }}><Minus size={20}/></button>
-        {kind === "audio" && <div className="halls-call-avatar halls-call-avatar-large">{peerName.slice(0,1).toUpperCase()}</div>}
+        {kind === "audio" && <div className="halls-call-avatar halls-call-avatar-large">{peerPicture ? <img src={peerPicture} alt={peerName + " profile"} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "inherit" }} /> : peerName.slice(0,1).toUpperCase()}</div>}
         <span className="halls-call-eyebrow">{kind.toUpperCase()} CALL</span><h2>{peerName}</h2>
         <p>{phase === "outgoing" ? "Ringing…" : phase === "connecting" ? <LoadingDots /> : formatDuration(seconds)}</p>
         {callError && <p className="halls-call-error">{callError}</p>}
