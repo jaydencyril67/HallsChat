@@ -6,7 +6,7 @@ import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 
-type AlertType = "message" | "call" | "follow" | "like" | "comment" | "system";
+type AlertType = "message" | "call" | "post" | "story" | "follow" | "like" | "comment" | "mention" | "community" | "account" | "system";
 type AlertItem = {
   id: string;
   title: string;
