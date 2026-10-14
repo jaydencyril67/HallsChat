@@ -22,7 +22,7 @@ const hueFromHex = (hex: string) => {
   return 60 * ((red - green) / delta + 4);
 };
 
-export default function AlertColorModal({ color, onChange, onClose }: { color: string; onChange: (color: string) => void; onClose: () => void }) {
+export default function AlertColorModal({ color, onChange, onClose, title = "Choose alert color", description = "Choose the color used to highlight the app header while alerts are unread or an upload is active. Your choice saves immediately." }: { color: string; onChange: (color: string) => void; onClose: () => void; title?: string; description?: string }) {
   const [customColor, setCustomColor] = useState(color);
   const [rgb, setRgb] = useState(() => hexToRgb(color));
   const [hue, setHue] = useState(() => hueFromHex(color));
@@ -73,9 +73,9 @@ export default function AlertColorModal({ color, onChange, onClose }: { color: s
   const text = "var(--theme-text, #fff4f0)";
   const buttonStyle = { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, minHeight: 38, padding: "0 13px", border: `1px solid ${line}`, borderRadius: 10, background: raised, color: text, fontSize: 12, fontWeight: 750, cursor: "pointer" } as const;
   return <div className="alert-color-modal-backdrop" role="presentation">
-    <section className="alert-color-modal theme-token-scope" role="dialog" aria-modal="true" aria-label="Choose alert color" onClick={event => event.stopPropagation()}>
+    <section className="alert-color-modal theme-token-scope" role="dialog" aria-modal="true" aria-label={title} onClick={event => event.stopPropagation()}>
       <div className="alert-color-modal-content">
-        <p className="alert-color-modal-intro">Choose the color used to highlight the app header while alerts are unread or an upload is active. Your choice saves immediately.</p>
+        <p className="alert-color-modal-intro">{description}</p>
         <section className="alert-color-preview">
           <span style={{ width: 42, height: 42, borderRadius: 12, flexShrink: 0, background: color, boxShadow: `0 0 24px ${color}` }}/>
           <strong>Selected color</strong><code>{color.toUpperCase()}</code>
