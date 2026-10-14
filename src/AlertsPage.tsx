@@ -2,6 +2,7 @@ import { Bell, CheckCheck, CircleAlert, Inbox, Trash2, ExternalLink } from "luci
 import { useCallback, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import AppHeader from "./AppHeader";
+import VerificationBadge from "./VerificationBadge";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
@@ -156,7 +157,7 @@ export default function AlertsPage() {
             <article key={item.id} className={`halls-alert-item ${item.readAt ? "" : "unread"}`}>
               <button type="button" className="halls-alert-item-main" onClick={() => void openAlert(item)}>
                 <span className={`halls-alert-type-icon halls-alert-type-${item.type}`}><Bell size={18} /></span>
-                <span className="halls-alert-copy"><strong>{item.title}</strong><span>{item.message}</span><small>{timeLabel(item.createdAt)}{item.actor?.name ? ` · ${item.actor.name}` : ""}</small></span>
+                <span className="halls-alert-copy"><strong>{item.title}</strong><span>{item.message}</span><small>{timeLabel(item.createdAt)}{item.actor?.name ? <> · {item.actor.name}{item.actor.isVerified && item.actor.verifiedAt && <VerificationBadge size={12} />}</> : ""}</small></span>
                 {!item.readAt ? <span className="halls-alert-unread-dot" aria-label="Unread" /> : null}
                 <ExternalLink className="halls-alert-open-icon" size={15} />
               </button>
