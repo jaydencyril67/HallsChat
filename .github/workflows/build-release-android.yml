@@ -893,6 +893,14 @@ jobs:
               private String kind = "audio";
 
               @Override
+              protected void onNewIntent(Intent intent) {
+                  super.onNewIntent(intent);
+                  setIntent(intent);
+                  String action = intent.getStringExtra("callAction");
+                  if ("answer".equals(action) || "decline".equals(action)) openApp(action);
+              }
+
+              @Override
               protected void onCreate(Bundle state) {
                   super.onCreate(state);
                   if (Build.VERSION.SDK_INT >= 27) {
