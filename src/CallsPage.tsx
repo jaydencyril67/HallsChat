@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, Phone, Video, ArrowDownLeft, ArrowUpRight, Clock3, PhoneCall, CalendarDays } from "lucide-react";
 import AppHeader from "./AppHeader";
+import VerificationBadge from "./VerificationBadge";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
@@ -129,7 +130,7 @@ export default function CallsPage() {
               return <button type="button" className="halls-call-history-row" key={call.id} onClick={() => call.person.id && navigate("/rooms?user=" + encodeURIComponent(call.person.id))} disabled={!call.person.id}>
                 <span className="halls-call-history-avatar">{call.person.profilePicture ? <img src={call.person.profilePicture} alt="" /> : initials(call.person.name)}</span>
                 <span className="halls-call-history-copy">
-                  <strong className={missed || rejected || failed ? "is-missed" : ""}>{call.person.name}</strong>
+                  <strong className={missed || rejected || failed ? "is-missed" : ""} style={{ display: "inline-flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>{call.person.name}{call.person.isVerified && call.person.verifiedAt && <VerificationBadge size={13} />}</strong>
                   <span className="halls-call-history-meta"><DirectionIcon size={15} className={missed || rejected || failed ? "is-missed" : call.direction === "incoming" ? "is-incoming" : "is-outgoing"} /><span>{call.direction === "incoming" ? "Incoming" : "Outgoing"} {call.kind} call</span><i>·</i><span className={missed || rejected || failed ? "is-missed" : ""}>{callSummary(call)}</span></span>
                 </span>
                 <span className="halls-call-history-time"><small>{formatTime(call.createdAt)}</small><TypeIcon size={17} /></span>
