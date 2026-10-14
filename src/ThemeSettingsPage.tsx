@@ -25,7 +25,7 @@ export default function ThemeSettingsPage() {
   const { themePreference, setThemePreference } = useAppTheme();
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [maxDeviceMode, setMaxDeviceMode] = useState<"flex" | "fixed">("flex");
-  const [maxDevices, setMaxDevices] = useState(3);
+  const [maxDevices, setMaxDevices] = useState(2);
   const [activeDeviceSessions, setActiveDeviceSessions] = useState(0);
   const [maxDeviceLoaded, setMaxDeviceLoaded] = useState(false);
   const [maxDeviceSaving, setMaxDeviceSaving] = useState(false);
@@ -160,7 +160,7 @@ export default function ThemeSettingsPage() {
     if (!token) { setMaxDeviceLoaded(true); setMaxDeviceMessage("Sign in to manage active sessions."); return; }
     fetch(apiBase + "/api/settings/max-device", { headers: { Authorization: "Bearer " + token }, cache: "no-store" })
       .then(async response => { const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.message || "Unable to load Max Device settings."); return payload as { mode?: string; maxDevices?: number; activeSessions?: number }; })
-      .then(payload => { if (cancelled) return; setMaxDeviceMode(payload.mode === "fixed" ? "fixed" : "flex"); setMaxDevices(Math.min(5, Math.max(1, Number(payload.maxDevices) || 3))); setActiveDeviceSessions(Math.max(0, Number(payload.activeSessions) || 0)); setMaxDeviceLoaded(true); })
+      .then(payload => { if (cancelled) return; setMaxDeviceMode(payload.mode === "fixed" ? "fixed" : "flex"); setMaxDevices(Math.min(5, Math.max(1, Number(payload.maxDevices) || 2))); setActiveDeviceSessions(Math.max(0, Number(payload.activeSessions) || 0)); setMaxDeviceLoaded(true); })
       .catch(error => { if (cancelled) return; setMaxDeviceLoaded(true); setMaxDeviceMessage(error instanceof Error ? error.message : "Unable to load Max Device settings."); });
     return () => { cancelled = true; };
   }, [apiBase]);
