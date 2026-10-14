@@ -45,7 +45,8 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
     <section className="landing-hero" id="top">
       <div className="landing-hero-copy">
         
-        <h1>Your people.<br /><span>Your kind of</span><br /><em>connection.</em></h1>
+        <h1>Welcome to<br /><span>HallsChat.</span></h1>
+        <p className="landing-hero-tagline">Your kind of connection.</p>
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
           <button className="button button-primary landing-cta" onClick={onSignup}>Create your account <ArrowRight size={17} /></button>
