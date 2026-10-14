@@ -1,8 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { ArrowLeft, MessageCircle, UserRoundCheck, UserPlus, Image as ImageIcon, CalendarDays } from "lucide-react";
-import AppHeader from "./AppHeader";
+import { X, MessageCircle, UserRoundCheck, UserPlus, Image as ImageIcon, CalendarDays } from "lucide-react";
 import VerificationBadge from "./VerificationBadge";
-import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
@@ -22,7 +20,7 @@ const timeAgo = (value: string) => {
   return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
 };
 
-export default function PublicProfilePage({ userId }: { userId: string }) {
+export default function PublicProfilePage({ userId, onClose }: { userId: string; onClose: () => void }) {
   const [profile, setProfile] = useState<PublicUser | null>(null);
   const [posts, setPosts] = useState<ProfilePost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +46,14 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
     return () => { cancelled = true; };
   }, [userId]);
 
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onClose]);
+
   async function toggleFollow() {
     if (!profile || busy) return;
     const token = localStorage.getItem("hallschat_token");
@@ -68,11 +74,14 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
   const panel: React.CSSProperties = { border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)" };
   const muted: React.CSSProperties = { color: "var(--theme-muted)" };
 
-  return <main className="home-page social-home public-profile-page theme-token-scope">
-    <AppHeader homeHref="/home" />
-    <section className="home-shell social-shell theme-token-scope" style={{ paddingBottom: 112 }}>
+  return <div className="social-public-profile-modal" role="dialog" aria-modal="true" aria-label="Public profile" onClick={onClose}>
+    <main className="home-page social-home public-profile-page theme-token-scope public-profile-modal-panel" onClick={event => event.stopPropagation()}>
+      <header className="social-public-profile-modal-header">
+        <strong>Profile</strong>
+        <button type="button" onClick={onClose} aria-label="Close public profile" title="Close profile"><X size={21} /></button>
+      </header>
+    <section className="home-shell social-shell theme-token-scope public-profile-modal-scroll" style={{ paddingBottom: 24 }}>
       <div style={{ width: "100%", maxWidth: 760, margin: "0 auto", padding: "0 0 24px", boxSizing: "border-box" }}>
-        <button type="button" onClick={() => window.history.length > 1 ? window.history.back() : navigate("/halls")} style={{ display: "inline-flex", alignItems: "center", gap: 7, margin: "0 0 13px", padding: "8px 11px", border: "1px solid var(--theme-border)", borderRadius: 10, background: "var(--theme-surface-hover)", color: "var(--theme-text-primary)", fontSize: ".78rem", fontWeight: 700 }}><ArrowLeft size={15} /> Back</button>
         {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", minHeight: 260 }}><LoadingDots /></div> :
           error && !profile ? <div style={{ ...panel, padding: 28, textAlign: "center" }}><h2 style={{ margin: "0 0 8px", fontSize: "1rem" }}>Profile unavailable</h2><p style={{ ...muted, fontSize: ".84rem" }}>{error}</p><button type="button" onClick={() => navigate("/halls")} style={{ padding: "10px 15px", border: 0, borderRadius: 10, background: "var(--theme-danger-strong)", color: "var(--theme-text-inverse)", fontWeight: 800 }}>Back to Globe</button></div> :
           profile && <>
@@ -117,6 +126,6 @@ export default function PublicProfilePage({ userId }: { userId: string }) {
       </div>
     </section>
     {previewImage && <ImagePreviewModal imageUrl={previewImage} onClose={() => setPreviewImage(null)} />}
-    <NowBar />
-  </main>;
+    </main>
+  </div>;
 }
