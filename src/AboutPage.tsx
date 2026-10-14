@@ -179,12 +179,12 @@ export default function AboutPage() {
     <main className="home-page social-home halls-about-page">
       <AppHeader homeHref="/home" />
       <section className="home-shell social-shell halls-about-shell theme-token-scope">
-        <div className="halls-about-tabs halls-list-tabs" role="tablist" aria-label="About and standards">
-          <button type="button" role="tab" id="halls-about-tab" aria-controls="halls-about-panel" aria-selected={tab === "about"} className={tab === "about" ? "is-active" : ""} onClick={() => setTab("about")}>
-            <BookOpen size={16} /> About
+        <div className="globe-directory-tabs halls-about-tabs" role="tablist" aria-label="About and standards" style={{ border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)", padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
+          <button className="globe-directory-tab" type="button" role="tab" id="halls-about-tab" aria-controls="halls-about-panel" aria-selected={tab === "about"} aria-pressed={tab === "about"} onClick={() => setTab("about")} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "8px 10px", borderRadius: 9, border: tab === "about" ? "1px solid var(--theme-tabs-active-border)" : "1px solid var(--theme-border-subtle)", background: tab === "about" ? "var(--theme-tabs-active-bg)" : "var(--theme-tabs-bg)", color: tab === "about" ? "var(--theme-tabs-active-text)" : "var(--theme-tabs-text)", fontSize: ".8rem", fontWeight: 750 }}>
+            <BookOpen size={16} /><span>About</span>
           </button>
-          <button type="button" role="tab" id="halls-standards-tab" aria-controls="halls-about-panel" aria-selected={tab === "standards"} className={tab === "standards" ? "is-active" : ""} onClick={() => setTab("standards")}>
-            <ShieldCheck size={16} /> Standards
+          <button className="globe-directory-tab" type="button" role="tab" id="halls-standards-tab" aria-controls="halls-about-panel" aria-selected={tab === "standards"} aria-pressed={tab === "standards"} onClick={() => setTab("standards")} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "8px 10px", borderRadius: 9, border: tab === "standards" ? "1px solid var(--theme-tabs-active-border)" : "1px solid var(--theme-border-subtle)", background: tab === "standards" ? "var(--theme-tabs-active-bg)" : "var(--theme-tabs-bg)", color: tab === "standards" ? "var(--theme-tabs-active-text)" : "var(--theme-tabs-text)", fontSize: ".8rem", fontWeight: 750 }}>
+            <ShieldCheck size={16} /><span>Standards</span>
           </button>
         </div>
 
