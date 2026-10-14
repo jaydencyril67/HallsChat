@@ -14,7 +14,11 @@ const readCachedUnreadCount = () => {
 
 export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) {
   const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
-  const [unreadCount, setUnreadCount] = useState(readCachedUnreadCount);\n  const [isAlertPulseActive, setIsAlertPulseActive] = useState(false);\n  const previousUnreadCount = useRef(readCachedUnreadCount());\n  const hasLoadedUnreadCount = useRef(localStorage.getItem(UNREAD_CACHE_KEY) !== null);\n  const alertPulseTimer = useRef<number | undefined>(undefined);
+  const [unreadCount, setUnreadCount] = useState(readCachedUnreadCount);
+  const [isAlertPulseActive, setIsAlertPulseActive] = useState(false);
+  const previousUnreadCount = useRef(readCachedUnreadCount());
+  const hasLoadedUnreadCount = useRef(localStorage.getItem(UNREAD_CACHE_KEY) !== null);
+  const alertPulseTimer = useRef<number | undefined>(undefined);
   const [taskState, setTaskState] = useState<BackgroundTaskSnapshot>(() => getBackgroundTaskState());
   const [alertColor, setAlertColor] = useState(() => {
     const saved = localStorage.getItem("hallschat_alert_color");
