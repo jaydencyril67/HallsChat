@@ -1,4 +1,4 @@
-import { useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useEffect, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from "react";
 import { ArrowLeft, Check, X } from "lucide-react";
 
 const isHexColor = (value: string) => /^#[0-9a-f]{6}$/i.test(value);
@@ -92,7 +92,7 @@ export default function AlertColorModal({ color, onChange, onClose }: { color: s
           <div className="alert-color-picker" role="group" aria-label="Color wheel">
             <div className="alert-color-hue-ring" onClick={event => selectHueAtPoint(event.clientX, event.clientY, event.currentTarget)}>
               <span className="alert-color-hue-track" style={{ transform: `rotate(${hue}deg)` }}><span/></span>
-              <div className="alert-color-field" style={{ "--picker-hue": hsvToHex(hue, 1, 1) } as React.CSSProperties} onClick={event => { event.stopPropagation(); updateField(event); }}>
+              <div className="alert-color-field" style={{ "--picker-hue": hsvToHex(hue, 1, 1) } as CSSProperties} onClick={event => { event.stopPropagation(); updateField(event); }}>
                 <span style={{ left: `${saturation * 100}%`, top: `${(1 - value) * 100}%` }}/>
               </div>
             </div>
