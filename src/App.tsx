@@ -162,7 +162,7 @@ export default function App() {
       try {
         let permission = await PushNotifications.checkPermissions();
         if (permission.receive !== "granted") {
-          if (permission.receive !== "prompt") return;
+          if (permission.receive !== "prompt" && permission.receive !== "prompt-with-rationale") return;
           permission = await PushNotifications.requestPermissions();
         }
         if (permission.receive !== "granted" || disposed) return;
