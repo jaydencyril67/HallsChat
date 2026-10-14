@@ -4,7 +4,7 @@ import { PushNotifications } from "@capacitor/push-notifications";
 import { NativeAppUpdate } from "./utils/nativeAppUpdate";
 import AlertColorModal from "./AlertColorModal";
 import { navigate } from "./utils/navigate";
-import { useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
@@ -32,6 +32,7 @@ export default function ThemeSettingsPage() {
   const [alertColorMenuOpen, setAlertColorMenuOpen] = useState(false);
   const [alertColorModalOpen, setAlertColorModalOpen] = useState(false);
   const alertColorMenuRef = useRef<HTMLDivElement>(null);
+  const closeAlertColorModal = useCallback(() => setAlertColorModalOpen(false), []);
   const [downloadAppMenuOpen, setDownloadAppMenuOpen] = useState(false);
   const downloadAppMenuRef = useRef<HTMLDivElement>(null);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -1017,7 +1018,7 @@ export default function ThemeSettingsPage() {
         {downloadAppMessage && <span className="settings-theme-current settings-download-app-status" role="status">{downloadAppMessage}</span>}
       </section>
     </section>
-    {alertColorModalOpen && <AlertColorModal color={alertColor} onChange={saveAlertColor} onClose={() => setAlertColorModalOpen(false)} />}
+    {alertColorModalOpen && <AlertColorModal color={alertColor} onChange={saveAlertColor} onClose={closeAlertColorModal} />}
     <NowBar />
   </main>;
 }
