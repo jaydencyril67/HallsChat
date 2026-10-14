@@ -4213,7 +4213,7 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 
 
 /* Branded receiver placeholder while an outgoing video call is still ringing. */
-.halls-call-waiting-video{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 100px 100px 24px;text-align:center;background:radial-gradient(ellipse at 50% 43%,var(--theme-accent-soft),transparent 58%),var(--theme-call-video-bg);color:var(--theme-call-video-text);pointer-events:none}
+.halls-call-waiting-video{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px 24px 100px;box-sizing:border-box;text-align:center;background:radial-gradient(ellipse at 50% 43%,var(--theme-accent-soft),transparent 58%),var(--theme-call-video-bg);color:var(--theme-call-video-text);pointer-events:none}
 .halls-call-waiting-video>strong{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:clamp(18px,4vw,25px);font-weight:750}
 .halls-call-waiting-video>span{color:var(--theme-muted);font-size:13px}
 .halls-call-waiting-rings{position:relative;display:grid;place-items:center;width:124px;height:124px;margin-bottom:8px}
@@ -4228,4 +4228,4 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 @keyframes halls-call-ring-pulse{0%{transform:scale(.72);opacity:.75}100%{transform:scale(1.25);opacity:0}}
 @keyframes halls-call-dot-bounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-4px);opacity:1}}
 @media(prefers-reduced-motion:reduce){.halls-call-waiting-rings>span,.halls-call-waiting-dots i{animation:none}}
-@media(max-width:520px){.halls-call-waiting-video{padding:24px 85px 100px 16px}.halls-call-waiting-rings{width:108px;height:108px}.halls-call-waiting-avatar{width:72px;height:72px}}
+@media(max-width:520px){.halls-call-waiting-video{padding:24px 16px 100px}.halls-call-waiting-rings{width:108px;height:108px}.halls-call-waiting-avatar{width:72px;height:72px}}
