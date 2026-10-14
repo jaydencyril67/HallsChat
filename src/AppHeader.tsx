@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Bell } from "lucide-react";
 import { io } from "socket.io-client";
 import { navigate } from "./utils/navigate";
@@ -10,8 +10,27 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
   const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
   const [unreadCount, setUnreadCount] = useState(0);
   const [taskState, setTaskState] = useState<BackgroundTaskSnapshot>(() => getBackgroundTaskState());
+  const [alertColor, setAlertColor] = useState(() => {
+    const saved = localStorage.getItem("hallschat_alert_color");
+    return saved && /^#[0-9a-f]{6}$/i.test(saved) ? saved.toLowerCase() : "#e11d48";
+  });
+  const [alertColorEnabled, setAlertColorEnabled] = useState(() => localStorage.getItem("hallschat_alert_color_enabled") !== "false");
 
   useEffect(() => subscribeBackgroundTasks(setTaskState), []);
+
+  useEffect(() => {
+    const syncAlertColor = () => {
+      const saved = localStorage.getItem("hallschat_alert_color");
+      setAlertColor(saved && /^#[0-9a-f]{6}$/i.test(saved) ? saved.toLowerCase() : "#e11d48");
+      setAlertColorEnabled(localStorage.getItem("hallschat_alert_color_enabled") !== "false");
+    };
+    window.addEventListener("hallschat:alert-color-changed", syncAlertColor);
+    window.addEventListener("storage", syncAlertColor);
+    return () => {
+      window.removeEventListener("hallschat:alert-color-changed", syncAlertColor);
+      window.removeEventListener("storage", syncAlertColor);
+    };
+  }, []);
 
   const activeTask = taskState.tasks[taskState.tasks.length - 1];
   const taskResult = activeTask ? null : taskState.lastResult;
@@ -21,6 +40,16 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
     : taskResult
       ? taskResult.error ? (uploadRelated(taskResult.label, taskResult.status) ? "Upload Failed" : "Send Failed") : uploadRelated(taskResult.label, taskResult.status) ? "Uploaded" : "Sent"
       : "";
+
+  // Match CryBots: illuminate the header while unread alerts exist, and also
+  // while the upload manager has a live task.
+  const headerAlertActive = alertColorEnabled && (unreadCount > 0 || Boolean(activeTask));
+  const headerAlertStyle: CSSProperties | undefined = headerAlertActive ? {
+    borderColor: alertColor + "b8",
+    boxShadow: "0 0 0 1px color-mix(in srgb, " + alertColor + " 72%, transparent), 0 0 18px color-mix(in srgb, " + alertColor + " 48%, transparent), 0 14px 30px rgba(0,0,0,0.24)",
+    animation: "halls-alert-color-pulse 1.2s ease-in-out infinite",
+    ["--halls-alert-color" as string]: alertColor,
+  } : undefined;
 
   useEffect(() => {
     if (activeTask || !taskResult) return;
@@ -93,6 +122,6 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
     <span className="header-artwork header-artwork-right" aria-hidden="true">
       <span className="header-logo"><img src="/crown-chat.svg?v=7" alt="" /></span>
     </span>
-    {unreadCount > 0 ? <span className="halls-header-alert-badge" aria-hidden="true">{unreadCount > 99 ? "99+" : unreadCount}</span> : null}
+    {unreadCount > 0 ? <span className="halls-header-alert-badge" style={headerAlertActive ? { background: alertColor, boxShadow: "0 0 0 1px " + alertColor + "66, 0 0 12px " + alertColor + "88" } : undefined} aria-hidden="true">{unreadCount > 99 ? "99+" : unreadCount}</span> : null}
   </header>;
 }
