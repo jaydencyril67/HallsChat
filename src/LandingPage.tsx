@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowLeft, ArrowRight, Bell, Check, Heart, Home, LockKeyhole, MessageCircle, MoreHorizontal, Plus, Send, Smartphone, Users, Video, UsersRound, Compass, Sparkles } from "lucide-react";
+import { ArrowDownRight, ArrowLeft, ArrowRight, Check, Heart, Home, LockKeyhole, MessageCircle, MoreHorizontal, Plus, Send, Smartphone, Users, Video, UsersRound, Sparkles } from "lucide-react";
 import { useState } from "react";
 import AppHeader from "./AppHeader";
 import { navigate } from "./utils/navigate";
@@ -143,6 +143,6 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
     </section>
 
     <footer className="landing-footer"><a className="landing-brand-link" href="#top"><Brand compact /></a><span>Made for meaningful moments.</span><a href="#top" className="landing-back-top">Back to top ↑</a><small>© {new Date().getFullYear()} HallsChat. Built with care.</small></footer>
-    <div className="landing-preview-disclaimer">Welcome to HallsChat. Create an account to get started.</div>
+    <div className="landing-preview-disclaimer">Interactive preview · Sample activity only · Nothing is sent</div>
   </main>;
 }
