@@ -4,11 +4,13 @@ import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
+import VerificationBadge from "./VerificationBadge";
+import VerificationPanel from "./VerificationPanel";
 import StoryImageCropModal from "./components/StoryImageCropModal";
 import { navigate } from "./utils/navigate";
 import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
 
-type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string; coverPhoto?: string; followersCount?: number; profileDetailsUpdatedAt?: string | null };
+type Account = { id: string; name: string; username: string; email: string; createdAt?: string; profilePicture?: string; coverPhoto?: string; followersCount?: number; profileDetailsUpdatedAt?: string | null; verificationStatus?: "none" | "pending" | "verified" | "rejected"; verifiedAt?: string | null };
 type Post = { id: string; content: string; createdAt: string; author: { id: string; name: string; username: string } | null; likeCount?: number; images?: string[]; poll?: { question: string; options?: { id: string; text: string; voteCount: number; votedByMe?: boolean }[] } | null };
 type ImageKitAuth = { token: string; expire: number; signature: string; publicKey: string };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -368,12 +370,14 @@ export default function ProfilePage() {
                 </div>
                 <span style={{ marginBottom: 7, padding: "6px 9px", border: "1px solid var(--theme-accent-border)", borderRadius: 999, color: "var(--theme-primary-hover)", fontSize: ".68rem", fontWeight: 800, letterSpacing: ".06em" }}>MY PROFILE</span>
               </div>
-              <h1 style={{ margin: "13px 0 4px", color: "var(--theme-text-primary)", fontSize: "clamp(1.4rem,5vw,1.9rem)", letterSpacing: "-.04em", overflowWrap: "anywhere" }}>{loading ? <LoadingDots /> : user?.name || "HallsChat member"}</h1>
+              <h1 style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 7, margin: "13px 0 4px", color: "var(--theme-text-primary)", fontSize: "clamp(1.4rem,5vw,1.9rem)", letterSpacing: "-.04em", overflowWrap: "anywhere" }}>{loading ? <LoadingDots /> : user?.name || "HallsChat member"}{user?.verificationStatus === "verified" && user?.verifiedAt && <VerificationBadge size={22} />}</h1>
               <p style={{ margin: 0, color: "var(--theme-primary-hover)", fontSize: ".88rem" }}>{user?.username ? `@${user.username}` : "Your HallsChat account"}</p>
               {pictureBusy && <p role="status" style={{ margin: "12px 0 0", color: "var(--theme-primary-hover)", fontSize: ".8rem" }}><LoadingDots /></p>}
               {coverBusy && <p role="status" style={{ margin: "8px 0 0", color: "var(--theme-primary-hover)", fontSize: ".8rem" }}><LoadingDots /></p>}
             </div>
           </div>
+
+          <VerificationPanel />
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 0, padding: "8px 0 20px", color: "var(--theme-text-primary)" }}>
             <div style={{ flex: 1, textAlign: "center", borderRight: "1px solid var(--theme-border)" }}><strong style={{ display: "block", fontSize: "1.05rem" }}>{postsLoading ? "—" : posts.length.toLocaleString()}</strong><span style={{ ...muted, fontSize: ".72rem" }}>Posts</span></div>
