@@ -4,6 +4,7 @@ import LandingPage from "./LandingPage";
 import HomePage from "./HomePage";
 import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
+import VerificationBadge from "./VerificationBadge";
 
 type SharedPost = {
   id: string;
