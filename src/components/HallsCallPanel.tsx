@@ -3,7 +3,7 @@ import type { Socket } from "socket.io-client";
 import VerificationBadge from "../VerificationBadge";
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X, Minus } from "lucide-react";
 
-type Participant = { id: string; name?: string; username?: string; profilePicture?: string };
+type Participant = { id: string; name?: string; username?: string; profilePicture?: string; isVerified?: boolean; verifiedAt?: string | null };
 type IncomingHallCall = { callId: string; groupId: string; kind: "audio" | "video"; caller: Participant; startedAt: number };
 type PeerState = { pc: RTCPeerConnection; stream?: MediaStream };
 type Props = { socket: Socket | null; hallId: string; hallName: string; currentUserId: string };
