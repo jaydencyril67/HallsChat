@@ -112,9 +112,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 /* HallsChat NowBar: CryBots-style adaptive text and HallsChat header palette. */
 .nowbar-dock{z-index:80;width:min(560px,calc(100vw - 32px));pointer-events:none;display:flex;align-items:flex-end;justify-content:center;position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%)}
-.nowbar-dock-expanded{width:fit-content;max-width:calc(100vw - 32px);height:180px;box-shadow:0 0 0 1px var(--theme-fixed-dark-glass-highlight),0 0 24px var(--theme-fixed-dark-glass-highlight),0 18px 50px var(--theme-shadow-overlay),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight-soft)}
 .nowbar-shell{position:relative;display:flex;align-items:center;gap:12px;padding:10px 12px;border:2.5px solid var(--theme-header-border);border-radius:20px;background:var(--theme-header-bg);box-shadow:var(--theme-header-shadow),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);pointer-events:auto;overflow:hidden;align-self:stretch;width:100%;min-width:0;color:var(--theme-fixed-dark-text)}
-.nowbar-shell-expanded{display:flex;align-items:stretch;justify-content:center;width:fit-content;max-width:100%;height:100%;padding:12px;border-radius:26px;gap:8px}
 .nowbar-rail{position:absolute;inset:50% 10px auto;height:1px;background:linear-gradient(90deg,transparent,var(--theme-fixed-dark-glass-highlight-strong),transparent);transform:translateY(-50%);pointer-events:none}
 .nowbar-title{position:relative;z-index:1;width:100%;min-width:0;min-height:40px;padding:2px 4px;display:flex;align-items:center;justify-content:center;gap:10px;border:0;background:transparent;color:var(--theme-fixed-dark-text);font-size:.95rem;font-weight:700;letter-spacing:.02em;white-space:nowrap}
 .nowbar-title>span:not(.nowbar-orb){min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -131,15 +129,12 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .nowbar-icon svg{width:18px;height:18px}
 .nowbar-label-compact,.nowbar-label-expanded{max-width:100%;font-size:.58rem;font-weight:700;letter-spacing:.04em;line-height:1;white-space:nowrap}.nowbar-label-expanded{min-width:0;overflow:hidden;text-align:center}
 .nowbar-label-compact{overflow:hidden;text-overflow:ellipsis}
-.nowbar-actions-expanded{display:grid;grid-template-columns:repeat(3,minmax(112px,max-content));grid-auto-rows:minmax(54px,auto);align-items:stretch;align-self:stretch;gap:8px;padding:0;overflow-x:hidden;overflow-y:auto;white-space:normal;align-content:start;flex:none}
-.nowbar-actions-expanded .nowbar-slot{min-width:0;width:max-content;max-width:100%;min-height:0}
-.nowbar-actions-expanded .nowbar-action{width:100%;min-width:112px;max-width:100%;min-height:40px;padding:9px 10px 8px;gap:4px}
 .nowbar-marquee-viewport{display:block;flex:1;min-width:0;max-width:100%;overflow:hidden;text-align:center}
 .nowbar-marquee-track{display:inline-flex;white-space:nowrap;animation:nowbar-label-marquee 7s ease-in-out infinite;will-change:transform}
-@keyframes nowbar-label-marquee{0%,15%{transform:translateX(0)}45%,70%{transform:translateX(calc(-100% + 75px))}100%{transform:translateX(0)}}
+@keyframes nowbar-label-marquee{0%,15%{transform:translateX(0)}45%,70%{transform:translateX(calc(-100% + 145px))}100%{transform:translateX(0)}}
 .nowbar-title:focus-visible,.nowbar-action:focus-visible{outline:2px solid var(--theme-fixed-dark-muted-text);outline-offset:2px}
 .home-page{padding-bottom:125px}
-@media(max-width:480px){.nowbar-dock{width:calc(100vw - 20px);bottom:max(12px,env(safe-area-inset-bottom))}.nowbar-shell{gap:8px;padding:9px 10px;border-radius:18px}.nowbar-actions{gap:8px}.nowbar-slot{min-width:82px}.nowbar-actions-expanded{grid-template-columns:repeat(3,minmax(112px,max-content));gap:8px}.nowbar-actions-expanded .nowbar-action{min-width:112px}}
+@media(max-width:480px){.nowbar-dock{width:calc(100vw - 20px);bottom:max(12px,env(safe-area-inset-bottom))}.nowbar-shell{gap:8px;padding:9px 10px;border-radius:18px}.nowbar-actions{gap:8px}.nowbar-slot{min-width:82px}}
 @media(prefers-reduced-motion:reduce){.nowbar-action,.nowbar-title>span{transition:none}.nowbar-marquee-track{animation:none}}
 
 /* NowBar sizing: title/text mode hugs its content like CryBots; action mode keeps its own scrollable rail. */
@@ -149,10 +144,8 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .nowbar-title .nowbar-page-label{display:block;max-width:min(62vw,340px);min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .nowbar-shell-actions{width:100%;max-width:100%;min-width:0;}
 .nowbar-shell-actions .nowbar-actions{flex:0 1 auto;max-width:100%;}
-.nowbar-shell-expanded{max-width:calc(100vw - 20px);}
-.nowbar-shell-expanded .nowbar-actions-expanded{max-height:100%;overflow-y:auto;overscroll-behavior:contain;}
 /* No press-scale: keep the NowBar steady on touch, like CryBots. */
-@media(max-width:480px){.nowbar-title .nowbar-page-label{max-width:calc(100vw - 104px)}.nowbar-shell-title{max-width:calc(100vw - 20px)}.nowbar-shell-expanded{width:calc(100vw - 20px);}}
+@media(max-width:480px){.nowbar-title .nowbar-page-label{max-width:calc(100vw - 104px)}.nowbar-shell-title{max-width:calc(100vw - 20px)}}
 
 
 /* Match CryBots text-mode NowBar geometry: content-height capsule, reference border and glow. */
@@ -180,71 +173,6 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 
 
-/* Match CryBots expanded NowBar growth footprint and outer glow. */
-
-.nowbar-dock-expanded{
-  width:fit-content;
-  max-width:calc(100vw - 32px);
-  height:180px;
-  min-height:180px;
-  align-items:stretch;
-  box-shadow:0 0 0 1px var(--theme-fixed-dark-glass-highlight),0 0 24px var(--theme-fixed-dark-glass-highlight),0 18px 50px var(--theme-shadow-overlay),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight-soft);
-}
-.nowbar-shell-expanded{
-  display:flex;
-  align-items:stretch;
-  justify-content:center;
-  align-self:stretch;
-  flex-shrink:0;
-  box-sizing:border-box;
-  width:fit-content;
-  max-width:100%;
-  height:100%;
-  min-height:180px;
-  padding:12px;
-  border-radius:26px;
-  gap:8px;
-  overflow:hidden;
-
-}
-.nowbar-actions-expanded{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(112px,max-content));
-  grid-auto-rows:minmax(54px,auto);
-  align-items:stretch;
-  align-self:stretch;
-  gap:8px;
-  padding:0;
-  overflow-x:hidden;
-  overflow-y:auto;
-  white-space:normal;
-  align-content:start;
-  flex:none;
-  min-width:0;
-  max-width:100%;
-  height:100%;
-  overscroll-behavior:contain;
-}
-.nowbar-actions-expanded .nowbar-slot{min-width:0;width:100%;max-width:100%;min-height:0;display:flex;justify-content:stretch}
-.nowbar-actions-expanded .nowbar-action{width:100%;min-width:112px;max-width:100%;min-height:54px;padding:9px 10px 8px;gap:4px}
-.nowbar-label-expanded{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;text-align:center;white-space:nowrap}
-/* Expanded mode intentionally keeps CryBots 112px minimum columns on mobile. */
-
-/* NowBar parity pass: match CryBots sizing, grid proportions, marquee and expanded dock footprint. Keep HallsChat theme colors. */
-.nowbar-dock{bottom:18px}
-.nowbar-dock-expanded{width:fit-content;max-width:calc(100vw - 32px);height:calc(2.5 * 72px);min-height:calc(2.5 * 72px);align-items:stretch;box-shadow:0 0 0 1px var(--theme-fixed-dark-glass-highlight),0 0 24px var(--theme-fixed-dark-glass-highlight),0 18px 50px var(--theme-shadow-overlay),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight-soft)}
-.nowbar-shell-expanded{display:flex;align-items:stretch;justify-content:center;align-self:stretch;flex:0 1 auto;width:fit-content;max-width:calc(100vw - 32px);height:100%;min-height:0;padding:12px;border-radius:26px;gap:8px;overflow:hidden;box-shadow:0 0 0 1px var(--theme-fixed-dark-glass-highlight-strong),var(--theme-header-shadow),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight-strong)}
-.nowbar-shell-expanded .nowbar-actions-expanded{display:grid;grid-template-columns:repeat(3,minmax(112px,max-content));grid-auto-rows:minmax(54px,auto);align-items:stretch;align-self:stretch;gap:8px;padding:0;overflow-x:hidden;overflow-y:auto;white-space:normal;align-content:start;flex:none;min-width:0;max-width:100%;height:100%;max-height:100%;overscroll-behavior:contain}
-.nowbar-actions-expanded .nowbar-slot{flex:0 0 auto;min-width:0;width:max-content;max-width:100%;min-height:0;display:flex;justify-content:center}
-.nowbar-actions-expanded .nowbar-action{width:100%;min-width:112px;max-width:100%;min-height:40px;padding:9px 10px 8px;gap:4px}
-.nowbar-label-expanded{display:block;min-width:0;max-width:100%;overflow:hidden;text-align:center;white-space:nowrap}
-.nowbar-marquee-viewport{display:block;flex:1;min-width:0;max-width:100%;overflow:hidden;text-align:center}
-.nowbar-marquee-track{display:inline-flex;white-space:nowrap;animation:nowbar-label-marquee 7s ease-in-out infinite;will-change:transform}
-@keyframes nowbar-label-marquee{0%,15%{transform:translateX(0)}45%,70%{transform:translateX(calc(-100% + 145px))}100%{transform:translateX(0)}}
-@media(max-width:480px){.nowbar-dock-expanded{width:fit-content;max-width:calc(100vw - 32px);height:calc(2.5 * 72px);min-height:calc(2.5 * 72px)}.nowbar-shell-expanded{width:fit-content;max-width:calc(100vw - 32px)}.nowbar-shell-expanded .nowbar-actions-expanded{width:auto;grid-template-columns:repeat(3,minmax(112px,max-content))}.nowbar-actions-expanded .nowbar-slot{width:max-content}.nowbar-actions-expanded .nowbar-action{min-width:112px}}
-@media(prefers-reduced-motion:reduce){.nowbar-marquee-track{animation:none}}
-
-
 /* Final NowBar parity corrections: content-wrap the normal rail, preserve the 560px cap,
    and keep expanded labels single-line without changing HallsChat's header palette. */
 .nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title){
@@ -266,8 +194,6 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 .nowbar-actions-expanded .nowbar-slot{min-width:0}
 .nowbar-actions-expanded .nowbar-action{box-sizing:border-box}
 .nowbar-label-expanded{flex:0 1 auto;max-width:100%;text-overflow:ellipsis}
-.nowbar-shell-title,.nowbar-shell-actions,.nowbar-shell-expanded{
-}
 @media(max-width:480px){
   .nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title){max-width:calc(100vw - 20px)}
   .nowbar-shell-actions{max-width:100%}
@@ -334,28 +260,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
   max-width: 100%;
   min-height: 40px;
 }
-@media (max-width: 480px) {
-  .nowbar-dock-expanded {
-    width: fit-content;
-    max-width: calc(100vw - 32px);
-    height: calc(2.5 * 72px);
-    min-height: calc(2.5 * 72px);
-  }
-  .nowbar-shell-expanded {
-    width: fit-content;
-    max-width: 100%;
-  }
-  .nowbar-shell-expanded .nowbar-actions-expanded {
-    width: fit-content;
-    grid-template-columns: repeat(3, minmax(112px, max-content));
-  }
-  .nowbar-actions-expanded .nowbar-slot {
-    width: max-content;
-  }
-  .nowbar-actions-expanded .nowbar-action {
-    min-width: 112px;
-  }
-}
+
 
 
 /* HallsChat Social v1 — social-first home feed, retaining the existing burgundy theme and shared NowBar. */
