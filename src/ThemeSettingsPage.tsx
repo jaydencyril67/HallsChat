@@ -70,6 +70,7 @@ export default function ThemeSettingsPage() {
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [pwaInstalled, setPwaInstalled] = useState(() => window.matchMedia("(display-mode: standalone)").matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
   const [downloadAppMessage, setDownloadAppMessage] = useState("");
+  const [apkUpdate, setApkUpdate] = useState<{ status: "checking" | "current" | "update" | "unknown"; installedVersion?: string; latestVersion?: string; downloadUrl?: string }>({ status: Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" ? "checking" : "unknown" });
   const [idleLogoutMinutes, setIdleLogoutMinutes] = useState<0 | 5 | 10 | 30>(() => {
     const saved = Number(localStorage.getItem("hallschat_idle_logout_minutes") || 0);
     return saved === 5 || saved === 10 || saved === 30 ? saved : 0;
@@ -225,24 +226,54 @@ export default function ThemeSettingsPage() {
     return () => { window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt); window.removeEventListener("appinstalled", handleAppInstalled); displayMode.removeEventListener("change", syncInstalled); };
   }, []);
 
+  const checkApkVersion = useCallback(async () => {
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") { setApkUpdate({ status: "unknown" }); return; }
+    try {
+      const appInfo = await NativeAppUpdate.getAppInfo();
+      if (!appInfo?.versionName) throw new Error("Installed version unavailable");
+      const response = await fetch(apiBase + "/api/notifications/app-update-check?installedVersion=" + encodeURIComponent(appInfo.versionName), { cache: "no-store" });
+      if (!response.ok) throw new Error("Version check failed");
+      const data = await response.json() as { updateAvailable?: boolean; installedVersion?: string; latestVersion?: string; downloadUrl?: string };
+      setApkUpdate({ status: data.updateAvailable && data.downloadUrl ? "update" : "current", installedVersion: data.installedVersion || appInfo.versionName, latestVersion: data.latestVersion, downloadUrl: data.downloadUrl || HALLSCHAT_APK_URL });
+    } catch { setApkUpdate({ status: "unknown" }); }
+  }, [apiBase]);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return;
+    void checkApkVersion();
+    const onVisible = () => { if (document.visibilityState === "visible") void checkApkVersion(); };
+    window.addEventListener("focus", onVisible);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { window.removeEventListener("focus", onVisible); document.removeEventListener("visibilitychange", onVisible); };
+  }, [checkApkVersion]);
+
+  useEffect(() => {
+    if (!downloadAppMessage) return;
+    const timer = window.setTimeout(() => setDownloadAppMessage(""), 4500);
+    return () => window.clearTimeout(timer);
+  }, [downloadAppMessage]);
+
   const handleApkDownload = async (event: ReactMouseEvent<HTMLAnchorElement>) => {
     setDownloadAppMenuOpen(false);
-    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") {
-      setDownloadAppMessage("Opening the latest signed HallsChat APK download.");
+    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") { setDownloadAppMessage("Opening the latest signed HallsChat APK download."); return; }
+    event.preventDefault();
+    if (apkUpdate.status === "checking") { setDownloadAppMessage("Checking your installed HallsChat version…"); await checkApkVersion(); return; }
+    if (apkUpdate.status === "current") { setDownloadAppMessage("You are already using the latest HallsChat APK" + (apkUpdate.latestVersion ? " (v" + apkUpdate.latestVersion + ")" : "") + "."); return; }
+    const downloadUrl = apkUpdate.downloadUrl || HALLSCHAT_APK_URL;
+    if (apkUpdate.status === "unknown") {
+      setDownloadAppMessage("Version check unavailable. Opening the latest APK release.");
+      await checkApkVersion();
+      window.setTimeout(() => window.open(HALLSCHAT_APK_URL, "_blank", "noopener,noreferrer"), 300);
       return;
     }
-    event.preventDefault();
-    setDownloadAppMessage("Preparing the Android APK download…");
+    setDownloadAppMessage("Preparing HallsChat update v" + (apkUpdate.latestVersion || "latest") + "…");
     try {
-      const result = await NativeAppUpdate.downloadAndInstall({ url: HALLSCHAT_APK_URL });
-      if (result.requiresPermission) {
-        setDownloadAppMessage("Allow HallsChat to install unknown apps in Android settings, return here, then tap Android APK again.");
-      } else {
-        setDownloadAppMessage("The APK is downloading. Android will ask you to approve the update when it finishes.");
-      }
+      const result = await NativeAppUpdate.downloadAndInstall({ url: downloadUrl });
+      if (result.requiresPermission) setDownloadAppMessage("Allow HallsChat to install unknown apps in Android settings, return here, then tap Update again.");
+      else setDownloadAppMessage("The APK update is downloading. Android will ask you to approve it when it finishes.");
     } catch {
       setDownloadAppMessage("The in-app installer could not start. Opening the APK download in your browser.");
-      window.setTimeout(() => window.open(HALLSCHAT_APK_URL, "_blank", "noopener,noreferrer"), 300);
+      window.setTimeout(() => window.open(downloadUrl, "_blank", "noopener,noreferrer"), 300);
     }
   };
 
@@ -1119,8 +1150,8 @@ export default function ThemeSettingsPage() {
               onClick={handleApkDownload}
             >
               <Smartphone size={16} aria-hidden="true" />
-              <span>Android APK</span>
-              <Download size={15} aria-hidden="true" />
+              <span>{Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && apkUpdate.status === "update" ? "Update APK" : "Android APK"}</span>
+              {Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && apkUpdate.status === "current" ? <Check size={15} aria-hidden="true" /> : <Download size={15} aria-hidden="true" />}
             </a>
             <button type="button" role="menuitem" className="settings-theme-menu-option" onClick={() => void handlePwaInstall()}>
               <Globe size={16} aria-hidden="true" />
@@ -1129,12 +1160,13 @@ export default function ThemeSettingsPage() {
             </button>
           </div>}
         </div>
-        {downloadAppMessage && <span className="settings-theme-current settings-download-app-status" role="status">{downloadAppMessage}</span>}
+        {Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && <span className="settings-theme-current" aria-live="polite">{apkUpdate.status === "checking" ? "Checking APK version…" : apkUpdate.status === "update" ? "Update available · v" + (apkUpdate.latestVersion || "latest") : apkUpdate.status === "current" ? "Latest APK installed · v" + (apkUpdate.installedVersion || "") : "APK version unavailable"}</span>}
       </section>
     </section>
     {alertColorModalOpen && <AlertColorModal color={alertColor} onChange={saveAlertColor} onClose={closeAlertColorModal} />}
     {nowbarColorModalOpen && <AlertColorModal color={nowbarColor} onChange={saveNowbarColor} onClose={closeNowbarColorModal} title="Choose Nowbar Color" description="Choose the edge-light color used by your Nowbar. Your choice saves immediately." />}
     {nowbarButtonColorModalOpen && <AlertColorModal color={nowbarButtonColor} onChange={saveNowbarButtonColor} onClose={closeNowbarButtonColorModal} title="Choose Nowbar Button Color" description="Choose the border color for your Nowbar navigation buttons. Your choice saves immediately." />}
+    {downloadAppMessage && <div className="halls-toast halls-toast-success" role="status" aria-live="polite"><span>{downloadAppMessage}</span><button type="button" onClick={() => setDownloadAppMessage("")} aria-label="Dismiss notification">×</button></div>}
     <NowBar />
   </main>;
 }
