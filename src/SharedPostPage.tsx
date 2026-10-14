@@ -15,7 +15,7 @@ type SharedPost = {
   likeCount: number;
   commentCount: number;
 };
-type SharedAuthor = { id: string; name: string; username: string; profilePicture?: string };
+type SharedAuthor = { id: string; name: string; username: string; profilePicture?: string; isVerified?: boolean; verifiedAt?: string | null };
 type SharedPayload = { author: SharedAuthor; canView: boolean; isFollowing: boolean; post: SharedPost | null; message?: string };
 
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
@@ -90,7 +90,7 @@ export default function SharedPostPage({ postId }: { postId: string }) {
                 {payload.author.profilePicture ? <img src={payload.author.profilePicture} alt="" /> : <span>{initials(payload.author.name)}</span>}
               </div>
               <div className="shared-post-author-copy">
-                <h2 id="shared-post-title">{payload.author.name}</h2>
+                <h2 id="shared-post-title" style={{ display: "inline-flex", alignItems: "center", flexWrap: "wrap", gap: 5 }}>{payload.author.name}{payload.author.isVerified && payload.author.verifiedAt && <VerificationBadge size={17} />}</h2>
                 <p>@{payload.author.username}</p>
               </div>
             </div>
