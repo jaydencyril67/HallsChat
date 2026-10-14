@@ -15,6 +15,7 @@ const readCachedUnreadCount = () => {
 export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) {
   const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
   const [unreadCount, setUnreadCount] = useState(readCachedUnreadCount);
+  const [liveHallCall, setLiveHallCall] = useState<{ callId: string; groupId: string; groupName?: string; kind?: "audio" | "video" } | null>(null);
   const [isAlertPulseActive, setIsAlertPulseActive] = useState(false);
   const previousUnreadCount = useRef(readCachedUnreadCount());
   const hasLoadedUnreadCount = useRef(localStorage.getItem(UNREAD_CACHE_KEY) !== null);
@@ -53,7 +54,7 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
 
   // Match CryBots: keep the edge steadily lit while unread alerts exist.
   // Pulse only when a new alert arrives, never simply because a page mounted.
-  const headerAlertActive = alertColorEnabled && (unreadCount > 0 || Boolean(activeTask));
+  const headerAlertActive = Boolean(liveHallCall) || (alertColorEnabled && (unreadCount > 0 || Boolean(activeTask)));
   const headerAlertStyle: CSSProperties | undefined = headerAlertActive ? {
     borderColor: alertColor + "b8",
     boxShadow: isAlertPulseActive
@@ -123,6 +124,15 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
       activateAlertPulse();
       void loadCount();
     });
+    socket.on("group-call:active", (payload: { callId?: string; groupId?: string; groupName?: string; kind?: "audio" | "video" }) => {
+      if (!payload?.callId || !payload.groupId) return;
+      setLiveHallCall({ callId: payload.callId, groupId: payload.groupId, groupName: payload.groupName, kind: payload.kind });
+      activateAlertPulse();
+    });
+    socket.on("group-call:ended", (payload: { callId?: string }) => {
+      if (!payload?.callId) return;
+      setLiveHallCall(current => current?.callId === payload.callId ? null : current);
+    });
     return () => {
       cancelled = true;
       window.clearInterval(timer);
@@ -131,7 +141,8 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
   }, []);
 
   const openAlerts = () => {
-    if (localStorage.getItem("hallschat_token")) navigate("/notifications");
+    if (liveHallCall) navigate("/groups?group=" + encodeURIComponent(liveHallCall.groupId));
+    else if (localStorage.getItem("hallschat_token")) navigate("/notifications");
     else if (homeHref !== "#top") navigate(homeHref);
   };
 
@@ -155,6 +166,7 @@ export default function AppHeader({ homeHref = "#top" }: { homeHref?: string }) 
     <div className="header-brand">
       <strong>{isOnline ? "HALLSCHAT" : "NO INTERNET"}</strong>
       {!isOnline && <small>Check your connection</small>}
+      {liveHallCall && <small role="status" aria-live="polite" style={{ display: "block", color: "#fb7185", fontSize: ".66rem", fontWeight: 800, letterSpacing: ".04em" }}>● LIVE HALL CALL · TAP TO JOIN</small>}
       {headerStatus && <small className={`halls-header-upload-status${taskResult?.error ? " is-failed" : taskResult ? " is-complete" : " is-active"}`} role={taskResult?.error ? "alert" : "status"} aria-live="polite">{headerStatus}</small>}
     </div>
     <span className="header-artwork header-artwork-right" aria-hidden="true">
