@@ -194,8 +194,8 @@ jobs:
               android:height="432dp"
               android:viewportWidth="512"
               android:viewportHeight="512">
-              <group android:translateX="160" android:translateY="160" android:scaleX="0.5" android:scaleY="0.5">
-                  <path android:pathData="M43,0 H149 A43,43 0 0 1 192,43 V149 A43,43 0 0 1 149,192 H43 A43,43 0 0 1 0,149 V43 A43,43 0 0 1 43,0 Z">
+              <group android:translateX="128" android:translateY="128" android:scaleX="1.3333333" android:scaleY="1.3333333">
+                  <path android:pathData="M96,0 A96,96 0 1 1 96,192 A96,96 0 1 1 96,0 Z">
                       <aapt:attr name="android:fillColor">
                           <gradient android:type="linear" android:startX="12" android:startY="8" android:endX="180" android:endY="184">
                               <item android:color="#54152D" android:offset="0" />
