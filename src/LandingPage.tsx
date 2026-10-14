@@ -25,6 +25,9 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
   const [demoSent, setDemoSent] = useState<string[]>([]);
   const [demoLiked, setDemoLiked] = useState(false);
   const [demoJoined, setDemoJoined] = useState(false);
+  const [demoSaved, setDemoSaved] = useState(false);
+  const [demoCommentsOpen, setDemoCommentsOpen] = useState(false);
+  const [demoComment, setDemoComment] = useState("");
   const [demoNotice, setDemoNotice] = useState("");
 
   const handleLogin = () => {
@@ -67,6 +70,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
               <div className="landing-demo-app-title"><strong>{demoChat ? demoChat.name : "HallsChat"}</strong><small>{demoChat ? "demo conversation" : "Your people, closer."}</small></div>
               <button className="landing-demo-icon-btn" onClick={() => setDemoNotice("You're exploring a sample phone — nothing leaves this demo.")} aria-label="Demo information"><MoreHorizontal size={19} /></button>
             </div>
+            <div className="landing-demo-body">
             {demoChat ? (
               <div className="landing-demo-conversation">
                 <div className="landing-demo-date">TODAY · SAMPLE CHAT</div>
@@ -96,17 +100,21 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
                   <button className="landing-demo-chat-row" onClick={() => { setDemoChat({name:"Olivia Bennett",message:"Are we still on for this weekend? 😊"}); setDemoSent([]); }}><span className="landing-demo-person landing-demo-person-gold">OB</span><span className="landing-demo-chat-copy"><strong>Olivia Bennett</strong><small>Are we still on for this weekend? 😊</small></span><time>Yesterday</time></button>
                 </div>}
                 {demoTab === "feed" && <div className="landing-demo-feed">
-                  <article><div className="landing-demo-feed-author"><span className="landing-demo-person landing-demo-person-rose">EC</span><span><strong>Emily Carter</strong><small>12 minutes ago · Everyone</small></span></div><p>Little things lately have been the big things. 🤎</p><div className="landing-demo-feed-photo">☀️<span>slow mornings, good coffee</span></div><button onClick={() => setDemoLiked(value => !value)} className={demoLiked ? "is-liked" : ""}><Heart size={14} fill={demoLiked ? "currentColor" : "none"} /> {demoLiked ? "You and 24 others" : "24"} · Like</button></article>
+                  <article><div className="landing-demo-feed-author"><span className="landing-demo-person landing-demo-person-rose">EC</span><span><strong>Emily Carter</strong><small>12 minutes ago · Everyone</small></span><button className={demoSaved ? "landing-demo-save is-saved" : "landing-demo-save"} onClick={() => { setDemoSaved(value => !value); setDemoNotice(demoSaved ? "Post removed from your saved demo items." : "Post saved in this demo ✨"); }} aria-label={demoSaved ? "Unsave post" : "Save post"}><Check size={13} /></button></div><p>Little things lately have been the big things. 🤎</p><div className="landing-demo-feed-photo">☀️<span>slow mornings, good coffee</span></div><div className="landing-demo-feed-actions"><button onClick={() => setDemoLiked(value => !value)} className={demoLiked ? "is-liked" : ""}><Heart size={14} fill={demoLiked ? "currentColor" : "none"} /> {demoLiked ? "You and 24 others" : "24"} · Like</button><button onClick={() => setDemoCommentsOpen(value => !value)}><MessageCircle size={14} /> 6 · Comment</button></div>{demoCommentsOpen && <div className="landing-demo-comments"><p><strong>James Wilson</strong> Needed this reminder today 🙌</p><form onSubmit={event => { event.preventDefault(); if (demoComment.trim()) { setDemoNotice("Your demo comment was added locally."); setDemoComment(""); } }}><input value={demoComment} onChange={event => setDemoComment(event.target.value)} placeholder="Write a pretend comment…" aria-label="Write a demo comment" /><button type="submit"><Send size={12} /></button></form></div>}</article>
+                  <article><div className="landing-demo-feed-author"><span className="landing-demo-person landing-demo-person-blue">JW</span><span><strong>James Wilson</strong><small>38 minutes ago · The Cozy Corner</small></span></div><p>Found a new little spot for weekend coffee. Who's coming with me? ☕</p><div className="landing-demo-feed-photo landing-demo-feed-photo-cafe">☕<span>weekend plans, anyone?</span></div><div className="landing-demo-feed-actions"><button onClick={() => setDemoNotice("You liked James's sample post.")}><Heart size={14} /> 18 · Like</button><button onClick={() => setDemoNotice("Comments are only simulated in this preview.")}><MessageCircle size={14} /> 3 · Comment</button></div></article>
                   <div className="landing-demo-feed-tip"><Sparkles size={14} /> A feed for the moments worth sharing.</div>
                 </div>}
                 {demoTab === "halls" && <div className="landing-demo-halls">
                   <article><span className="landing-demo-hall-icon">✦</span><div><strong>The Cozy Corner</strong><small>Friends · 1.2k members</small></div><button onClick={() => setDemoJoined(value => !value)}>{demoJoined ? "Joined ✓" : "Join"}</button></article>
                   <article><span className="landing-demo-hall-icon landing-demo-hall-icon-warm">☕</span><div><strong>Daily Good Things</strong><small>Lifestyle · 860 members</small></div><button onClick={() => setDemoNotice("Welcome to Daily Good Things — demo only!")}>Explore</button></article>
+                  <article><span className="landing-demo-hall-icon landing-demo-hall-icon-blue">🎮</span><div><strong>Game Night Crew</strong><small>Gaming · 540 members</small></div><button onClick={() => setDemoNotice("Game Night Crew opened in demo mode.")}>Explore</button></article>
+                  <article><span className="landing-demo-hall-icon landing-demo-hall-icon-rose">🌱</span><div><strong>Small Wins Club</strong><small>Wellbeing · 2.4k members</small></div><button onClick={() => setDemoNotice("You're checking out Small Wins Club — demo only.")}>Explore</button></article>
                   <p>Shared interests. Familiar faces. Room to belong.</p>
                 </div>}
                 {demoTab === "profile" && <div className="landing-demo-profile"><div className="landing-demo-profile-cover"><span>✦</span></div><div className="landing-demo-profile-avatar">Y</div><strong>Your demo profile</strong><small>@yourcorner</small><p>Your people, your stories, your space.</p><div><span><b>18</b> posts</span><span><b>246</b> followers</span><span><b>180</b> following</span></div><button onClick={() => setDemoNotice("Profile editing is disabled in this interactive preview.")}>Edit profile</button></div>}
               </>
             )}
+            </div>
             {!demoChat && <div className="landing-demo-bottom-nav">
               <button className={demoTab === "chats" ? "active" : ""} onClick={() => setDemoTab("chats")}><MessageCircle size={16} /><small>Chats</small></button>
               <button className={demoTab === "feed" ? "active" : ""} onClick={() => setDemoTab("feed")}><Home size={16} /><small>Feed</small></button>
