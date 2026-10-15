@@ -55,7 +55,7 @@ export default function PublicProfilePage({ userId, onClose }: { userId: string;
   }, [userId]);
 
   useEffect(() => {
-    if (loading || !postsHasMore || !postsCursor || !postsSentinel.current || typeof IntersectionObserver === "undefined") return;
+    if (loading || postsLoadingMore || !postsHasMore || !postsCursor || !postsSentinel.current || typeof IntersectionObserver === "undefined") return;
     const token = localStorage.getItem("hallschat_token");
     if (!token) return;
     const node = postsSentinel.current;
@@ -84,7 +84,7 @@ export default function PublicProfilePage({ userId, onClose }: { userId: string;
     }, { rootMargin: "180px 0px" });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [loading, postsHasMore, postsCursor, userId]);
+  }, [loading, postsHasMore, postsLoadingMore, postsCursor, userId]);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
