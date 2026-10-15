@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { X, MessageCircle, UserRoundCheck, UserPlus, Image as ImageIcon, CalendarDays } from "lucide-react";
 import VerificationBadge from "./VerificationBadge";
 import LoadingDots from "./components/LoadingDots";
@@ -6,7 +6,7 @@ import ImagePreviewModal from "./components/ImagePreviewModal";
 import { navigate } from "./utils/navigate";
 
 type ProfilePost = { id: string; content: string; images: string[]; createdAt: string; likeCount: number; commentCount: number };
-type PublicUser = { id: string; name: string; username: string; profilePicture?: string; coverPhoto?: string; createdAt?: string; followersCount: number; followingCount: number; isFollowing: boolean; isSelf: boolean; canMessage: boolean; isOnline?: boolean; activeStatusHidden?: boolean; isVerified?: boolean; verifiedAt?: string | null };
+type PublicUser = { id: string; name: string; username: string; profilePicture?: string; coverPhoto?: string; createdAt?: string; followersCount: number; followingCount: number; postsCount?: number; isFollowing: boolean; isSelf: boolean; canMessage: boolean; isOnline?: boolean; activeStatusHidden?: boolean; isVerified?: boolean; verifiedAt?: string | null };
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
 const timeAgo = (value: string) => {
@@ -23,6 +23,11 @@ const timeAgo = (value: string) => {
 export default function PublicProfilePage({ userId, onClose }: { userId: string; onClose: () => void }) {
   const [profile, setProfile] = useState<PublicUser | null>(null);
   const [posts, setPosts] = useState<ProfilePost[]>([]);
+  const [postsCursor, setPostsCursor] = useState<string | null>(null);
+  const [postsHasMore, setPostsHasMore] = useState(false);
+  const [postsLoadingMore, setPostsLoadingMore] = useState(false);
+  const postsSentinel = useRef<HTMLDivElement | null>(null);
+  const postsMoreInFlight = useRef(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -34,17 +39,52 @@ export default function PublicProfilePage({ userId, onClose }: { userId: string;
     if (!token) { navigate("/signin", { replace: true }); return; }
     setLoading(true);
     setError("");
+    setPosts([]);
+    setPostsCursor(null);
+    setPostsHasMore(false);
     fetch(apiBase + "/api/social/users/" + encodeURIComponent(userId), { headers: { Authorization: "Bearer " + token } })
       .then(async response => {
         const payload = await response.json().catch(() => ({}));
         if (!response.ok || !payload.user) throw new Error(payload.message || "This profile couldn't be loaded.");
-        return payload as { user: PublicUser; posts: ProfilePost[] };
+        return payload as { user: PublicUser; posts: ProfilePost[]; hasMore?: boolean; nextCursor?: string | null };
       })
-      .then(payload => { if (!cancelled) { setProfile(payload.user); setPosts(Array.isArray(payload.posts) ? payload.posts : []); } })
+      .then(payload => { if (!cancelled) { setProfile(payload.user); setPosts(Array.isArray(payload.posts) ? payload.posts : []); setPostsHasMore(payload.hasMore === true); setPostsCursor(typeof payload.nextCursor === "string" ? payload.nextCursor : null); } })
       .catch(err => { if (!cancelled) setError(err instanceof Error ? err.message : "This profile couldn't be loaded."); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [userId]);
+
+  useEffect(() => {
+    if (loading || !postsHasMore || !postsCursor || !postsSentinel.current || typeof IntersectionObserver === "undefined") return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    const node = postsSentinel.current;
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting) || postsMoreInFlight.current) return;
+      postsMoreInFlight.current = true;
+      observer.unobserve(node);
+      setPostsLoadingMore(true);
+      fetch(apiBase + "/api/social/users/" + encodeURIComponent(userId) + "?limit=20&cursor=" + encodeURIComponent(postsCursor), { headers: { Authorization: "Bearer " + token } })
+        .then(async response => {
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.message || "More posts couldn't be loaded.");
+          return payload;
+        })
+        .then(payload => {
+          const incoming = Array.isArray(payload.posts) ? payload.posts as ProfilePost[] : [];
+          setPosts(current => {
+            const seen = new Set(current.map(post => post.id));
+            return [...current, ...incoming.filter(post => !seen.has(post.id))];
+          });
+          setPostsCursor(typeof payload.nextCursor === "string" ? payload.nextCursor : null);
+          setPostsHasMore(payload.hasMore === true);
+        })
+        .catch(err => setError(err instanceof Error ? err.message : "More posts couldn't be loaded."))
+        .finally(() => { postsMoreInFlight.current = false; setPostsLoadingMore(false); });
+    }, { rootMargin: "180px 0px" });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [loading, postsHasMore, postsCursor, userId]);
 
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -102,7 +142,7 @@ export default function PublicProfilePage({ userId, onClose }: { userId: string;
                 <div style={{ display: "flex", gap: 22, marginTop: 17, paddingTop: 14, borderTop: "1px solid var(--theme-border)" }}>
                   <div><strong style={{ color: "var(--theme-text-primary)", fontSize: ".95rem" }}>{profile.followersCount}</strong><span style={{ ...muted, marginLeft: 5, fontSize: ".78rem" }}>followers</span></div>
                   <div><strong style={{ color: "var(--theme-text-primary)", fontSize: ".95rem" }}>{profile.followingCount}</strong><span style={{ ...muted, marginLeft: 5, fontSize: ".78rem" }}>following</span></div>
-                  <div><strong style={{ color: "var(--theme-text-primary)", fontSize: ".95rem" }}>{posts.length}</strong><span style={{ ...muted, marginLeft: 5, fontSize: ".78rem" }}>posts</span></div>
+                  <div><strong style={{ color: "var(--theme-text-primary)", fontSize: ".95rem" }}>{profile.postsCount ?? posts.length}</strong><span style={{ ...muted, marginLeft: 5, fontSize: ".78rem" }}>posts</span></div>
                 </div>
 
               </div>
@@ -116,6 +156,7 @@ export default function PublicProfilePage({ userId, onClose }: { userId: string;
                   {(!post.images?.[0]) ? <p style={{ position: "relative", zIndex: 1, margin: 0, color: "var(--theme-text-primary)", fontSize: ".78rem", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 7, WebkitBoxOrient: "vertical" } as CSSProperties}>{post.content || "Post"}</p> : null}
                   <div style={{ position: "absolute", inset: "auto 0 0", display: "flex", alignItems: "center", gap: 5, padding: "22px 7px 6px", color: "var(--theme-text-inverse)", fontSize: ".7rem", fontWeight: 750, background: "linear-gradient(transparent,var(--theme-overlay))" }}>♥ {post.likeCount || 0} <span style={{ marginLeft: 6 }}>◯ {post.commentCount || 0}</span></div>
                 </article>)}
+                {postsHasMore && <div ref={postsSentinel} style={{ gridColumn: "1 / -1", display: "grid", placeItems: "center", padding: 12 }}>{postsLoadingMore && <LoadingDots />}</div>}
               </div> : <div style={{ padding: "25px 8px", textAlign: "center" }}><span style={{ display: "grid", placeItems: "center", width: 43, height: 43, margin: "0 auto 10px", borderRadius: 14, background: "var(--theme-accent-soft)", color: "var(--theme-danger)" }}><ImageIcon size={20} /></span><strong style={{ display: "block", color: "var(--theme-text-primary)", fontSize: ".88rem" }}>No posts yet</strong><p style={{ ...muted, fontSize: ".78rem", margin: "6px 0 0" }}>Their public posts will appear here.</p></div>}
             </section>
           </>
