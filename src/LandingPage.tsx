@@ -1,4 +1,4 @@
-import { ArrowDownRight, ArrowLeft, ArrowRight, Check, Heart, Home, LockKeyhole, MessageCircle, MoreHorizontal, Plus, Send, Smartphone, Users, Video, UsersRound, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Heart, Home, LockKeyhole, MessageCircle, MoreHorizontal, Plus, Send, Smartphone, Users, Video, UsersRound, Sparkles } from "lucide-react";
 import { useState } from "react";
 import AppHeader from "./AppHeader";
 import { navigate } from "./utils/navigate";
@@ -50,8 +50,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
           <button className="button button-primary landing-cta" onClick={onSignup}>Create your account <ArrowRight size={17} /></button>
-          <p className="landing-signin-note">Already have an account? <a href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Sign in</a></p>
-          <a className="landing-text-link" href="#why-hallschat">Get to know us <ArrowDownRight size={16} /></a>
+          <div className="landing-hero-signin"><span>Already have an account?</span><a className="landing-signin-button" href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Sign in <ArrowRight size={16} /></a></div>
         </div>
         <div className="landing-social-proof">
           <div className="landing-avatar-stack"><span>A</span><span>D</span><span>M</span><span><Heart size={12} fill="currentColor" /></span></div>
