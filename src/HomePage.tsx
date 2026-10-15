@@ -224,6 +224,11 @@ export default function HomePage() {
     };
   }, [openComments.length]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, SocialComment[]>>({});
+  const [commentsCursors, setCommentsCursors] = useState<Record<string, string | null>>({});
+  const [commentsHasMore, setCommentsHasMore] = useState<Record<string, boolean>>({});
+  const [commentsMoreLoading, setCommentsMoreLoading] = useState<string[]>([]);
+  const commentLoadSentinels = useRef<Record<string, HTMLDivElement | null>>({});
+  const commentsMoreInFlight = useRef<Set<string>>(new Set());
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
   const [commentsLoading, setCommentsLoading] = useState<string[]>([]);
   const [commentSending, setCommentSending] = useState<string[]>([]);
@@ -933,12 +938,57 @@ export default function HomePage() {
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || "Comments couldn't load.");
       setCommentsByPost(current => ({ ...current, [post.id]: Array.isArray(payload.comments) ? payload.comments : [] }));
+      setCommentsCursors(current => ({ ...current, [post.id]: typeof payload.nextCursor === "string" ? payload.nextCursor : null }));
+      setCommentsHasMore(current => ({ ...current, [post.id]: payload.hasMore === true }));
     } catch (err) {
       setCommentErrors(current => ({ ...current, [post.id]: err instanceof Error ? err.message : "Comments couldn't load." }));
     } finally {
       setCommentsLoading(current => current.filter(id => id !== post.id));
     }
   }
+
+  async function loadMoreComments(postId: string) {
+    const cursor = commentsCursors[postId];
+    if (!cursor || commentsHasMore[postId] !== true || commentsMoreInFlight.current.has(postId)) return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token) return;
+    commentsMoreInFlight.current.add(postId);
+    setCommentsMoreLoading(current => current.includes(postId) ? current : [...current, postId]);
+    try {
+      const response = await fetch(`${apiBase}/api/social/posts/${encodeURIComponent(postId)}/comments?limit=25&cursor=${encodeURIComponent(cursor)}`, { headers: { Authorization: `Bearer ${token}` } });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.message || "More comments couldn't load.");
+      const incoming = Array.isArray(payload.comments) ? payload.comments as SocialComment[] : [];
+      setCommentsByPost(current => {
+        const existing = current[postId] || [];
+        const seen = new Set(existing.map(comment => comment.id));
+        return { ...current, [postId]: [...existing, ...incoming.filter(comment => !seen.has(comment.id))] };
+      });
+      setCommentsCursors(current => ({ ...current, [postId]: typeof payload.nextCursor === "string" ? payload.nextCursor : null }));
+      setCommentsHasMore(current => ({ ...current, [postId]: payload.hasMore === true }));
+    } catch (err) {
+      setCommentErrors(current => ({ ...current, [postId]: err instanceof Error ? err.message : "More comments couldn't load." }));
+    } finally {
+      commentsMoreInFlight.current.delete(postId);
+      setCommentsMoreLoading(current => current.filter(id => id !== postId));
+    }
+  }
+
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const postId = (entry.target as HTMLElement).dataset.postId;
+        if (postId) void loadMoreComments(postId);
+      }
+    }, { rootMargin: "160px 0px" });
+    for (const postId of openComments) {
+      const sentinel = commentLoadSentinels.current[postId];
+      if (sentinel && commentsHasMore[postId] && !commentsMoreLoading.includes(postId)) observer.observe(sentinel);
+    }
+    return () => observer.disconnect();
+  }, [openComments, commentsHasMore, commentsMoreLoading, commentsCursors]);
 
   async function submitComment(event: FormEvent<HTMLFormElement>, post: SocialPost) {
     event.preventDefault();
@@ -1310,6 +1360,7 @@ export default function HomePage() {
                           <button type="button" className={reply.likedByMe ? "social-comment-like is-liked" : "social-comment-like"} onClick={() => void toggleCommentLike(post, reply)} disabled={commentLikingIds.includes(reply.id)} aria-label={reply.likedByMe ? "Unlike reply" : "Like reply"} aria-pressed={reply.likedByMe}>{commentLikingIds.includes(reply.id) ? <LoadingDots/> : <Heart size={16} fill={reply.likedByMe ? "currentColor" : "none"}/>}<small>{reply.likeCount || ""}</small></button>{reply.author?.id === user?.id && <div className="social-comment-delete-wrap"><button type="button" className="social-comment-delete" onClick={() => setCommentActionMenuId(current => current === reply.id ? null : reply.id)} disabled={commentDeletingIds.includes(reply.id) || savingCommentIds.includes(reply.id)} aria-label="Reply options" title="Reply options"><MoreHorizontal size={17}/></button>{commentActionMenuId === reply.id && <div className="social-comment-delete-confirm social-comment-action-menu" role="menu" aria-label="Reply options"><button type="button" role="menuitem" onClick={() => beginEditComment(post, reply)}><Pencil size={14}/> Edit reply</button><button type="button" role="menuitem" onClick={() => { setCommentActionMenuId(null); setCommentDeleteConfirmId(reply.id); }}><Trash2 size={14}/> Delete reply</button></div>}{commentDeleteConfirmId === reply.id && <div className="social-comment-delete-confirm" role="alertdialog" aria-label="Confirm reply deletion"><strong>Delete reply?</strong><span>This action cannot be undone.</span><div><button type="button" onClick={() => setCommentDeleteConfirmId(null)}>Cancel</button><button type="button" onClick={() => void deleteComment(post, reply)}>Delete</button></div></div>}</div>}
                         </article>)}
                       </div>) : post.allowComments === false ? <p className="social-comments-empty">Commenting Disabled by Author</p> : commentsByPost[post.id] && !commentErrors[post.id] && !commentsLoading.includes(post.id) ? <p className="social-comments-empty">No comments yet. Start the conversation.</p> : null}
+                      {commentsHasMore[post.id] && <div ref={node => { if (node) commentLoadSentinels.current[post.id] = node; else delete commentLoadSentinels.current[post.id]; }} data-post-id={post.id} className="social-comments-state" aria-live="polite">{commentsMoreLoading.includes(post.id) ? <LoadingDots /> : null}</div>}
                     </div>
                     {post.allowComments !== false && <div className="social-comments-composer-wrap">
                       {replyTargets[post.id] && <div className="social-replying-to"><span>Replying to <strong>@{replyTargets[post.id]?.author?.username || "member"}</strong></span><button type="button" onClick={() => setReplyTargets(current => ({ ...current, [post.id]: null }))} aria-label="Cancel reply"><X size={14}/></button></div>}
