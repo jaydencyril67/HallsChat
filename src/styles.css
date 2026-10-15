@@ -4551,3 +4551,13 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   }
   .nowbar-shell-actions .nowbar-actions { gap: 12px; }
 }
+
+
+/* Match CryBots' responsive expanded grid: three equal tracks capped at 112px,
+   with buttons allowed to shrink on narrow phones instead of being clipped. */
+.nowbar-shell-expanded .nowbar-actions-expanded {
+  grid-template-columns: repeat(3, minmax(0, 112px));
+}
+.nowbar-actions-expanded .nowbar-action {
+  min-width: 0;
+}
