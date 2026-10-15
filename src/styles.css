@@ -4561,3 +4561,49 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 .nowbar-actions-expanded .nowbar-action {
   min-width: 0;
 }
+
+
+/* Landing hero sign-in: give returning members a clear, high-contrast glass button. */
+.landing-hero-signin {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.landing-hero-signin > span {
+  color: var(--theme-text-secondary, #d8c9cc);
+  font-size: .82rem;
+}
+.landing-signin-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 17px;
+  border: 1px solid rgba(255, 205, 215, .72);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(145, 39, 66, .88), rgba(91, 23, 43, .94));
+  color: #fff8f8 !important;
+  font-size: .9rem;
+  font-weight: 750;
+  letter-spacing: .015em;
+  text-decoration: none !important;
+  box-shadow: 0 7px 22px rgba(75, 10, 30, .32), inset 0 1px 0 rgba(255,255,255,.16);
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.landing-signin-button svg { flex: 0 0 auto; }
+.landing-signin-button:hover,
+.landing-signin-button:focus-visible {
+  border-color: #fff;
+  background: linear-gradient(135deg, #a73553, #70203a);
+  box-shadow: 0 0 0 3px rgba(255, 205, 215, .14), 0 9px 26px rgba(75, 10, 30, .4);
+  outline: none;
+}
+@media (max-width: 700px) {
+  .landing-hero-signin { gap: 8px; }
+  .landing-hero-signin > span { font-size: .78rem; }
+  .landing-signin-button { min-height: 42px; padding: 0 15px; }
+}
