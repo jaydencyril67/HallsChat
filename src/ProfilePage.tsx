@@ -22,6 +22,11 @@ export default function ProfilePage() {
   const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "about" | "verify">("posts");
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
+  const [postsCursor, setPostsCursor] = useState<string | null>(null);
+  const [postsHasMore, setPostsHasMore] = useState(false);
+  const [postsLoadingMore, setPostsLoadingMore] = useState(false);
+  const postsSentinel = useRef<HTMLDivElement | null>(null);
+  const postsMoreInFlight = useRef(false);
   const [error, setError] = useState("");
   const [pictureError, setPictureError] = useState("");
   const [pictureBusy, setPictureBusy] = useState(false);
@@ -96,6 +101,8 @@ export default function ProfilePage() {
         if (!postsResponse.ok) throw new Error(postsPayload.message || "Your posts couldn't be loaded.");
         const items = Array.isArray(postsPayload.posts) ? postsPayload.posts as Omit<Post, "author">[] : [];
         if (!cancelled) {
+          setPostsCursor(typeof postsPayload.nextCursor === "string" ? postsPayload.nextCursor : null);
+          setPostsHasMore(postsPayload.hasMore === true);
           setAllPosts(items.map(post => ({
             ...post,
             author: { id: account.id, name: account.name, username: account.username }
@@ -117,6 +124,38 @@ export default function ProfilePage() {
     return () => { cancelled = true; };
   }, []);
 
+
+  useEffect(() => {
+    if (activeProfileTab !== "posts" || !postsHasMore || !postsCursor || !postsSentinel.current || typeof IntersectionObserver === "undefined") return;
+    const token = localStorage.getItem("hallschat_token");
+    if (!token || !user) return;
+    const node = postsSentinel.current;
+    const observer = new IntersectionObserver(entries => {
+      if (!entries.some(entry => entry.isIntersecting) || postsMoreInFlight.current) return;
+      postsMoreInFlight.current = true;
+      observer.unobserve(node);
+      setPostsLoadingMore(true);
+      fetch(`${apiBase}/api/social/users/${encodeURIComponent(user.id)}?limit=20&cursor=${encodeURIComponent(postsCursor)}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(async response => {
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(payload.message || "More posts couldn't be loaded.");
+          return payload;
+        })
+        .then(payload => {
+          const items = Array.isArray(payload.posts) ? payload.posts as Omit<Post, "author">[] : [];
+          setAllPosts(current => {
+            const seen = new Set(current.map(post => post.id));
+            return [...current, ...items.filter(post => !seen.has(post.id)).map(post => ({ ...post, author: { id: user.id, name: user.name, username: user.username } }))];
+          });
+          setPostsCursor(typeof payload.nextCursor === "string" ? payload.nextCursor : null);
+          setPostsHasMore(payload.hasMore === true);
+        })
+        .catch(err => setError(err instanceof Error ? err.message : "More posts couldn't be loaded."))
+        .finally(() => { postsMoreInFlight.current = false; setPostsLoadingMore(false); });
+    }, { rootMargin: "180px 0px" });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [activeProfileTab, postsHasMore, postsCursor, user?.id]);
 
   const posts = allPosts.filter(post => Boolean(user?.id) && post.author?.id === user?.id);
   const initials = user?.name?.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
@@ -396,6 +435,7 @@ export default function ProfilePage() {
                 {(!post.images?.[0] && !post.poll) ? <p style={{ position: "relative", zIndex: 1, margin: 0, color: "var(--theme-text-primary)", fontSize: ".78rem", lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 7, WebkitBoxOrient: "vertical" } as React.CSSProperties}>{post.content}</p> : null}
                 <div style={{ position: "absolute", inset: "auto 0 0", display: "flex", alignItems: "center", gap: 5, padding: "22px 7px 6px", color: "var(--theme-text-inverse)", fontSize: ".7rem", fontWeight: 750, background: "linear-gradient(transparent,var(--theme-overlay))" }}><Eye size={13} /> {post.likeCount || 0}</div>
               </article>)}
+              {postsHasMore && <div ref={postsSentinel} style={{ gridColumn: "1 / -1", display: "grid", placeItems: "center", padding: 12 }}>{postsLoadingMore && <LoadingDots />}</div>}
             </div>) : activeProfileTab === "about" ? <div style={{ ...panel, padding: 18, marginTop: 12, display: "grid", gap: 15 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <strong style={{ color: "var(--theme-text-primary)", fontSize: ".85rem" }}>Personal details</strong>
