@@ -126,7 +126,7 @@ export default function ProfilePage() {
 
 
   useEffect(() => {
-    if (activeProfileTab !== "posts" || !postsHasMore || !postsCursor || !postsSentinel.current || typeof IntersectionObserver === "undefined") return;
+    if (activeProfileTab !== "posts" || postsLoadingMore || !postsHasMore || !postsCursor || !postsSentinel.current || typeof IntersectionObserver === "undefined") return;
     const token = localStorage.getItem("hallschat_token");
     if (!token || !user) return;
     const node = postsSentinel.current;
@@ -155,7 +155,7 @@ export default function ProfilePage() {
     }, { rootMargin: "180px 0px" });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [activeProfileTab, postsHasMore, postsCursor, user?.id]);
+  }, [activeProfileTab, postsHasMore, postsLoadingMore, postsCursor, user?.id]);
 
   const posts = allPosts.filter(post => Boolean(user?.id) && post.author?.id === user?.id);
   const initials = user?.name?.trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "H";
