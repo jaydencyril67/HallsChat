@@ -102,11 +102,10 @@ export default function ImagePreviewModal({ imageUrl, onClose }: Props) {
       const midY = (event.touches[0].clientY + event.touches[1].clientY) / 2;
       const centerX = bounds ? bounds.left + bounds.width / 2 : midX;
       const centerY = bounds ? bounds.top + bounds.height / 2 : midY;
-      setOffset({
+      scheduleViewUpdate(nextZoom, {
         x: midX - centerX - start.imagePointX * nextZoom,
         y: midY - centerY - start.imagePointY * nextZoom,
       });
-      setZoom(nextZoom);
     } else if (event.touches.length === 1 && dragStart.current && zoom > 1) {
       event.preventDefault();
       const start = dragStart.current;
