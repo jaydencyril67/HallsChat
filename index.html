@@ -102,11 +102,26 @@
         gap: 18px;
         text-align: center;
       }
+      .initial-splash-logo-circle {
+        display: grid;
+        place-items: center;
+        width: 92px;
+        height: 92px;
+        flex: 0 0 92px;
+        box-sizing: border-box;
+        border: 1px solid rgba(255, 248, 247, 0.12);
+        border-radius: 50%;
+        background: #000;
+        box-shadow: none;
+      }
       .initial-splash-logo {
+        display: block;
         width: 72px;
         height: 72px;
-        display: block;
+        max-width: 100%;
+        max-height: 100%;
         object-fit: contain;
+        object-position: center;
       }
       .initial-splash-title {
         margin: 0;
@@ -184,7 +199,7 @@
   <body>
     <div id="initial-splash" class="initial-splash" aria-label="Loading HallsChat">
       <div class="initial-splash-card">
-        <img class="initial-splash-logo" src="/splash-logo.svg?v=1" alt="HallsChat" />
+        <div class="initial-splash-logo-circle"><img class="initial-splash-logo" src="/splash-logo.svg?v=2" alt="HallsChat" /></div>
         <p class="initial-splash-title">HallsChat</p>
         <div class="initial-splash-shimmer" aria-hidden="true"></div>
       </div>
