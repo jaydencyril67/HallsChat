@@ -15,10 +15,10 @@
   ],
   "icons": [
     {
-      "src": "/crown-chat.svg?v=11",
+      "src": "/crown-chat.svg?v=12",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
