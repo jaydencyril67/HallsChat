@@ -4607,3 +4607,27 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   .landing-hero-signin > span { font-size: .78rem; }
   .landing-signin-button { min-height: 32px; font-size: .96rem; }
 }
+
+
+/* Keep clipboard-pasted and browser-autofilled fields on the app's normal theme surface. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+input:autofill,
+textarea:autofill,
+select:autofill {
+  -webkit-text-fill-color: var(--theme-text, #fff8f8) !important;
+  caret-color: var(--theme-text, #fff8f8) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--theme-input-bg, #210d12) inset !important;
+  box-shadow: 0 0 0 1000px var(--theme-input-bg, #210d12) inset !important;
+  background-color: var(--theme-input-bg, #210d12) !important;
+  color: var(--theme-text, #fff8f8) !important;
+  transition: background-color 999999s ease-out 0s !important;
+}
