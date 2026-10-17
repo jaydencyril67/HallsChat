@@ -15,8 +15,8 @@
   ],
   "icons": [
     {
-      "src": "/crown-chat-circle.svg?v=1",
-      "sizes": "any",
+      "src": "/crown-chat-app-icon.svg?v=1",
+      "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     }
