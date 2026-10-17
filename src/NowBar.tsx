@@ -112,7 +112,6 @@ export default function NowBar() {
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const holdTriggered = useRef(false);
   const barRef = useRef<HTMLDivElement | null>(null);
-  const actionsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const syncFeatures = () => { setSwipeEnabled(getNowbarFeature("hallschat_nowbar_swipe_enabled")); setExpandEnabled(getNowbarFeature("hallschat_nowbar_expand_enabled")); };
@@ -160,7 +159,7 @@ export default function NowBar() {
   // Match CryBots: remember the last compact NowBar action and center it when
   // the navigation buttons are opened again.
   useEffect(() => {
-    const scrollContainer = actionsRef.current;
+    const scrollContainer = barRef.current;
     if (mode === "expanded" || view !== "actions" || !scrollContainer) return;
     const targetLabel = readSavedNowBarAction();
     if (!targetLabel) return;
@@ -170,7 +169,7 @@ export default function NowBar() {
     if (!target) return;
 
     const centerTarget = () => {
-      const container = actionsRef.current;
+      const container = barRef.current;
       if (!container || !target.isConnected) return;
       const containerRect = container.getBoundingClientRect();
       const targetRect = target.getBoundingClientRect();
@@ -317,7 +316,7 @@ export default function NowBar() {
             <ChevronDown size={16} />
           </div>
         ) : (
-          <div ref={actionsRef} className={`nowbar-actions ${mode === "expanded" ? "nowbar-actions-expanded" : ""}`}>
+          <div className={`nowbar-actions ${mode === "expanded" ? "nowbar-actions-expanded" : ""}`}>
             {actions.map(({ label, icon: Icon }) => (
               <div className="nowbar-slot" key={label}>
                 <button
