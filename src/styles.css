@@ -173,96 +173,6 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 }
 
 
-/* Final NowBar parity corrections: content-wrap the normal rail, preserve the 560px cap,
-   and keep expanded labels single-line without changing HallsChat's header palette. */
-.nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title){
-  width:fit-content;
-  max-width:min(560px,calc(100vw - 32px));
-}
-.nowbar-shell-actions{
-  width:fit-content;
-  max-width:100%;
-  min-width:0;
-  flex:0 1 auto;
-}
-.nowbar-shell-actions .nowbar-actions{
-  width:fit-content;
-  max-width:100%;
-  min-width:0;
-  flex:0 1 auto;
-}
-.nowbar-actions-expanded .nowbar-slot{min-width:0}
-.nowbar-actions-expanded .nowbar-action{box-sizing:border-box}
-.nowbar-label-expanded{flex:0 1 auto;max-width:100%;text-overflow:ellipsis}
-@media(max-width:480px){
-  .nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title){max-width:calc(100vw - 20px)}
-  .nowbar-shell-actions{max-width:100%}
-  .nowbar-shell-actions .nowbar-actions{max-width:100%}
-}
-
-
-/* NowBar layout normalization: keep expanded-grid sizing consistent across breakpoints, matching CryBots. */
-.nowbar-dock-expanded {
-  width: fit-content;
-  max-width: calc(100vw - 32px);
-  height: calc(2.5 * 72px);
-  min-height: calc(2.5 * 72px);
-  align-items: stretch;
-}
-.nowbar-shell-expanded {
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  align-self: stretch;
-  flex: 0 1 auto;
-  box-sizing: border-box;
-  width: fit-content;
-  max-width: 100%;
-  height: 100%;
-  min-height: 0;
-  padding: 12px;
-  gap: 8px;
-  overflow: hidden;
-}
-.nowbar-shell-expanded .nowbar-actions-expanded {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(112px, max-content));
-  grid-auto-rows: minmax(54px, auto);
-  align-items: stretch;
-  align-self: stretch;
-  align-content: start;
-  flex: none;
-  width: fit-content;
-  min-width: 0;
-  max-width: 100%;
-  height: 100%;
-  max-height: 100%;
-  padding: 0;
-  gap: 8px;
-  overflow-x: hidden;
-  overflow-y: auto;
-  white-space: normal;
-  overscroll-behavior: contain;
-}
-.nowbar-actions-expanded .nowbar-slot {
-  flex: 0 0 auto;
-  min-width: 0;
-  width: max-content;
-  max-width: 100%;
-  min-height: 0;
-  display: flex;
-  justify-content: center;
-}
-.nowbar-actions-expanded .nowbar-action {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 112px;
-  max-width: 100%;
-  min-height: 40px;
-}
-
-
-
 /* HallsChat Social v1 — social-first home feed, retaining the existing burgundy theme and shared NowBar. */
 .social-home{min-height:100vh;padding-bottom:135px}
 .social-shell{width:min(1120px,calc(100% - 48px));padding-top:104px}
@@ -4381,8 +4291,8 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 .settings-max-device-number:disabled{opacity:.55;cursor:wait;}
 
 
-/* Final CryBots NowBar parity: normalize compact and expanded geometry at every breakpoint.
-   Keep HallsChat's burgundy theme, action labels, and existing interaction behavior. */
+/* NowBar geometry: follow CryBots as the single source of truth.
+   Preserve HallsChat theme tokens and existing navigation/edge-light behavior. */
 .nowbar-dock {
   width: min(560px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
@@ -4432,7 +4342,7 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   padding: 7px 6px 6px;
   gap: 4px;
   border-radius: 12px;
-  transition: none;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
 }
 .nowbar-icon {
   width: 20px;
@@ -4460,9 +4370,7 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 .nowbar-dock-expanded {
   width: fit-content;
   max-width: calc(100vw - 32px);
-  height: 180px;
-  min-height: 180px;
-  max-height: calc(100vh - 32px);
+  height: calc(2.5 * 72px);
   align-items: stretch;
 }
 .nowbar-shell-expanded {
@@ -4479,6 +4387,7 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   padding: 12px;
   gap: 8px;
   overflow: hidden;
+  border-radius: 26px;
 }
 .nowbar-shell-expanded .nowbar-rail {
   display: none;
@@ -4502,6 +4411,7 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   overflow-y: auto;
   white-space: normal;
   overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .nowbar-actions-expanded .nowbar-slot {
   flex: 0 0 auto;
@@ -4509,6 +4419,8 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   min-width: 0;
   max-width: 100%;
   min-height: 0;
+  display: flex;
+  justify-content: center;
 }
 .nowbar-actions-expanded .nowbar-action {
   box-sizing: border-box;
@@ -4544,6 +4456,9 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   .nowbar-shell-expanded .nowbar-actions-expanded {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+  .nowbar-actions-expanded .nowbar-action {
+    min-width: 0;
+  }
   .nowbar-slot {
     flex-basis: 92px;
     width: 92px;
@@ -4551,17 +4466,6 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   }
   .nowbar-shell-actions .nowbar-actions { gap: 12px; }
 }
-
-
-/* Match CryBots' responsive expanded grid: three equal tracks capped at 112px,
-   with buttons allowed to shrink on narrow phones instead of being clipped. */
-.nowbar-shell-expanded .nowbar-actions-expanded {
-  grid-template-columns: repeat(3, minmax(0, 112px));
-}
-.nowbar-actions-expanded .nowbar-action {
-  min-width: 0;
-}
-
 
 /* Landing hero sign-in: keep it directly on the page background, with stronger type. */
 .landing-hero-signin {
