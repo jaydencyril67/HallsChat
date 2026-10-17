@@ -87,8 +87,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p assets
-          cp public/crown-chat.svg assets/icon.svg
-          cp public/crown-chat.svg assets/splash.svg
+          cp public/crown-chat-circle.svg assets/icon.svg
+          cp public/crown-chat-circle.svg assets/splash.svg
           npx capacitor-assets generate --android
 
       - name: Sync Capacitor
@@ -232,7 +232,7 @@ jobs:
               android:viewportWidth="432"
               android:viewportHeight="432">
               <group android:translateX="104" android:translateY="104" android:scaleX="1.1666667" android:scaleY="1.1666667">
-                  <path android:pathData="M43,0 H149 A43,43 0 0 1 192,43 V149 A43,43 0 0 1 149,192 H43 A43,43 0 0 1 0,149 V43 A43,43 0 0 1 43,0 Z">
+                  <path android:pathData="M96,0 A96,96 0 1 1 96,192 A96,96 0 1 1 96,0 Z">
                       <aapt:attr name="android:fillColor">
                           <gradient android:type="linear" android:startX="12" android:startY="8" android:endX="180" android:endY="184">
                               <item android:color="#54152D" android:offset="0" />
