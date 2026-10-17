@@ -7,8 +7,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#19070b",
-  "theme_color": "#19070b",
+  "background_color": "#19070B",
+  "theme_color": "#19070B",
   "categories": [
     "social",
     "communication"
@@ -16,9 +16,9 @@
   "icons": [
     {
       "src": "/crown-chat-app-icon.svg?v=2",
-      "sizes": "512x512",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
