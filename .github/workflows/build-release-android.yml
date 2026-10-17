@@ -8,11 +8,6 @@ on:
         required: true
         default: true
         type: boolean
-      app_version:
-        description: 'HallsChat Android version (use the same version for the GitHub Release tag, without the v)'
-        required: true
-        default: '1.0.2'
-        type: string
 
 permissions:
   contents: write
@@ -30,6 +25,49 @@ jobs:
     steps:
       - name: Checkout HallsChat
         uses: actions/checkout@v4
+
+      - name: Calculate next HallsChat release version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release list --limit 1000 --json tagName,isDraft,isPrerelease > releases.json
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          releases = json.loads(Path("releases.json").read_text())
+          versions = []
+          for release in releases:
+              if release.get("isDraft") or release.get("isPrerelease"):
+                  continue
+              tag = release.get("tagName", "")
+              match = re.fullmatch(r"v?(\\d+)\\.(\\d+)\\.(\\d+)", tag)
+              if match:
+                  versions.append(tuple(map(int, match.groups())))
+
+          if not versions:
+              next_version = (1, 0, 0)
+          else:
+              major, minor, patch = max(versions)
+              if patch < 9:
+                  patch += 1
+              else:
+                  patch = 0
+                  if minor < 9:
+                      minor += 1
+                  else:
+                      minor = 0
+                      major += 1
+              next_version = (major, minor, patch)
+
+          version = ".".join(map(str, next_version))
+          with open(__import__("os").environ["GITHUB_OUTPUT"], "a") as output:
+              output.write(f"app_version={version}\\n")
+          print(f"Next HallsChat release version: {version}")
+          PY
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -256,7 +294,7 @@ jobs:
           XML
       - name: Set HallsChat Android version
         env:
-          APP_VERSION: ${{ inputs.app_version }}
+          APP_VERSION: ${{ steps.version.outputs.app_version }}
           APP_VERSION_CODE: ${{ github.run_number }}
         run: |
           python3 - <<'PY'
@@ -1290,7 +1328,7 @@ jobs:
       - name: Publish HallsChat GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          APP_VERSION: ${{ inputs.app_version }}
+          APP_VERSION: ${{ steps.version.outputs.app_version }}
         run: |
           set -euo pipefail
           tag="v${APP_VERSION}"
@@ -1311,7 +1349,7 @@ jobs:
         env:
           API_URL: ${{ vars.HALLSCHAT_API_URL || 'https://hallschats.onrender.com' }}
           RELEASE_SECRET: ${{ secrets.HALLSCHAT_RELEASE_WEBHOOK_SECRET }}
-          APP_VERSION: ${{ inputs.app_version }}
+          APP_VERSION: ${{ steps.version.outputs.app_version }}
         run: |
           set -euo pipefail
           if [ -z "${RELEASE_SECRET:-}" ]; then
