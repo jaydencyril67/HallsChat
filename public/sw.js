@@ -1,5 +1,5 @@
-const CACHE_NAME = "hallschat-pwa-v46-shared-circle-splash";
-const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest?v=10", "/crown-chat-app-icon.svg?v=5"];
+const CACHE_NAME = "hallschat-pwa-v47-fullbleed-pwa-icon";
+const APP_SHELL = ["/", "/index.html", "/manifest.webmanifest?v=11", "/crown-chat-app-icon.svg?v=6"];
 const CACHEABLE_EXTENSIONS = [".js", ".css", ".png", ".jpg", ".jpeg", ".svg", ".webp", ".ico", ".woff", ".woff2"];
 
 self.addEventListener("install", (event) => {
