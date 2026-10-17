@@ -220,28 +220,21 @@ jobs:
           set -euo pipefail
           mkdir -p android/app/src/main/res/drawable-nodpi android/app/src/main/res/values android/app/src/main/res/values-v31
 
-          # Match KingsHall's native splash geometry: 235px filled circle, with the
-          # same-color stroke expanding its outer diameter to about 239px on 512px.
-          # Keep HallsChat's own burgundy circle and dark burgundy outer background.
+          # Generate the Android splash from the same complete master SVG used by
+          # the PWA: identical 512px geometry, gradient circle diameter, and bubble artwork.
+          # Remove only the outer square background; keep the circle and mark unchanged.
           node - <<'NODE'
           const sharp = require('sharp');
           const fs = require('fs');
 
           (async () => {
-            const circle = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><circle cx="256" cy="256" r="117.333333" fill="url(#bg)" stroke="url(#bg)" stroke-width="4.266667"/><defs><linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop stop-color="#54152D"/><stop offset="1" stop-color="#210812"/></linearGradient></defs></svg>');
-
-            // Use the refresh-splash foreground asset, which has no opaque square
-            // background or burgundy circle. The circle above is composed separately,
-            // so this mark must stay transparent around the speech-bubble crown.
-            const svg = fs.readFileSync('public/splash-logo.svg', 'utf8');
-            const mark = await sharp(Buffer.from(svg)).resize(208, 208, { fit: 'contain' }).png().toBuffer();
-            const circleLayer = await sharp(circle).png().toBuffer();
-
-            await sharp({ create: { width: 512, height: 512, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
-              .composite([
-                { input: circleLayer, left: 0, top: 0 },
-                { input: mark, left: 152, top: 152 }
-              ])
+            let svg = fs.readFileSync('public/crown-chat-app-icon.svg', 'utf8');
+            const opaqueBackground = '<rect width="512" height="512" fill="#19070B"/>';
+            if (!svg.includes(opaqueBackground)) {
+              throw new Error('HallsChat master icon changed; cannot safely isolate its splash background.');
+            }
+            svg = svg.replace(opaqueBackground, '');
+            await sharp(Buffer.from(svg))
               .png()
               .toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png');
 
@@ -252,7 +245,7 @@ jobs:
             if (alphaAt(0, 0) !== 0 || alphaAt(64, 256) !== 0 || alphaAt(152, 152) !== 0 || alphaAt(256, 256) === 0) {
               throw new Error('HallsChat splash image failed transparency/circle validation.');
             }
-            console.log('Created and validated HallsChat splash with KingsHall-matched 239px outer circle and transparent foreground.');
+            console.log('Created and validated HallsChat splash directly from the shared 512px master icon composition.');
           })().catch(error => { console.error(error); process.exit(1); });
           NODE
 
