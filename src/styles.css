@@ -111,7 +111,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 
 /* HallsChat NowBar: CryBots-style adaptive text and HallsChat header palette. */
-.nowbar-dock{z-index:80;width:min(560px,calc(100vw - 32px));pointer-events:none;display:flex;align-items:flex-end;justify-content:center;position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%)}
+.nowbar-dock{z-index:40;width:min(560px,calc(100vw - 32px));pointer-events:none;display:flex;align-items:flex-end;justify-content:center;position:fixed;left:50%;bottom:18px;transform:translateX(-50%)}
 .nowbar-shell{position:relative;display:flex;align-items:center;gap:12px;padding:10px 12px;border:2.5px solid var(--theme-header-border);border-radius:20px;background:var(--theme-header-bg);box-shadow:var(--theme-header-shadow),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);pointer-events:auto;overflow:hidden;align-self:stretch;width:100%;min-width:0;color:var(--theme-fixed-dark-text)}
 .nowbar-rail{position:absolute;inset:50% 10px auto;height:1px;background:linear-gradient(90deg,transparent,var(--theme-fixed-dark-glass-highlight-strong),transparent);transform:translateY(-50%);pointer-events:none}
 .nowbar-title{position:relative;z-index:1;width:100%;min-width:0;min-height:40px;padding:2px 4px;display:flex;align-items:center;justify-content:center;gap:10px;border:0;background:transparent;color:var(--theme-fixed-dark-text);font-size:.95rem;font-weight:700;letter-spacing:.02em;white-space:nowrap}
@@ -134,44 +134,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 @keyframes nowbar-label-marquee{0%,15%{transform:translateX(0)}45%,70%{transform:translateX(calc(-100% + 145px))}100%{transform:translateX(0)}}
 .nowbar-title:focus-visible,.nowbar-action:focus-visible{outline:2px solid var(--theme-fixed-dark-muted-text);outline-offset:2px}
 .home-page{padding-bottom:125px}
-@media(max-width:480px){.nowbar-dock{width:calc(100vw - 20px);bottom:max(12px,env(safe-area-inset-bottom))}.nowbar-shell{gap:8px;padding:9px 10px;border-radius:18px}.nowbar-actions{gap:8px}.nowbar-slot{min-width:82px}}
 @media(prefers-reduced-motion:reduce){.nowbar-action,.nowbar-title>span{transition:none}.nowbar-marquee-track{animation:none}}
-
-/* NowBar sizing: title/text mode hugs its content like CryBots; action mode keeps its own scrollable rail. */
-.nowbar-dock-title{width:fit-content;max-width:calc(100vw - 20px);}
-.nowbar-shell-title{width:fit-content!important;max-width:calc(100vw - 20px);min-width:0;flex:0 0 auto;align-self:center;overflow:hidden;}
-.nowbar-shell-title .nowbar-title{width:fit-content!important;max-width:100%;min-width:0;flex:0 1 auto;gap:10px;}
-.nowbar-title .nowbar-page-label{display:block;max-width:min(62vw,340px);min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.nowbar-shell-actions{width:100%;max-width:100%;min-width:0;}
-.nowbar-shell-actions .nowbar-actions{flex:0 1 auto;max-width:100%;}
-/* No press-scale: keep the NowBar steady on touch, like CryBots. */
-@media(max-width:480px){.nowbar-title .nowbar-page-label{max-width:calc(100vw - 104px)}.nowbar-shell-title{max-width:calc(100vw - 20px)}}
-
-
-/* Match CryBots text-mode NowBar geometry: content-height capsule, reference border and glow. */
-.nowbar-shell-title{
-  min-height:0;
-  padding:10px 12px;
-  border:2.5px solid var(--theme-fixed-dark-glass-border-strong);
-  border-radius:20px;
-  box-shadow:0 0 0 1px var(--theme-fixed-dark-glass-highlight-strong),var(--theme-header-shadow),inset 0 1px 0 var(--theme-fixed-dark-glass-highlight-strong);
-}
-.nowbar-shell-title .nowbar-title{
-  min-height:0;
-  padding:2px 4px;
-  line-height:normal;
-}
-.nowbar-shell-title .nowbar-orb{
-  background:linear-gradient(135deg,var(--theme-info),var(--theme-primary));
-  box-shadow:0 0 18px var(--theme-fixed-dark-orb-glow);
-}
-@media(max-width:480px){
-  .nowbar-shell-title{
-    padding:10px 12px;
-    border-radius:20px;
-  }
-}
-
 
 /* HallsChat Social v1 — social-first home feed, retaining the existing burgundy theme and shared NowBar. */
 .social-home{min-height:100vh;padding-bottom:135px}
@@ -4291,16 +4254,21 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
 .settings-max-device-number:disabled{opacity:.55;cursor:wait;}
 
 
-/* NowBar geometry: follow CryBots as the single source of truth.
-   Preserve HallsChat theme tokens and existing navigation/edge-light behavior. */
+/* NowBar geometry: canonical CryBots parity.
+   Keep HallsChat theme tokens and existing navigation/edge-light behavior. */
 .nowbar-dock {
+  z-index: 40;
   width: min(560px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
-  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  bottom: 18px;
 }
 .nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title) {
   width: fit-content;
   max-width: min(560px, calc(100vw - 32px));
+}
+.nowbar-dock-title {
+  width: fit-content;
+  max-width: calc(100vw - 32px);
 }
 .nowbar-shell {
   box-sizing: border-box;
@@ -4326,6 +4294,42 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
+}
+.nowbar-shell-title {
+  width: fit-content;
+  max-width: calc(100vw - 32px);
+  min-width: 0;
+  flex: 0 0 auto;
+  align-self: center;
+  overflow: hidden;
+  min-height: 0;
+  padding: 10px 12px;
+  border: 2.5px solid var(--theme-fixed-dark-glass-border-strong);
+  border-radius: 20px;
+  box-shadow: 0 0 0 1px var(--theme-fixed-dark-glass-highlight-strong), var(--theme-header-shadow), inset 0 1px 0 var(--theme-fixed-dark-glass-highlight-strong);
+}
+.nowbar-shell-title .nowbar-title {
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 auto;
+  gap: 10px;
+  min-height: 0;
+  padding: 2px 4px;
+  line-height: normal;
+}
+.nowbar-title .nowbar-page-label {
+  display: block;
+  max-width: min(62vw, 340px);
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nowbar-shell-title .nowbar-orb {
+  background: linear-gradient(135deg, var(--theme-info), var(--theme-primary));
+  box-shadow: 0 0 18px var(--theme-fixed-dark-orb-glow);
 }
 .nowbar-slot {
   flex: 0 0 92px;
@@ -4446,19 +4450,6 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
   max-width: 100%;
   overflow: hidden;
   text-align: center;
-}
-@media (max-width: 380px) {
-  .nowbar-dock { width: calc(100vw - 24px); }
-  .nowbar-dock:not(.nowbar-dock-expanded):not(.nowbar-dock-title) {
-    max-width: calc(100vw - 24px);
-  }
-  .nowbar-dock-expanded { max-width: calc(100vw - 24px); }
-  .nowbar-slot {
-    flex-basis: 92px;
-    width: 92px;
-    min-width: 92px;
-  }
-  .nowbar-shell-actions .nowbar-actions { gap: 12px; }
 }
 
 /* Landing hero sign-in: keep it directly on the page background, with stronger type. */
