@@ -44,7 +44,7 @@ jobs:
               if release.get("isDraft") or release.get("isPrerelease"):
                   continue
               tag = release.get("tagName", "")
-              match = re.fullmatch(r"v?(\\d+)\\.(\\d+)\\.(\\d+)", tag)
+              match = re.fullmatch(r"v?(\d+)\.(\d+)\.(\d+)", tag)
               if match:
                   versions.append(tuple(map(int, match.groups())))
 
@@ -65,7 +65,7 @@ jobs:
 
           version = ".".join(map(str, next_version))
           with open(__import__("os").environ["GITHUB_OUTPUT"], "a") as output:
-              output.write(f"app_version={version}\\n")
+              output.write(f"app_version={version}\n")
           print(f"Next HallsChat release version: {version}")
           PY
 
