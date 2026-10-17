@@ -220,15 +220,15 @@ jobs:
           set -euo pipefail
           mkdir -p android/app/src/main/res/drawable-nodpi android/app/src/main/res/values android/app/src/main/res/values-v31
 
-          # Match KingsHall's native splash geometry exactly: 235px visible circle
-          # on a 512px canvas, with the 208px HallsChat mark centered inside it.
+          # Match KingsHall's native splash geometry: 235px filled circle, with the
+          # same-color stroke expanding its outer diameter to about 239px on 512px.
           # Keep HallsChat's own burgundy circle and dark burgundy outer background.
           node - <<'NODE'
           const sharp = require('sharp');
           const fs = require('fs');
 
           (async () => {
-            const circle = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><circle cx="256" cy="256" r="117.5" fill="url(#bg)"/><defs><linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop stop-color="#54152D"/><stop offset="1" stop-color="#210812"/></linearGradient></defs></svg>');
+            const circle = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><circle cx="256" cy="256" r="117.333333" fill="url(#bg)" stroke="url(#bg)" stroke-width="4.266667"/><defs><linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop stop-color="#54152D"/><stop offset="1" stop-color="#210812"/></linearGradient></defs></svg>');
 
             // Use the refresh-splash foreground asset, which has no opaque square
             // background or burgundy circle. The circle above is composed separately,
@@ -252,7 +252,7 @@ jobs:
             if (alphaAt(0, 0) !== 0 || alphaAt(64, 256) !== 0 || alphaAt(152, 152) !== 0 || alphaAt(256, 256) === 0) {
               throw new Error('HallsChat splash image failed transparency/circle validation.');
             }
-            console.log('Created and validated HallsChat splash with KingsHall 235px circle and transparent 208px foreground.');
+            console.log('Created and validated HallsChat splash with KingsHall-matched 239px outer circle and transparent foreground.');
           })().catch(error => { console.error(error); process.exit(1); });
           NODE
 
