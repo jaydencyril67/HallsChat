@@ -30,8 +30,8 @@ self.addEventListener("push", (event) => {
   const options = {
     body: typeof payload.body === "string" ? payload.body : "You have a new alert.",
     tag: typeof payload.tag === "string" ? payload.tag : "hallschat-alert",
-    icon: "/crown-chat-circle.svg?v=1",
-    badge: "/crown-chat-circle.svg?v=1",
+    icon: "/crown-chat-app-icon.svg?v=1",
+    badge: "/crown-chat-app-icon.svg?v=1",
     requireInteraction: payload.type === "incoming-call",
     renotify: payload.type === "incoming-call",
     vibrate: payload.type === "incoming-call" ? [350, 180, 350, 180, 700] : [180, 100, 180],
