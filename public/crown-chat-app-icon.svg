@@ -1,10 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="92 92 328 328">
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="circle-bg" x1="128" y1="128" x2="384" y2="384" gradientUnits="userSpaceOnUse"><stop stop-color="#54152D"/><stop offset="1" stop-color="#210812"/></linearGradient>
     <linearGradient id="crown" x1="48" y1="47" x2="145" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF8F2"/><stop offset="1" stop-color="#EFC1CF"/></linearGradient>
   </defs>
   <rect width="512" height="512" fill="#19070B"/>
-  <circle cx="256" cy="256" r="128" fill="url(#circle-bg)"/>
   <g transform="translate(93.65 88.72) scale(1.7)">
     <g transform="translate(17.904 18.904) scale(0.81225)">
       <g transform="translate(0 2)">
