@@ -220,9 +220,9 @@ jobs:
           set -euo pipefail
           mkdir -p android/app/src/main/res/drawable-nodpi android/app/src/main/res/values android/app/src/main/res/values-v31
 
-          # Use the same 512px icon canvas as the PWA. The circular backdrop is
-          # 256px across and the HallsChat mark is centered in a 208px artwork area,
-          # matching KingsHall's native launch splash proportions.
+          # The source SVG now uses a full-bleed burgundy canvas and a circle
+          # about 78% of the artwork width, with the HallsChat mark scaled inside it.
+          # Rasterizing the complete SVG preserves the larger circle on Android 11 and 12+.
           node - <<'NODE'
           const sharp = require('sharp');
 
