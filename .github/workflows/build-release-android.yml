@@ -230,9 +230,10 @@ jobs:
           (async () => {
             const circle = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><circle cx="256" cy="256" r="117.5" fill="url(#bg)"/><defs><linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse"><stop stop-color="#54152D"/><stop offset="1" stop-color="#210812"/></linearGradient></defs></svg>');
 
-            // Preserve the original HallsChat mark, but render it at the same
-            // foreground scale as KingsHall's native splash mark.
-            const svg = fs.readFileSync('public/crown-chat-app-icon.svg', 'utf8');
+            // Use the refresh-splash foreground asset, which has no opaque square
+            // background or burgundy circle. The circle above is composed separately,
+            // so this mark must stay transparent around the speech-bubble crown.
+            const svg = fs.readFileSync('public/splash-logo.svg', 'utf8');
             const mark = await sharp(Buffer.from(svg)).resize(208, 208, { fit: 'contain' }).png().toBuffer();
             const circleLayer = await sharp(circle).png().toBuffer();
 
@@ -246,7 +247,12 @@ jobs:
 
             const branding = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320"><rect width="800" height="320" fill="none"/><text x="400" y="174" text-anchor="middle" fill="#FFF8F2" font-family="STIX Two Text, serif" font-size="72" font-weight="700" letter-spacing="3">HallsChat</text></svg>');
             await sharp(branding).png().toFile('android/app/src/main/res/drawable-nodpi/hallschat_branding.png');
-            console.log('Created HallsChat native splash using KingsHall's 235px circle and 208px mark geometry.');
+            const audit = await sharp('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png').ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+            const alphaAt = (x, y) => audit.data[(y * audit.info.width + x) * audit.info.channels + 3];
+            if (alphaAt(0, 0) !== 0 || alphaAt(64, 256) !== 0 || alphaAt(256, 256) === 0) {
+              throw new Error('HallsChat splash image failed transparency/circle validation.');
+            }
+            console.log('Created and validated HallsChat splash with KingsHall 235px circle and transparent 208px foreground.');
           })().catch(error => { console.error(error); process.exit(1); });
           NODE
 
