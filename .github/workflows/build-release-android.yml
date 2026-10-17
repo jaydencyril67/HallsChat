@@ -277,10 +277,23 @@ jobs:
           (async () => {
             let svg = fs.readFileSync('public/crown-chat-app-icon.svg', 'utf8');
             const opaqueBackground = '<rect width="512" height="512" fill="#19070B"/>';
-            if (!svg.includes(opaqueBackground)) {
-              throw new Error('HallsChat master icon changed; cannot safely isolate its splash background.');
+            if (svg.includes(opaqueBackground)) {
+              // Older master icon: remove only its square canvas.
+              svg = svg.replace(opaqueBackground, '');
+            } else if (svg.includes('<circle cx="256" cy="256" r="363" fill="url(#circle-bg)"/>')) {
+              // Current master icon uses an oversized gradient circle instead of a square.
+              // Scale the complete composition together so the APK splash keeps a true
+              // circular silhouette with transparent corners, without changing artwork proportions.
+              svg = svg.replace(
+                '<circle cx="256" cy="256" r="363" fill="url(#circle-bg)"/>',
+                '<circle cx="256" cy="256" r="181.5" fill="url(#circle-bg)"/>'
+              ).replace(
+                '<svg x="27.2" y="27.2" width="457.6" height="457.6" viewBox="0 0 192 192" overflow="hidden">',
+                '<svg x="141.6" y="141.6" width="228.8" height="228.8" viewBox="0 0 192 192" overflow="hidden">'
+              );
+            } else {
+              throw new Error('HallsChat master icon structure changed; cannot safely prepare the native splash.');
             }
-            svg = svg.replace(opaqueBackground, '');
             await sharp(Buffer.from(svg))
               .png()
               .toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png');
@@ -289,7 +302,7 @@ jobs:
             await sharp(branding).png().toFile('android/app/src/main/res/drawable-nodpi/hallschat_branding.png');
             const audit = await sharp('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png').ensureAlpha().raw().toBuffer({ resolveWithObject: true });
             const alphaAt = (x, y) => audit.data[(y * audit.info.width + x) * audit.info.channels + 3];
-            if (alphaAt(0, 0) !== 0 || alphaAt(64, 256) !== 0 || alphaAt(152, 152) !== 0 || alphaAt(256, 256) === 0) {
+            if (alphaAt(0, 0) !== 0 || alphaAt(64, 256) !== 0 || alphaAt(256, 256) === 0) {
               throw new Error('HallsChat splash image failed transparency/circle validation.');
             }
             console.log('Created and validated HallsChat splash directly from the shared 512px master icon composition.');
