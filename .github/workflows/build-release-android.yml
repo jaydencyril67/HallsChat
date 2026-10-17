@@ -132,6 +132,53 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Match HallsChat APK launcher icons to the PWA master icon
+        env:
+          APP_ICON_SVG: public/crown-chat-app-icon.svg
+        run: |
+          set -euo pipefail
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const sharp = require('sharp');
+
+          (async () => {
+            const svgPath = process.env.APP_ICON_SVG;
+            const svg = fs.readFileSync(svgPath);
+            const densities = {
+              'mipmap-mdpi': { icon: 48, foreground: 108 },
+              'mipmap-hdpi': { icon: 72, foreground: 162 },
+              'mipmap-xhdpi': { icon: 96, foreground: 216 },
+              'mipmap-xxhdpi': { icon: 144, foreground: 324 },
+              'mipmap-xxxhdpi': { icon: 192, foreground: 432 }
+            };
+            const root = 'android/app/src/main/res';
+            for (const [folder, sizes] of Object.entries(densities)) {
+              const dir = path.join(root, folder);
+              if (!fs.existsSync(dir)) {
+                throw new Error('Expected generated Android icon directory is missing: ' + dir);
+              }
+              for (const name of ['ic_launcher.png', 'ic_launcher_round.png']) {
+                await sharp(svg).resize(sizes.icon, sizes.icon).png().toFile(path.join(dir, name));
+              }
+              await sharp(svg).resize(sizes.foreground, sizes.foreground).png()
+                .toFile(path.join(dir, 'ic_launcher_foreground.png'));
+            }
+            for (const name of ['ic_launcher.xml', 'ic_launcher_round.xml']) {
+              const xmlPath = path.join(root, 'mipmap-anydpi-v26', name);
+              if (!fs.existsSync(xmlPath)) {
+                throw new Error('Expected adaptive launcher resource is missing: ' + xmlPath);
+              }
+              const xml = fs.readFileSync(xmlPath, 'utf8');
+              if (!xml.includes('@mipmap/ic_launcher_foreground')) {
+                throw new Error(name + ' does not reference the foreground icon being updated.');
+              }
+            }
+            console.log('Replaced APK launcher icon PNGs and adaptive foregrounds with the exact PWA master SVG composition; splash resources were not changed.');
+          })().catch(error => { console.error(error); process.exit(1); });
+          NODE
+
+
       - name: Configure Firebase for Android push
         env:
           FIREBASE_GOOGLE_SERVICES_JSON: ${{ secrets.FIREBASE_GOOGLE_SERVICES_JSON }}
