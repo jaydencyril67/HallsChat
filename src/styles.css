@@ -4453,12 +4453,6 @@ html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-l
     max-width: calc(100vw - 24px);
   }
   .nowbar-dock-expanded { max-width: calc(100vw - 24px); }
-  .nowbar-shell-expanded .nowbar-actions-expanded {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  .nowbar-actions-expanded .nowbar-action {
-    min-width: 0;
-  }
   .nowbar-slot {
     flex-basis: 92px;
     width: 92px;
