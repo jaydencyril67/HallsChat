@@ -87,8 +87,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p assets
-          cp public/crown-chat-circle.svg assets/icon.svg
-          cp public/crown-chat-circle.svg assets/splash.svg
+          cp public/crown-chat-app-icon.svg assets/icon.svg
+          cp public/crown-chat-app-icon.svg assets/splash.svg
           npx capacitor-assets generate --android
 
       - name: Sync Capacitor
@@ -180,107 +180,26 @@ jobs:
       - name: Configure unified HallsChat native launch splash
         run: |
           set -euo pipefail
-          mkdir -p android/app/src/main/res/drawable-nodpi android/app/src/main/res/values-v31
+          mkdir -p android/app/src/main/res/drawable-nodpi android/app/src/main/res/values android/app/src/main/res/values-v31
 
-          # Use native Android VectorDrawable assets on BOTH legacy and Android 12+.
-          # They reproduce public/crown-chat.svg with vector paths and gradients;
-          # no PNG splash-logo assets are generated. The art scale matches the
-          # existing 256/512 legacy canvas and 224/432 Android 12+ canvas.
-          cat > android/app/src/main/res/drawable/hallschat_splash_logo.xml <<'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:aapt="http://schemas.android.com/aapt"
-              android:width="432dp"
-              android:height="432dp"
-              android:viewportWidth="512"
-              android:viewportHeight="512">
-              <group android:translateX="128" android:translateY="128" android:scaleX="1.3333333" android:scaleY="1.3333333">
-                  <path android:pathData="M96,0 A96,96 0 1 1 96,192 A96,96 0 1 1 96,0 Z">
-                      <aapt:attr name="android:fillColor">
-                          <gradient android:type="linear" android:startX="12" android:startY="8" android:endX="180" android:endY="184">
-                              <item android:color="#54152D" android:offset="0" />
-                              <item android:color="#210812" android:offset="1" />
-                          </gradient>
-                      </aapt:attr>
-                  </path>
-                  <group android:translateX="17.904" android:translateY="18.904" android:scaleX="0.81225" android:scaleY="0.81225">
-                      <group android:translateY="2">
-                          <path android:pathData="M42,42h108c11,0 20,9 20,20v54c0,11 -9,20 -20,20H91l-29,22 6,-22H42c-11,0 -20,-9 -20,-20V62c0,-11 9,-20 20,-20Z" android:fillColor="#12060D" android:fillAlpha="0.25" android:translateY="4" />
-                      </group>
-                      <path android:pathData="M42,37h108c11,0 20,9 20,20v54c0,11 -9,20 -20,20H91l-29,22 6,-22H42c-11,0 -20,-9 -20,-20V57c0,-11 9,-20 20,-20Z" android:strokeColor="#FFF9F5" android:strokeWidth="2">
-                          <aapt:attr name="android:fillColor">
-                              <gradient android:type="linear" android:startX="48" android:startY="47" android:endX="145" android:endY="139">
-                                  <item android:color="#FFF8F2" android:offset="0" />
-                                  <item android:color="#EFC1CF" android:offset="1" />
-                              </gradient>
-                          </aapt:attr>
-                      </path>
-                      <path android:pathData="M52,75 68,89 87,61 105,89 124,61 141,75 132,105H61Z" android:fillColor="#74213F" android:strokeColor="#74213F" android:strokeLineJoin="round" android:strokeWidth="3" />
-                      <path android:pathData="M61,113h71" android:fillColor="#00000000" android:strokeColor="#74213F" android:strokeWidth="6" android:strokeLineCap="round" />
-                      <path android:pathData="M57,75a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M92,61a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M129,61a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M146,75a5,5 0 1,1 -10,0a5,5 0 1,1 10,0" android:fillColor="#74213F" />
-                  </group>
-              </group>
-          </vector>
-          XML
-
-          cat > android/app/src/main/res/drawable/hallschat_splash_icon.xml <<'XML'
-          <?xml version="1.0" encoding="utf-8"?>
-          <vector xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:aapt="http://schemas.android.com/aapt"
-              android:width="432dp"
-              android:height="432dp"
-              android:viewportWidth="432"
-              android:viewportHeight="432">
-              <group android:translateX="104" android:translateY="104" android:scaleX="1.1666667" android:scaleY="1.1666667">
-                  <path android:pathData="M96,0 A96,96 0 1 1 96,192 A96,96 0 1 1 96,0 Z">
-                      <aapt:attr name="android:fillColor">
-                          <gradient android:type="linear" android:startX="12" android:startY="8" android:endX="180" android:endY="184">
-                              <item android:color="#54152D" android:offset="0" />
-                              <item android:color="#210812" android:offset="1" />
-                          </gradient>
-                      </aapt:attr>
-                  </path>
-                  <group android:translateX="17.904" android:translateY="18.904" android:scaleX="0.81225" android:scaleY="0.81225">
-                      <group android:translateY="2">
-                          <path android:pathData="M42,42h108c11,0 20,9 20,20v54c0,11 -9,20 -20,20H91l-29,22 6,-22H42c-11,0 -20,-9 -20,-20V62c0,-11 9,-20 20,-20Z" android:fillColor="#12060D" android:fillAlpha="0.25" android:translateY="4" />
-                      </group>
-                      <path android:pathData="M42,37h108c11,0 20,9 20,20v54c0,11 -9,20 -20,20H91l-29,22 6,-22H42c-11,0 -20,-9 -20,-20V57c0,-11 9,-20 20,-20Z" android:strokeColor="#FFF9F5" android:strokeWidth="2">
-                          <aapt:attr name="android:fillColor">
-                              <gradient android:type="linear" android:startX="48" android:startY="47" android:endX="145" android:endY="139">
-                                  <item android:color="#FFF8F2" android:offset="0" />
-                                  <item android:color="#EFC1CF" android:offset="1" />
-                              </gradient>
-                          </aapt:attr>
-                      </path>
-                      <path android:pathData="M52,75 68,89 87,61 105,89 124,61 141,75 132,105H61Z" android:fillColor="#74213F" android:strokeColor="#74213F" android:strokeLineJoin="round" android:strokeWidth="3" />
-                      <path android:pathData="M61,113h71" android:fillColor="#00000000" android:strokeColor="#74213F" android:strokeWidth="6" android:strokeLineCap="round" />
-                      <path android:pathData="M57,75a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M92,61a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M129,61a5,5 0 1,1 -10,0a5,5 0 1,1 10,0 M146,75a5,5 0 1,1 -10,0a5,5 0 1,1 10,0" android:fillColor="#74213F" />
-                  </group>
-              </group>
-          </vector>
-          XML
-
-          cat > /tmp/hallschat_branding.svg <<'SVG'
-          <svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320">
-            <rect width="800" height="320" fill="none"/>
-            <text x="400" y="174"
-                  text-anchor="middle"
-                  fill="#FFF8F2"
-                  font-family="sans-serif"
-                  font-size="101"
-                  font-weight="700">HallsChat</text>
-          </svg>
-          SVG
+          # Use the same 512px icon canvas as the PWA. The circular backdrop is
+          # 256px across and the HallsChat mark is centered in a 208px artwork area,
+          # matching KingsHall's native launch splash proportions.
           node - <<'NODE'
           const sharp = require('sharp');
-          sharp('/tmp/hallschat_branding.svg')
-            .png()
-            .toFile('android/app/src/main/res/drawable/hallschat_branding.png')
-            .then(() => console.log('Created HallsChat branding PNG'))
-            .catch((err) => { console.error(err); process.exit(1); });
+
+          (async () => {
+            await sharp('public/crown-chat-app-icon.svg')
+              .resize(512, 512, { fit: 'contain' })
+              .png()
+              .toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png');
+
+            const branding = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320"><rect width="800" height="320" fill="none"/><text x="400" y="174" text-anchor="middle" fill="#FFF8F2" font-family="STIX Two Text, serif" font-size="72" font-weight="700" letter-spacing="3">HallsChat</text></svg>');
+            await sharp(branding).png().toFile('android/app/src/main/res/drawable-nodpi/hallschat_branding.png');
+            console.log('Created KingsHall-aligned HallsChat circular splash icon and branding.');
+          })().catch(error => { console.error(error); process.exit(1); });
           NODE
 
-          # Android 11 and below: show the exact app-logo raster at CryBots sizing.
           cat > android/app/src/main/res/drawable/hallschat_launch_background.xml <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
           <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
@@ -302,7 +221,7 @@ jobs:
           cat > android/app/src/main/res/values/hallschat_splash_colors.xml <<'XML'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
-              <color name="hallschat_splash_background">#54152D</color>
+              <color name="hallschat_splash_background">#19070B</color>
           </resources>
           XML
 
@@ -312,9 +231,7 @@ jobs:
 
           path = Path("android/app/src/main/res/values/styles.xml")
           text = path.read_text()
-          pattern = re.compile(
-              r'(?s)<style\s+name="AppTheme\.NoActionBarLaunch"[^>]*>.*?</style>'
-          )
+          pattern = re.compile(r'(?s)<style\\s+name="AppTheme\\.NoActionBarLaunch"[^>]*>.*?</style>')
           replacement = """<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
               <item name="android:windowBackground">@drawable/hallschat_launch_background</item>
               <item name="windowSplashScreenBackground">@color/hallschat_splash_background</item>
@@ -323,7 +240,7 @@ jobs:
           </style>"""
           if not pattern.search(text):
               raise SystemExit("Could not find Capacitor AppTheme.NoActionBarLaunch")
-          path.write_text(pattern.sub(replacement, text, count=1))
+          path.write_text(pattern.sub(lambda _: replacement, text, count=1))
           PY
 
           cat > android/app/src/main/res/values-v31/hallschat_splash.xml <<'XML'
@@ -331,13 +248,12 @@ jobs:
           <resources>
               <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
                   <item name="android:windowSplashScreenBackground">@color/hallschat_splash_background</item>
-                  <item name="android:windowSplashScreenAnimatedIcon">@drawable/hallschat_splash_icon</item>
+                  <item name="android:windowSplashScreenAnimatedIcon">@drawable/hallschat_splash_logo</item>
                   <item name="android:windowSplashScreenBrandingImage">@drawable/hallschat_branding</item>
                   <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
               </style>
           </resources>
           XML
-
       - name: Set HallsChat Android version
         env:
           APP_VERSION: ${{ inputs.app_version }}
