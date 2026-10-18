@@ -71,27 +71,22 @@ export default function SigninPage() {
     setError("");
     setNotice("");
     try {
-      // Match CryBots: let the overlay render, then hold it for at least five seconds.
       await new Promise(resolve => window.setTimeout(resolve, 250));
       if (Capacitor.isNativePlatform()) {
-        if (!Capacitor.isPluginAvailable("KingsHallAccount")) {
-          throw new Error("This HallsChat app needs an update to use the KingsHall account manager.");
-        }
+        if (!Capacitor.isPluginAvailable("KingsHallAccount")) throw new Error("This HallsChat app needs an update to use the KingsHall account manager.");
         const selected = await DeviceAccount.chooseAccount();
+        const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
+        if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
         if (selected.cancelled) {
           setNotice("Account selection was cancelled.");
           return;
         }
         const email = (selected.email || "").trim().toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
-          if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
           setShowNoAccountModal(true);
           return;
         }
         localStorage.setItem("kingshall_account_hint", email);
-        const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
-        if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
         setIdentity(email);
         setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
         return;
@@ -104,15 +99,16 @@ export default function SigninPage() {
         return;
       }
       setShowNoAccountModal(true);
-      return;
     } catch (e) {
+      const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
+      if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
       setError(e instanceof Error ? e.message : "Unable to select a KingsHall account.");
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function verify(event: FormEvent<HTMLFormElement>) {
+    async function verify(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting || !identity || accessCode.length !== 6) return;
     setSubmitting(true); setError(""); setNotice("");
