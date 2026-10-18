@@ -3,7 +3,7 @@
     <linearGradient id="circle-bg" x1="12" y1="8" x2="500" y2="504" gradientUnits="userSpaceOnUse"><stop stop-color="#54152D"/><stop offset="1" stop-color="#210812"/></linearGradient>
     <linearGradient id="crown" x1="48" y1="47" x2="145" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF8F2"/><stop offset="1" stop-color="#EFC1CF"/></linearGradient>
   </defs>
-  <circle cx="256" cy="256" r="110" fill="url(#circle-bg)"/>
+  <circle cx="256" cy="256" r="235" fill="url(#circle-bg)"/>
   <svg x="80" y="80" width="352" height="352" viewBox="0 0 192 192" overflow="hidden">
     <g transform="translate(35 30) scale(0.674)">
       <g transform="translate(0 2)">
