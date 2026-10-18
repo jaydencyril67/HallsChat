@@ -50,7 +50,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
           <button className="button button-primary landing-cta" onClick={onSignup}>Continue with KingsHall <ArrowRight size={17} /></button>
-          <div className="landing-hero-signin"><span>Already have an account?</span><a className="landing-signin-button" href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Sign in <ArrowRight size={16} /></a></div>
+          <div className="landing-hero-signin"><span>Already have an account?</span><a className="landing-signin-button" href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Access Feeds <ArrowRight size={16} /></a></div>
         </div>
         <div className="landing-social-proof">
           <div className="landing-avatar-stack"><span>A</span><span>D</span><span>M</span><span><Heart size={12} fill="currentColor" /></span></div>
@@ -147,7 +147,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
       <h2>Your next good<br /><em>conversation starts here.</em></h2>
       <p>Continue with your KingsHall account and make room for the conversations that matter.</p>
       <button className="button button-primary landing-cta" onClick={onSignup}>Continue with KingsHall <ArrowRight size={17} /></button>
-      <p className="landing-signin-note">Already have an account? <a href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Sign in</a></p>
+      <p className="landing-signin-note">Already have an account? <a href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Access Feeds</a></p>
     </section>
 
     <footer className="landing-footer"><a className="landing-brand-link" href="#top"><Brand compact /></a><span>Made for meaningful moments.</span><a href="#top" className="landing-back-top">Back to top ↑</a><small>© {new Date().getFullYear()} HallsChat. Built with care.</small></footer>
