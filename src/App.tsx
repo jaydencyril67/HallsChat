@@ -27,17 +27,6 @@ import AboutPage from "./AboutPage";
 import AppUpdateMonitor from "./AppUpdateMonitor";
 import NativeFilePickerBridge from "./components/NativeFilePickerBridge";
 
-const startKingsHallSignin = () => {
-  const url = new URL("https://kingshall.online/signin");
-  url.searchParams.set("app", "hallschat");
-  const callback = new URL(window.location.origin + "/signin");
-  callback.searchParams.set("app", "hallschat");
-  const requestedReturn = new URLSearchParams(window.location.search).get("returnTo") || "";
-  if (requestedReturn.startsWith("/") && !requestedReturn.startsWith("//")) callback.searchParams.set("returnTo", requestedReturn);
-  url.searchParams.set("returnTo", callback.toString());
-  window.location.assign(url.toString());
-};
-
 const navigationSections: Record<string, { title: string; description: string }> = {
   "/rooms": { title: "Rooms", description: "Your conversations will live here." },
   "/contacts": { title: "People", description: "Your contacts and connections will live here." },
