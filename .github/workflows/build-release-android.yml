@@ -294,16 +294,25 @@ jobs:
             } else {
               throw new Error('HallsChat master icon structure changed; cannot safely prepare the native splash.');
             }
-            // Match the custom refresh splash composition: 92px circle holder + 72px artwork.
-            // Legacy Android displays the full 512px composition in a 92dp layer.
-            // Android 12+ receives the same composition scaled to 164px (92dp circle)
-            // on the 512px system-icon canvas; its artwork scales proportionally to 128px (72dp).
+            // One visible size on every Android version: 92dp circle + 72dp artwork.
+            // Android 11 and below: the 512px composition is fitted into a 92dp layer.
+            // Android 12+: Android treats its 512px splash asset as a 288dp canvas,
+            // so scale the exact same 92:72 composition to 164px:128px and center it.
+            const holderDp = 92;
+            const artworkDp = 72;
+            const systemCanvasPx = 512;
+            const systemCanvasDp = 288;
+            const systemHolderPx = Math.round(holderDp / systemCanvasDp * systemCanvasPx);
+            const systemArtworkPx = Math.round(artworkDp / systemCanvasDp * systemCanvasPx);
             const rendered = await sharp(Buffer.from(svg)).png().toBuffer();
             await sharp(rendered).png().toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo.png');
-            const small = await sharp(rendered).resize(164, 164).png().toBuffer();
-            await sharp({ create: { width: 512, height: 512, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
-              .composite([{ input: small, left: 174, top: 174 }])
+            const small = await sharp(rendered).resize(systemHolderPx, systemHolderPx).png().toBuffer();
+            await sharp({ create: { width: systemCanvasPx, height: systemCanvasPx, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+              .composite([{ input: small, left: Math.round((systemCanvasPx - systemHolderPx) / 2), top: Math.round((systemCanvasPx - systemHolderPx) / 2) }])
               .png().toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo_v31.png');
+            if (systemHolderPx !== 164 || systemArtworkPx !== 128) {
+              throw new Error('HallsChat Android 12+ splash scale no longer matches the 92dp / 72dp legacy size.');
+            }
 
             const branding = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320"><rect width="800" height="320" fill="none"/><text x="400" y="174" text-anchor="middle" fill="#FFF8F2" font-family="STIX Two Text, serif" font-size="72" font-weight="700" letter-spacing="3">HallsChat</text></svg>');
             await sharp(branding).png().toFile('android/app/src/main/res/drawable-nodpi/hallschat_branding.png');
