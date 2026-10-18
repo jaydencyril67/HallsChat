@@ -49,7 +49,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
         <p className="landing-hero-tagline">Your kind of connection.</p>
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
-          <button className="button button-primary landing-cta" onClick={onSignup}>Create your account <ArrowRight size={17} /></button>
+          <button className="button button-primary landing-cta" onClick={onSignup}>Continue with KingsHall <ArrowRight size={17} /></button>
           <div className="landing-hero-signin"><span>Already have an account?</span><a className="landing-signin-button" href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Sign in <ArrowRight size={16} /></a></div>
         </div>
         <div className="landing-social-proof">
