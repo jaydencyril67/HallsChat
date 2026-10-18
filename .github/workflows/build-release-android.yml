@@ -981,6 +981,7 @@ jobs:
               public void onCreate(Bundle savedInstanceState) {
                   registerPlugin(NativeAppUpdatePlugin.class);
                   registerPlugin(NativeGalleryPlugin.class);
+                  registerPlugin(KingsHallAccountPlugin.class);
                   super.onCreate(savedInstanceState);
                   if (getBridge() != null && getBridge().getWebView() != null) {
                       getBridge().getWebView().setVerticalScrollBarEnabled(false);
