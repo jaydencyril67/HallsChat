@@ -34,10 +34,7 @@ export default function SigninPage() {
     setError("");
     setNotice("");
     try {
-      if (Capacitor.isNativePlatform()) {
-        if (!Capacitor.isPluginAvailable("KingsHallAccount")) {
-          throw new Error("This HallsChat APK needs an update to use the KingsHall account picker. Update HallsChat, then try again.");
-        }
+      if (Capacitor.isNativePlatform() && Capacitor.isPluginAvailable("KingsHallAccount")) {
         const selected = await DeviceAccount.chooseAccount();
         if (selected.cancelled) {
           setNotice("Account selection was cancelled.");
