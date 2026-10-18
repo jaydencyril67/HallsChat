@@ -49,6 +49,8 @@ export default function SigninPage() {
           return;
         }
         localStorage.setItem("kingshall_account_hint", email);
+        const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
+        if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
         setIdentity(email);
         setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
         return;
