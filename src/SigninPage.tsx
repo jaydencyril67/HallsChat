@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import { ArrowRight, KeyRound, ShieldCheck } from "lucide-react";
 import AppHeader from "./AppHeader";
 import { navigate } from "./utils/navigate";
@@ -6,6 +7,8 @@ import LoadingDots from "./components/LoadingDots";
 
 const KH_SIGNIN = "https://kingshall.online/signin";
 type SigninResult = { token?: string; user?: Record<string, unknown>; message?: string; error?: string };
+type NativeKingsHallAccountPlugin = { chooseAccount(): Promise<{ email?: string; cancelled?: boolean }> };
+const DeviceAccount = registerPlugin<NativeKingsHallAccountPlugin>("KingsHallAccount");
 
 export default function SigninPage() {
   const [identity, setIdentity] = useState("");
@@ -25,25 +28,53 @@ export default function SigninPage() {
     }
   }, []);
 
-  function continueWithKingsHall() {
-    const hint = (() => {
-      const cookie = document.cookie.split(";").map(v => v.trim()).find(v => v.startsWith("kh_account_hint="));
-      if (cookie) {
-        try { const value = decodeURIComponent(cookie.slice("kh_account_hint=".length)).trim().toLowerCase(); if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return value; } catch {}
+  async function continueWithKingsHall() {
+    if (submitting) return;
+    setSubmitting(true);
+    setError("");
+    setNotice("");
+    try {
+      if (Capacitor.isNativePlatform()) {
+        if (!Capacitor.isPluginAvailable("KingsHallAccount")) {
+          throw new Error("This HallsChat APK needs an update to use the KingsHall account picker. Update HallsChat, then try again.");
+        }
+        const selected = await DeviceAccount.chooseAccount();
+        if (selected.cancelled) {
+          setNotice("Account selection was cancelled.");
+          return;
+        }
+        const email = (selected.email || "").trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          setNotice("No KingsHall account was selected. Sign in to KingsHall on this device first.");
+          return;
+        }
+        localStorage.setItem("kingshall_account_hint", email);
+        setIdentity(email);
+        setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
+        return;
       }
-      const saved = (localStorage.getItem("kingshall_account_hint") || "").trim().toLowerCase();
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(saved) ? saved : "";
-    })();
-    if (hint) {
-      setIdentity(hint);
-      setError("");
-      setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
-      return;
+      const cookie = document.cookie.split(";").map(v => v.trim()).find(v => v.startsWith("kh_account_hint="));
+      let hint = "";
+      if (cookie) {
+        try { hint = decodeURIComponent(cookie.slice("kh_account_hint=".length)).trim().toLowerCase(); } catch {}
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hint)) {
+        hint = (localStorage.getItem("kingshall_account_hint") || "").trim().toLowerCase();
+      }
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hint)) {
+        setIdentity(hint);
+        setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
+        return;
+      }
+      const url = new URL(KH_SIGNIN);
+      url.searchParams.set("app", "hallschat");
+      url.searchParams.set("returnTo", window.location.origin + "/signin");
+      window.location.assign(url.toString());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to select a KingsHall account.");
+    } finally {
+      setSubmitting(false);
     }
-    const url = new URL(KH_SIGNIN);
-    url.searchParams.set("app", "hallschat");
-    url.searchParams.set("returnTo", window.location.origin + "/signin");
-    window.location.assign(url.toString());
   }
 
   async function verify(event: FormEvent<HTMLFormElement>) {
@@ -89,8 +120,8 @@ export default function SigninPage() {
           <p>{identity || "Choose the KingsHall account you use across your connected apps."}</p>
         </div>
         {!identity && <div className="signup-form" style={{ display: "grid", gap: 12 }}>
-          <button className="button button-primary signup-submit" type="button" onClick={continueWithKingsHall}>
-            Continue with KingsHall <ArrowRight size={17} />
+          <button className="button button-primary signup-submit" type="button" onClick={() => void continueWithKingsHall()} disabled={submitting}>
+            {submitting ? <LoadingDots /> : <>Continue with KingsHall <ArrowRight size={17} /></>}
           </button>
           <p className="signup-form-note"><ShieldCheck size={14} /> KingsHall verifies your Access Code. HallsChat never stores it.</p>
         </div>}
