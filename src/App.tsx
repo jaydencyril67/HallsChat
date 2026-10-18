@@ -404,7 +404,7 @@ export default function App() {
   else if (navigationSections[normalizedPath]) {
     const section = navigationSections[normalizedPath];
     page = <NavigationSectionPage title={section.title} description={section.description} />;
-  } else page = <LandingPage onSignup={startKingsHallSignin} />;
+  } else page = <LandingPage />;
 
   const closePublicProfile = () => {
     if (window.history.state?.hallschatProfileModal && window.history.length > 1) {
