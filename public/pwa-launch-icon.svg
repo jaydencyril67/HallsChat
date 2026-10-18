@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#19070B"/>
   <defs>
     <linearGradient id="circle-bg" x1="12" y1="8" x2="500" y2="504" gradientUnits="userSpaceOnUse"><stop stop-color="#54152D"/><stop offset="1" stop-color="#210812"/></linearGradient>
     <linearGradient id="crown" x1="48" y1="47" x2="145" y2="139" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF8F2"/><stop offset="1" stop-color="#EFC1CF"/></linearGradient>
