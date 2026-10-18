@@ -16,6 +16,18 @@ export default function SigninPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [showNoAccountModal, setShowNoAccountModal] = useState(false);
+
+  function redirectToKingsHall() {
+    const url = new URL(KH_SIGNIN);
+    url.searchParams.set("app", "hallschat");
+    const callback = new URL(window.location.origin + "/signin");
+    callback.searchParams.set("app", "hallschat");
+    const requestedReturn = new URLSearchParams(window.location.search).get("returnTo") || "";
+    if (requestedReturn.startsWith("/") && !requestedReturn.startsWith("//")) callback.searchParams.set("returnTo", requestedReturn);
+    url.searchParams.set("returnTo", callback.toString());
+    window.location.assign(url.toString());
+  }
 
   useEffect(() => {
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
@@ -48,7 +60,9 @@ export default function SigninPage() {
         }
         const email = (selected.email || "").trim().toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-          setNotice("No KingsHall account was selected. Sign in to KingsHall on this device first.");
+          const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
+          if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
+          setShowNoAccountModal(true);
           return;
         }
         localStorage.setItem("kingshall_account_hint", email);
@@ -73,14 +87,10 @@ export default function SigninPage() {
         setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
         return;
       }
-      const url = new URL(KH_SIGNIN);
-      url.searchParams.set("app", "hallschat");
-      const callback = new URL(window.location.origin + "/signin");
-      callback.searchParams.set("app", "hallschat");
-      const requestedReturn = new URLSearchParams(window.location.search).get("returnTo") || "";
-      if (requestedReturn.startsWith("/") && !requestedReturn.startsWith("//")) callback.searchParams.set("returnTo", requestedReturn);
-      url.searchParams.set("returnTo", callback.toString());
-      window.location.assign(url.toString());
+      const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
+      if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
+      setShowNoAccountModal(true);
+      return;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to select a KingsHall account.");
     } finally {
@@ -158,6 +168,17 @@ export default function SigninPage() {
       </section>
     </div>
     <footer className="signup-page-footer"><span>© {new Date().getFullYear()} HallsChat</span><span>Closer conversations. Stronger connections.</span></footer>
+    {showNoAccountModal && <div role="presentation" onClick={() => setShowNoAccountModal(false)} style={{ position: "fixed", inset: 0, zIndex: 10000, display: "grid", placeItems: "center", padding: 20, background: "rgba(0,0,0,.58)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
+      <section role="alertdialog" aria-modal="true" aria-labelledby="hallschat-no-account-title" aria-describedby="hallschat-no-account-description" onClick={event => event.stopPropagation()} style={{ width: "100%", maxWidth: 360, boxSizing: "border-box", border: "1px solid var(--theme-line, rgba(255,255,255,.2))", borderRadius: 22, padding: 24, textAlign: "center", color: "var(--theme-text, #fff)", background: "var(--theme-surface, rgba(25,20,24,.94))", boxShadow: "0 18px 60px rgba(0,0,0,.28)" }}>
+        <div style={{ width: 52, height: 52, margin: "0 auto 14px", display: "grid", placeItems: "center", borderRadius: "50%", border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-surface, rgba(25,20,24,.94))", color: "var(--theme-text, #fff)" }}><KeyRound size={23} /></div>
+        <h2 id="hallschat-no-account-title" style={{ margin: 0, fontSize: 19 }}>No KingsHall account found</h2>
+        <p id="hallschat-no-account-description" style={{ margin: "10px 0 20px", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 14, lineHeight: 1.6 }}>Please sign in to KingsHall first, then return to HallsChat to continue.</p>
+        <div style={{ display: "grid", gap: 9 }}>
+          <button type="button" className="button button-primary signup-submit" onClick={redirectToKingsHall}>Sign in to KingsHall <ArrowRight size={17} /></button>
+          <button type="button" className="button button-secondary" onClick={() => setShowNoAccountModal(false)}>Cancel</button>
+        </div>
+      </section>
+    </div>}
     {submitting && <div role="status" aria-live="polite" aria-busy="true" style={{ position: "fixed", inset: 0, zIndex: 9999, display: "grid", placeItems: "center", background: "rgba(0,0,0,.52)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }}>
       <div style={{ border: "1px solid var(--theme-line, rgba(255,255,255,.2))", borderRadius: 22, padding: 24, minWidth: 150, display: "grid", justifyItems: "center", gap: 12, color: "var(--theme-text, #fff)", background: "var(--theme-surface, rgba(25,20,24,.88))", boxShadow: "0 16px 48px rgba(0,0,0,.24)" }}>
         <LoaderCircle size={34} aria-hidden="true" style={{ animation: "hallschat-signin-spin 1s linear infinite" }} />
