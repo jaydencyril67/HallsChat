@@ -6,7 +6,6 @@ import { App as CapacitorApp } from "@capacitor/app";
 import type { Socket } from "socket.io-client";
 import CallsPanel from "./components/CallsPanel";
 import LandingPage from "./LandingPage";
-import SignupPage from "./SignupPage";
 import SigninPage from "./SigninPage";
 import HomePage from "./HomePage";
 import GlobePage from "./GlobePage";
@@ -18,8 +17,6 @@ import ProfilePage from "./ProfilePage";
 import AlertsPage from "./AlertsPage";
 import ThemeSettingsPage from "./ThemeSettingsPage";
 import PublicProfilePage from "./PublicProfilePage";
-import EmailVerificationPage from "./EmailVerificationPage";
-import ForgotPasswordPage from "./ForgotPasswordPage";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import { navigate } from "./utils/navigate";
@@ -29,6 +26,13 @@ import SharedPostPage from "./SharedPostPage";
 import AboutPage from "./AboutPage";
 import AppUpdateMonitor from "./AppUpdateMonitor";
 import NativeFilePickerBridge from "./components/NativeFilePickerBridge";
+
+const startKingsHallSignin = () => {
+  const url = new URL("https://kingshall.online/signin");
+  url.searchParams.set("app", "hallschat");
+  url.searchParams.set("returnTo", window.location.origin + "/signin");
+  window.location.assign(url.toString());
+};
 
 const navigationSections: Record<string, { title: string; description: string }> = {
   "/rooms": { title: "Rooms", description: "Your conversations will live here." },
@@ -381,9 +385,7 @@ export default function App() {
   const sharedPostMatch = normalizedPath.match(/^\/post\/([^/]+)$/);
   let page: ReactNode;
   if (sharedPostMatch) page = <SharedPostPage postId={decodeURIComponent(sharedPostMatch[1])} />;
-  else if (normalizedPath === "/forgot-password") page = <ForgotPasswordPage />;
-  else if (normalizedPath === "/verify-email") page = <EmailVerificationPage />;
-  else if (normalizedPath === "/signup") page = <SignupPage />;
+  else if (normalizedPath === "/forgot-password" || normalizedPath === "/verify-email" || normalizedPath === "/signup") page = <SigninPage />;
   else if (normalizedPath === "/signin" || normalizedPath === "/sign-in") page = <SigninPage />;
   else if (normalizedPath === "/home") page = <HomePage />;
   else if (normalizedPath === "/halls") page = <GlobePage />;
@@ -398,7 +400,7 @@ export default function App() {
   else if (navigationSections[normalizedPath]) {
     const section = navigationSections[normalizedPath];
     page = <NavigationSectionPage title={section.title} description={section.description} />;
-  } else page = <LandingPage onSignup={() => navigate("/signup")} />;
+  } else page = <LandingPage onSignup={startKingsHallSignin} />;
 
   const closePublicProfile = () => {
     if (window.history.state?.hallschatProfileModal && window.history.length > 1) {
