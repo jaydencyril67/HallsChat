@@ -33,9 +33,8 @@ export default function SigninPage() {
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const email = (hash.get("kingshall_account") || new URLSearchParams(window.location.search).get("kingshall_account") || "").trim().toLowerCase();
     if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setIdentity(email);
       localStorage.setItem("kingshall_account_hint", email);
-      setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
+      setNotice("KingsHall account saved on this browser. Press Continue with KingsHall to check the account."); 
       window.history.replaceState({}, "", window.location.pathname + window.location.search);
     }
   }, []);
