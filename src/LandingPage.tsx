@@ -166,7 +166,7 @@ export default function LandingPage() {
       <span className="landing-final-kicker">CLOSER CONVERSATIONS. STRONGER CONNECTIONS.</span>
       <h2>Your next good<br /><em>conversation starts here.</em></h2>
       <p>Continue with your KingsHall account and make room for the conversations that matter.</p>
-      <button className="button button-primary landing-cta" onClick={onSignup}>Continue with KingsHall <ArrowRight size={17} /></button>
+      <button className="button button-primary landing-cta" onClick={() => navigate("/signin")}>Continue with KingsHall <ArrowRight size={17} /></button>
       <p className="landing-signin-note">Already have an account? <a href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Access Feeds</a></p>
     </section>
 
