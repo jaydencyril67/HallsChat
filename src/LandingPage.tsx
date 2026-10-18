@@ -3,7 +3,6 @@ import { useState } from "react";
 import AppHeader from "./AppHeader";
 import { navigate } from "./utils/navigate";
 
-type LandingPageProps = { onSignup: () => void };
 
 const features = [
   { icon: <MessageCircle size={20} />, number: "01", title: "Conversations that feel close", description: "A thoughtful space for everyday messages, little updates, and the people you want within reach." },
@@ -18,7 +17,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
   </span>;
 }
 
-export default function LandingPage({ onSignup }: LandingPageProps) {
+export default function LandingPage() {
   const [demoTab, setDemoTab] = useState<"chats" | "feed" | "halls" | "profile">("chats");
   const [demoChat, setDemoChat] = useState<{ name: string; message: string } | null>(null);
   const [demoDraft, setDemoDraft] = useState("");
@@ -30,11 +29,32 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
   const [demoComment, setDemoComment] = useState("");
   const [demoNotice, setDemoNotice] = useState("");
 
-  const handleLogin = () => {
-    // The backend is authoritative for session validity. A client-side expiry
-    // parse must not send a user to sign-in when a saved session still exists.
+  const handleLogin = async () => {
     const token = window.localStorage.getItem("hallschat_token");
-    navigate(token ? "/home" : "/signin");
+    if (!token) {
+      navigate("/signin");
+      return;
+    }
+
+    // Confirm the saved token with the backend before opening the feeds.
+    try {
+      const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+      const response = await fetch(apiBase + "/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (response.ok) {
+        navigate("/home");
+        return;
+      }
+      if (response.status === 401 || response.status === 403) {
+        window.localStorage.removeItem("hallschat_token");
+        window.localStorage.removeItem("hallschat_user");
+        window.localStorage.removeItem("hallschat_last_activity_at");
+      }
+    } catch {
+      // If the session cannot be confirmed, fall back to the sign-in screen.
+    }
+    navigate("/signin");
   };
 
   return <main className="landing-page theme-token-scope">
@@ -49,7 +69,7 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
         <p className="landing-hero-tagline">Your kind of connection.</p>
         <p className="landing-hero-description">Life moves fast. Make room for the conversations that make it matter — in a space designed to bring your people closer.</p>
         <div className="landing-hero-actions">
-          <button className="button button-primary landing-cta" onClick={onSignup}>Continue with KingsHall <ArrowRight size={17} /></button>
+          <button className="button button-primary landing-cta" onClick={() => navigate("/signin")}>Continue with KingsHall <ArrowRight size={17} /></button>
           <div className="landing-hero-signin"><span>Already have an account?</span><a className="landing-signin-button" href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Access Feeds <ArrowRight size={16} /></a></div>
         </div>
         <div className="landing-social-proof">
