@@ -98,7 +98,8 @@ export default function SigninPage() {
       localStorage.setItem("hallschat_token", result.token);
       localStorage.setItem("hallschat_user", JSON.stringify(result.user));
       localStorage.removeItem("hallschat_last_activity_at");
-      navigate("/home");
+      const requestedReturn = new URLSearchParams(window.location.search).get("returnTo") || "";
+      navigate(requestedReturn.startsWith("/") && !requestedReturn.startsWith("//") ? requestedReturn : "/home");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to sign in. Please try again.");
     } finally {
