@@ -37,7 +37,10 @@ export default function SigninPage() {
     try {
       // Match CryBots: let the overlay render, then hold it for at least five seconds.
       await new Promise(resolve => window.setTimeout(resolve, 250));
-      if (Capacitor.isNativePlatform() && Capacitor.isPluginAvailable("KingsHallAccount")) {
+      if (Capacitor.isNativePlatform()) {
+        if (!Capacitor.isPluginAvailable("KingsHallAccount")) {
+          throw new Error("This HallsChat app needs an update to use the KingsHall account manager.");
+        }
         const selected = await DeviceAccount.chooseAccount();
         if (selected.cancelled) {
           setNotice("Account selection was cancelled.");
