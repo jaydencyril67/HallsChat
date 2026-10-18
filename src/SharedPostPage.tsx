@@ -78,7 +78,7 @@ export default function SharedPostPage({ postId }: { postId: string }) {
   const showPost = Boolean(payload?.canView && payload.post);
 
   return <>
-    {token ? <HomePage /> : <LandingPage onSignup={() => navigate("/signup")} />}
+    {token ? <HomePage /> : <LandingPage onSignup={() => navigate("/signin?returnTo=" + encodeURIComponent("/post/" + postId))} />}
     <div className="shared-post-backdrop" role="presentation">
       <section className="shared-post-modal theme-token-scope" role="dialog" aria-modal="true" aria-labelledby="shared-post-title">
         <button className="shared-post-close" type="button" onClick={close} aria-label="Close shared post"><X size={19} /></button>
