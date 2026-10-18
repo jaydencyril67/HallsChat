@@ -145,8 +145,8 @@ export default function LandingPage({ onSignup }: LandingPageProps) {
       <div className="landing-final-symbol"><img src="/crown-chat.svg?v=7" alt="HallsChat" /></div>
       <span className="landing-final-kicker">CLOSER CONVERSATIONS. STRONGER CONNECTIONS.</span>
       <h2>Your next good<br /><em>conversation starts here.</em></h2>
-      <p>Create your HallsChat account and make room for the conversations that matter.</p>
-      <button className="button button-primary landing-cta" onClick={onSignup}>Get started with HallsChat <ArrowRight size={17} /></button>
+      <p>Continue with your KingsHall account and make room for the conversations that matter.</p>
+      <button className="button button-primary landing-cta" onClick={onSignup}>Continue with KingsHall <ArrowRight size={17} /></button>
       <p className="landing-signin-note">Already have an account? <a href="/signin" onClick={event => { event.preventDefault(); handleLogin(); }}>Sign in</a></p>
     </section>
 
