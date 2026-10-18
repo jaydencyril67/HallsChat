@@ -143,7 +143,7 @@ export default function SigninPage() {
         </div>
         {!identity && <div className="signup-form" style={{ display: "grid", gap: 12 }}>
           <button className="button button-primary signup-submit" type="button" onClick={() => void continueWithKingsHall()} disabled={submitting}>
-            {submitting ? <LoadingDots /> : <>Continue with KingsHall <ArrowRight size={17} /></>}
+            {submitting ? <LoadingDots /> : <>Access Feeds <ArrowRight size={17} /></>}
           </button>
           <p className="signup-form-note"><ShieldCheck size={14} /> KingsHall verifies your Access Code. HallsChat never stores it.</p>
         </div>}
