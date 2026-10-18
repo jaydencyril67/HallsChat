@@ -289,15 +289,14 @@ jobs:
                 '<circle cx="256" cy="256" r="256" fill="url(#circle-bg)"/>'
               ).replace(
                 '<svg x="27.2" y="27.2" width="457.6" height="457.6" viewBox="0 0 192 192" overflow="hidden">',
-                '<svg x="56" y="56" width="400" height="400" viewBox="0 0 192 192" overflow="hidden">'
+                '<svg x="0" y="0" width="512" height="512" viewBox="0 0 192 192" overflow="hidden">'
               );
             } else {
               throw new Error('HallsChat master icon structure changed; cannot safely prepare the native splash.');
             }
-            // One visible size on every Android version: 92dp circle + 72dp artwork.
-            // Android 11 and below: the 512px composition is fitted into a 92dp layer.
-            // Android 12+: Android treats its 512px splash asset as a 288dp canvas,
-            // so scale the exact same 92:72 composition to 164px:128px and center it.
+            // Keep the circle at 92dp while enlarging the orbital/bubble artwork to about 1.3x.
+            // The SVG's inner artwork is expanded from 400px to 512px; the outer circle stays r=256.
+            // Android 12+ uses the same enlarged composition centered on its 512px system canvas.
             const holderDp = 92;
             const artworkDp = 72;
             const systemCanvasPx = 512;
@@ -311,7 +310,7 @@ jobs:
               .composite([{ input: small, left: Math.round((systemCanvasPx - systemHolderPx) / 2), top: Math.round((systemCanvasPx - systemHolderPx) / 2) }])
               .png().toFile('android/app/src/main/res/drawable-nodpi/hallschat_splash_logo_v31.png');
             if (systemHolderPx !== 164 || systemArtworkPx !== 128) {
-              throw new Error('HallsChat Android 12+ splash scale no longer matches the 92dp / 72dp legacy size.');
+              throw new Error('HallsChat Android 12+ circle holder size changed unexpectedly.');
             }
 
             const branding = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="320" viewBox="0 0 800 320"><rect width="800" height="320" fill="none"/><text x="400" y="174" text-anchor="middle" fill="#FFF8F2" font-family="STIX Two Text, serif" font-size="72" font-weight="700" letter-spacing="3">HallsChat</text></svg>');
@@ -321,7 +320,7 @@ jobs:
             if (alphaAt(0, 0) !== 0 || alphaAt(256, 256) === 0) {
               throw new Error('HallsChat splash image failed transparency/circle validation.');
             }
-            console.log('Created and validated HallsChat splash directly from the shared 512px master icon composition.');
+            console.log('Created and validated HallsChat splash with unchanged circle size and 1.28x orbital/bubble artwork.');
           })().catch(error => { console.error(error); process.exit(1); });
           NODE
 
