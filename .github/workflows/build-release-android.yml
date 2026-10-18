@@ -322,8 +322,8 @@ jobs:
           <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
               <item android:drawable="@color/hallschat_splash_background" />
               <item
-                  android:width="92dp"
-                  android:height="92dp"
+                  android:width="94dp"
+                  android:height="94dp"
                   android:gravity="center"
                   android:drawable="@drawable/hallschat_splash_logo" />
               <item
