@@ -6,7 +6,7 @@ import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
 
 const KH_SIGNIN = "https://kingshall.online/signin";
-const EMAIL_PATTERN = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function getSavedBrowserAccounts(): string[] {
   const valid = (value: unknown): value is string => typeof value === "string" && EMAIL_PATTERN.test(value.trim().toLowerCase());
   let accounts: string[] = [];
