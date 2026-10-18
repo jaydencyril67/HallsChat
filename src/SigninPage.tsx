@@ -6,6 +6,30 @@ import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
 
 const KH_SIGNIN = "https://kingshall.online/signin";
+const EMAIL_PATTERN = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+function getSavedBrowserAccounts(): string[] {
+  const valid = (value: unknown): value is string => typeof value === "string" && EMAIL_PATTERN.test(value.trim().toLowerCase());
+  let accounts: string[] = [];
+  const cookie = document.cookie.split(";").map(value => value.trim()).find(value => value.startsWith("kh_saved_accounts="));
+  if (cookie) {
+    try {
+      const parsed = JSON.parse(decodeURIComponent(cookie.slice("kh_saved_accounts=".length)));
+      if (Array.isArray(parsed)) accounts = parsed.filter(valid).map(value => value.trim().toLowerCase());
+    } catch {}
+  }
+  const hintCookie = document.cookie.split(";").map(value => value.trim()).find(value => value.startsWith("kh_account_hint="));
+  if (hintCookie) {
+    try { const hint = decodeURIComponent(hintCookie.slice("kh_account_hint=".length)).trim().toLowerCase(); if (EMAIL_PATTERN.test(hint)) accounts.push(hint); } catch {}
+  }
+  const localHint = (localStorage.getItem("kingshall_account_hint") || "").trim().toLowerCase();
+  if (EMAIL_PATTERN.test(localHint)) accounts.push(localHint);
+  return [...new Set(accounts)].slice(0, 10);
+}
+function setSelectedBrowserAccount(email: string) {
+  const selected = email.trim().toLowerCase();
+  localStorage.setItem("kingshall_account_hint", selected);
+  document.cookie = "kh_account_hint=" + encodeURIComponent(selected) + "; Domain=.kingshall.online; Path=/; Max-Age=31536000; Secure; SameSite=Lax";
+}
 type SigninResult = { token?: string; user?: Record<string, unknown>; message?: string; error?: string };
 type NativeKingsHallAccountPlugin = { chooseAccount(): Promise<{ email?: string; cancelled?: boolean }> };
 const DeviceAccount = registerPlugin<NativeKingsHallAccountPlugin>("KingsHallAccount");
@@ -17,6 +41,7 @@ export default function SigninPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [showNoAccountModal, setShowNoAccountModal] = useState(false);
+  const [browserAccounts, setBrowserAccounts] = useState<string[]>([]);
 
   function redirectToKingsHall() {
     const url = new URL(KH_SIGNIN);
@@ -71,23 +96,13 @@ export default function SigninPage() {
         setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
         return;
       }
-      const cookie = document.cookie.split(";").map(v => v.trim()).find(v => v.startsWith("kh_account_hint="));
-      let hint = "";
-      if (cookie) {
-        try { hint = decodeURIComponent(cookie.slice("kh_account_hint=".length)).trim().toLowerCase(); } catch {}
-      }
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hint)) {
-        hint = (localStorage.getItem("kingshall_account_hint") || "").trim().toLowerCase();
-      }
-      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(hint)) {
-        const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
-        if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
-        setIdentity(hint);
-        setNotice("KingsHall account detected. Enter its bound Access Code to continue.");
-        return;
-      }
+      const accounts = getSavedBrowserAccounts();
       const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
       if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
+      if (accounts.length) {
+        setBrowserAccounts(accounts);
+        return;
+      }
       setShowNoAccountModal(true);
       return;
     } catch (e) {
@@ -141,6 +156,11 @@ export default function SigninPage() {
           <h2 id="signin-heading">{identity ? "Confirm your KingsHall account" : "Sign in with KingsHall"}</h2>
           <p>{identity || "Choose the KingsHall account you use across your connected apps."}</p>
         </div>
+        {!identity && browserAccounts.length > 0 && <div className="signup-form" style={{ display: "grid", gap: 9, marginBottom: 12 }}>
+          <p style={{ margin: "0 0 3px", fontSize: 13, fontWeight: 750 }}>Saved KingsHall accounts</p>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--theme-text-muted, rgba(255,255,255,.7))" }}>Choose which account to use for this sign-in request.</p>
+          {browserAccounts.map(email => <button key={email} type="button" className="button button-secondary" style={{ width: "100%", justifyContent: "flex-start", overflowWrap: "anywhere" }} onClick={() => { setSelectedBrowserAccount(email); setIdentity(email); setError(""); setNotice("KingsHall account selected. Enter its bound Access Code to continue."); }}>{email} <ArrowRight size={15} /></button>)}
+        </div>}
         {!identity && <div className="signup-form" style={{ display: "grid", gap: 12 }}>
           <button className="button button-primary signup-submit" type="button" onClick={() => void continueWithKingsHall()} disabled={submitting}>
             {submitting ? <LoadingDots /> : <>Continue with KingsHall <ArrowRight size={17} /></>}
