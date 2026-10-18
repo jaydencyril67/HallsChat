@@ -289,7 +289,7 @@ jobs:
                 '<circle cx="256" cy="256" r="256" fill="url(#circle-bg)"/>'
               ).replace(
                 '<svg x="27.2" y="27.2" width="457.6" height="457.6" viewBox="0 0 192 192" overflow="hidden">',
-                '<svg x="0" y="0" width="512" height="512" viewBox="0 0 192 192" overflow="hidden">'
+                '<svg x="-4" y="-4" width="520" height="520" viewBox="0 0 192 192" overflow="hidden">'
               );
             } else {
               throw new Error('HallsChat master icon structure changed; cannot safely prepare the native splash.');
@@ -320,7 +320,7 @@ jobs:
             if (alphaAt(0, 0) !== 0 || alphaAt(256, 256) === 0) {
               throw new Error('HallsChat splash image failed transparency/circle validation.');
             }
-            console.log('Created and validated HallsChat splash with unchanged circle size and 1.28x orbital/bubble artwork.');
+            console.log('Created and validated HallsChat splash with unchanged circle size and 1.3x orbital/bubble artwork.');
           })().catch(error => { console.error(error); process.exit(1); });
           NODE
 
