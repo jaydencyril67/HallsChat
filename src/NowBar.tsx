@@ -53,7 +53,7 @@ function getPageTitle() {
   if (path === "/home") return "HOME";
   if (path.startsWith("/profile")) return "PROFILE";
   if (path === "/signin" || path === "/sign-in") return "SIGN IN";
-  if (path === "/signup") return "SIGN UP";
+  if (path === "/signup") return "SIGN IN";
   if (path === "/confirm-email" || path === "/verify-email") return "CONFIRM EMAIL";
   if (path.startsWith("/rooms")) return "ROOMS";
   if (path.startsWith("/contacts")) return "PEOPLE";
