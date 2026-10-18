@@ -106,7 +106,7 @@ export default function SharedPostPage({ postId }: { postId: string }) {
               <p>{token ? "HallsChat feeds are for people you follow. Follow this person to unlock their post and see their updates in your feed." : "HallsChat isn't an open public feed. Sign in to connect with people and view posts from accounts you follow."}</p>
               {token ? <button type="button" className="button button-primary shared-post-primary-action" onClick={() => void followToView()} disabled={following}>{following ? <LoadingDots /> : <><UserPlus size={16} /> Follow to view</>}</button> :
                 <button type="button" className="button button-primary shared-post-primary-action" onClick={() => navigate("/signin?returnTo=" + encodeURIComponent("/post/" + postId))}>Sign in to continue <ArrowRight size={16} /></button>}
-              {!token && <button type="button" className="shared-post-secondary-action" onClick={() => navigate("/signup")}>Create an account</button>}
+              {!token && <button type="button" className="shared-post-secondary-action" onClick={() => navigate("/signin?returnTo=" + encodeURIComponent("/post/" + postId))}>Continue with KingsHall</button>}
             </div>}
             {error && <p className="shared-post-error" role="alert">{error}</p>}
           </>}
