@@ -68,7 +68,11 @@ export default function SigninPage() {
       }
       const url = new URL(KH_SIGNIN);
       url.searchParams.set("app", "hallschat");
-      url.searchParams.set("returnTo", window.location.origin + "/signin");
+      const callback = new URL(window.location.origin + "/signin");
+      callback.searchParams.set("app", "hallschat");
+      const requestedReturn = new URLSearchParams(window.location.search).get("returnTo") || "";
+      if (requestedReturn.startsWith("/") && !requestedReturn.startsWith("//")) callback.searchParams.set("returnTo", requestedReturn);
+      url.searchParams.set("returnTo", callback.toString());
       window.location.assign(url.toString());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to select a KingsHall account.");
