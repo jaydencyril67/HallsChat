@@ -161,7 +161,7 @@ export default function SigninPage() {
           <p style={{ margin: 0, fontSize: 12, color: "var(--theme-text-muted, rgba(255,255,255,.7))" }}>Choose which account to use for this sign-in request.</p>
           {browserAccounts.map(email => <button key={email} type="button" className="button button-secondary" style={{ width: "100%", justifyContent: "flex-start", overflowWrap: "anywhere" }} onClick={() => { setSelectedBrowserAccount(email); setIdentity(email); setError(""); setNotice("KingsHall account selected. Enter its bound Access Code to continue."); }}>{email} <ArrowRight size={15} /></button>)}
         </div>}
-        {!identity && <div className="signup-form" style={{ display: "grid", gap: 12 }}>
+        {!identity && browserAccounts.length === 0 && <div className="signup-form" style={{ display: "grid", gap: 12 }}>
           <button className="button button-primary signup-submit" type="button" onClick={() => void continueWithKingsHall()} disabled={submitting}>
             {submitting ? <LoadingDots /> : <>Continue with KingsHall <ArrowRight size={17} /></>}
           </button>
