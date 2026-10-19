@@ -1,4 +1,4 @@
-import { Check, Download, Globe, MoreHorizontal, Smartphone, Store, ShieldAlert } from "lucide-react";
+import { Check, Download, Globe, MoreHorizontal, Smartphone, Store } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { PushNotifications } from "@capacitor/push-notifications";
 import { NativeAppUpdate } from "./utils/nativeAppUpdate";
@@ -832,7 +832,7 @@ export default function ThemeSettingsPage() {
       <section className="settings-theme-card" aria-label="Account safety" style={{ marginBottom: 8 }}>
         <span className="settings-theme-title">Account safety</span>
         <span className="settings-theme-current">Disable access or self-exclude</span>
-        <button type="button" className="settings-theme-menu-trigger" aria-label="Open account safety" onClick={() => navigate("/danger")}><ShieldAlert size={19} /></button>
+        <button type="button" className="settings-theme-menu-trigger" aria-label="Open account safety" onClick={() => navigate("/danger")}><MoreHorizontal size={21} /></button>
       </section>
       <section className="settings-theme-card" aria-label="App theme">
         <span className="settings-theme-title">App theme</span>
