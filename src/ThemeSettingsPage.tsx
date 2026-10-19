@@ -1218,7 +1218,11 @@ export default function ThemeSettingsPage() {
         <div className="settings-download-app-details">
           <span className="settings-theme-title">Download App</span>
           <span className="settings-theme-current" aria-live="polite">{pwaInstalled ? "PWA installed" : "APK · Web App"}</span>
-          {Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && <span className="settings-theme-current" aria-live="polite">{apkUpdate.status === "checking" ? "Checking APK version…" : apkUpdate.status === "update" ? "Update available · v" + (apkUpdate.latestVersion || "latest") : apkUpdate.status === "current" ? "Latest APK installed · v" + (apkUpdate.installedVersion || "") : "APK version unavailable"}</span>}
+          {Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && <>
+            <span className="settings-theme-current" aria-live="polite">{apkUpdate.status === "checking" ? "Checking latest APK version…" : apkUpdate.latestVersion ? "Latest APK available · v" + apkUpdate.latestVersion : "Latest APK version unavailable"}</span>
+            <span className="settings-theme-current" aria-live="polite">{apkUpdate.installedVersion ? "Currently installed · v" + apkUpdate.installedVersion : apkUpdate.status === "checking" ? "Checking installed version…" : "Installed version unavailable"}</span>
+            {apkUpdate.status === "update" && <span className="settings-theme-current">Update available</span>}
+          </>}
         </div>
         <div className="settings-theme-menu-anchor" ref={downloadAppMenuRef}>
           <button
