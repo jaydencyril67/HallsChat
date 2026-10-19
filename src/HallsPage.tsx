@@ -162,7 +162,6 @@ export default function HallsPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [name, setName] = useState("");
@@ -448,8 +447,6 @@ export default function HallsPage() {
     recordingStreamRef.current?.getTracks().forEach(track => track.stop());
     if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
   }, []);
-
-  const filteredHalls = useMemo(() => { const query = search.trim().toLowerCase(); if (!query) return halls; return halls.filter(group => [group.name, group.description, group.lastMessage?.text || "", group.lastMessage?.senderName || ""].join(" ").toLowerCase().includes(query)); }, [halls, search]);
 
   function cancelGroupAvatarCrop() {
     if (hallAvatarCropSource) URL.revokeObjectURL(hallAvatarCropSource);
@@ -859,14 +856,13 @@ export default function HallsPage() {
           <div className="halls-list-tabs" style={{ ...panel, padding: 5, display: "flex", gap: 8, marginBottom: 15 }}>
             {([{ id: "mine", label: "My Halls", icon: UsersRound }, { id: "discover", label: "Discover", icon: Compass }] as const).map(({ id, label, icon: Icon }) => <button key={id} type="button" onClick={() => setTab(id)} aria-pressed={tab === id} style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center", gap: 7, padding: "8px 10px", borderRadius: 9, border: tab === id ? "1px solid var(--theme-accent-border)" : "1px solid var(--theme-line)", background: "var(--theme-surface-hover)", color: tab === id ? "var(--theme-danger)" : "var(--theme-muted)", fontSize: ".8rem", fontWeight: 750 }}><Icon size={16}/><span>{label}</span></button>)}
           </div>
-          <div className="halls-list-search"><input aria-label="Search Halls" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search Halls…" style={{ ...field, marginBottom: 12 }}/></div>
           <div className="halls-list-actions" style={{ display: "flex", gap: 9, marginBottom: 13 }}>
             <button type="button" onClick={() => setShowJoin(true)} style={{ ...secondary, flex: 1, minWidth: 0 }}><UserPlus size={16}/> Join Hall</button>
             <button type="button" onClick={() => setShowCreate(true)} style={{ ...secondary, flex: 1, minWidth: 0 }}><Plus size={17}/> Create Hall</button>
           </div>
-          {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 34 }}><LoadingDots/></div> : filteredHalls.length ? <div className="halls-list" style={{ display: "grid", gap: 10 }}>{filteredHalls.map(group => <div key={group.id} className="halls-list-row" style={{ ...panel, padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
+          {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 34 }}><LoadingDots/></div> : halls.length ? <div className="halls-list" style={{ display: "grid", gap: 10 }}>{halls.map(group => <div key={group.id} className="halls-list-row" style={{ ...panel, padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
             <Avatar name={group.name} src={group.avatar} size={49}/><div style={{ flex: 1, minWidth: 0, textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: ".9rem", fontWeight: 850, color: "var(--theme-text)" }}>{group.name}{group.visibility === "private" ? <LockKeyhole size={13} color="var(--theme-danger)"/> : null}</span><span style={{ display: "block", ...muted, fontSize: ".75rem", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{group.lastMessage ? (group.lastMessage.senderName ? group.lastMessage.senderName + ": " : "") + group.lastMessage.text : group.description || "No messages yet"}</span><span style={{ display: "block", ...muted, fontSize: ".7rem", marginTop: 5 }}>{group.memberCount} members · {group.role || "Public"}{group.lastMessage ? " · " + formatTime(group.lastMessage.createdAt) : ""}</span></div>{tab === "discover" ? <button type="button" style={primary} disabled={busy} onClick={() => void joinHall(group.id)}>Join</button> : <button type="button" aria-label={"Open " + group.name} title={"Open " + group.name} style={{ ...secondary, width: 38, minWidth: 38, padding: 0 }} onClick={() => setActiveId(group.id)}><ArrowLeft size={17} style={{ transform: "rotate(180deg)" }}/></button>}
-          </div>)}</div> : <div className="halls-list-empty" style={{ ...panel, textAlign: "center", padding: "32px 18px" }}><div className="halls-list-empty-icon" style={{ width: 49, height: 49, margin: "0 auto 12px", borderRadius: 16, display: "grid", placeItems: "center", background: "var(--theme-danger-action-bg)", color: "var(--theme-danger)" }}><UsersRound size={23}/></div><strong style={{ display: "block", fontSize: ".92rem" }}>{search.trim() ? "No matching Halls" : tab === "mine" ? "Your Hall story starts here" : "No Halls to discover yet"}</strong><p style={{ ...muted, margin: "7px auto 14px", maxWidth: 320, fontSize: ".8rem", lineHeight: 1.6 }}>{search.trim() ? "Try a different Hall name, description, or recent message." : tab === "mine" ? "Create a Hall for friends, family, classmates, or your community." : "Public Halls will appear here when they are available."}</p>{search.trim() ? <button type="button" style={secondary} onClick={() => setSearch("")}><X size={15}/> Clear search</button> : tab === "mine" && <button type="button" style={primary} onClick={() => setShowCreate(true)}><Plus size={16}/> Create your first Hall</button>}</div>}
+          </div>)}</div> : <div className="halls-list-empty" style={{ ...panel, textAlign: "center", padding: "32px 18px" }}><div className="halls-list-empty-icon" style={{ width: 49, height: 49, margin: "0 auto 12px", borderRadius: 16, display: "grid", placeItems: "center", background: "var(--theme-danger-action-bg)", color: "var(--theme-danger)" }}><UsersRound size={23}/></div><strong style={{ display: "block", fontSize: ".92rem" }}>{tab === "mine" ? "Your Hall story starts here" : "No Halls to discover yet"}</strong><p style={{ ...muted, margin: "7px auto 14px", maxWidth: 320, fontSize: ".8rem", lineHeight: 1.6 }}>{tab === "mine" ? "Create a Hall for friends, family, classmates, or your community." : "Public Halls will appear here when they are available."}</p>{tab === "mine" && <button type="button" style={primary} onClick={() => setShowCreate(true)}><Plus size={16}/> Create your first Hall</button>}</div>}
         </>}
       </div>
     </section>
