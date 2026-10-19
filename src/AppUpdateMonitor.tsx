@@ -34,7 +34,7 @@ export default function AppUpdateMonitor() {
       if (!response.ok) return;
       const data = await response.json() as UpdateCheckResponse;
       if (data.updateAvailable && data.downloadUrl && data.latestVersion) {
-        setUpdate(data);
+        setUpdate({ ...data, installedVersion: appInfo.versionName });
         setHidden(false);
       } else {
         setUpdate(null);
@@ -103,7 +103,7 @@ export default function AppUpdateMonitor() {
     <aside className="hallschat-update-notice" role="status" aria-live="polite">
       <div className="hallschat-update-copy">
         <strong>HallsChat update available</strong>
-        <p>Version {update.latestVersion} is ready. Update without uninstalling your current app.</p>
+        <p>Latest APK available: v{update.latestVersion}. Currently installed: v{update.installedVersion || "unknown"}. Update without uninstalling your current app.</p>
         {update.releaseNotes && <details className="hallschat-update-notes"><summary>Release notes</summary><p>{update.releaseNotes}</p></details>}
         {actionMessage && <p className="hallschat-update-message">{actionMessage}</p>}
       </div>
