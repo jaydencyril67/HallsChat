@@ -230,12 +230,14 @@ export default function SigninPage() {
     setExternalLogin(null); setExternalLoginBusy(true); setError("");
     const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     try {
-      await fetch(apiBase + "/api/auth/kingshall/external/cancel", {
+      const response = await fetch(apiBase + "/api/auth/kingshall/external/cancel", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestId: request.requestId })
       });
+      const data = await response.json().catch(() => ({})) as { message?: string };
+      if (!response.ok) throw new Error(data.message || "Unable to cancel external-device login.");
       setNotice("External-device login cancelled.");
-    } catch {
-      setError("The external login request could not be cancelled.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "The external login request could not be cancelled.");
     } finally {
       setExternalLoginBusy(false);
     }
