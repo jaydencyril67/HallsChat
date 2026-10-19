@@ -327,7 +327,7 @@ export default function HallsPage() {
   useEffect(() => {
     const closeOutside = (event: PointerEvent) => {
       if (!(event.target instanceof Element)) return;
-      if (!event.target.closest(".halls-conversation-menu-anchor")) setHallConversationMenuFor(null);
+      if (!event.target.closest(".halls-conversation-menu-anchor, .halls-list-row")) setHallConversationMenuFor(null);
     };
     document.addEventListener("pointerdown", closeOutside);
     return () => document.removeEventListener("pointerdown", closeOutside);
