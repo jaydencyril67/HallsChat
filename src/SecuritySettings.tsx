@@ -174,8 +174,10 @@ export default function SecuritySettings() {
         </div>
         <div style={{ display: "grid", gap: 8, width: "100%" }}>
           <input aria-label="Authenticator code" style={inputStyle} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Six-digit code" value={twoFactorCode} onChange={e => setTwoFactorCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
-          <button type="button" className="settings-theme-menu-option is-selected" disabled={busy || twoFactorCode.length !== 6} onClick={() => void verifyTwoFactor(true)}><span>Verify and enable</span><Check size={15} /></button>
-          <button type="button" className="settings-theme-menu-option" disabled={busy} onClick={() => void cancelSetup()}><span>Cancel setup</span></button>
+          <div style={{ display: "flex", gap: 8, width: "100%" }}>
+            <button type="button" className="settings-theme-menu-option is-selected" style={{ flex: 1, minWidth: 0 }} disabled={busy || twoFactorCode.length !== 6} onClick={() => void verifyTwoFactor(true)}><span>Verify and enable</span><Check size={15} /></button>
+            <button type="button" className="settings-theme-menu-option" style={{ flex: 1, minWidth: 0 }} disabled={busy} onClick={() => void cancelSetup()}><span>Cancel setup</span></button>
+          </div>
         </div>
       </div>}
       {twoFactorEnabled && <div className="settings-security-details">
