@@ -828,12 +828,14 @@ export default function ThemeSettingsPage() {
   return <main className="home-page social-home settings-page theme-token-scope">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell settings-shell">
+      <div className="settings-section-label" role="heading" aria-level={2}>Security</div>
       <SecuritySettings />
       <section className="settings-theme-card" aria-label="Account safety" style={{ marginBottom: 8 }}>
         <span className="settings-theme-title">Account safety</span>
         <span className="settings-theme-current">Disable access or self-exclude</span>
         <button type="button" className="settings-theme-menu-trigger" aria-label="Open account safety" onClick={() => navigate("/danger")}><MoreHorizontal size={21} /></button>
       </section>
+      <div className="settings-section-label" role="heading" aria-level={2}>Appearance</div>
       <section className="settings-theme-card" aria-label="App theme">
         <span className="settings-theme-title">App theme</span>
         <span className="settings-theme-current" aria-live="polite">{currentThemeLabel}</span>
@@ -919,6 +921,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <div className="settings-section-label" role="heading" aria-level={2}>Social</div>
       <section className="settings-theme-card" aria-label="Active status">
         <span className="settings-theme-title">Active Status</span>
         <span className="settings-theme-current" aria-live="polite">{!activeStatusLoaded ? "Loading…" : activeStatusVisible ? "Shown" : "Hidden"}</span>
@@ -1091,6 +1094,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <div className="settings-section-label" role="heading" aria-level={2}>Notifications</div>
       <section className="settings-theme-card" aria-label="Alert Channel">
         <span className="settings-theme-title">Alert Channel</span>
         <span className="settings-theme-current" aria-live="polite">{!alertChannelsLoaded ? "Loading…" : [alertChannels.email && "Email", alertChannels.inApp && "In-App", alertChannels.push && "Push"].filter(Boolean).join(" · ") || "All Off"}</span>
@@ -1146,6 +1150,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <div className="settings-section-label" role="heading" aria-level={2}>Account & session security</div>
       <section className="settings-theme-card" aria-label="Idle Logout">
         <span className="settings-theme-title">Idle Logout</span>
         <span className="settings-theme-current" aria-live="polite">{idleLogoutMinutes === 0 ? "Disabled" : `${idleLogoutMinutes} Minutes`}</span>
@@ -1166,6 +1171,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
+      <div className="settings-section-label" role="heading" aria-level={2}>Navigation</div>
       <section className="settings-theme-card" aria-label="Nowbar Toggle">
         <span className="settings-theme-title">Nowbar Toggle</span>
         <span className="settings-theme-current" aria-live="polite">{nowbarSwipeEnabled ? "Swipe On" : "Swipe Off"} · {nowbarExpandEnabled ? "Expand On" : "Expand Off"}</span>
@@ -1187,6 +1193,7 @@ export default function ThemeSettingsPage() {
       {visibilityError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{visibilityError}</span><button type="button" onClick={() => setVisibilityError("")} aria-label="Dismiss notification">×</button></div>}
       {callsPrivacyError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{callsPrivacyError}</span><button type="button" onClick={() => setCallsPrivacyError("")} aria-label="Dismiss notification">×</button></div>}
       {activeStatusError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{activeStatusError}</span><button type="button" onClick={() => setActiveStatusError("")} aria-label="Dismiss notification">×</button></div>}
+      <div className="settings-section-label" role="heading" aria-level={2}>Devices & sessions</div>
       <section className="settings-theme-card" aria-label="Max Device">
         <span className="settings-theme-title">Max Device</span>
         <span className="settings-theme-current" aria-live="polite">{!maxDeviceLoaded ? "Loading…" : `${maxDeviceMode === "flex" ? "Flex" : "Fixed"} · ${maxDevices} ${maxDevices === 1 ? "session" : "sessions"}`}</span>
