@@ -52,7 +52,7 @@
   --theme-bg-page: var(--theme-bg);
   --theme-card: var(--theme-surface);
   --theme-card-raised: var(--theme-surface-raised);
-  --theme-input-bg: var(--theme-surface);
+  --theme-input-bg: #16040b;
   --theme-popover-bg: var(--theme-surface-raised);
   --theme-overlay: rgba(8, 3, 5, 0.72);
   --theme-border: var(--theme-line);
