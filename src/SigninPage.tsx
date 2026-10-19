@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
-import { ArrowRight, KeyRound, ShieldCheck, LoaderCircle } from "lucide-react";
+import { ArrowRight, KeyRound, ShieldCheck, LoaderCircle, Fingerprint } from "lucide-react";
+import { authenticateWithPasskey } from "./utils/webauthn";
 import AppHeader from "./AppHeader";
 import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
@@ -30,7 +31,7 @@ function setSelectedBrowserAccount(email: string) {
   localStorage.setItem("kingshall_account_hint", selected);
   document.cookie = "kh_account_hint=" + encodeURIComponent(selected) + "; Domain=.kingshall.online; Path=/; Max-Age=31536000; Secure; SameSite=Lax";
 }
-type SigninResult = { token?: string; user?: Record<string, unknown>; message?: string; error?: string };
+type SigninResult = { token?: string; user?: Record<string, unknown>; message?: string; error?: string; requiresExtraSecurity?: boolean; challengeToken?: string; methods?: Array<"2fa" | "biometric"> };
 type NativeKingsHallAccountPlugin = { chooseAccount(): Promise<{ email?: string; cancelled?: boolean }> };
 const DeviceAccount = registerPlugin<NativeKingsHallAccountPlugin>("KingsHallAccount");
 
@@ -41,7 +42,7 @@ export default function SigninPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [showNoAccountModal, setShowNoAccountModal] = useState(false);
-  const [browserAccounts, setBrowserAccounts] = useState<string[]>([]);
+  const [browserAccounts, setBrowserAccounts] = useState<string[]>([]);\n  const [challengeToken, setChallengeToken] = useState("");\n  const [extraMethods, setExtraMethods] = useState<Array<"2fa" | "biometric">>([]);\n  const [extraMethod, setExtraMethod] = useState<"2fa" | "biometric" | "">("");\n  const [extraCode, setExtraCode] = useState("");
 
   function redirectToKingsHall() {
     const url = new URL(KH_SIGNIN);
@@ -63,6 +64,61 @@ export default function SigninPage() {
       window.history.replaceState({}, "", window.location.pathname + window.location.search);
     }
   }, []);
+
+  function finishSignin(result: SigninResult) {
+    if (!result.token || !result.user) throw new Error("HallsChat did not receive a valid session.");
+    localStorage.setItem("hallschat_token", result.token);
+    localStorage.setItem("hallschat_user", JSON.stringify(result.user));
+    localStorage.removeItem("hallschat_last_activity_at");
+    const requestedReturn = new URLSearchParams(window.location.search).get("returnTo") || "";
+    navigate(requestedReturn.startsWith("/") && !requestedReturn.startsWith("//") ? requestedReturn : "/home");
+  }
+
+  async function verifyExtraTwoFactor(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting || !challengeToken || extraCode.length !== 6) return;
+    setSubmitting(true); setError(""); setNotice("");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+    try {
+      const response = await fetch(apiBase + "/api/auth/kingshall/extra-security/verify-2fa", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeToken, code: extraCode })
+      });
+      const result = await response.json().catch(() => ({})) as SigninResult;
+      if (!response.ok) throw new Error(result.message || "The authenticator code could not be verified.");
+      finishSignin(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "The authenticator code could not be verified.");
+    } finally {
+      setSubmitting(false); setExtraCode("");
+    }
+  }
+
+  async function verifyExtraBiometric() {
+    if (submitting || !challengeToken) return;
+    setSubmitting(true); setError(""); setNotice("");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+    try {
+      const optionsResponse = await fetch(apiBase + "/api/auth/kingshall/extra-security/biometric/options", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeToken })
+      });
+      const options = await optionsResponse.json().catch(() => ({}));
+      if (!optionsResponse.ok) throw new Error(options.message || "Unable to start biometric verification.");
+      const credential = await authenticateWithPasskey(options);
+      const verifyResponse = await fetch(apiBase + "/api/auth/kingshall/extra-security/biometric/verify", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ challengeToken, ...credential })
+      });
+      const result = await verifyResponse.json().catch(() => ({})) as SigninResult;
+      if (!verifyResponse.ok) throw new Error(result.message || "Biometric verification failed.");
+      finishSignin(result);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Biometric verification failed. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   async function continueWithKingsHall() {
     if (submitting) return;
@@ -121,12 +177,17 @@ export default function SigninPage() {
       });
       const result = await response.json().catch(() => ({})) as SigninResult;
       if (!response.ok) throw new Error(result.message || result.error || "KingsHall could not verify this Access Code.");
-      if (!result.token || !result.user) throw new Error("HallsChat did not receive a valid session.");
-      localStorage.setItem("hallschat_token", result.token);
-      localStorage.setItem("hallschat_user", JSON.stringify(result.user));
-      localStorage.removeItem("hallschat_last_activity_at");
-      const requestedReturn = new URLSearchParams(window.location.search).get("returnTo") || "";
-      navigate(requestedReturn.startsWith("/") && !requestedReturn.startsWith("//") ? requestedReturn : "/home");
+      if (result.requiresExtraSecurity && result.challengeToken && result.methods?.length) {
+        setChallengeToken(result.challengeToken);
+        setExtraMethods(result.methods);
+        setExtraMethod(result.methods.length === 1 ? result.methods[0] : "");
+        setExtraCode("");
+        setNotice(result.methods.length > 1
+          ? "Access Code verified. Choose an enabled extra-security method to finish signing in."
+          : "Access Code verified. Complete the enabled extra-security check to finish signing in.");
+        return;
+      }
+      finishSignin(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unable to sign in. Please try again.");
     } finally {
@@ -163,7 +224,7 @@ export default function SigninPage() {
           </button>
           <p className="signup-form-note"><ShieldCheck size={14} /> KingsHall verifies your Access Code. HallsChat never stores it.</p>
         </div>}
-        {identity && <form className="signup-form" onSubmit={verify}>
+        {identity && !challengeToken && <form className="signup-form" onSubmit={verify}>
           <label className="signup-field"><span>Bound six-digit Access Code</span>
             <input type="password" name="accessCode" inputMode="numeric" autoComplete="off" value={accessCode}
               onChange={e => setAccessCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
@@ -177,6 +238,34 @@ export default function SigninPage() {
           <button className="button button-secondary" type="button" onClick={() => { setIdentity(""); setAccessCode(""); setError(""); setNotice(""); }}>Cancel request</button>
           <p className="signup-form-note"><ShieldCheck size={14} /> Your Access Code is sent only to HallsChat's server for KingsHall verification.</p>
         </form>}
+        {challengeToken && <section className="signup-form" aria-label="Extra security verification" style={{ display: "grid", gap: 12 }}>
+          <div style={{ border: "1px solid var(--theme-line, rgba(255,255,255,.18))", borderRadius: 16, padding: 14, background: "var(--theme-surface, rgba(255,255,255,.05))" }}>
+            <p style={{ margin: 0, fontWeight: 800 }}>Extra security required</p>
+            <p style={{ margin: "6px 0 0", fontSize: 13, lineHeight: 1.6, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>
+              KingsHall accepted your Access Code. Complete one of the enabled HallsChat security checks to finish signing in.
+            </p>
+          </div>
+          {extraMethods.length > 1 && <div style={{ display: "grid", gap: 8 }}>
+            <p style={{ margin: 0, fontSize: 13, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>Choose a method</p>
+            {extraMethods.includes("2fa") && <button type="button" className="button button-secondary" onClick={() => { setExtraMethod("2fa"); setError(""); }} disabled={submitting}>Authenticator app (2FA)</button>}
+            {extraMethods.includes("biometric") && <button type="button" className="button button-secondary" onClick={() => { setExtraMethod("biometric"); setError(""); }} disabled={submitting}><Fingerprint size={17} /> Biometric / passkey</button>}
+          </div>}
+          {extraMethod === "2fa" && <form onSubmit={verifyExtraTwoFactor} style={{ display: "grid", gap: 12 }}>
+            <label className="signup-field"><span>Six-digit authenticator code</span>
+              <input type="password" inputMode="numeric" autoComplete="one-time-code" value={extraCode}
+                onChange={event => setExtraCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="••••••" minLength={6} maxLength={6} pattern="[0-9]{6}" required />
+            </label>
+            <button type="submit" className="button button-primary signup-submit" disabled={submitting || extraCode.length !== 6}>{submitting ? <LoadingDots /> : "Verify 2FA and continue"}</button>
+          </form>}
+          {extraMethod === "biometric" && <div style={{ display: "grid", gap: 10 }}>
+            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>Confirm with the passkey or device biometric method bound to this HallsChat account.</p>
+            <button type="button" className="button button-primary signup-submit" onClick={() => void verifyExtraBiometric()} disabled={submitting}>{submitting ? <LoadingDots /> : <><Fingerprint size={17} /> Verify biometric and continue</>}</button>
+          </div>}
+          <button className="button button-secondary" type="button" disabled={submitting} onClick={() => {
+            setIdentity(""); setAccessCode(""); setChallengeToken(""); setExtraMethods([]); setExtraMethod(""); setExtraCode(""); setError(""); setNotice("");
+          }}>Cancel request</button>
+        </section>}
         {!identity && error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
         {!identity && notice && <div className="signup-feedback signup-feedback-success" role="status">{notice}</div>}
         <div className="signup-bottom-note">Need an account? <a href={KH_SIGNIN}>Create or recover access in KingsHall</a></div>
