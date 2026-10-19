@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { ArrowRight, KeyRound, ShieldCheck, LoaderCircle, Fingerprint } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { authenticateWithPasskey } from "./utils/webauthn";
 import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
@@ -31,6 +32,8 @@ function setSelectedBrowserAccount(email: string) {
   document.cookie = "kh_account_hint=" + encodeURIComponent(selected) + "; Domain=.kingshall.online; Path=/; Max-Age=31536000; Secure; SameSite=Lax";
 }
 type SigninResult = { token?: string; user?: Record<string, unknown>; message?: string; error?: string; requiresExtraSecurity?: boolean; challengeToken?: string; methods?: Array<"2fa" | "biometric"> };
+type ExternalLoginStart = { requestId: string; loginCode: string; qrToken: string; expiresAt: string; appName: "CryBots" | "HallsChat"; deviceLabel: string };
+type ExternalLoginStatus = SigninResult & { status?: string };
 type NativeKingsHallAccountPlugin = { chooseAccount(): Promise<{ email?: string; cancelled?: boolean }> };
 const DeviceAccount = registerPlugin<NativeKingsHallAccountPlugin>("KingsHallAccount");
 
@@ -46,6 +49,8 @@ export default function SigninPage() {
   const [extraMethods, setExtraMethods] = useState<Array<"2fa" | "biometric">>([]);
   const [extraMethod, setExtraMethod] = useState<"2fa" | "biometric" | "">("");
   const [extraCode, setExtraCode] = useState("");
+  const [externalLogin, setExternalLogin] = useState<ExternalLoginStart | null>(null);
+  const [externalLoginBusy, setExternalLoginBusy] = useState(false);
 
   function redirectToKingsHall() {
     const url = new URL(KH_SIGNIN);
@@ -199,6 +204,92 @@ export default function SigninPage() {
     }
   }
 
+  async function startExternalLogin() {
+    if (submitting || externalLoginBusy) return;
+    setExternalLoginBusy(true); setError(""); setNotice("");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+    try {
+      const agent = navigator.userAgent;
+      const deviceLabel = /Windows/i.test(agent) ? "Windows browser" : /Macintosh|Mac OS/i.test(agent) ? "Mac browser" : /Android/i.test(agent) ? "Android browser" : /iPhone|iPad/i.test(agent) ? "Apple mobile browser" : "External browser";
+      const response = await fetch(apiBase + "/api/auth/kingshall/external/request", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ deviceLabel })
+      });
+      const data = await response.json().catch(() => ({})) as ExternalLoginStart & { message?: string; error?: string };
+      if (!response.ok) throw new Error(data.message || data.error || "Unable to start external-device login.");
+      setExternalLogin(data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unable to start external-device login.");
+    } finally {
+      setExternalLoginBusy(false);
+    }
+  }
+
+  async function cancelExternalLogin() {
+    const request = externalLogin;
+    if (!request) return;
+    setExternalLogin(null); setExternalLoginBusy(true); setError("");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+    try {
+      await fetch(apiBase + "/api/auth/kingshall/external/cancel", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestId: request.requestId })
+      });
+      setNotice("External-device login cancelled.");
+    } catch {
+      setError("The external login request could not be cancelled.");
+    } finally {
+      setExternalLoginBusy(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!externalLogin?.requestId) return;
+    let stopped = false;
+    let timer: number | undefined;
+    const requestId = externalLogin.requestId;
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+    const poll = async () => {
+      try {
+        const response = await fetch(apiBase + "/api/auth/kingshall/external/status", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requestId })
+        });
+        const data = await response.json().catch(() => ({})) as ExternalLoginStatus;
+        if (stopped) return;
+        if (!response.ok) {
+          if ([400, 401, 404, 409, 410, 423].includes(response.status)) {
+            setExternalLogin(null);
+            setError(data.message || "This external sign-in request is no longer valid.");
+            return;
+          }
+        } else if (data.status === "authenticated") {
+          setExternalLogin(null);
+          if (data.requiresExtraSecurity && data.challengeToken && data.methods?.length) {
+            setIdentity(String((data.user as Record<string, unknown> | undefined)?.email || ""));
+            setChallengeToken(data.challengeToken);
+            setExtraMethods(data.methods);
+            setExtraMethod(data.methods.length === 1 ? data.methods[0] : "");
+            setExtraCode("");
+            setNotice(data.methods.length > 1
+              ? "Device approved. Complete one enabled HallsChat security check to finish signing in."
+              : "Device approved. Complete the enabled HallsChat security check to finish signing in.");
+            return;
+          }
+          try { finishSignin(data); }
+          catch (e) { setError(e instanceof Error ? e.message : "The approved session could not be completed."); }
+          return;
+        } else if (["denied", "expired", "consumed"].includes(String(data.status || ""))) {
+          setExternalLogin(null);
+          setError(data.status === "denied" ? "The external sign-in request was denied." : "The external sign-in request expired. Start again on this device.");
+          return;
+        }
+      } catch {
+        // Keep polling through temporary network errors; the request expires on the server.
+      }
+      if (!stopped) timer = window.setTimeout(() => { void poll(); }, 1800);
+    };
+    timer = window.setTimeout(() => { void poll(); }, 1500);
+    return () => { stopped = true; if (timer !== undefined) window.clearTimeout(timer); };
+  }, [externalLogin?.requestId]);
+
   const glass = { border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-surface, rgba(25,20,24,.88))", boxShadow: "inset 0 1px 0 rgba(255,255,255,.06)" } as const;
   const glassButton = { minHeight: 46, border: "1px solid var(--theme-line, rgba(255,255,255,.2))", borderRadius: 999, padding: "12px 18px", fontWeight: 750, display: "inline-flex", justifyContent: "center", alignItems: "center", gap: 10, width: "100%", cursor: submitting ? "wait" : "pointer", background: "var(--theme-surface, rgba(25,20,24,.88))", color: "var(--theme-text, #fff)", boxSizing: "border-box" as const, boxShadow: "inset 0 1px rgba(255,255,255,.13), 0 4px 14px rgba(0,0,0,.22)", backdropFilter: "blur(12px) saturate(125%)", WebkitBackdropFilter: "blur(12px) saturate(125%)" } as const;
   const glassInput = { width: "100%", minHeight: 48, boxSizing: "border-box" as const, borderRadius: 13, border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-background, rgba(0,0,0,.12))", color: "var(--theme-text, #fff)", padding: "12px 14px", fontSize: 15, outline: "none" } as const;
@@ -247,6 +338,26 @@ export default function SigninPage() {
           </div>}
           <button type="button" onClick={() => { setIdentity(""); setAccessCode(""); setChallengeToken(""); setExtraMethods([]); setExtraMethod(""); setExtraCode(""); setError(""); setNotice(""); }} style={{ border: 0, background: "transparent", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", padding: 8, fontWeight: 700, cursor: "pointer" }}>Cancel request</button>
         </section>}
+        <div style={{ ...glass, borderRadius: 16, padding: 14, marginTop: 16, display: "grid", gap: 10, textAlign: "left" }}>
+          <div>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800 }}>Signing in on a device without KingsHall?</p>
+            <p style={{ margin: "5px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>Approve this device from your signed-in KingsHall account. No saved KingsHall account or Access Code is needed on this device.</p>
+          </div>
+          {!externalLogin && <button type="button" style={glassButton} disabled={submitting || externalLoginBusy || !!challengeToken} onClick={() => void startExternalLogin()}>{externalLoginBusy ? <LoadingDots /> : "Use external-device login"}</button>}
+          {externalLogin && <>
+            <p style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>In KingsHall, open External Login and scan this QR code, or enter the code below. This request expires in five minutes.</p>
+            <div style={{ justifySelf: "center", background: "#fff", padding: 10, borderRadius: 14 }}>
+              <QRCodeSVG value={JSON.stringify({ type: "kingshall-external-login-v1", requestId: externalLogin.requestId, qrToken: externalLogin.qrToken, appName: "HallsChat" })} size={196} level="M" includeMargin />
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <p style={{ margin: "3px 0 6px", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>ONE-TIME LOGIN CODE</p>
+              <div aria-label={"One-time login code " + externalLogin.loginCode} style={{ fontSize: 27, letterSpacing: ".2em", fontWeight: 900, overflowWrap: "anywhere" }}>{externalLogin.loginCode}</div>
+              <p style={{ margin: "6px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 11 }}>Expires {new Date(externalLogin.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+            </div>
+            <p role="status" style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>Waiting for approval from KingsHall…</p>
+            <button type="button" style={{ ...glassButton, background: "transparent" }} disabled={externalLoginBusy} onClick={() => void cancelExternalLogin()}>Cancel external login</button>
+          </>}
+        </div>
         {notice && <p role="status" style={{ margin: "16px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.6 }}>{notice}</p>}
         {error && <p role="alert" style={{ margin: "16px 0 0", padding: "11px 13px", borderRadius: 12, background: "rgba(220,60,60,.10)", border: "1px solid rgba(220,80,80,.28)", color: "var(--theme-text, #fff)", fontSize: 13, lineHeight: 1.5 }}>{error}</p>}
         <p style={{ margin: "22px 0 0", paddingTop: 14, borderTop: "1px solid var(--theme-line, rgba(255,255,255,.2))", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.6 }}>KingsHall verifies your Access Code. HallsChat never stores it.</p>
