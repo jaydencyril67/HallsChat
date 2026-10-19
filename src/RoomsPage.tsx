@@ -31,6 +31,25 @@ type RoomCall = { id: string; person: { id: string; name: string; username: stri
 type RoomMessage = { id: string; senderId: string; recipientId: string; text: string; imageUrl?: string; images?: string[]; audioUrl?: string; replyTo?: RoomReply | null; reactions?: RoomReaction[]; deletedForEveryone?: boolean; editedAt?: string | null; readAt?: string | null; createdAt: string; pending?: boolean };
 const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
+const EMOJI_LIST: string[] = (() => {
+  const emoji = new Set<string>();
+  const isEmoji = /\\p{Emoji}/u;
+  const isPresentation = /\\p{Emoji_Presentation}/u;
+  for (let code = 0x1f000; code <= 0x1faff; code++) {
+    const value = String.fromCodePoint(code);
+    if (isPresentation.test(value) || (isEmoji.test(value) && code >= 0x1f300)) emoji.add(value);
+  }
+  for (let code = 0x2600; code <= 0x27ff; code++) {
+    const value = String.fromCodePoint(code);
+    if (isEmoji.test(value)) emoji.add(value + "\\uFE0F");
+  }
+  for (let a = 0x1f1e6; a <= 0x1f1ff; a++) {
+    for (let b = 0x1f1e6; b <= 0x1f1ff; b++) emoji.add(String.fromCodePoint(a, b));
+  }
+  for (let code = 0x1f3fb; code <= 0x1f3ff; code++) emoji.add(String.fromCodePoint(code));
+  ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😍","🥰","😘","😋","😎","🤩","🥳","😭","😢","😡","🤔","🤗","🙏","👏","🙌","👍","👎","❤️","🧡","💛","💚","💙","💜","🖤","🤍","💔","💕","💯","🔥","✨","⭐","🎉","🎊","🌹","🌸","🌈","☀️","🌙","⚡","☕","🍕","🍔","🍎","🍉","🍓","🎂","⚽","🏆","🎮","🎵","🚗","✈️","🏠","💡","📸","📱","💻","🎁","✅","❌","💖","💪","🤝","👀","💀","🤦","🤷","🙈","😴","🥹","😏","😱","🤯","😈","👻","🤖","💬","0️⃣","1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","#️⃣","*️⃣"].forEach(value => emoji.add(value));
+  return Array.from(emoji);
+})();
 const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
 
 function initials(name: string) {
@@ -1277,8 +1296,8 @@ export default function RoomsPage() {
                   <button type="button" onClick={() => { setAttachmentMenuOpen(false); cameraInputRef.current?.click(); }}><Camera size={19} /><span>Camera</span></button>
                   <button type="button" onClick={() => { setAttachmentMenuOpen(false); imageInputRef.current?.click(); }}><ImageIcon size={19} /><span>Gallery</span></button>
                   <button type="button" onClick={() => { setAttachmentMenuOpen(false); void recordVoiceNote(); }} disabled={voiceBusy}><Mic size={19} /><span>Voice Note</span></button>
-                </div>}
-                              {emojiPanelOpen && <div className="rooms-emoji-panel" role="dialog" aria-label="Emoji picker"><div className="rooms-emoji-panel-header"><strong>Emojis</strong><button type="button" aria-label="Close emoji panel" onClick={() => setEmojiPanelOpen(false)}><X size={16}/></button></div><div className="rooms-emoji-grid">{["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😍","🥰","😘","😋","😎","🤩","🥳","😭","😢","😡","🤔","🤗","🙏","👏","🙌","👍","👎","❤️","🧡","💛","💚","💙","💜","🖤","🤍","💔","💕","💯","🔥","✨","⭐","🎉","🎊","🌹","🌸","🌈","☀️","🌙","⚡","☕","🍕","🍔","🍎","🍉","🍓","🎂","⚽","🏆","🎮","🎵","🚗","✈️","🏠","💡","📸","📱","💻","🎁","✅","❌","💖","💪","🤝","👀","💀","🤦","🤷","🙈","😴","🥹","😏","😱","🤯","😈","👻","🤖","💬"].map((emoji, index) => <button type="button" key={emoji + index} aria-label={emoji} onClick={() => { const input = draftInputRef.current; const start = input?.selectionStart ?? draft.length; const end = input?.selectionEnd ?? draft.length; handleDraftChange(draft.slice(0, start) + emoji + draft.slice(end)); setEmojiPanelOpen(false); window.setTimeout(() => { input?.focus(); input?.setSelectionRange(start + emoji.length, start + emoji.length); }, 0); }}>{emoji}</button>)}</div></div>}</div>
+                
+                              {emojiPanelOpen && <div className="rooms-emoji-panel" role="dialog" aria-label="Emoji picker"><div className="rooms-emoji-panel-header"><strong>Emojis</strong><button type="button" aria-label="Close emoji panel" onClick={() => setEmojiPanelOpen(false)}><X size={16}/></button></div><div className="rooms-emoji-grid">{EMOJI_LIST.map((emoji, index) => <button type="button" key={emoji + index} aria-label={emoji} onClick={() => { const input = draftInputRef.current; const start = input?.selectionStart ?? draft.length; const end = input?.selectionEnd ?? draft.length; handleDraftChange(draft.slice(0, start) + emoji + draft.slice(end)); setEmojiPanelOpen(false); window.setTimeout(() => { input?.focus(); input?.setSelectionRange(start + emoji.length, start + emoji.length); }, 0); }}>{emoji}</button>)}</div></div>}</div>
               {(recording || recordingPaused) ? <div className={"rooms-recording-status" + (recordingPaused ? " is-paused" : "")}><span className={"rooms-recording-dot" + (recordingPaused ? " is-paused" : "")} />{recordingPaused ? "Recording paused" : "Recording voice note"} · {Math.floor(recordingSeconds / 60)}:{String(recordingSeconds % 60).padStart(2, "0")}</div> : voiceDraft && voiceDraftUrl ? <div className="rooms-voice-draft-preview"><VoiceNotePlayer src={voiceDraftUrl} /></div> : <textarea ref={draftInputRef} value={draft} onChange={event => handleDraftChange(event.target.value)} maxLength={4000} rows={1} placeholder={`Message @${activePerson.username}…`} aria-label="Write a message" onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} />}
               {!recording && !recordingPaused && !voiceDraft && <span className="rooms-character-count">{draft.length > 3500 ? `${draft.length}/4000` : ""}</span>}
               {(recording || recordingPaused) ? <><button type="button" className="rooms-recording-control" onClick={() => void recordVoiceNote()} aria-label={recordingPaused ? "Resume recording" : "Pause recording"} title={recordingPaused ? "Resume recording" : "Pause recording"}>{recordingPaused ? <Play size={17} fill="currentColor" /> : <Pause size={17} fill="currentColor" />}</button><button type="button" className="rooms-stop-recording" onClick={finishVoiceRecording} aria-label="Finish recording and review" title="Finish recording and review"><Square size={17} fill="currentColor" /></button><button type="button" className="rooms-discard-recording" onClick={discardVoiceDraft} aria-label="Delete recording" title="Delete recording"><Trash2 size={17} /></button></> : voiceDraft ? <><button type="button" className="rooms-discard-recording" onClick={discardVoiceDraft} disabled={voiceBusy} aria-label="Delete voice note" title="Delete voice note"><Trash2 size={17} /></button><button type="button" className="rooms-stop-recording" onClick={() => void sendVoiceDraft()} disabled={voiceBusy} aria-label="Send voice note" title="Send voice note">{voiceBusy ? <LoadingDots /> : <Send size={18} />}</button></> : <button type="submit" disabled={(!draft.trim() && imageFiles.length === 0) || compressingImages} aria-label="Send message"><ArrowUp size={20} strokeWidth={2.5} /></button>}
