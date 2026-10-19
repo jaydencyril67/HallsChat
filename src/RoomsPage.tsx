@@ -62,7 +62,7 @@ const EMOJI_LIST: string[] = (() => {
 })();
 
 const EMOJI_CATEGORIES = [
-  { id: "faces", label: "😀 Faces & people", icon: "😀", match: (value: string) => { const cp = value.codePointAt(0) || 0; return (cp >= 0x1f600 && cp <= 0x1faff) || /[👨👩🧑👧👦👶💏💑👭👬👫]/u.test(value) || /^[❤️🧡💛💚💙💜🖤🤍💔💕💯💖]$/u.test(value); } },
+  { id: "faces", label: "😀 Faces & people", icon: "😀", match: (value: string) => { const cp = value.codePointAt(0) || 0; return (cp >= 0x1f600 && cp <= 0x1f64f) || (cp >= 0x1f90c && cp <= 0x1f93a) || (cp >= 0x1f9b0 && cp <= 0x1f9dd) || (cp >= 0x1f9e0 && cp <= 0x1f9ff) || (cp >= 0x1fae0 && cp <= 0x1fae8) || /[👨👩🧑👧👦👶💏💑👭👬👫]/u.test(value) || /^[❤️🧡💛💚💙💜🖤🤍💔💕💯💖]$/u.test(value); } },
   { id: "nature", label: "🐻 Animals & nature", icon: "🐻", match: (value: string) => { const cp = value.codePointAt(0) || 0; return (cp >= 0x1f300 && cp <= 0x1f32c) || (cp >= 0x1f330 && cp <= 0x1f3a9) || (cp >= 0x1f400 && cp <= 0x1f5ff) || (cp >= 0x1f980 && cp <= 0x1f9ae) || (cp >= 0x2600 && cp <= 0x26ff); } },
   { id: "food", label: "🍔 Food & drink", icon: "🍔", match: (value: string) => { const cp = value.codePointAt(0) || 0; return (cp >= 0x1f32d && cp <= 0x1f37f) || (cp >= 0x1f950 && cp <= 0x1f96f) || (cp >= 0x1f9c0 && cp <= 0x1f9cb); } },
   { id: "activity", label: "⚽ Activities", icon: "⚽", match: (value: string) => { const cp = value.codePointAt(0) || 0; return (cp >= 0x1f3a0 && cp <= 0x1f3ff) || (cp >= 0x1f900 && cp <= 0x1f9ff && !((cp >= 0x1f910 && cp <= 0x1faff))); } },
