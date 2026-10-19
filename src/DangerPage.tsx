@@ -78,10 +78,6 @@ export default function DangerPage() {
     <button type="button" aria-label="Close account safety" onClick={() => navigate("/settings")} disabled={busy !== null} style={{ position: "fixed", top: "calc(env(safe-area-inset-top) + 12px)", right: 16, zIndex: 3, width: 40, height: 40, display: "grid", placeItems: "center", border: "1px solid var(--theme-line)", borderRadius: "50%", background: "var(--theme-surface)", color: "var(--theme-text)", cursor: busy ? "not-allowed" : "pointer", boxShadow: "0 5px 16px var(--theme-shadow-color-soft)" }}><X size={20} /></button>
     <section style={{ width: "min(100%, 620px)", margin: "0 auto", padding: "calc(env(safe-area-inset-top) + 64px) 16px 28px", boxSizing: "border-box", display: "grid", gap: 12 }}>
       <section className="settings-theme-card danger-action-card" style={cardStyle}>
-        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 850 }}>Account safety</h2>
-        <p style={{ margin: "4px 0 0", color: "var(--theme-muted)", fontSize: 12, lineHeight: 1.55 }}>These actions immediately end your HallsChat sessions. Use your six-digit KingsHall Access Code to confirm that you own the account.</p>
-      </section>
-      <section className="settings-theme-card danger-action-card" style={cardStyle}>
         <ShieldAlert size={20} color="var(--theme-danger)" />
         <h2 style={{ margin: 0, fontSize: 14, fontWeight: 850 }}>Disable account</h2>
         <p style={{ margin: 0, color: "var(--theme-muted)", fontSize: 12, lineHeight: 1.55 }}>Suspend access until support restores your account. This does not delete your account.</p>
