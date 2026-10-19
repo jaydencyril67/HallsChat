@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Fingerprint, KeyRound, ShieldCheck, Copy, Trash2, RefreshCw } from "lucide-react";
+import { Fingerprint, KeyRound, ShieldCheck, Copy, Trash2, RefreshCw, MoreHorizontal, Check } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { createPasskey, isWebAuthnAvailable } from "./utils/webauthn";
 
@@ -48,6 +48,8 @@ export default function SecuritySettings() {
   const [credentials, setCredentials] = useState<CredentialItem[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [twoFactorMenuOpen, setTwoFactorMenuOpen] = useState(false);
+  const [biometricMenuOpen, setBiometricMenuOpen] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -131,65 +133,55 @@ export default function SecuritySettings() {
     }
   };
 
-  const cardStyle: React.CSSProperties = {
-    display: "grid", gap: 13, minWidth: 0, padding: 16, borderRadius: 20,
-    border: "1px solid var(--theme-line, rgba(255,255,255,.2))",
-    background: "var(--theme-surface, rgba(255,255,255,.05))",
-    boxShadow: "inset 0 1px 0 rgba(255,255,255,.06)", color: "var(--theme-text, inherit)"
-  };
-
   return <section aria-label="Account security" style={{ display: "grid", gap: 12, marginBottom: 14, minWidth: 0 }}>
-    <div style={{ display: "grid", gap: 4, padding: "4px 2px" }}>
-      <h2 style={{ margin: 0, fontSize: "1.12rem", fontWeight: 850, color: "var(--theme-text, inherit)", display: "flex", gap: 9, alignItems: "center" }}><ShieldCheck size={20} /> Extra security</h2>
-      <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>Protect HallsChat after KingsHall verifies your Access Code. Sign-in asks for an enabled authenticator or biometric passkey.</p>
-    </div>
-    <section style={cardStyle} aria-label="Two-factor authentication">
-      <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0 }}>
-          <KeyRound size={20} />
-          <div><strong style={{ display: "block" }}>Authenticator app (2FA)</strong><span style={{ fontSize: 12, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>{loading ? "Checking status…" : twoFactorEnabled ? "Enabled for sign-in" : twoFactorConfigured ? "Setup started · not enabled yet" : "Not configured"}</span></div>
-        </div>
-        {!loading && !twoFactorEnabled && <button type="button" style={buttonStyle} disabled={busy} onClick={() => void startTwoFactorSetup()}>{twoFactorConfigured ? <RefreshCw size={15} /> : <KeyRound size={15} />}{twoFactorConfigured ? "Resume setup" : "Set up 2FA"}</button>}
+    <section className="settings-theme-card settings-security-card" aria-label="Two-factor authentication">
+      <span className="settings-theme-title">Authenticator app (2FA)</span>
+      <span className="settings-theme-current" aria-live="polite">{loading ? "Checking status…" : twoFactorEnabled ? "Enabled for sign-in" : twoFactorConfigured ? "Setup started · not enabled yet" : "Not configured"}</span>
+      <div className="settings-theme-menu-anchor">
+        <button type="button" className="settings-theme-menu-trigger" aria-label="Authenticator app security options" aria-haspopup="menu" aria-expanded={twoFactorMenuOpen} disabled={loading || busy} onClick={() => setTwoFactorMenuOpen(open => !open)}><MoreHorizontal size={21} /></button>
+        {twoFactorMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Authenticator app options">
+          {!twoFactorEnabled && <button type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setTwoFactorMenuOpen(false); void startTwoFactorSetup(); }}><span>{twoFactorConfigured ? "Resume setup" : "Set up 2FA"}</span>{twoFactorConfigured ? <RefreshCw size={15} /> : <KeyRound size={15} />}</button>}
+          {twoFactorEnabled && <button type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setTwoFactorMenuOpen(false); setTwoFactorCode(""); }}><span>Enter code to disable</span><KeyRound size={15} /></button>}
+          {twoFactorConfigured && !twoFactorEnabled && <button type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setTwoFactorMenuOpen(false); void cancelSetup(); }}><span>Cancel setup</span><Trash2 size={15} /></button>}
+        </div>}
       </div>
-      {setupSecret && setupUri && <div style={{ display: "grid", gap: 12, justifyItems: "start" }}>
+      {setupSecret && setupUri && <div className="settings-security-details">
         <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6 }}>Scan this QR code with an authenticator app, or copy the setup key. Then enter the current six-digit code to confirm.</p>
-        <div style={{ padding: 10, background: "#fff", borderRadius: 12, maxWidth: "100%" }}><QRCodeSVG value={setupUri} size={176} level="M" includeMargin /></div>
+        <div style={{ padding: 10, background: "#fff", borderRadius: 12, maxWidth: "100%", width: "fit-content" }}><QRCodeSVG value={setupUri} size={176} level="M" includeMargin /></div>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) auto", alignItems: "center", gap: 8, width: "100%" }}>
           <code style={{ display: "block", minWidth: 0, overflowWrap: "anywhere", fontSize: 12 }}>{setupSecret}</code>
-          <button type="button" aria-label="Copy authenticator setup key" style={buttonStyle} onClick={() => void copyText(setupSecret, "Setup key")}><Copy size={15} /></button>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Copy authenticator setup key" onClick={() => void copyText(setupSecret, "Setup key")}><Copy size={17} /></button>
         </div>
         <div style={{ display: "grid", gap: 8, width: "100%" }}>
           <input aria-label="Authenticator code" style={inputStyle} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Six-digit code" value={twoFactorCode} onChange={e => setTwoFactorCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <button type="button" style={buttonStyle} disabled={busy || twoFactorCode.length !== 6} onClick={() => void verifyTwoFactor(true)}>Verify and enable</button>
-            <button type="button" style={buttonStyle} disabled={busy} onClick={() => void cancelSetup()}>Cancel setup</button>
-          </div>
+          <button type="button" className="settings-theme-menu-option is-selected" disabled={busy || twoFactorCode.length !== 6} onClick={() => void verifyTwoFactor(true)}><span>Verify and enable</span><Check size={15} /></button>
+          <button type="button" className="settings-theme-menu-option" disabled={busy} onClick={() => void cancelSetup()}><span>Cancel setup</span></button>
         </div>
       </div>}
-      {twoFactorEnabled && <div style={{ display: "grid", gap: 8 }}>
+      {twoFactorEnabled && <div className="settings-security-details">
         <label htmlFor="hallschat-disable-2fa" style={{ fontSize: 13 }}>Enter an authenticator code to disable 2FA</label>
         <input id="hallschat-disable-2fa" style={inputStyle} type="password" inputMode="numeric" autoComplete="one-time-code" maxLength={6} placeholder="Six-digit code" value={twoFactorCode} onChange={e => setTwoFactorCode(e.target.value.replace(/\D/g, "").slice(0, 6))} />
-        <button type="button" style={buttonStyle} disabled={busy || twoFactorCode.length !== 6} onClick={() => void verifyTwoFactor(false)}>Verify and disable 2FA</button>
+        <button type="button" className="settings-theme-menu-option" disabled={busy || twoFactorCode.length !== 6} onClick={() => void verifyTwoFactor(false)}><span>Verify and disable 2FA</span><ShieldCheck size={15} /></button>
       </div>}
     </section>
-    <section style={cardStyle} aria-label="Biometric security">
-      <div style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0 }}>
-          <Fingerprint size={21} />
-          <div><strong style={{ display: "block" }}>Biometric security / passkey</strong><span style={{ fontSize: 12, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>{loading ? "Checking status…" : biometricEnabled ? "Enabled for sign-in" : credentials.length ? "Passkey bound · not enabled" : "No passkey bound"}</span></div>
-        </div>
-        {!loading && <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {credentials.length > 0 && <button type="button" style={buttonStyle} disabled={busy || (biometricEnabled && credentials.length === 0)} onClick={() => void toggleBiometric(!biometricEnabled)}>{biometricEnabled ? "Disable" : "Enable"}</button>}
-          <button type="button" style={buttonStyle} disabled={busy} onClick={() => void registerBiometric()}><Fingerprint size={15} /> Bind passkey</button>
+    <section className="settings-theme-card settings-security-card" aria-label="Biometric security">
+      <span className="settings-theme-title">Biometric security / passkey</span>
+      <span className="settings-theme-current" aria-live="polite">{loading ? "Checking status…" : biometricEnabled ? "Enabled for sign-in" : credentials.length ? "Passkey bound · not enabled" : "No passkey bound"}</span>
+      <div className="settings-theme-menu-anchor">
+        <button type="button" className="settings-theme-menu-trigger" aria-label="Biometric security options" aria-haspopup="menu" aria-expanded={biometricMenuOpen} disabled={loading || busy} onClick={() => setBiometricMenuOpen(open => !open)}><MoreHorizontal size={21} /></button>
+        {biometricMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Biometric security options">
+          <button type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setBiometricMenuOpen(false); void registerBiometric(); }}><span>Bind passkey</span><Fingerprint size={15} /></button>
+          {credentials.length > 0 && <button type="button" role="menuitemcheckbox" aria-checked={biometricEnabled} className={"settings-theme-menu-option" + (biometricEnabled ? " is-selected" : "")} disabled={busy} onClick={() => { setBiometricMenuOpen(false); void toggleBiometric(!biometricEnabled); }}><span>{biometricEnabled ? "Disable" : "Enable"} biometric security</span>{biometricEnabled && <Check size={15} />}</button>}
+          {credentials.map((credential, index) => <button key={credential.id} type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setBiometricMenuOpen(false); void removeCredential(credential); }}><span>Remove passkey {index + 1}</span><Trash2 size={15} /></button>)}
         </div>}
       </div>
-      {credentials.length > 0 && <div style={{ display: "grid", gap: 8 }}>
-        {credentials.map((credential, index) => <div key={credential.id} style={{ display: "flex", gap: 10, alignItems: "center", justifyContent: "space-between", minWidth: 0, borderTop: "1px solid var(--theme-line, rgba(255,255,255,.12))", paddingTop: 10 }}>
-          <div style={{ display: "grid", gap: 3, minWidth: 0 }}><span style={{ fontSize: 13, fontWeight: 750 }}>Passkey {index + 1}</span><span style={{ fontSize: 11, overflowWrap: "anywhere", color: "var(--theme-text-muted, rgba(255,255,255,.7))" }}>Added {credential.createdAt ? new Date(credential.createdAt).toLocaleDateString() : "date unavailable"}</span></div>
-          <button type="button" style={buttonStyle} aria-label={"Remove passkey " + (index + 1)} disabled={busy} onClick={() => void removeCredential(credential)}><Trash2 size={15} /> Remove</button>
+      {credentials.length > 0 && <div className="settings-security-details">
+        {credentials.map((credential, index) => <div key={credential.id} style={{ display: "grid", gap: 3, minWidth: 0, borderTop: "1px solid var(--theme-line, rgba(255,255,255,.12))", paddingTop: 10 }}>
+          <span style={{ fontSize: 13, fontWeight: 750 }}>Passkey {index + 1}</span>
+          <span style={{ fontSize: 11, overflowWrap: "anywhere", color: "var(--theme-text-muted, rgba(255,255,255,.7))" }}>Added {credential.createdAt ? new Date(credential.createdAt).toLocaleDateString() : "date unavailable"}</span>
         </div>)}
       </div>}
-      <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>Uses your device's passkey provider. Depending on device settings, it may confirm with fingerprint, face recognition, or your screen lock.</p>
+      <p className="settings-theme-current settings-security-note">Uses your device's passkey provider. Depending on device settings, it may confirm with fingerprint, face recognition, or your screen lock.</p>
     </section>
     {error && <div role="alert" style={{ border: "1px solid rgba(220,70,70,.35)", borderRadius: 12, padding: 11, fontSize: 13, color: "var(--theme-text, inherit)", background: "rgba(220,70,70,.08)" }}>{error}</div>}
     {message && <div role="status" style={{ border: "1px solid var(--theme-line, rgba(255,255,255,.18))", borderRadius: 12, padding: 11, fontSize: 13, color: "var(--theme-text, inherit)" }}>{message}</div>}
