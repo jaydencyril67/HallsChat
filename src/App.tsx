@@ -14,6 +14,7 @@ import HallsPage from "./HallsPage";
 import RoomsPage from "./RoomsPage";
 import CallsPage from "./CallsPage";
 import ProfilePage from "./ProfilePage";
+import DangerPage from "./DangerPage";
 import AlertsPage from "./AlertsPage";
 import ThemeSettingsPage from "./ThemeSettingsPage";
 import PublicProfilePage from "./PublicProfilePage";
@@ -387,6 +388,7 @@ export default function App() {
   else if (normalizedPath === "/calls") page = <CallsPage />;
   else if (normalizedPath === "/profile") page = <ProfilePage />;
   else if (normalizedPath === "/settings") page = <ThemeSettingsPage />;
+  else if (normalizedPath === "/danger") page = <DangerPage />;
   else if (normalizedPath === "/about") page = <AboutPage />;
   else if (normalizedPath === "/dev" || normalizedPath.startsWith("/dev/")) page = <DevPage />;
   else if (normalizedPath === "/notifications" || normalizedPath === "/alerts") page = <AlertsPage />;
