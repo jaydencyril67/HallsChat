@@ -435,7 +435,7 @@ export default function ProfilePage() {
                 <div style={{ position: "absolute", inset: "auto 0 0", display: "flex", alignItems: "center", gap: 5, padding: "22px 7px 6px", color: "var(--theme-text-inverse)", fontSize: ".7rem", fontWeight: 750, background: "linear-gradient(transparent,var(--theme-overlay))" }}><Eye size={13} /> {post.likeCount || 0}</div>
               </article>)}
               {postsHasMore && <div ref={postsSentinel} style={{ gridColumn: "1 / -1", display: "grid", placeItems: "center", padding: 12 }}>{postsLoadingMore && <LoadingDots />}</div>}
-            </div>) : activeProfileTab === "about" ? <div style={{ ...panel, padding: 18, marginTop: 12, display: "grid", gap: 15 }}>
+            </div>) : <div style={{ ...panel, padding: 18, marginTop: 12, display: "grid", gap: 15 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
                 <strong style={{ color: "var(--theme-text-primary)", fontSize: ".85rem" }}>Personal details</strong>
                 {user?.kingsHallId && <span style={{ color: "var(--theme-text-muted)", fontSize: ".7rem", textAlign: "right" }}>Managed by KingsHall</span>}
