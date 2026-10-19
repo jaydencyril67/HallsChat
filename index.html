@@ -11,23 +11,10 @@
     <link rel="icon" type="image/svg+xml" href="/crown-chat-app-icon.svg?v=8" />
     <link rel="apple-touch-icon" href="/crown-chat-app-icon.svg?v=8" />
     <meta name="description" content="HallsChat is a thoughtful space for everyday messages, your people, and closer connections." />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark" />
     <script>
-      /* Resolve the saved appearance before the refresh splash paints. Dark mode
-         remains the default and keeps its existing splash styling unchanged. */
-      (() => {
-        try {
-          const choice = localStorage.getItem("hallschat-theme") || "dark";
-          const light = choice === "light" ||
-            (choice === "system" && window.matchMedia("(prefers-color-scheme: light)").matches);
-          if (light) {
-            document.documentElement.dataset.theme = "light";
-            document.querySelector('meta[name="theme-color"]')?.setAttribute("content", "#f8f3f1");
-          }
-        } catch {
-          /* Keep the original dark splash if the saved preference is unavailable. */
-        }
-      })();
+      // Keep the refresh splash dark before React mounts.
+      document.documentElement.dataset.theme = "dark";
     </script>
     <style>
       /* Match CryBots global touch, text-selection and scrollbar rules. */
@@ -72,10 +59,6 @@
       :root {
         --splash-background: #19070b;
         --splash-foreground: #fff8f7;
-      }
-      html[data-theme="light"] {
-        --splash-background: #f8f3f1;
-        --splash-foreground: #32151d;
       }
 
       /* HallsChat refresh splash, shown before React mounts. */
