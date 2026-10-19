@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, ShieldAlert, ShieldCheck } from "lucide-react";
-import AppHeader from "./AppHeader";
-import NowBar from "./NowBar";
+import { X, ShieldAlert, ShieldCheck } from "lucide-react";
 import LoadingDots from "./components/LoadingDots";
 import { navigate } from "./utils/navigate";
 
@@ -29,6 +27,19 @@ export default function DangerPage() {
   const [busy, setBusy] = useState<"disable" | "exclude" | null>(null);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !busy) navigate("/settings");
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [busy]);
 
   useEffect(() => {
     if (!message) return;
@@ -63,12 +74,14 @@ export default function DangerPage() {
   const buttonStyle: React.CSSProperties = { width: "100%", minHeight: 42, marginTop: 12, border: "1px solid var(--theme-accent-border)", borderRadius: 999, padding: "10px 14px", background: "var(--theme-primary)", color: "var(--theme-primary-contrast)", fontSize: 12, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 };
   const cardStyle: React.CSSProperties = { minWidth: 0, padding: 16, border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)", display: "grid", gap: 5 };
 
-  return <main className="home-page social-home settings-page theme-token-scope">
-    <AppHeader homeHref="/home" />
-    <section className="home-shell social-shell settings-shell" style={{ paddingBottom: 112 }}>
-      <button type="button" onClick={() => navigate("/settings")} style={{ display: "inline-flex", alignItems: "center", gap: 7, minHeight: 34, padding: "6px 10px", marginBottom: 8, border: "1px solid var(--theme-line)", borderRadius: 9, background: "var(--theme-surface)", color: "var(--theme-text)", fontSize: 12, fontWeight: 750 }}><ArrowLeft size={15} /> Settings</button>
+  return <main className="theme-token-scope" role="dialog" aria-modal="true" aria-labelledby="account-safety-title" style={{ position: "fixed", inset: 0, zIndex: 1200, width: "100%", height: "100dvh", overflowY: "auto", overscrollBehavior: "contain", background: "var(--theme-bg, var(--theme-surface))", color: "var(--theme-text)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <header style={{ position: "sticky", top: 0, zIndex: 2, display: "flex", alignItems: "center", gap: 12, minHeight: 58, padding: "8px 16px", background: "var(--theme-bg, var(--theme-surface))", borderBottom: "1px solid var(--theme-line)" }}>
+      <button type="button" aria-label="Close account safety" onClick={() => navigate("/settings")} disabled={busy !== null} style={{ width: 40, height: 40, flex: "0 0 40px", display: "grid", placeItems: "center", border: "1px solid var(--theme-line)", borderRadius: "50%", background: "var(--theme-surface)", color: "var(--theme-text)", cursor: busy ? "not-allowed" : "pointer" }}><X size={20} /></button>
+      <h1 id="account-safety-title" style={{ margin: 0, fontSize: 16, fontWeight: 850 }}>Account safety</h1>
+    </header>
+    <section style={{ width: "min(100%, 620px)", margin: "0 auto", padding: "16px 16px 28px", boxSizing: "border-box" }}>
       <section style={{ ...cardStyle, marginBottom: 8 }}>
-        <h1 style={{ margin: 0, fontSize: 17, fontWeight: 850 }}>Account safety</h1>
+        <h2 style={{ margin: 0, fontSize: 17, fontWeight: 850 }}>Account safety</h2>
         <p style={{ margin: "4px 0 0", color: "var(--theme-muted)", fontSize: 12, lineHeight: 1.55 }}>These actions immediately end your HallsChat sessions. Use your six-digit KingsHall Access Code to confirm that you own the account.</p>
       </section>
       <section style={{ ...cardStyle, marginBottom: 8 }}>
@@ -92,6 +105,5 @@ export default function DangerPage() {
       </section>
       {message && <div role={isError ? "alert" : "status"} className={"halls-toast " + (isError ? "halls-toast-error" : "halls-toast-success")}>{message}<button type="button" aria-label="Dismiss" onClick={() => setMessage("")}>×</button></div>}
     </section>
-    <NowBar />
   </main>;
 }
