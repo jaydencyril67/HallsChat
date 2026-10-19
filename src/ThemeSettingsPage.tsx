@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouse
 import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
+import SecuritySettings from "./SecuritySettings";
 
 type BeforeInstallPromptEvent = Event & { readonly platforms: string[]; readonly userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>; prompt: () => Promise<void> };
 const HALLSCHAT_APK_URL = "https://hallschat.kingshall.online/downloads/HallsChat.apk";
@@ -827,6 +828,7 @@ export default function ThemeSettingsPage() {
   return <main className="home-page social-home settings-page theme-token-scope">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell settings-shell">
+      <SecuritySettings />
       <section className="settings-theme-card" aria-label="App theme">
         <span className="settings-theme-title">App theme</span>
         <span className="settings-theme-current" aria-live="polite">{currentThemeLabel}</span>
