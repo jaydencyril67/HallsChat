@@ -4513,3 +4513,10 @@ select:autofill {
   color: var(--theme-text, #fff8f8) !important;
   transition: background-color 999999s ease-out 0s !important;
 }
+
+
+/* Extra-security controls reuse the standard settings-card row and menu layout. */
+.settings-security-card{flex-wrap:wrap;}
+.settings-security-card>.settings-security-details{display:grid;flex:1 0 100%;gap:10px;min-width:0;padding:10px 2px 5px;border-top:1px solid var(--theme-line);}
+.settings-security-card>.settings-security-details .settings-theme-menu-option{box-sizing:border-box;}
+.settings-security-card>.settings-security-note{flex:1 0 100%;line-height:1.5;padding:0 2px 3px;}
