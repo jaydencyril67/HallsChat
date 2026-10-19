@@ -4615,3 +4615,9 @@ select:autofill {
 :is(.rooms-emoji-grid,.chat-emoji-grid) button{display:grid;place-items:center;min-width:0;aspect-ratio:1;border:0;border-radius:8px;background:transparent;color:inherit;font-size:23px;line-height:1;cursor:pointer}
 :is(.rooms-emoji-grid,.chat-emoji-grid) button:hover,:is(.rooms-emoji-grid,.chat-emoji-grid) button:focus-visible{background:var(--theme-accent-soft);outline:none}
 @media(max-width:420px){:is(.rooms-emoji-grid,.chat-emoji-grid){grid-template-columns:repeat(7,minmax(0,1fr))}:is(.rooms-emoji-grid,.chat-emoji-grid) button{font-size:21px}}
+
+/* Fast, category-based emoji picker */
+:is(.rooms-emoji-categories,.chat-emoji-categories){display:flex;align-items:center;justify-content:space-around;gap:2px;padding:5px 7px;border-bottom:1px solid var(--theme-border,var(--theme-line));}
+:is(.rooms-emoji-categories,.chat-emoji-categories) button{display:grid;place-items:center;flex:1;min-width:0;min-height:34px;padding:3px;border:0;border-radius:8px;background:transparent;color:inherit;font-size:19px;cursor:pointer}
+:is(.rooms-emoji-categories,.chat-emoji-categories) button[aria-selected="true"],:is(.rooms-emoji-categories,.chat-emoji-categories) button:hover{background:var(--theme-accent-soft);box-shadow:inset 0 -2px var(--theme-accent-border)}
+:is(.rooms-emoji-grid,.chat-emoji-grid){contain:content;min-height:0;}
