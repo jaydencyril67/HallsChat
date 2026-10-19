@@ -29,16 +29,13 @@ export default function DangerPage() {
   const [isError, setIsError] = useState(false);
 
   useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    // GlobalModalScrollLock in App.tsx owns the document scroll lock for aria-modal dialogs.
+    // Do not set body overflow here too: competing locks can restore "hidden" after this page closes.
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !busy) navigate("/settings");
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [busy]);
 
   useEffect(() => {
