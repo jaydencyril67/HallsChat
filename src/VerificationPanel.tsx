@@ -24,7 +24,7 @@ export default function VerificationPanel() {
     try {
       const response = await fetch(apiBase + "/api/verification/me", { headers: { Authorization: "Bearer " + token } });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.message || "Verification status could not be loaded.");
+      if (!response.ok) throw new Error(payload.message || payload.error || "Verification status could not be loaded.");
       setData(payload as StatusPayload);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Verification status could not be loaded.");
@@ -46,7 +46,7 @@ export default function VerificationPanel() {
         body: JSON.stringify({})
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.message || "The email code could not be sent.");
+      if (!response.ok) throw new Error(payload.message || payload.error || "The email code could not be sent.");
       setCodeSent(true);
       setCode("");
       setMessage(payload.message || "A code has been sent to your email.");
@@ -65,7 +65,7 @@ export default function VerificationPanel() {
         body: JSON.stringify({ code: code.trim() })
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.message || "Your request could not be submitted.");
+      if (!response.ok) throw new Error(payload.message || payload.error || "Your request could not be submitted.");
       setMessage(payload.message || "Your account has been submitted for review.");
       setCode(""); setCodeSent(false);
       setData(current => ({ ...current, status: "pending", requestedAt: new Date().toISOString() }));
@@ -84,7 +84,7 @@ export default function VerificationPanel() {
         body: JSON.stringify({ decision, note })
       });
       const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(payload.message || "This request could not be reviewed.");
+      if (!response.ok) throw new Error(payload.message || payload.error || "This request could not be reviewed.");
       setMessage(payload.message || "Verification decision saved.");
       setData(current => ({ ...current, requests: (current.requests || []).filter(request => request.id !== item.id) }));
       if (decision === "approve" && item.id === localStorage.getItem("hallschat_user_id")) {
@@ -113,7 +113,7 @@ export default function VerificationPanel() {
       data.status === "pending" ? <p style={{ margin: 0, color: "var(--theme-primary-hover)", fontSize: ".84rem", display: "flex", alignItems: "center", gap: 7 }}><Clock3 size={17} /> Your verification request is waiting for review.</p> :
       <>
         <div style={{ padding: 12, border: "1px solid var(--theme-border)", borderRadius: 12, background: "var(--theme-card-raised)", fontSize: ".82rem", lineHeight: 1.55 }}>
-          If your request is approved, your full name and username will become permanent and can never be changed. You must have had your account for at least 30 days, at least 100 followers, and at least 1,000 likes across your posts.
+          If your request is approved, your full name and username will become permanent and can never be changed. Your KingsHall account must be at least 30 days old. Every request is manually reviewed by the KingsHall verification team; follower counts, post counts, and likes do not affect eligibility.
         </div>
         {data.eligible === false && data.eligibilityMessage && <p style={{ margin: 0, color: "var(--theme-muted)", fontSize: ".8rem", lineHeight: 1.5 }}>{data.eligibilityMessage}</p>}
         {data.status === "rejected" && data.reviewNote && <p style={{ margin: 0, color: "var(--theme-danger)", fontSize: ".8rem" }}>Review note: {data.reviewNote}</p>}
