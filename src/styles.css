@@ -4607,7 +4607,8 @@ select:autofill {
 
 
 /* WhatsApp-style emoji picker for Rooms and Halls composers. */
-:is(.rooms-emoji-panel,.chat-emoji-panel){position:absolute;z-index:45;left:0;bottom:calc(100% + 10px);width:min(320px,calc(100vw - 32px));max-height:min(340px,48vh);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--theme-border-strong,var(--theme-line));border-radius:16px;background:var(--theme-popover-bg);color:var(--theme-text-primary,var(--theme-text));box-shadow:var(--theme-shadow-card-soft);backdrop-filter:blur(18px)}
+:is(.rooms-composer,.chat-composer){position:relative;}
+:is(.rooms-emoji-panel,.chat-emoji-panel){position:absolute;z-index:45;left:0;right:0;bottom:calc(100% + 10px);width:100%;max-width:100%;box-sizing:border-box;max-height:min(440px,58vh);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--theme-border-strong,var(--theme-line));border-radius:16px;background:var(--theme-popover-bg);color:var(--theme-text-primary,var(--theme-text));box-shadow:var(--theme-shadow-card-soft);backdrop-filter:blur(18px)}
 :is(.rooms-emoji-panel,.chat-emoji-panel) :is(.rooms-emoji-panel-header,.chat-emoji-panel-header){display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--theme-border,var(--theme-line));font-size:.82rem}
 :is(.rooms-emoji-panel,.chat-emoji-panel) :is(.rooms-emoji-panel-header,.chat-emoji-panel-header) button{display:grid;place-items:center;width:28px;height:28px;border:0;border-radius:8px;background:var(--theme-surface-hover);color:inherit}
 :is(.rooms-emoji-grid,.chat-emoji-grid){display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;padding:8px;overflow-y:auto;overscroll-behavior:contain}
