@@ -5,7 +5,6 @@ import { NativeAppUpdate } from "./utils/nativeAppUpdate";
 import AlertColorModal from "./AlertColorModal";
 import { navigate } from "./utils/navigate";
 import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type CSSProperties } from "react";
-import { useAppTheme } from "./components/AppTheme";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import SecuritySettings from "./SecuritySettings";
@@ -23,8 +22,6 @@ const ALERT_TYPE_GROUPS: { label: string; options: { value: AlertTypeKey; label:
 ];
 
 export default function ThemeSettingsPage() {
-  const { themePreference, setThemePreference } = useAppTheme();
-  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [maxDeviceMode, setMaxDeviceMode] = useState<"flex" | "fixed">("flex");
   const [maxDevices, setMaxDevices] = useState(2);
   const [activeDeviceSessions, setActiveDeviceSessions] = useState(0);
@@ -109,7 +106,6 @@ export default function ThemeSettingsPage() {
   const [pushVapidKey, setPushVapidKey] = useState<string | null>(null);
   const alertChannelMenuRef = useRef<HTMLDivElement>(null);
   const idleLogoutMenuRef = useRef<HTMLDivElement>(null);
-  const themeMenuRef = useRef<HTMLDivElement>(null);
   const [activeStatusVisible, setActiveStatusVisible] = useState(true);
   const [activeStatusLoaded, setActiveStatusLoaded] = useState(false);
   const [activeStatusMenuOpen, setActiveStatusMenuOpen] = useState(false);
@@ -141,12 +137,6 @@ export default function ThemeSettingsPage() {
   const [commentingError, setCommentingError] = useState("");
   const commentingMenuRef = useRef<HTMLDivElement>(null);
   const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
-  const currentThemeLabel = themePreference === "system"
-    ? "System"
-    : themePreference === "light"
-      ? "Light"
-      : "Dark";
-
   useEffect(() => {
     if (!maxDeviceMenuOpen) return;
     const outside = (event: PointerEvent) => { if (maxDeviceMenuRef.current && !maxDeviceMenuRef.current.contains(event.target as Node)) setMaxDeviceMenuOpen(false); };
@@ -543,25 +533,6 @@ export default function ThemeSettingsPage() {
   };
 
   useEffect(() => {
-    if (!themeMenuOpen) return;
-    const closeOnOutsidePress = (event: PointerEvent) => {
-      if (themeMenuRef.current && !themeMenuRef.current.contains(event.target as Node)) {
-        setThemeMenuOpen(false);
-      }
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setThemeMenuOpen(false);
-    };
-    document.addEventListener("pointerdown", closeOnOutsidePress);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutsidePress);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [themeMenuOpen]);
-
-
-  useEffect(() => {
     const savedToken = localStorage.getItem("hallschat_token");
     if (!savedToken) { navigate("/signin", { replace: true }); return; }
     let cancelled = false;
@@ -820,11 +791,6 @@ export default function ThemeSettingsPage() {
 
   const callsPrivacyLabel = callsPrivacy === "audio" ? "Only Audio" : callsPrivacy === "video" ? "Only Video" : callsPrivacy === "none" ? "Allow None" : "Allow Both";
 
-  const chooseTheme = (preference: "dark" | "light" | "system") => {
-    setThemePreference(preference);
-    setThemeMenuOpen(false);
-  };
-
   return <main className="home-page social-home settings-page theme-token-scope">
     <AppHeader homeHref="/home" />
     <section className="home-shell social-shell settings-shell">
@@ -834,40 +800,6 @@ export default function ThemeSettingsPage() {
         <span className="settings-theme-title">Account safety</span>
         <span className="settings-theme-current">Disable access or self-exclude</span>
         <button type="button" className="settings-theme-menu-trigger" aria-label="Open account safety" onClick={() => navigate("/danger")}><MoreHorizontal size={21} /></button>
-      </section>
-      <div className="settings-section-label" role="heading" aria-level={2}>Appearance</div>
-      <section className="settings-theme-card" aria-label="App theme">
-        <span className="settings-theme-title">App theme</span>
-        <span className="settings-theme-current" aria-live="polite">{currentThemeLabel}</span>
-        <div className="settings-theme-menu-anchor" ref={themeMenuRef}>
-          <button
-            type="button"
-            className="settings-theme-menu-trigger"
-            aria-label="Choose app theme"
-            aria-haspopup="menu"
-            aria-expanded={themeMenuOpen}
-            onClick={() => setThemeMenuOpen(open => !open)}
-          >
-            <MoreHorizontal size={21} />
-          </button>
-          {themeMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="App theme options">
-            {([
-              { value: "dark", label: "Dark" },
-              { value: "light", label: "Light" },
-              { value: "system", label: "System" },
-            ] as const).map(option => <button
-              key={option.value}
-              type="button"
-              role="menuitemradio"
-              aria-checked={themePreference === option.value}
-              className={`settings-theme-menu-option${themePreference === option.value ? " is-selected" : ""}`}
-              onClick={() => chooseTheme(option.value)}
-            >
-              <span>{option.label}</span>
-              {themePreference === option.value && <Check size={15} aria-hidden="true" />}
-            </button>)}
-          </div>}
-        </div>
       </section>
       {maxDeviceMessage && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{maxDeviceMessage}</span><button type="button" onClick={() => setMaxDeviceMessage("")} aria-label="Dismiss notification">×</button></div>}
       <section className="settings-theme-card" aria-label="Alert Color">
