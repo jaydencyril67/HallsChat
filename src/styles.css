@@ -4604,3 +4604,13 @@ select:autofill {
   box-shadow: var(--theme-glass-shadow, 0 14px 38px rgba(0,0,0,.26)), inset 0 1px 0 var(--theme-glass-highlight, rgba(255,255,255,.08));
 }
 
+
+
+/* WhatsApp-style emoji picker for Rooms and Halls composers. */
+:is(.rooms-emoji-panel,.chat-emoji-panel){position:absolute;z-index:45;left:0;bottom:calc(100% + 10px);width:min(320px,calc(100vw - 32px));max-height:min(340px,48vh);display:flex;flex-direction:column;overflow:hidden;border:1px solid var(--theme-border-strong,var(--theme-line));border-radius:16px;background:var(--theme-popover-bg);color:var(--theme-text-primary,var(--theme-text));box-shadow:var(--theme-shadow-card-soft);backdrop-filter:blur(18px)}
+:is(.rooms-emoji-panel,.chat-emoji-panel) :is(.rooms-emoji-panel-header,.chat-emoji-panel-header){display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--theme-border,var(--theme-line));font-size:.82rem}
+:is(.rooms-emoji-panel,.chat-emoji-panel) :is(.rooms-emoji-panel-header,.chat-emoji-panel-header) button{display:grid;place-items:center;width:28px;height:28px;border:0;border-radius:8px;background:var(--theme-surface-hover);color:inherit}
+:is(.rooms-emoji-grid,.chat-emoji-grid){display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;padding:8px;overflow-y:auto;overscroll-behavior:contain}
+:is(.rooms-emoji-grid,.chat-emoji-grid) button{display:grid;place-items:center;min-width:0;aspect-ratio:1;border:0;border-radius:8px;background:transparent;color:inherit;font-size:23px;line-height:1;cursor:pointer}
+:is(.rooms-emoji-grid,.chat-emoji-grid) button:hover,:is(.rooms-emoji-grid,.chat-emoji-grid) button:focus-visible{background:var(--theme-accent-soft);outline:none}
+@media(max-width:420px){:is(.rooms-emoji-grid,.chat-emoji-grid){grid-template-columns:repeat(7,minmax(0,1fr))}:is(.rooms-emoji-grid,.chat-emoji-grid) button{font-size:21px}}
