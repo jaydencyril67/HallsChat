@@ -1,11 +1,10 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { FileText, Camera, Trash2, LogOut, Eye, Mail, Pencil, Check, ShieldCheck } from "lucide-react";
+import { FileText, Camera, Trash2, LogOut, Eye, Mail, Pencil, Check } from "lucide-react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import LoadingDots from "./components/LoadingDots";
 import ImagePreviewModal from "./components/ImagePreviewModal";
 import VerificationBadge from "./VerificationBadge";
-import VerificationPanel from "./VerificationPanel";
 import StoryImageCropModal from "./components/StoryImageCropModal";
 import { navigate } from "./utils/navigate";
 import { finishBackgroundTask, startBackgroundTask, updateBackgroundTask } from "./utils/backgroundTasks";
@@ -19,7 +18,7 @@ const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024;
 export default function ProfilePage() {
   const [user, setUser] = useState<Account | null>(null);
   const [allPosts, setAllPosts] = useState<Post[]>([]);
-  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "about" | "verify">("posts");
+  const [activeProfileTab, setActiveProfileTab] = useState<"posts" | "about">("posts");
   const [loading, setLoading] = useState(true);
   const [postsLoading, setPostsLoading] = useState(true);
   const [postsCursor, setPostsCursor] = useState<string | null>(null);
@@ -427,7 +426,6 @@ export default function ProfilePage() {
             <div role="tablist" aria-label="Profile sections" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, borderBottom: "1px solid var(--theme-border)", marginBottom: 2 }}>
               <button type="button" role="tab" aria-selected={activeProfileTab === "posts"} onClick={() => setActiveProfileTab("posts")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", border: 0, borderBottom: activeProfileTab === "posts" ? "2px solid var(--theme-primary-hover)" : "2px solid transparent", marginBottom: -1, background: "transparent", color: activeProfileTab === "posts" ? "var(--theme-text-primary)" : "var(--theme-tabs-text)", fontSize: ".84rem", fontWeight: activeProfileTab === "posts" ? 800 : 700, cursor: "pointer" }}><FileText size={17} /> Posts</button>
               <button type="button" role="tab" aria-selected={activeProfileTab === "about"} onClick={() => setActiveProfileTab("about")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", border: 0, borderBottom: activeProfileTab === "about" ? "2px solid var(--theme-primary-hover)" : "2px solid transparent", marginBottom: -1, background: "transparent", color: activeProfileTab === "about" ? "var(--theme-text-primary)" : "var(--theme-tabs-text)", fontSize: ".84rem", fontWeight: activeProfileTab === "about" ? 800 : 700, cursor: "pointer" }}><Mail size={16} /> About</button>
-              <button type="button" role="tab" aria-selected={activeProfileTab === "verify"} onClick={() => setActiveProfileTab("verify")} style={{ display: "flex", alignItems: "center", gap: 7, padding: "13px 8px", border: 0, borderBottom: activeProfileTab === "verify" ? "2px solid var(--theme-primary-hover)" : "2px solid transparent", marginBottom: -1, background: "transparent", color: activeProfileTab === "verify" ? "var(--theme-text-primary)" : "var(--theme-tabs-text)", fontSize: ".84rem", fontWeight: activeProfileTab === "verify" ? 800 : 700, cursor: "pointer" }}><ShieldCheck size={16} /> Verify</button>
             </div>
             {activeProfileTab === "posts" ? (postsLoading ? <div style={{ display: "grid", placeItems: "center", padding: 35 }}><LoadingDots /></div> : posts.length === 0 ? <div style={{ ...panel, padding: "38px 18px", textAlign: "center", marginTop: 12 }}><FileText size={28} color="var(--theme-empty-state-icon)" /><p style={{ margin: "12px 0 5px", color: "var(--theme-text-primary)", fontWeight: 800 }}>No posts yet</p><p style={{ margin: 0, ...muted, fontSize: ".82rem" }}>Your posts will show up here.</p></div> : <div style={{ display: "grid", gridTemplateColumns: "repeat(3,minmax(0,1fr))", gap: 3, marginTop: 3 }}>
               {posts.map(post => <article key={post.id} role={post.images?.[0] ? "button" : undefined} tabIndex={post.images?.[0] ? 0 : undefined} aria-label={post.images?.[0] ? "Open post image" : undefined} onClick={post.images?.[0] ? () => setPreviewPicture(post.images![0]) : undefined} onKeyDown={event => { if (post.images?.[0] && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); setPreviewPicture(post.images[0]); } }} style={{ minWidth: 0, aspectRatio: "3 / 4", overflow: "hidden", position: "relative", cursor: post.images?.[0] ? "zoom-in" : "default", background: "var(--theme-card-raised)", border: "1px solid var(--theme-border)", borderRadius: 4, padding: 9, boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
@@ -448,7 +446,7 @@ export default function ProfilePage() {
               <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Username</div>{editingProfileDetails ? <><input aria-label="Username" autoComplete="username" minLength={3} maxLength={24} value={editUsername} onChange={event => setEditUsername(event.target.value.toLowerCase().replace(/\\s/g, ""))} placeholder="Username" style={{ display: "block", width: "100%", boxSizing: "border-box", padding: "10px 11px", border: "1px solid var(--theme-border-strong)", borderRadius: 10, background: "var(--theme-surface)", color: "var(--theme-primary-hover)", font: "inherit", fontSize: ".92rem" }} /><small style={{ display: "block", marginTop: 6, color: "var(--theme-muted)", fontSize: ".7rem" }}>Use 3–24 lowercase letters, numbers, underscores or periods.</small></> : <div style={{ color: "var(--theme-primary-hover)", fontSize: ".92rem", fontWeight: 700, overflowWrap: "anywhere" }}>{user?.username ? `@${user.username}` : "—"}</div>}</div>
               <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Email</div><div style={{ color: "var(--theme-text-primary)", fontSize: ".92rem", fontWeight: 600, overflowWrap: "anywhere" }}>{user?.email || "—"}</div></div>
               <div><div style={{ ...muted, fontSize: ".72rem", marginBottom: 4 }}>Joined HallsChat</div><div style={{ color: "var(--theme-text-primary)", fontSize: ".92rem", fontWeight: 600 }}>{user?.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "—"}</div></div>
-            </div> : <VerificationPanel />}
+            </div> : <div style={{ ...panel, padding: 18, marginTop: 12, color: "var(--theme-muted)", fontSize: ".82rem" }}>Account verification is managed centrally by KingsHall. Open KingsHall and go to Security to request verification or review your status.</div>}
           </section>
 
           <div style={{ marginTop: 4 }}>
