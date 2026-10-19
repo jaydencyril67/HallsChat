@@ -433,7 +433,7 @@ export default function HallsPage() {
       if (!(target instanceof Element)) { setReactionPickerFor(null); setActionMenuFor(null); setAttachmentMenuOpen(false); return; }
       if (!target.closest(".chat-reaction-picker")) setReactionPickerFor(null);
       if (!target.closest(".chat-message-actions, .chat-message-more")) setActionMenuFor(null);
-      if (!target.closest(".chat-attachment-menu, .chat-attachment-wrap, .chat-emoji-panel")) { setAttachmentMenuOpen(false); setEmojiPanelOpen(false); }
+      if (!target.closest(".chat-attachment-menu, .chat-attachment-wrap")) setAttachmentMenuOpen(false);
     };
     document.addEventListener("pointerdown", closePopoutsOutside);
     return () => document.removeEventListener("pointerdown", closePopoutsOutside);
