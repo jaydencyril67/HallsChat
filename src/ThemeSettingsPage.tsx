@@ -1150,27 +1150,7 @@ export default function ThemeSettingsPage() {
           </div>}
         </div>
       </section>
-      <div className="settings-section-label" role="heading" aria-level={2}>Account & session security</div>
-      <section className="settings-theme-card" aria-label="Idle Logout">
-        <span className="settings-theme-title">Idle Logout</span>
-        <span className="settings-theme-current" aria-live="polite">{idleLogoutMinutes === 0 ? "Disabled" : `${idleLogoutMinutes} Minutes`}</span>
-        <div className="settings-theme-menu-anchor" ref={idleLogoutMenuRef}>
-          <button type="button" className="settings-theme-menu-trigger" aria-label="Idle Logout options" aria-haspopup="menu" aria-expanded={idleLogoutMenuOpen} onClick={() => setIdleLogoutMenuOpen(open => !open)}>
-            <MoreHorizontal size={21} />
-          </button>
-          {idleLogoutMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Idle Logout options">
-            {([
-              { value: 0, label: "Disabled" },
-              { value: 5, label: "5 Minutes" },
-              { value: 10, label: "10 Minutes" },
-              { value: 30, label: "30 Minutes" },
-            ] as const).map(option => <button key={option.value} type="button" role="menuitemradio" aria-checked={idleLogoutMinutes === option.value} className={"settings-theme-menu-option" + (idleLogoutMinutes === option.value ? " is-selected" : "")} onClick={() => chooseIdleLogout(option.value)}>
-              <span>{option.label}</span>
-              {idleLogoutMinutes === option.value && <Check size={15} aria-hidden="true" />}
-            </button>)}
-          </div>}
-        </div>
-      </section>
+
       <div className="settings-section-label" role="heading" aria-level={2}>Navigation</div>
       <section className="settings-theme-card" aria-label="Nowbar Toggle">
         <span className="settings-theme-title">Nowbar Toggle</span>
@@ -1194,6 +1174,26 @@ export default function ThemeSettingsPage() {
       {callsPrivacyError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{callsPrivacyError}</span><button type="button" onClick={() => setCallsPrivacyError("")} aria-label="Dismiss notification">×</button></div>}
       {activeStatusError && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{activeStatusError}</span><button type="button" onClick={() => setActiveStatusError("")} aria-label="Dismiss notification">×</button></div>}
       <div className="settings-section-label" role="heading" aria-level={2}>Devices & sessions</div>
+      <section className="settings-theme-card" aria-label="Idle Logout">
+        <span className="settings-theme-title">Idle Logout</span>
+        <span className="settings-theme-current" aria-live="polite">{idleLogoutMinutes === 0 ? "Disabled" : `${idleLogoutMinutes} Minutes`}</span>
+        <div className="settings-theme-menu-anchor" ref={idleLogoutMenuRef}>
+          <button type="button" className="settings-theme-menu-trigger" aria-label="Idle Logout options" aria-haspopup="menu" aria-expanded={idleLogoutMenuOpen} onClick={() => setIdleLogoutMenuOpen(open => !open)}>
+            <MoreHorizontal size={21} />
+          </button>
+          {idleLogoutMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Idle Logout options">
+            {([
+              { value: 0, label: "Disabled" },
+              { value: 5, label: "5 Minutes" },
+              { value: 10, label: "10 Minutes" },
+              { value: 30, label: "30 Minutes" },
+            ] as const).map(option => <button key={option.value} type="button" role="menuitemradio" aria-checked={idleLogoutMinutes === option.value} className={"settings-theme-menu-option" + (idleLogoutMinutes === option.value ? " is-selected" : "")} onClick={() => chooseIdleLogout(option.value)}>
+              <span>{option.label}</span>
+              {idleLogoutMinutes === option.value && <Check size={15} aria-hidden="true" />}
+            </button>)}
+          </div>}
+        </div>
+      </section>
       <section className="settings-theme-card" aria-label="Max Device">
         <span className="settings-theme-title">Max Device</span>
         <span className="settings-theme-current" aria-live="polite">{!maxDeviceLoaded ? "Loading…" : `${maxDeviceMode === "flex" ? "Flex" : "Fixed"} · ${maxDevices} ${maxDevices === 1 ? "session" : "sessions"}`}</span>
