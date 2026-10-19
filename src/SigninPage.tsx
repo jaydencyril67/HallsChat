@@ -42,7 +42,11 @@ export default function SigninPage() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [showNoAccountModal, setShowNoAccountModal] = useState(false);
-  const [browserAccounts, setBrowserAccounts] = useState<string[]>([]);\n  const [challengeToken, setChallengeToken] = useState("");\n  const [extraMethods, setExtraMethods] = useState<Array<"2fa" | "biometric">>([]);\n  const [extraMethod, setExtraMethod] = useState<"2fa" | "biometric" | "">("");\n  const [extraCode, setExtraCode] = useState("");
+  const [browserAccounts, setBrowserAccounts] = useState<string[]>([]);
+  const [challengeToken, setChallengeToken] = useState("");
+  const [extraMethods, setExtraMethods] = useState<Array<"2fa" | "biometric">>([]);
+  const [extraMethod, setExtraMethod] = useState<"2fa" | "biometric" | "">("");
+  const [extraCode, setExtraCode] = useState("");
 
   function redirectToKingsHall() {
     const url = new URL(KH_SIGNIN);
