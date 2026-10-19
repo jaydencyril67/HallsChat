@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Compass, LockKeyhole, Copy, MessageCircle, Plus, Send, UsersRound, UserPlus, X, Check, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Square, Reply, MoreVertical, Pencil, Smile, Paperclip, Phone, Video, ShieldCheck, ShieldMinus } from "lucide-react";
+import { ArrowLeft, Compass, LockKeyhole, Copy, MessageCircle, Plus, Send, UsersRound, UserPlus, X, Check, LogOut, Trash2, RefreshCw, AlertTriangle, Image as ImageIcon, Camera, Mic, Play, Pause, Square, Reply, MoreVertical, Pencil, Smile, Paperclip, Phone, Video, ShieldCheck, ShieldMinus, Pin, PinOff } from "lucide-react";
 import { io } from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import type { ChangeEvent } from "react";
@@ -150,6 +150,8 @@ function HallVoiceNotePlayer({ src, pending = false }: { src: string; pending?: 
 export default function HallsPage() {
   const [tab, setTab] = useState<Tab>("mine");
   const [halls, setHalls] = useState<HallSummary[]>([]);
+  const [hallConversationMenuFor, setHallConversationMenuFor] = useState<string | null>(null);
+  const [pinnedHallIds, setPinnedHallIds] = useState<string[]>([]);
   const [activeId, setActiveId] = useState("");
   const [detail, setDetail] = useState<HallDetail | null>(null);
   const [messages, setMessages] = useState<HallMessage[]>([]);
@@ -218,6 +220,12 @@ export default function HallsPage() {
   const [confirmPopoutPosition, setConfirmPopoutPosition] = useState({ left: 8, top: 8 });
   const confirmPopoutRef = useRef<HTMLDivElement | null>(null);
   const [currentUserId, setCurrentUserId] = useState("");
+  const pinnedHalls = useMemo(() => [...halls].sort((a, b) => {
+    if (tab !== "mine") return 0;
+    const aPinned = pinnedHallIds.includes(a.id);
+    const bPinned = pinnedHallIds.includes(b.id);
+    return aPinned === bPinned ? 0 : aPinned ? -1 : 1;
+  }), [halls, pinnedHallIds, tab]);
   const closeConfirmation = () => { setConfirmAction(null); setConfirmMessage(""); setConfirmAnchor(null); };
   const askConfirm = (message: string, action: () => Promise<void>, anchor: HTMLElement) => { setConfirmMessage(message); setConfirmAction(() => action); setConfirmAnchor(anchor); };
 
@@ -295,6 +303,35 @@ export default function HallsPage() {
     });
     return () => { cancelled = true; };
   }, [request]);
+
+  useEffect(() => {
+    if (!currentUserId) { setPinnedHallIds([]); return; }
+    try {
+      const saved = localStorage.getItem("hallschat_pinned_halls:" + currentUserId);
+      const parsed: unknown = saved ? JSON.parse(saved) : [];
+      setPinnedHallIds(Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === "string") : []);
+    } catch { setPinnedHallIds([]); }
+  }, [currentUserId]);
+
+  function togglePinnedHall(hallId: string) {
+    if (!currentUserId) { setError("Your account is still loading. Please try again."); return; }
+    setPinnedHallIds(current => {
+      const next = current.includes(hallId) ? current.filter(id => id !== hallId) : [hallId, ...current];
+      try { localStorage.setItem("hallschat_pinned_halls:" + currentUserId, JSON.stringify(next)); }
+      catch { setError("Pinned Hall conversations could not be saved on this device."); }
+      return next;
+    });
+    setHallConversationMenuFor(null);
+  }
+
+  useEffect(() => {
+    const closeOutside = (event: PointerEvent) => {
+      if (!(event.target instanceof Element)) return;
+      if (!event.target.closest(".halls-conversation-menu-anchor")) setHallConversationMenuFor(null);
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, []);
 
   const loadHalls = useCallback(async (activeTab: Tab, showLoader = true) => {
     if (showLoader) setLoading(true);
@@ -860,8 +897,8 @@ export default function HallsPage() {
             <button type="button" onClick={() => setShowJoin(true)} style={{ ...secondary, flex: 1, minWidth: 0 }}><UserPlus size={16}/> Join Hall</button>
             <button type="button" onClick={() => setShowCreate(true)} style={{ ...secondary, flex: 1, minWidth: 0 }}><Plus size={17}/> Create Hall</button>
           </div>
-          {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 34 }}><LoadingDots/></div> : halls.length ? <div className="halls-list" style={{ display: "grid", gap: 10 }}>{halls.map(group => <div key={group.id} className="halls-list-row" style={{ ...panel, padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
-            <Avatar name={group.name} src={group.avatar} size={49}/><div style={{ flex: 1, minWidth: 0, textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: ".9rem", fontWeight: 850, color: "var(--theme-text)" }}>{group.name}{group.visibility === "private" ? <LockKeyhole size={13} color="var(--theme-danger)"/> : null}</span><span style={{ display: "block", ...muted, fontSize: ".75rem", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{group.lastMessage ? (group.lastMessage.senderName ? group.lastMessage.senderName + ": " : "") + group.lastMessage.text : group.description || "No messages yet"}</span><span style={{ display: "block", ...muted, fontSize: ".7rem", marginTop: 5 }}>{group.memberCount} members · {group.role || "Public"}{group.lastMessage ? " · " + formatTime(group.lastMessage.createdAt) : ""}</span></div>{tab === "discover" ? <button type="button" style={primary} disabled={busy} onClick={() => void joinHall(group.id)}>Join</button> : <button type="button" aria-label={"Open " + group.name} title={"Open " + group.name} style={{ ...secondary, width: 38, minWidth: 38, padding: 0 }} onClick={() => setActiveId(group.id)}><ArrowLeft size={17} style={{ transform: "rotate(180deg)" }}/></button>}
+          {loading ? <div style={{ ...panel, display: "grid", placeItems: "center", padding: 34 }}><LoadingDots/></div> : halls.length ? <div className="halls-list" style={{ display: "grid", gap: 10 }}>{pinnedHalls.map(group => <div key={group.id} className="halls-list-row" style={{ ...panel, position: "relative", padding: 13, display: "flex", alignItems: "center", gap: 11 }}>
+            <Avatar name={group.name} src={group.avatar} size={49}/><div style={{ flex: 1, minWidth: 0, textAlign: "left" }}><span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: ".9rem", fontWeight: 850, color: "var(--theme-text)" }}>{group.name}{group.visibility === "private" ? <LockKeyhole size={13} color="var(--theme-danger)"/> : null}{tab === "mine" && pinnedHallIds.includes(group.id) && <Pin size={12} className="rooms-pinned-indicator" aria-label="Pinned Hall conversation" />}</span><span style={{ display: "block", ...muted, fontSize: ".75rem", marginTop: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{group.lastMessage ? (group.lastMessage.senderName ? group.lastMessage.senderName + ": " : "") + group.lastMessage.text : group.description || "No messages yet"}</span><span style={{ display: "block", ...muted, fontSize: ".7rem", marginTop: 5 }}>{group.memberCount} members · {group.role || "Public"}{group.lastMessage ? " · " + formatTime(group.lastMessage.createdAt) : ""}</span></div>{tab === "discover" ? <button type="button" style={primary} disabled={busy} onClick={() => void joinHall(group.id)}>Join</button> : <><button type="button" aria-label={"Open " + group.name} title={"Open " + group.name} style={{ ...secondary, width: 38, minWidth: 38, padding: 0 }} onClick={() => { setHallConversationMenuFor(null); setActiveId(group.id); }}><ArrowLeft size={17} style={{ transform: "rotate(180deg)" }}/></button><div className="halls-conversation-menu-anchor" onClick={event => event.stopPropagation()}><button type="button" aria-label={"Hall conversation options for " + group.name} title="Conversation options" style={{ ...secondary, width: 34, minWidth: 34, padding: 0 }} onClick={() => setHallConversationMenuFor(current => current === group.id ? null : group.id)}><MoreVertical size={17}/></button>{hallConversationMenuFor === group.id && <div className="rooms-conversation-delete-popout" role="menu" aria-label={"Conversation options for " + group.name} style={{ position: "absolute", right: 0, top: "calc(100% + 5px)", zIndex: 40 }}><button type="button" role="menuitem" onClick={() => togglePinnedHall(group.id)}>{pinnedHallIds.includes(group.id) ? <PinOff size={15}/> : <Pin size={15}/ >}{pinnedHallIds.includes(group.id) ? "Unpin conversation" : "Pin conversation"}</button></div>}</div></>}
           </div>)}</div> : <div className="halls-list-empty" style={{ ...panel, textAlign: "center", padding: "32px 18px" }}><div className="halls-list-empty-icon" style={{ width: 49, height: 49, margin: "0 auto 12px", borderRadius: 16, display: "grid", placeItems: "center", background: "var(--theme-danger-action-bg)", color: "var(--theme-danger)" }}><UsersRound size={23}/></div><strong style={{ display: "block", fontSize: ".92rem" }}>{tab === "mine" ? "Your Hall story starts here" : "No Halls to discover yet"}</strong><p style={{ ...muted, margin: "7px auto 14px", maxWidth: 320, fontSize: ".8rem", lineHeight: 1.6 }}>{tab === "mine" ? "Create a Hall for friends, family, classmates, or your community." : "Public Halls will appear here when they are available."}</p>{tab === "mine" && <button type="button" style={primary} onClick={() => setShowCreate(true)}><Plus size={16}/> Create your first Hall</button>}</div>}
         </>}
       </div>
