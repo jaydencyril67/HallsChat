@@ -1788,9 +1788,7 @@ html,body,#root,#root *{font-family:'STIX Two Text',serif!important}
 
 
 /* Calls page background follows the shared light background token without making the header or NowBar light. */
-html[data-theme="light"] .home-page.halls-calls-page{
-  background:var(--theme-bg-light);
-}
+
 
 /* Calls page: keep filter tabs and search stationary; history fills the remaining viewport. */
 .home-page.halls-calls-page{
@@ -3545,10 +3543,7 @@ html[data-theme="light"] .home-page.halls-calls-page{
   }
 }
 /* Globe and profile canvases follow the selected theme independently of the permanently dark header and Nowbar. */
-html[data-theme="light"] .home-page.globe-page,
-html[data-theme="light"] .home-page.profile-page {
-  background: var(--theme-bg-light);
-}
+
 
 /* Global app chrome is permanently dark, independent of page theme scopes. */
 .topbar.theme-fixed-dark,
@@ -3566,11 +3561,11 @@ html[data-theme="light"] .home-page.profile-page {
 
 /* Public profile page canvas follows the active theme; fixed-dark header and NowBar keep their own styling. */
 .public-profile-page{background:var(--theme-bg);}
-html[data-theme="light"] .public-profile-page{background:var(--theme-bg-light);}
+
 
 /* Chat canvas follows the selected theme; only the chat shell opts into shared theme tokens. */
 :is(.rooms-page,.chat-page){background:var(--theme-bg);}
-html[data-theme="light"] :is(.rooms-page,.chat-page){background:var(--theme-bg-light);}
+
 
 
 /* Groups page follows the same semantic theme tokens as the Rooms page. */
@@ -4555,7 +4550,4 @@ select:autofill {
   border-color: var(--theme-glass-border, var(--theme-line));
   box-shadow: var(--theme-glass-shadow, 0 14px 38px rgba(0,0,0,.26)), inset 0 1px 0 var(--theme-glass-highlight, rgba(255,255,255,.08));
 }
-html[data-theme="light"] .nowbar-shell {
-  background-image: linear-gradient(145deg, rgba(255,255,255,.58), rgba(255,255,255,.30));
-  box-shadow: 0 14px 38px rgba(61,24,33,.10), inset 0 1px 0 rgba(255,255,255,.72);
-}
+
