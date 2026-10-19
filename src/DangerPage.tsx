@@ -69,7 +69,7 @@ export default function DangerPage() {
     }
   };
 
-  const inputStyle: React.CSSProperties = { width: "100%", minHeight: 43, boxSizing: "border-box", padding: "10px 12px", borderRadius: 11, border: "1px solid var(--theme-line)", background: "var(--theme-surface)", color: "var(--theme-text)", font: "inherit", fontSize: 13 };
+  const inputStyle: React.CSSProperties = { width: "100%", minHeight: 43, boxSizing: "border-box", padding: "10px 12px", borderRadius: 11, border: "1px solid var(--theme-line)", background: "var(--theme-input-bg, #16040b)", color: "var(--theme-text)", font: "inherit", fontSize: 13 };
   const labelStyle: React.CSSProperties = { display: "grid", gap: 6, marginTop: 12, color: "var(--theme-muted)", fontSize: 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase" };
   const buttonStyle: React.CSSProperties = { width: "100%", minHeight: 42, marginTop: 12, border: "1px solid var(--theme-accent-border)", borderRadius: 999, padding: "10px 14px", background: "var(--theme-primary)", color: "var(--theme-primary-contrast)", fontSize: 12, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 };
   const cardStyle: React.CSSProperties = { minWidth: 0, width: "100%", padding: 16, border: "1px solid var(--theme-line)", borderRadius: 12, background: "var(--theme-surface)", display: "grid", alignItems: "stretch", gap: 8, boxSizing: "border-box", boxShadow: "0 5px 16px var(--theme-shadow-color-soft)" };
