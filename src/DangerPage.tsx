@@ -76,10 +76,10 @@ export default function DangerPage() {
 
   return <main className="theme-token-scope" role="dialog" aria-modal="true" aria-labelledby="account-safety-title" style={{ position: "fixed", inset: 0, zIndex: 1200, width: "100%", height: "100dvh", overflowY: "auto", overscrollBehavior: "contain", background: "var(--theme-bg, var(--theme-surface))", color: "var(--theme-text)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
     <header style={{ position: "sticky", top: 0, zIndex: 2, display: "flex", alignItems: "center", gap: 12, minHeight: 58, padding: "8px 16px", background: "var(--theme-bg, var(--theme-surface))", borderBottom: "1px solid var(--theme-line)" }}>
-      <button type="button" aria-label="Close account safety" onClick={() => navigate("/settings")} disabled={busy !== null} style={{ width: 40, height: 40, flex: "0 0 40px", display: "grid", placeItems: "center", border: "1px solid var(--theme-line)", borderRadius: "50%", background: "var(--theme-surface)", color: "var(--theme-text)", cursor: busy ? "not-allowed" : "pointer" }}><X size={20} /></button>
       <h1 id="account-safety-title" style={{ margin: 0, fontSize: 16, fontWeight: 850 }}>Account safety</h1>
+      <button type="button" aria-label="Close account safety" onClick={() => navigate("/settings")} disabled={busy !== null} style={{ width: 40, height: 40, flex: "0 0 40px", marginLeft: "auto", display: "grid", placeItems: "center", border: "1px solid var(--theme-line)", borderRadius: "50%", background: "var(--theme-surface)", color: "var(--theme-text)", cursor: busy ? "not-allowed" : "pointer" }}><X size={20} /></button>
     </header>
-    <section style={{ width: "min(100%, 620px)", margin: "0 auto", padding: "16px 16px 28px", boxSizing: "border-box" }}>
+    <section style={{ width: "100%", margin: 0, padding: 0, boxSizing: "border-box" }}>
       <section style={{ ...cardStyle, marginBottom: 8 }}>
         <h2 style={{ margin: 0, fontSize: 17, fontWeight: 850 }}>Account safety</h2>
         <p style={{ margin: "4px 0 0", color: "var(--theme-muted)", fontSize: 12, lineHeight: 1.55 }}>These actions immediately end your HallsChat sessions. Use your six-digit KingsHall Access Code to confirm that you own the account.</p>
