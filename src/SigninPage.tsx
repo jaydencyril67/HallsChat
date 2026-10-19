@@ -340,7 +340,12 @@ export default function SigninPage() {
           </div>}
           <button type="button" onClick={() => { setIdentity(""); setAccessCode(""); setChallengeToken(""); setExtraMethods([]); setExtraMethod(""); setExtraCode(""); setError(""); setNotice(""); }} style={{ border: 0, background: "transparent", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", padding: 8, fontWeight: 700, cursor: "pointer" }}>Cancel request</button>
         </section>}
-        <div style={{ ...glass, borderRadius: 16, padding: 14, marginTop: 16, display: "grid", gap: 10, textAlign: "left" }}>
+        {notice && <p role="status" style={{ margin: "16px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.6 }}>{notice}</p>}
+        {error && <p role="alert" style={{ margin: "16px 0 0", padding: "11px 13px", borderRadius: 12, background: "rgba(220,60,60,.10)", border: "1px solid rgba(220,80,80,.28)", color: "var(--theme-text, #fff)", fontSize: 13, lineHeight: 1.5 }}>{error}</p>}
+        <p style={{ margin: "22px 0 0", paddingTop: 14, borderTop: "1px solid var(--theme-line, rgba(255,255,255,.2))", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.6 }}>KingsHall verifies your Access Code. HallsChat never stores it.</p>
+        <div style={{ marginTop: 14, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.6 }}>Need an account? <a href={KH_SIGNIN} style={{ color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", fontWeight: 700, textDecoration: "none" }}>Create or recover access in KingsHall</a></div>
+      </section>
+              <div style={{ ...glass, borderRadius: 16, padding: 14, marginTop: 16, display: "grid", gap: 10, textAlign: "left" }}>
           <div>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 800 }}>Signing in on a device without KingsHall?</p>
             <p style={{ margin: "5px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>Approve this device from your signed-in KingsHall account. No saved KingsHall account or Access Code is needed on this device.</p>
@@ -359,11 +364,7 @@ export default function SigninPage() {
             <p role="status" style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>Waiting for approval from KingsHall…</p>
             <button type="button" style={{ ...glassButton, background: "transparent" }} disabled={externalLoginBusy} onClick={() => void cancelExternalLogin()}>Cancel external login</button>
           </>}
-        </div>        {notice && <p role="status" style={{ margin: "16px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.6 }}>{notice}</p>}
-        {error && <p role="alert" style={{ margin: "16px 0 0", padding: "11px 13px", borderRadius: 12, background: "rgba(220,60,60,.10)", border: "1px solid rgba(220,80,80,.28)", color: "var(--theme-text, #fff)", fontSize: 13, lineHeight: 1.5 }}>{error}</p>}
-        <p style={{ margin: "22px 0 0", paddingTop: 14, borderTop: "1px solid var(--theme-line, rgba(255,255,255,.2))", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.6 }}>KingsHall verifies your Access Code. HallsChat never stores it.</p>
-        <div style={{ marginTop: 14, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.6 }}>Need an account? <a href={KH_SIGNIN} style={{ color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", fontWeight: 700, textDecoration: "none" }}>Create or recover access in KingsHall</a></div>
-      </section>
+        </div>
     </div>
     {showNoAccountModal && <div role="presentation" onClick={() => setShowNoAccountModal(false)} style={{ position: "fixed", inset: 0, zIndex: 10000, display: "grid", placeItems: "center", padding: 20, background: "rgba(0,0,0,.58)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
       <section role="alertdialog" aria-modal="true" aria-labelledby="hallschat-no-account-title" aria-describedby="hallschat-no-account-description" onClick={event => event.stopPropagation()} style={{ ...glass, width: "100%", maxWidth: 360, boxSizing: "border-box", borderRadius: 22, padding: 24, textAlign: "center", color: "var(--theme-text, #fff)", boxShadow: "0 18px 60px rgba(0,0,0,.28)" }}>
