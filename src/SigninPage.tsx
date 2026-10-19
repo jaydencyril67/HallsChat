@@ -51,6 +51,8 @@ export default function SigninPage() {
   const [extraCode, setExtraCode] = useState("");
   const [externalLogin, setExternalLogin] = useState<ExternalLoginStart | null>(null);
   const [externalLoginBusy, setExternalLoginBusy] = useState(false);
+  const [externalNotice, setExternalNotice] = useState("");
+  const [externalError, setExternalError] = useState("");
 
   function redirectToKingsHall() {
     const url = new URL(KH_SIGNIN);
@@ -206,7 +208,7 @@ export default function SigninPage() {
 
   async function startExternalLogin() {
     if (submitting || externalLoginBusy) return;
-    setExternalLoginBusy(true); setError(""); setNotice("");
+    setExternalLoginBusy(true); setExternalError(""); setExternalNotice("");
     const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     try {
       const agent = navigator.userAgent;
@@ -218,7 +220,7 @@ export default function SigninPage() {
       if (!response.ok) throw new Error(data.message || data.error || "Unable to start external-device login.");
       setExternalLogin(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unable to start external-device login.");
+      setExternalError(e instanceof Error ? e.message : "Unable to start external-device login.");
     } finally {
       setExternalLoginBusy(false);
     }
@@ -227,7 +229,7 @@ export default function SigninPage() {
   async function cancelExternalLogin() {
     const request = externalLogin;
     if (!request) return;
-    setExternalLogin(null); setExternalLoginBusy(true); setError("");
+    setExternalLogin(null); setExternalLoginBusy(true); setExternalError("");
     const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     try {
       const response = await fetch(apiBase + "/api/auth/kingshall/external/cancel", {
@@ -235,9 +237,9 @@ export default function SigninPage() {
       });
       const data = await response.json().catch(() => ({})) as { message?: string };
       if (!response.ok) throw new Error(data.message || "Unable to cancel external-device login.");
-      setNotice("External-device login cancelled.");
+      setExternalNotice("External-device login cancelled.");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "The external login request could not be cancelled.");
+      setExternalError(e instanceof Error ? e.message : "The external login request could not be cancelled.");
     } finally {
       setExternalLoginBusy(false);
     }
@@ -259,7 +261,7 @@ export default function SigninPage() {
         if (!response.ok) {
           if ([400, 401, 404, 409, 410, 423].includes(response.status)) {
             setExternalLogin(null);
-            setError(data.message || "This external sign-in request is no longer valid.");
+            setExternalError(data.message || "This external sign-in request is no longer valid.");
             return;
           }
         } else if (data.status === "authenticated") {
@@ -270,17 +272,17 @@ export default function SigninPage() {
             setExtraMethods(data.methods);
             setExtraMethod(data.methods.length === 1 ? data.methods[0] : "");
             setExtraCode("");
-            setNotice(data.methods.length > 1
+            setExternalNotice(data.methods.length > 1
               ? "Device approved. Complete one enabled HallsChat security check to finish signing in."
               : "Device approved. Complete the enabled HallsChat security check to finish signing in.");
             return;
           }
           try { finishSignin(data); }
-          catch (e) { setError(e instanceof Error ? e.message : "The approved session could not be completed."); }
+          catch (e) { setExternalError(e instanceof Error ? e.message : "The approved session could not be completed."); }
           return;
         } else if (["denied", "expired", "consumed"].includes(String(data.status || ""))) {
           setExternalLogin(null);
-          setError(data.status === "denied" ? "The external sign-in request was denied." : "The external sign-in request expired. Start again on this device.");
+          setExternalError(data.status === "denied" ? "The external sign-in request was denied." : "The external sign-in request expired. Start again on this device.");
           return;
         }
       } catch {
@@ -351,6 +353,8 @@ export default function SigninPage() {
             <p style={{ margin: "5px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>Approve this device from your signed-in KingsHall account. No saved KingsHall account or Access Code is needed on this device.</p>
           </div>
           {!externalLogin && <button type="button" style={glassButton} disabled={submitting || externalLoginBusy || !!challengeToken} onClick={() => void startExternalLogin()}>{externalLoginBusy ? <LoadingDots /> : "Use external-device login"}</button>}
+          {externalNotice && <p role="status" style={{ margin: 0, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--theme-line, rgba(255,255,255,.2))", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>{externalNotice}</p>}
+          {externalError && <p role="alert" style={{ margin: 0, padding: "10px 12px", borderRadius: 12, background: "rgba(220,60,60,.10)", border: "1px solid rgba(220,80,80,.28)", color: "var(--theme-text, #fff)", fontSize: 12, lineHeight: 1.5 }}>{externalError}</p>}
           {externalLogin && <>
             <p style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>In KingsHall, open External Login and scan this QR code, or enter the code below. This request expires in five minutes.</p>
             <div style={{ justifySelf: "center", background: "#fff", padding: 10, borderRadius: 14 }}>
