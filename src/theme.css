@@ -1,17 +1,17 @@
 /* HallsChat shared design system: use these tokens across every page. */
 :root {
   color-scheme: dark;
-  --theme-bg: radial-gradient(ellipse at 75% 10%, rgba(192, 54, 83, 0.12), transparent 36%), #210812;
-  --theme-surface: radial-gradient(ellipse at 0 0, rgba(255, 232, 238, 0.075), transparent 55%), linear-gradient(145deg, rgba(105, 19, 43, 0.56), rgba(45, 8, 22, 0.72));
-  --theme-surface-raised: radial-gradient(ellipse at 0 0, rgba(255, 232, 238, 0.095), transparent 55%), linear-gradient(145deg, rgba(126, 24, 52, 0.62), rgba(58, 10, 28, 0.78));
-  --theme-surface-glass: radial-gradient(ellipse at 0 0, rgba(255, 235, 240, 0.085), transparent 55%), linear-gradient(145deg, rgba(113, 22, 47, 0.48), rgba(48, 8, 24, 0.64));
-  --theme-glass-highlight: rgba(255, 242, 246, 0.085);
-  --theme-glass-border: rgba(255, 224, 233, 0.16);
-  --theme-glass-shadow: 0 14px 38px rgba(14, 2, 7, 0.34);
-  --theme-line: rgba(255, 224, 232, 0.12);
+  --theme-bg: radial-gradient(ellipse at 75% 10%, rgba(151, 35, 65, 0.10), transparent 36%), #100309;
+  --theme-surface: radial-gradient(ellipse at 0 0, rgba(255, 244, 247, 0.065), transparent 55%), linear-gradient(145deg, rgba(111, 20, 46, 0.30), rgba(31, 6, 17, 0.54));
+  --theme-surface-raised: radial-gradient(ellipse at 0 0, rgba(255, 244, 247, 0.075), transparent 55%), linear-gradient(145deg, rgba(128, 25, 53, 0.38), rgba(43, 7, 22, 0.66));
+  --theme-surface-glass: radial-gradient(ellipse at 0 0, rgba(255, 255, 255, 0.065), transparent 55%), linear-gradient(145deg, rgba(120, 24, 52, 0.27), rgba(30, 5, 16, 0.48));
+  --theme-glass-highlight: rgba(255, 255, 255, 0.075);
+  --theme-glass-border: rgba(226, 220, 228, 0.15);
+  --theme-glass-shadow: 0 14px 38px rgba(0, 0, 0, 0.42);
+  --theme-line: rgba(226, 220, 228, 0.105);
   --theme-text: #f8f0f1;
-  --theme-muted: #a78b91;
-  --theme-soft: #76535b;
+  --theme-muted: #b6a6ad;
+  --theme-soft: #806a73;
   --theme-primary: #b82032;
   --theme-primary-hover: #d23b4e;
   --theme-primary-contrast: #ffffff;
@@ -22,24 +22,24 @@
   --theme-radius-lg: 16px;
   --theme-pill: 999px;
   --theme-shadow-primary: 0 5px 18px rgba(184, 32, 50, 0.22);
-  --theme-header-bg: radial-gradient(ellipse at 0 0, rgba(255, 235, 240, 0.08), transparent 58%), linear-gradient(145deg, rgba(86, 13, 35, 0.96), rgba(35, 7, 18, 0.94));
-  --theme-header-border: rgba(255, 229, 235, 0.72);
+  --theme-header-bg: radial-gradient(ellipse at 0 0, rgba(255, 255, 255, 0.065), transparent 58%), linear-gradient(145deg, rgba(55, 9, 25, 0.97), rgba(18, 3, 10, 0.97));
+  --theme-header-border: rgba(226, 220, 228, 0.42);
   --theme-header-shadow: 0 14px 34px rgba(0, 0, 0, 0.48), 0 2px 10px rgba(0, 0, 0, 0.28);
   /* Fixed-dark chrome tokens used by the shared app shell. */
   --theme-fixed-dark-header-bg: var(--theme-header-bg);
   --theme-fixed-dark-header-border: var(--theme-header-border);
   --theme-fixed-dark-header-shadow: var(--theme-header-shadow);
   --theme-fixed-dark-text: #f8f0f1;
-  --theme-fixed-dark-bg: #210812;
+  --theme-fixed-dark-bg: #100309;
   --theme-fixed-dark-line: rgba(255, 224, 232, 0.12);
   --theme-fixed-dark-primary: #b82032;
   --theme-fixed-dark-primary-hover: #d23b4e;
   /* Reusable fixed-dark glass tokens for the app header and NowBar. */
   --theme-fixed-dark-muted-text: rgba(255, 255, 255, 0.72);
-  --theme-fixed-dark-glass-highlight: rgba(255, 235, 240, 0.075);
-  --theme-fixed-dark-glass-highlight-soft: rgba(255, 235, 240, 0.045);
-  --theme-fixed-dark-glass-highlight-strong: rgba(255, 235, 240, 0.11);
-  --theme-fixed-dark-glass-border: rgba(255, 224, 232, 0.22);
+  --theme-fixed-dark-glass-highlight: rgba(255, 255, 255, 0.065);
+  --theme-fixed-dark-glass-highlight-soft: rgba(255, 255, 255, 0.025);
+  --theme-fixed-dark-glass-highlight-strong: rgba(255, 255, 255, 0.085);
+  --theme-fixed-dark-glass-border: rgba(226, 220, 228, 0.18);
   --theme-fixed-dark-glass-border-strong: rgba(255, 241, 245, 0.82);
   --theme-fixed-dark-orb-glow: rgba(125, 211, 252, 0.55);
   --theme-fixed-dark-white-orb-glow: rgba(255, 255, 255, 0.18);
@@ -114,10 +114,10 @@
   --theme-call-video-focus: #ffb2be;
   --theme-avatar-fallback-bg: var(--theme-surface-raised);
   --theme-avatar-fallback-text: var(--theme-text);
-  --theme-surface-subtle: rgba(255, 231, 237, 0.022);
-  --theme-surface-hover: rgba(255, 231, 237, 0.05);
-  --theme-border-subtle: rgba(255, 224, 232, 0.085);
-  --theme-border-soft: rgba(255, 224, 232, 0.06);
+  --theme-surface-subtle: rgba(255, 255, 255, 0.018);
+  --theme-surface-hover: rgba(255, 255, 255, 0.045);
+  --theme-border-subtle: rgba(226, 220, 228, 0.075);
+  --theme-border-soft: rgba(226, 220, 228, 0.05);
   --theme-accent-soft: rgba(202, 49, 73, 0.18);
   --theme-accent-border: rgba(226, 75, 99, 0.18);
   --theme-status-incoming: #4ed39b;
@@ -128,7 +128,7 @@
   --theme-shadow-card-soft: 0 5px 18px rgba(0, 0, 0, 0.18);
   --theme-shadow-focus-soft: 0 0 0 3px rgba(184, 32, 50, 0.18);
   --theme-shadow-selected: 0 1px 4px rgba(0, 0, 0, 0.20), inset 0 0 0 1px var(--theme-accent-border);
-  --theme-tabs-bg: rgba(35, 7, 18, 0.42);
+  --theme-tabs-bg: rgba(14, 3, 8, 0.58);
   --theme-tabs-active-bg: var(--theme-accent-soft);
   --theme-tabs-active-text: var(--theme-text-accent-soft);
   --theme-tabs-active-border: var(--theme-accent-border);
