@@ -802,6 +802,7 @@ export default function ThemeSettingsPage() {
         <button type="button" className="settings-theme-menu-trigger" aria-label="Open account safety" onClick={() => navigate("/danger")}><MoreHorizontal size={21} /></button>
       </section>
       {maxDeviceMessage && <div className="halls-toast halls-toast-error" role="status" aria-live="polite"><span>{maxDeviceMessage}</span><button type="button" onClick={() => setMaxDeviceMessage("")} aria-label="Dismiss notification">×</button></div>}
+      <div className="settings-section-label" role="heading" aria-level={2}>APPEARANCE</div>
       <section className="settings-theme-card" aria-label="Alert Color">
         <span className="settings-theme-title">Alert Color</span>
         <span className="settings-theme-current" aria-live="polite"><span className="settings-alert-color-swatch" style={{ background: alertColor }} aria-hidden="true" />{alertColorEnabled ? "Enabled" : "Disabled"}</span>
