@@ -11,6 +11,14 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 function getSavedBrowserAccounts(): string[] {
   const valid = (value: unknown): value is string => typeof value === "string" && EMAIL_PATTERN.test(value.trim().toLowerCase());
   let accounts: string[] = [];
+  let removed: string[] = [];
+  const removedCookie = document.cookie.split(";").map(value => value.trim()).find(value => value.startsWith("kh_removed_accounts="));
+  if (removedCookie) {
+    try {
+      const parsed = JSON.parse(decodeURIComponent(removedCookie.slice("kh_removed_accounts=".length)));
+      if (Array.isArray(parsed)) removed = parsed.filter((item): item is string => typeof item === "string").map(item => item.trim().toLowerCase());
+    } catch {}
+  }
   const cookie = document.cookie.split(";").map(value => value.trim()).find(value => value.startsWith("kh_saved_accounts="));
   if (cookie) {
     try {
@@ -24,7 +32,7 @@ function getSavedBrowserAccounts(): string[] {
   }
   const localHint = (localStorage.getItem("kingshall_account_hint") || "").trim().toLowerCase();
   if (EMAIL_PATTERN.test(localHint)) accounts.push(localHint);
-  return [...new Set(accounts)].slice(0, 10);
+  return [...new Set(accounts)].filter(email => !removed.includes(email)).slice(0, 10);
 }
 function setSelectedBrowserAccount(email: string) {
   const selected = email.trim().toLowerCase();
