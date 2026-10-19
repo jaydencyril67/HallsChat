@@ -197,7 +197,6 @@ export default function SecuritySettings() {
           {credentials.map((credential, index) => <button key={credential.id} type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setBiometricMenuOpen(false); void removeCredential(credential); }}><span>Remove passkey {index + 1}</span><Trash2 size={15} /></button>)}
         </div>}
       </div>
-      <p className="settings-theme-current settings-security-note">Uses your device's passkey provider. Depending on device settings, it may confirm with fingerprint, face recognition, or your screen lock.</p>
     </section>
     {error && <div role="alert" style={{ border: "1px solid rgba(220,70,70,.35)", borderRadius: 12, padding: 11, fontSize: 13, color: "var(--theme-text, inherit)", background: "rgba(220,70,70,.08)" }}>{error}</div>}
     {message && <div role="status" style={{ border: "1px solid var(--theme-line, rgba(255,255,255,.18))", borderRadius: 12, padding: 11, fontSize: 13, color: "var(--theme-text, inherit)" }}>{message}</div>}
