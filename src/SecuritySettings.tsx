@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Fingerprint, KeyRound, ShieldCheck, Copy, Trash2, RefreshCw, MoreHorizontal, Check } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { createPasskey, isWebAuthnAvailable } from "./utils/webauthn";
@@ -50,6 +50,26 @@ export default function SecuritySettings() {
   const [error, setError] = useState("");
   const [twoFactorMenuOpen, setTwoFactorMenuOpen] = useState(false);
   const [biometricMenuOpen, setBiometricMenuOpen] = useState(false);
+  const twoFactorMenuRef = useRef<HTMLDivElement>(null);
+  const biometricMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!twoFactorMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (twoFactorMenuRef.current && !twoFactorMenuRef.current.contains(event.target as Node)) setTwoFactorMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setTwoFactorMenuOpen(false); };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [twoFactorMenuOpen]);
+
+  useEffect(() => {
+    if (!biometricMenuOpen) return;
+    const outside = (event: PointerEvent) => { if (biometricMenuRef.current && !biometricMenuRef.current.contains(event.target as Node)) setBiometricMenuOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") setBiometricMenuOpen(false); };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [biometricMenuOpen]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -137,7 +157,7 @@ export default function SecuritySettings() {
     <section className="settings-theme-card settings-security-card" aria-label="Two-factor authentication">
       <span className="settings-theme-title">Authenticator app (2FA)</span>
       <span className="settings-theme-current" aria-live="polite">{loading ? "Checking status…" : twoFactorEnabled ? "Enabled for sign-in" : twoFactorConfigured ? "Setup started · not enabled yet" : "Not configured"}</span>
-      <div className="settings-theme-menu-anchor">
+      <div className="settings-theme-menu-anchor" ref={twoFactorMenuRef}>
         <button type="button" className="settings-theme-menu-trigger" aria-label="Authenticator app security options" aria-haspopup="menu" aria-expanded={twoFactorMenuOpen} disabled={loading || busy} onClick={() => setTwoFactorMenuOpen(open => !open)}><MoreHorizontal size={21} /></button>
         {twoFactorMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Authenticator app options">
           {!twoFactorEnabled && <button type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setTwoFactorMenuOpen(false); void startTwoFactorSetup(); }}><span>{twoFactorConfigured ? "Resume setup" : "Set up 2FA"}</span>{twoFactorConfigured ? <RefreshCw size={15} /> : <KeyRound size={15} />}</button>}
@@ -167,7 +187,7 @@ export default function SecuritySettings() {
     <section className="settings-theme-card settings-security-card" aria-label="Biometric security">
       <span className="settings-theme-title">Biometric security / passkey</span>
       <span className="settings-theme-current" aria-live="polite">{loading ? "Checking status…" : biometricEnabled ? "Enabled for sign-in" : credentials.length ? "Passkey bound · not enabled" : "No passkey bound"}</span>
-      <div className="settings-theme-menu-anchor">
+      <div className="settings-theme-menu-anchor" ref={biometricMenuRef}>
         <button type="button" className="settings-theme-menu-trigger" aria-label="Biometric security options" aria-haspopup="menu" aria-expanded={biometricMenuOpen} disabled={loading || busy} onClick={() => setBiometricMenuOpen(open => !open)}><MoreHorizontal size={21} /></button>
         {biometricMenuOpen && <div className="settings-theme-menu" role="menu" aria-label="Biometric security options">
           <button type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setBiometricMenuOpen(false); void registerBiometric(); }}><span>Bind passkey</span><Fingerprint size={15} /></button>
@@ -175,12 +195,6 @@ export default function SecuritySettings() {
           {credentials.map((credential, index) => <button key={credential.id} type="button" role="menuitem" className="settings-theme-menu-option" disabled={busy} onClick={() => { setBiometricMenuOpen(false); void removeCredential(credential); }}><span>Remove passkey {index + 1}</span><Trash2 size={15} /></button>)}
         </div>}
       </div>
-      {credentials.length > 0 && <div className="settings-security-details">
-        {credentials.map((credential, index) => <div key={credential.id} style={{ display: "grid", gap: 3, minWidth: 0, borderTop: "1px solid var(--theme-line, rgba(255,255,255,.12))", paddingTop: 10 }}>
-          <span style={{ fontSize: 13, fontWeight: 750 }}>Passkey {index + 1}</span>
-          <span style={{ fontSize: 11, overflowWrap: "anywhere", color: "var(--theme-text-muted, rgba(255,255,255,.7))" }}>Added {credential.createdAt ? new Date(credential.createdAt).toLocaleDateString() : "date unavailable"}</span>
-        </div>)}
-      </div>}
       <p className="settings-theme-current settings-security-note">Uses your device's passkey provider. Depending on device settings, it may confirm with fingerprint, face recognition, or your screen lock.</p>
     </section>
     {error && <div role="alert" style={{ border: "1px solid rgba(220,70,70,.35)", borderRadius: 12, padding: 11, fontSize: 13, color: "var(--theme-text, inherit)", background: "rgba(220,70,70,.08)" }}>{error}</div>}
