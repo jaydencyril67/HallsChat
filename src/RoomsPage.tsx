@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import { ArrowLeft, ArrowUp, Plus, Pencil, Pin, PinOff, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical, Phone, Video } from "lucide-react";
+import { ArrowLeft, ArrowUp, Plus, Pencil, Pin, PinOff, Camera, Image as ImageIcon, Mic, Square, Play, Pause, MessageCircle, ShieldCheck, UsersRound, X, Trash2, Send, Reply, MoreVertical, Phone, Video, Smile } from "lucide-react";
 import AppHeader from "./AppHeader";
 import VerificationBadge from "./VerificationBadge";
 import NowBar from "./NowBar";
@@ -171,7 +171,7 @@ export default function RoomsPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [compressingImages, setCompressingImages] = useState(false);
   const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
-  const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);
+  const [attachmentMenuOpen, setAttachmentMenuOpen] = useState(false);\n  const [emojiPanelOpen, setEmojiPanelOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [recordingPaused, setRecordingPaused] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -351,7 +351,7 @@ export default function RoomsPage() {
       if (!target.closest(".rooms-reaction-picker")) setReactionPickerFor(null);
       if (!target.closest(".rooms-message-actions, .rooms-message-more")) setActionMenuFor(null);
       if (!target.closest(".rooms-message-delete-wrap")) setDeleteConfirmId(null);
-      if (!target.closest(".rooms-attachment-menu, .rooms-attachment-wrap")) setAttachmentMenuOpen(false);
+      if (!target.closest(".rooms-attachment-menu, .rooms-attachment-wrap, .rooms-emoji-panel")) { setAttachmentMenuOpen(false); setEmojiPanelOpen(false); }
       if (!target.closest(".rooms-conversation-menu-anchor, .rooms-person-row")) setConversationMenuFor(null);
     };
     document.addEventListener("pointerdown", closePopoutsOutside);
