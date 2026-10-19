@@ -91,6 +91,12 @@ export default function SecuritySettings() {
 
   useEffect(() => { void load(); }, [load]);
 
+  useEffect(() => {
+    if (!error && !message) return;
+    const timeout = window.setTimeout(() => { setError(""); setMessage(""); }, 4500);
+    return () => window.clearTimeout(timeout);
+  }, [error, message]);
+
   const runAction = async (action: () => Promise<void>, success: string) => {
     if (busy) return;
     setBusy(true); setError(""); setMessage("");
@@ -198,7 +204,7 @@ export default function SecuritySettings() {
         </div>}
       </div>
     </section>
-    {error && <div role="alert" style={{ border: "1px solid rgba(220,70,70,.35)", borderRadius: 12, padding: 11, fontSize: 13, color: "var(--theme-text, inherit)", background: "rgba(220,70,70,.08)" }}>{error}</div>}
-    {message && <div role="status" style={{ border: "1px solid var(--theme-line, rgba(255,255,255,.18))", borderRadius: 12, padding: 11, fontSize: 13, color: "var(--theme-text, inherit)" }}>{message}</div>}
+    {error && <div className="halls-toast halls-toast-error" role="alert" aria-live="assertive"><span>{error}</span><button type="button" onClick={() => setError("")} aria-label="Dismiss notification">×</button></div>}
+    {!error && message && <div className="halls-toast halls-toast-success" role="status" aria-live="polite"><span>{message}</span><button type="button" onClick={() => setMessage("")} aria-label="Dismiss notification">×</button></div>}
   </section>;
 }
