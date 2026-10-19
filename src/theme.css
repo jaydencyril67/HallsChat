@@ -2,7 +2,6 @@
 :root {
   color-scheme: dark;
   --theme-bg: radial-gradient(ellipse at 75% 10%, rgba(192, 54, 83, 0.12), transparent 36%), #210812;
-  --theme-bg-light: #f8f3f1;
   --theme-surface: radial-gradient(ellipse at 0 0, rgba(255, 232, 238, 0.075), transparent 55%), linear-gradient(145deg, rgba(105, 19, 43, 0.56), rgba(45, 8, 22, 0.72));
   --theme-surface-raised: radial-gradient(ellipse at 0 0, rgba(255, 232, 238, 0.095), transparent 55%), linear-gradient(145deg, rgba(126, 24, 52, 0.62), rgba(58, 10, 28, 0.78));
   --theme-surface-glass: radial-gradient(ellipse at 0 0, rgba(255, 235, 240, 0.085), transparent 55%), linear-gradient(145deg, rgba(113, 22, 47, 0.48), rgba(48, 8, 24, 0.64));
@@ -26,7 +25,7 @@
   --theme-header-bg: radial-gradient(ellipse at 0 0, rgba(255, 235, 240, 0.08), transparent 58%), linear-gradient(145deg, rgba(86, 13, 35, 0.96), rgba(35, 7, 18, 0.94));
   --theme-header-border: rgba(255, 229, 235, 0.72);
   --theme-header-shadow: 0 14px 34px rgba(0, 0, 0, 0.48), 0 2px 10px rgba(0, 0, 0, 0.28);
-  /* Fixed-dark chrome tokens: deliberately never overridden by light-theme scopes. */
+  /* Fixed-dark chrome tokens used by the shared app shell. */
   --theme-fixed-dark-header-bg: var(--theme-header-bg);
   --theme-fixed-dark-header-border: var(--theme-header-border);
   --theme-fixed-dark-header-shadow: var(--theme-header-shadow);
@@ -180,7 +179,7 @@
   --theme-palette-bright-green: #22c55e;
   --theme-palette-bright-blue: #3b82f6;
 
-  /* Social feed foundation roles; light mode overrides these inside the page scope. */
+  /* Social feed foundation roles. */
 }
 
 /* The app is permanently dark-themed; no light palette overrides are supported. */
