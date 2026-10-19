@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { ArrowRight, KeyRound, ShieldCheck, LoaderCircle, Fingerprint } from "lucide-react";
 import { authenticateWithPasskey } from "./utils/webauthn";
-import AppHeader from "./AppHeader";
 import { navigate } from "./utils/navigate";
 import LoadingDots from "./components/LoadingDots";
 
