@@ -72,19 +72,19 @@ export default function DangerPage() {
   const inputStyle: React.CSSProperties = { width: "100%", minHeight: 43, boxSizing: "border-box", padding: "10px 12px", borderRadius: 11, border: "1px solid var(--theme-line)", background: "var(--theme-surface)", color: "var(--theme-text)", font: "inherit", fontSize: 13 };
   const labelStyle: React.CSSProperties = { display: "grid", gap: 6, marginTop: 12, color: "var(--theme-muted)", fontSize: 10, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase" };
   const buttonStyle: React.CSSProperties = { width: "100%", minHeight: 42, marginTop: 12, border: "1px solid var(--theme-accent-border)", borderRadius: 999, padding: "10px 14px", background: "var(--theme-primary)", color: "var(--theme-primary-contrast)", fontSize: 12, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 };
-  const cardStyle: React.CSSProperties = { minWidth: 0, padding: 16, border: "1px solid var(--theme-line)", borderRadius: 16, background: "var(--theme-surface)", display: "grid", gap: 5 };
+  const cardStyle: React.CSSProperties = { minWidth: 0, width: "100%", padding: 16, border: "1px solid var(--theme-line)", borderRadius: 12, background: "var(--theme-surface)", display: "grid", gap: 8, boxShadow: "0 5px 16px var(--theme-shadow-color-soft)" };
 
   return <main className="theme-token-scope" role="dialog" aria-modal="true" aria-labelledby="account-safety-title" style={{ position: "fixed", inset: 0, zIndex: 1200, width: "100%", height: "100dvh", overflowY: "auto", overscrollBehavior: "contain", background: "var(--theme-bg, var(--theme-surface))", color: "var(--theme-text)", paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
     <header style={{ position: "sticky", top: 0, zIndex: 2, display: "flex", alignItems: "center", gap: 12, minHeight: 58, padding: "8px 16px", background: "var(--theme-bg, var(--theme-surface))", borderBottom: "1px solid var(--theme-line)" }}>
       <h1 id="account-safety-title" style={{ margin: 0, fontSize: 16, fontWeight: 850 }}>Account safety</h1>
       <button type="button" aria-label="Close account safety" onClick={() => navigate("/settings")} disabled={busy !== null} style={{ width: 40, height: 40, flex: "0 0 40px", marginLeft: "auto", display: "grid", placeItems: "center", border: "1px solid var(--theme-line)", borderRadius: "50%", background: "var(--theme-surface)", color: "var(--theme-text)", cursor: busy ? "not-allowed" : "pointer" }}><X size={20} /></button>
     </header>
-    <section style={{ width: "100%", margin: 0, padding: 0, boxSizing: "border-box" }}>
-      <section style={{ ...cardStyle, marginBottom: 8 }}>
+    <section style={{ width: "min(100%, 620px)", margin: "0 auto", padding: "16px 16px 28px", boxSizing: "border-box", display: "grid", gap: 8 }}>
+      <section className="settings-theme-card danger-action-card" style={cardStyle}>
         <h2 style={{ margin: 0, fontSize: 17, fontWeight: 850 }}>Account safety</h2>
         <p style={{ margin: "4px 0 0", color: "var(--theme-muted)", fontSize: 12, lineHeight: 1.55 }}>These actions immediately end your HallsChat sessions. Use your six-digit KingsHall Access Code to confirm that you own the account.</p>
       </section>
-      <section style={{ ...cardStyle, marginBottom: 8 }}>
+      <section className="settings-theme-card danger-action-card" style={cardStyle}>
         <ShieldAlert size={20} color="var(--theme-danger)" />
         <h2 style={{ margin: 0, fontSize: 14, fontWeight: 850 }}>Disable account</h2>
         <p style={{ margin: 0, color: "var(--theme-muted)", fontSize: 12, lineHeight: 1.55 }}>Suspend access until support restores your account. This does not delete your account.</p>
@@ -93,7 +93,7 @@ export default function DangerPage() {
         <label style={labelStyle}>Reason (optional)<input style={inputStyle} value={disable.reason} onChange={e => setDisable(v => ({ ...v, reason: e.target.value }))} placeholder="Reason for disabling" maxLength={500} /></label>
         <button type="button" style={buttonStyle} disabled={busy !== null || disable.accessCode.length !== 6 || disable.confirmation.trim().toUpperCase() !== "DISABLE"} onClick={() => void submit("disable")}>{busy === "disable" ? <LoadingDots /> : "Disable account"}</button>
       </section>
-      <section style={cardStyle}>
+      <section className="settings-theme-card danger-action-card" style={cardStyle}>
         <ShieldCheck size={20} color="var(--theme-danger)" />
         <h2 style={{ margin: 0, fontSize: 14, fontWeight: 850 }}>Self-exclude</h2>
         <p style={{ margin: 0, color: "var(--theme-muted)", fontSize: 12, lineHeight: 1.55 }}>Block access for the period you choose. Access can resume after the exclusion expires; support cannot shorten the selected period through this screen.</p>
