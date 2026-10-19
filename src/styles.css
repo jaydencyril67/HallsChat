@@ -4525,3 +4525,37 @@ select:autofill {
 /* Settings category headings keep related controls grouped with clear, consistent spacing. */
 .settings-section-label{margin:14px 4px 0;color:var(--theme-text);font-size:12px;font-weight:850;letter-spacing:.1em;text-transform:uppercase;line-height:1.4;}
 .settings-shell>.settings-section-label:first-of-type{margin-top:0;}
+
+
+/* Shared burgundy glass finish — one theme foundation for auth, chrome and dialogs. */
+.topbar {
+  background: var(--theme-header-bg);
+  border-color: var(--theme-header-border);
+  backdrop-filter: blur(20px) saturate(135%);
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+  box-shadow: var(--theme-header-shadow), inset 0 1px 0 var(--theme-glass-highlight, rgba(255,255,255,.08));
+}
+.nowbar-shell {
+  background-image: var(--theme-surface-glass, linear-gradient(145deg, rgba(255,235,239,.075), rgba(92,13,35,.18)));
+  background-color: transparent;
+  backdrop-filter: blur(20px) saturate(135%);
+  -webkit-backdrop-filter: blur(20px) saturate(135%);
+  box-shadow: var(--theme-glass-shadow, 0 14px 38px rgba(0,0,0,.26)), inset 0 1px 0 var(--theme-glass-highlight, rgba(255,255,255,.12));
+}
+.auth-page > div > section,
+.auth-form-panel,
+.landing-preview-window,
+[role="dialog"],
+[role="alertdialog"] {
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+}
+.auth-page > div > section,
+.auth-form-panel {
+  border-color: var(--theme-glass-border, var(--theme-line));
+  box-shadow: var(--theme-glass-shadow, 0 14px 38px rgba(0,0,0,.26)), inset 0 1px 0 var(--theme-glass-highlight, rgba(255,255,255,.08));
+}
+html[data-theme="light"] .nowbar-shell {
+  background-image: linear-gradient(145deg, rgba(255,255,255,.58), rgba(255,255,255,.30));
+  box-shadow: 0 14px 38px rgba(61,24,33,.10), inset 0 1px 0 rgba(255,255,255,.72);
+}
