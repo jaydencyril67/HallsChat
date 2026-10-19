@@ -200,95 +200,73 @@ export default function SigninPage() {
     }
   }
 
-  return <main className="signup-page auth-page theme-token-scope">
-    <div className="signup-glow signup-glow-top" aria-hidden="true" />
-    <div className="signup-glow signup-glow-bottom" aria-hidden="true" />
-    <AppHeader homeHref="/" />
-    <style>{'@keyframes hallschat-signin-spin { to { transform: rotate(360deg); } }'}</style>
-    <div className="auth-shell">
-      <section className="auth-story">
-        <span className="signup-form-kicker">ONE ACCOUNT. CONNECTED APPS.</span>
-        <h1>Your people.<br /><em>Your conversations.</em></h1>
-        <p>Use your KingsHall identity to enter HallsChat and keep your account connected.</p>
-      </section>
-      <section className="auth-form-panel" aria-labelledby="signin-heading">
-        <div className="signup-form-heading">
-          <span className="signup-form-kicker">SECURE ACCESS</span>
-          <h2 id="signin-heading">{identity ? "Confirm your KingsHall account" : "Sign in with KingsHall"}</h2>
-          <p>{identity || "Choose the KingsHall account you use across your connected apps."}</p>
-        </div>
-        {!identity && browserAccounts.length > 0 && <div className="signup-form" style={{ display: "grid", gap: 9, marginBottom: 12 }}>
-          <p style={{ margin: "0 0 3px", fontSize: 13, fontWeight: 750 }}>Saved KingsHall accounts</p>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--theme-text-muted, rgba(255,255,255,.7))" }}>Choose which account to use for this sign-in request.</p>
-          {browserAccounts.map(email => <button key={email} type="button" className="button button-secondary" style={{ width: "100%", justifyContent: "flex-start", overflowWrap: "anywhere" }} onClick={() => { setSelectedBrowserAccount(email); setIdentity(email); setError(""); setNotice("KingsHall account selected. Enter its bound Access Code to continue."); }}>{email} <ArrowRight size={15} /></button>)}
+  const glass = { border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-surface, rgba(25,20,24,.88))", boxShadow: "inset 0 1px 0 rgba(255,255,255,.06)" } as const;
+  const glassButton = { minHeight: 46, border: "1px solid var(--theme-line, rgba(255,255,255,.2))", borderRadius: 999, padding: "12px 18px", fontWeight: 750, display: "inline-flex", justifyContent: "center", alignItems: "center", gap: 10, width: "100%", cursor: submitting ? "wait" : "pointer", background: "var(--theme-surface, rgba(25,20,24,.88))", color: "var(--theme-text, #fff)", boxSizing: "border-box" as const, boxShadow: "inset 0 1px rgba(255,255,255,.13), 0 4px 14px rgba(0,0,0,.22)", backdropFilter: "blur(12px) saturate(125%)", WebkitBackdropFilter: "blur(12px) saturate(125%)" } as const;
+  const glassInput = { width: "100%", minHeight: 48, boxSizing: "border-box" as const, borderRadius: 13, border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-background, rgba(0,0,0,.12))", color: "var(--theme-text, #fff)", padding: "12px 14px", fontSize: 15, outline: "none" } as const;
+
+  return <main className="auth-page theme-token-scope" style={{ minHeight: "100vh", background: "var(--theme-page, var(--theme-background, #211a1e))", color: "var(--theme-text, #fff)", padding: "clamp(14px, 3vw, 28px)", boxSizing: "border-box", display: "grid", placeItems: "center" }}>
+    <style>{"@keyframes hallschat-signin-spin { to { transform: rotate(360deg); } }"}</style>
+    <div style={{ width: "100%", maxWidth: 460 }}>
+      <section style={{ ...glass, borderRadius: 24, padding: "clamp(22px, 6vw, 34px)", textAlign: "center", backdropFilter: "blur(18px) saturate(125%)", WebkitBackdropFilter: "blur(18px) saturate(125%)" }}>
+        <div style={{ width: 54, height: 54, margin: "0 auto 14px", display: "grid", placeItems: "center", borderRadius: "50%", border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-surface, rgba(255,255,255,.08))", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))" }}><ShieldCheck size={25} /></div>
+        <h1 style={{ margin: 0, fontSize: "clamp(1.4rem, 4vw, 1.8rem)", lineHeight: 1.2 }}>{identity ? "Confirm your KingsHall account" : "Sign in to HallsChat"}</h1>
+        <p style={{ margin: "9px 0 22px", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.6 }}>{identity || "Continue with the KingsHall account saved on this device or browser."}</p>
+
+        {!identity && browserAccounts.length > 0 && <div style={{ display: "grid", gap: 9, margin: "0 0 16px", textAlign: "left" }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800 }}>Saved KingsHall accounts</p>
+          <p style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.5 }}>Choose which account to use for this sign-in request.</p>
+          {browserAccounts.map(email => <button key={email} type="button" style={{ ...glassButton, justifyContent: "flex-start", overflowWrap: "anywhere", textAlign: "left" }} onClick={() => { setSelectedBrowserAccount(email); setIdentity(email); setError(""); setNotice("KingsHall account selected. Enter its bound Access Code to continue."); }}>{email} <KeyRound size={15} /></button>)}
         </div>}
-        {!identity && browserAccounts.length === 0 && <div className="signup-form" style={{ display: "grid", gap: 12 }}>
-          <button className="button button-primary signup-submit" type="button" onClick={() => void continueWithKingsHall()} disabled={submitting}>
-            {submitting ? <LoadingDots /> : <>Continue with KingsHall <ArrowRight size={17} /></>}
-          </button>
-          <p className="signup-form-note"><ShieldCheck size={14} /> KingsHall verifies your Access Code. HallsChat never stores it.</p>
-        </div>}
-        {identity && !challengeToken && <form className="signup-form" onSubmit={verify}>
-          <label className="signup-field"><span>Bound six-digit Access Code</span>
-            <input type="password" name="accessCode" inputMode="numeric" autoComplete="off" value={accessCode}
-              onChange={e => setAccessCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="••••••" minLength={6} maxLength={6} pattern="[0-9]{6}" required />
-          </label>
-          {error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
-          {notice && <div className="signup-feedback signup-feedback-success" role="status">{notice}</div>}
-          <button className="button button-primary signup-submit" type="submit" disabled={submitting || accessCode.length !== 6}>
-            {submitting ? <LoadingDots /> : <>Verify and continue <KeyRound size={17} /></>}
-          </button>
-          <button className="button button-secondary" type="button" onClick={() => { setIdentity(""); setAccessCode(""); setError(""); setNotice(""); }}>Cancel request</button>
-          <p className="signup-form-note"><ShieldCheck size={14} /> Your Access Code is sent only to HallsChat's server for KingsHall verification.</p>
+        {!identity && browserAccounts.length === 0 && <button type="button" aria-label="Sign in with KingsHall" onClick={() => void continueWithKingsHall()} disabled={submitting} style={{ width: 88, height: 88, borderRadius: "50%", border: "1px solid var(--theme-line, rgba(255,255,255,.25))", background: "var(--theme-surface, rgba(255,255,255,.08))", color: "var(--theme-text, #fff)", display: "grid", placeItems: "center", margin: "0 auto", cursor: submitting ? "wait" : "pointer", backdropFilter: "blur(12px) saturate(125%)", WebkitBackdropFilter: "blur(12px) saturate(125%)", boxShadow: "inset 0 1px rgba(255,255,255,.18), 0 4px 14px rgba(0,0,0,.22)" }}>{submitting ? <LoadingDots /> : <KeyRound size={28} />}</button>}
+        {!identity && browserAccounts.length === 0 && <p style={{ margin: "12px 0 0", color: "var(--theme-text, #fff)", fontWeight: 700, fontSize: 14 }}>Sign in with KingsHall</p>}
+
+        {identity && !challengeToken && <form onSubmit={verify} style={{ display: "grid", gap: 14, textAlign: "left" }}>
+          <label htmlFor="hallschat-signin-access-code" style={{ fontSize: 13, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontWeight: 650 }}>Bound six-digit Access Code</label>
+          <input id="hallschat-signin-access-code" style={{ ...glassInput, textAlign: "center", letterSpacing: ".35em", fontSize: 20 }} type="password" inputMode="numeric" autoComplete="off" value={accessCode} onChange={event => setAccessCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="••••••" minLength={6} maxLength={6} pattern="[0-9]{6}" required />
+          <button type="submit" style={glassButton} disabled={submitting || accessCode.length !== 6}>{submitting ? <LoadingDots /> : "Verify and continue"}</button>
+          <button type="button" onClick={() => { setIdentity(""); setAccessCode(""); setError(""); setNotice(""); }} style={{ border: 0, background: "transparent", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", padding: 8, fontWeight: 700, cursor: "pointer" }}>Cancel request</button>
         </form>}
-        {challengeToken && <section className="signup-form" aria-label="Extra security verification" style={{ display: "grid", gap: 12 }}>
-          <div style={{ border: "1px solid var(--theme-line, rgba(255,255,255,.18))", borderRadius: 16, padding: 14, background: "var(--theme-surface, rgba(255,255,255,.05))" }}>
-            <p style={{ margin: 0, fontWeight: 800 }}>Extra security required</p>
-            <p style={{ margin: "6px 0 0", fontSize: 13, lineHeight: 1.6, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>
-              KingsHall accepted your Access Code. Complete one of the enabled HallsChat security checks to finish signing in.
-            </p>
+
+        {challengeToken && <section style={{ display: "grid", gap: 14, textAlign: "left" }}>
+          <div style={{ ...glass, borderRadius: 16, padding: 14 }}>
+            <p style={{ margin: 0, fontWeight: 800, fontSize: 14 }}>Extra security required</p>
+            <p style={{ margin: "6px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.5 }}>KingsHall accepted your Access Code. Complete one enabled HallsChat security check to finish signing in.</p>
           </div>
           {extraMethods.length > 1 && <div style={{ display: "grid", gap: 8 }}>
-            <p style={{ margin: 0, fontSize: 13, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>Choose a method</p>
-            {extraMethods.includes("2fa") && <button type="button" className="button button-secondary" onClick={() => { setExtraMethod("2fa"); setError(""); }} disabled={submitting}>Authenticator app (2FA)</button>}
-            {extraMethods.includes("biometric") && <button type="button" className="button button-secondary" onClick={() => { setExtraMethod("biometric"); setError(""); }} disabled={submitting}><Fingerprint size={17} /> Biometric / passkey</button>}
+            <p style={{ margin: 0, fontSize: 13, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>Choose one method to continue</p>
+            {extraMethods.includes("2fa") && <button type="button" style={glassButton} onClick={() => { setExtraMethod("2fa"); setError(""); }} disabled={submitting}>Authenticator app (2FA)</button>}
+            {extraMethods.includes("biometric") && <button type="button" style={glassButton} onClick={() => { setExtraMethod("biometric"); setError(""); }} disabled={submitting}><Fingerprint size={17} /> Biometric / passkey</button>}
           </div>}
           {extraMethod === "2fa" && <form onSubmit={verifyExtraTwoFactor} style={{ display: "grid", gap: 12 }}>
-            <label className="signup-field"><span>Six-digit authenticator code</span>
-              <input type="password" inputMode="numeric" autoComplete="one-time-code" value={extraCode}
-                onChange={event => setExtraCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                placeholder="••••••" minLength={6} maxLength={6} pattern="[0-9]{6}" required />
-            </label>
-            <button type="submit" className="button button-primary signup-submit" disabled={submitting || extraCode.length !== 6}>{submitting ? <LoadingDots /> : "Verify 2FA and continue"}</button>
+            <label htmlFor="hallschat-extra-2fa" style={{ fontSize: 13, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontWeight: 650 }}>Six-digit authenticator code</label>
+            <input id="hallschat-extra-2fa" style={{ ...glassInput, textAlign: "center", letterSpacing: ".3em", fontSize: 20 }} type="password" inputMode="numeric" autoComplete="one-time-code" value={extraCode} onChange={event => setExtraCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="••••••" minLength={6} maxLength={6} pattern="[0-9]{6}" required />
+            <button type="submit" style={glassButton} disabled={submitting || extraCode.length !== 6}>{submitting ? <LoadingDots /> : "Verify 2FA and continue"}</button>
           </form>}
           {extraMethod === "biometric" && <div style={{ display: "grid", gap: 10 }}>
-            <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: "var(--theme-text-muted, rgba(255,255,255,.72))" }}>Confirm with the passkey or device biometric method bound to this HallsChat account.</p>
-            <button type="button" className="button button-primary signup-submit" onClick={() => void verifyExtraBiometric()} disabled={submitting}>{submitting ? <LoadingDots /> : <><Fingerprint size={17} /> Verify biometric and continue</>}</button>
+            <p style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.5 }}>Confirm with the passkey or device biometric method bound to this HallsChat account.</p>
+            <button type="button" style={glassButton} onClick={() => void verifyExtraBiometric()} disabled={submitting}>{submitting ? <LoadingDots /> : <><Fingerprint size={17} /> Verify biometric and continue</>}</button>
           </div>}
-          <button className="button button-secondary" type="button" disabled={submitting} onClick={() => {
-            setIdentity(""); setAccessCode(""); setChallengeToken(""); setExtraMethods([]); setExtraMethod(""); setExtraCode(""); setError(""); setNotice("");
-          }}>Cancel request</button>
+          <button type="button" onClick={() => { setIdentity(""); setAccessCode(""); setChallengeToken(""); setExtraMethods([]); setExtraMethod(""); setExtraCode(""); setError(""); setNotice(""); }} style={{ border: 0, background: "transparent", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", padding: 8, fontWeight: 700, cursor: "pointer" }}>Cancel request</button>
         </section>}
-        {!identity && error && <div className="signup-feedback signup-feedback-error" role="alert">{error}</div>}
-        {!identity && notice && <div className="signup-feedback signup-feedback-success" role="status">{notice}</div>}
-        <div className="signup-bottom-note">Need an account? <a href={KH_SIGNIN}>Create or recover access in KingsHall</a></div>
+        {notice && <p role="status" style={{ margin: "16px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.6 }}>{notice}</p>}
+        {error && <p role="alert" style={{ margin: "16px 0 0", padding: "11px 13px", borderRadius: 12, background: "rgba(220,60,60,.10)", border: "1px solid rgba(220,80,80,.28)", color: "var(--theme-text, #fff)", fontSize: 13, lineHeight: 1.5 }}>{error}</p>}
+        <p style={{ margin: "22px 0 0", paddingTop: 14, borderTop: "1px solid var(--theme-line, rgba(255,255,255,.2))", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.6 }}>KingsHall verifies your Access Code. HallsChat never stores it.</p>
+        <div style={{ marginTop: 14, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.6 }}>Need an account? <a href={KH_SIGNIN} style={{ color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", fontWeight: 700, textDecoration: "none" }}>Create or recover access in KingsHall</a></div>
       </section>
     </div>
-    <footer className="signup-page-footer"><span>© {new Date().getFullYear()} HallsChat</span><span>Closer conversations. Stronger connections.</span></footer>
     {showNoAccountModal && <div role="presentation" onClick={() => setShowNoAccountModal(false)} style={{ position: "fixed", inset: 0, zIndex: 10000, display: "grid", placeItems: "center", padding: 20, background: "rgba(0,0,0,.58)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
-      <section role="alertdialog" aria-modal="true" aria-labelledby="hallschat-no-account-title" aria-describedby="hallschat-no-account-description" onClick={event => event.stopPropagation()} style={{ width: "100%", maxWidth: 360, boxSizing: "border-box", border: "1px solid var(--theme-line, rgba(255,255,255,.2))", borderRadius: 22, padding: 24, textAlign: "center", color: "var(--theme-text, #fff)", background: "var(--theme-surface, rgba(25,20,24,.94))", boxShadow: "0 18px 60px rgba(0,0,0,.28)" }}>
-        <div style={{ width: 52, height: 52, margin: "0 auto 14px", display: "grid", placeItems: "center", borderRadius: "50%", border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-surface, rgba(25,20,24,.94))", color: "var(--theme-text, #fff)" }}><KeyRound size={23} /></div>
+      <section role="alertdialog" aria-modal="true" aria-labelledby="hallschat-no-account-title" aria-describedby="hallschat-no-account-description" onClick={event => event.stopPropagation()} style={{ ...glass, width: "100%", maxWidth: 360, boxSizing: "border-box", borderRadius: 22, padding: 24, textAlign: "center", color: "var(--theme-text, #fff)", boxShadow: "0 18px 60px rgba(0,0,0,.28)" }}>
+        <div style={{ width: 52, height: 52, margin: "0 auto 14px", display: "grid", placeItems: "center", borderRadius: "50%", border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-surface, rgba(255,255,255,.08))", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))" }}><KeyRound size={23} /></div>
         <h2 id="hallschat-no-account-title" style={{ margin: 0, fontSize: 19 }}>No KingsHall account found</h2>
         <p id="hallschat-no-account-description" style={{ margin: "10px 0 20px", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 14, lineHeight: 1.6 }}>Please sign in to KingsHall first, then return to HallsChat to continue.</p>
         <div style={{ display: "grid", gap: 9 }}>
-          <button type="button" className="button button-primary signup-submit" onClick={redirectToKingsHall}>Sign in to KingsHall <ArrowRight size={17} /></button>
-          <button type="button" className="button button-secondary" onClick={() => setShowNoAccountModal(false)}>Cancel</button>
+          <button type="button" style={glassButton} onClick={redirectToKingsHall}>Sign in to KingsHall <ArrowRight size={17} /></button>
+          <button type="button" style={{ ...glassButton, background: "transparent" }} onClick={() => setShowNoAccountModal(false)}>Cancel</button>
         </div>
       </section>
     </div>}
     {submitting && <div role="status" aria-live="polite" aria-busy="true" style={{ position: "fixed", inset: 0, zIndex: 9999, display: "grid", placeItems: "center", background: "rgba(0,0,0,.52)", backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }}>
-      <div style={{ border: "1px solid var(--theme-line, rgba(255,255,255,.2))", borderRadius: 22, padding: 24, minWidth: 150, display: "grid", justifyItems: "center", gap: 12, color: "var(--theme-text, #fff)", background: "var(--theme-surface, rgba(25,20,24,.88))", boxShadow: "0 16px 48px rgba(0,0,0,.24)" }}>
+      <div style={{ ...glass, borderRadius: 22, padding: 24, minWidth: 120, display: "grid", justifyItems: "center", gap: 12, color: "var(--theme-text, #fff)" }}>
         <LoaderCircle size={34} aria-hidden="true" style={{ animation: "hallschat-signin-spin 1s linear infinite" }} />
         <span style={{ fontSize: 13, fontWeight: 650 }}>Checking KingsHall…</span>
       </div>
