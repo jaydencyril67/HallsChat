@@ -1274,7 +1274,7 @@ export default function RoomsPage() {
                 <button type="button" className="rooms-attach-button" onClick={() => setAttachmentMenuOpen(value => !value)} aria-label="Open attachments" title="Attach"><Plus size={22} /></button>
                 {attachmentMenuOpen && <div className="rooms-attachment-menu">
                   <button type="button" onClick={() => { setAttachmentMenuOpen(false); setEmojiPanelOpen(value => !value); }}><Smile size={19}/><span>Emoji</span></button>
-                  <button type="button" onClick={() => { setAttachmentMenuOpen(false); cameraInputRef.current?.click(); }}<Camera size={19} /><span>Camera</span></button>
+                  <button type="button" onClick={() => { setAttachmentMenuOpen(false); cameraInputRef.current?.click(); }}><Camera size={19} /><span>Camera</span></button>
                   <button type="button" onClick={() => { setAttachmentMenuOpen(false); imageInputRef.current?.click(); }}><ImageIcon size={19} /><span>Gallery</span></button>
                   <button type="button" onClick={() => { setAttachmentMenuOpen(false); void recordVoiceNote(); }} disabled={voiceBusy}><Mic size={19} /><span>Voice Note</span></button>
                 </div>}
