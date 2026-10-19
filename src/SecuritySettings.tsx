@@ -159,7 +159,7 @@ export default function SecuritySettings() {
     }
   };
 
-  return <section aria-label="Account security" style={{ display: "grid", gap: 12, marginBottom: 14, minWidth: 0 }}>
+  return <section aria-label="Account security" style={{ display: "grid", gap: 8, minWidth: 0 }}>
     <section className="settings-theme-card settings-security-card" aria-label="Two-factor authentication">
       <span className="settings-theme-title">Authenticator app (2FA)</span>
       <span className="settings-theme-current" aria-live="polite">{loading ? "Checking status…" : twoFactorEnabled ? "Enabled for sign-in" : twoFactorConfigured ? "Setup started · not enabled yet" : "Not configured"}</span>
