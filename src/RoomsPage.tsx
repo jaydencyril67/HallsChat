@@ -33,15 +33,15 @@ const MAX_CHAT_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_CHAT_IMAGES = 4;
 const EMOJI_LIST: string[] = (() => {
   const emoji = new Set<string>();
-  const isEmoji = /\\p{Emoji}/u;
-  const isPresentation = /\\p{Emoji_Presentation}/u;
+  const isEmoji = /\p{Emoji}/u;
+  const isPresentation = /\p{Emoji_Presentation}/u;
   for (let code = 0x1f000; code <= 0x1faff; code++) {
     const value = String.fromCodePoint(code);
     if (isPresentation.test(value) || (isEmoji.test(value) && code >= 0x1f300)) emoji.add(value);
   }
   for (let code = 0x2600; code <= 0x27ff; code++) {
     const value = String.fromCodePoint(code);
-    if (isEmoji.test(value)) emoji.add(value + "\\uFE0F");
+    if (isEmoji.test(value)) emoji.add(value + "\uFE0F");
   }
   for (let a = 0x1f1e6; a <= 0x1f1ff; a++) {
     for (let b = 0x1f1e6; b <= 0x1f1ff; b++) emoji.add(String.fromCodePoint(a, b));
