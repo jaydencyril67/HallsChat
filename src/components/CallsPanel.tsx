@@ -3,6 +3,7 @@ import type { Socket } from "socket.io-client";
 import LoadingDots from "./LoadingDots";
 import VerificationBadge from "../VerificationBadge";
 import { Phone, PhoneCall, PhoneOff, Video, VideoOff, Mic, MicOff, Minus } from "lucide-react";
+import { configureCallVideoSender, getCallVideoProfile } from "../utils/callVideoQuality";
 
 type Person = { id: string; name: string; username: string; profilePicture?: string; canMessage: boolean; isVerified?: boolean; verifiedAt?: string | null };
 type Incoming = { callId: string; kind: "audio" | "video"; caller: Person; createdAt: number };
@@ -148,6 +149,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
       throw new Error(icePayload.message || "Could not prepare secure call connection servers. Please try again.");
     }
 
+    const videoProfile = getCallVideoProfile();
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         // Request the browser's built-in acoustic echo canceller explicitly.
@@ -157,10 +159,10 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
         autoGainControl: false
       },
       video: video ? {
-        // Start at a mobile-friendly size; avoid forcing HD on low-end phones.
-        width: { ideal: 640, max: 640 },
-        height: { ideal: 480, max: 480 },
-        frameRate: { ideal: 20, max: 24 },
+        // Start quality is selected from device/network hints, not one fixed size.
+        width: { ideal: videoProfile.width, max: videoProfile.width },
+        height: { ideal: videoProfile.height, max: videoProfile.height },
+        frameRate: { ideal: videoProfile.frameRate, max: videoProfile.frameRate },
         facingMode: "user"
       } : false
     });
@@ -181,14 +183,7 @@ export default function CallsPanel({ socket, person, enableIncoming = true }: Pr
           // Some Android WebViews do not support changing sender parameters.
         });
       } else if (track.kind === "video") {
-        const parameters = sender.getParameters();
-        parameters.encodings = parameters.encodings?.length ? parameters.encodings : [{}];
-        parameters.encodings[0].maxBitrate = 600000;
-        parameters.encodings[0].maxFramerate = 20;
-        parameters.degradationPreference = "maintain-framerate";
-        void sender.setParameters(parameters).catch(() => {
-          // Keep the call working if the WebView does not support these hints.
-        });
+        configureCallVideoSender(sender, videoProfile);
       }
     });
     pc.onicecandidate = event => {
