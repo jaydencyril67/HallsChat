@@ -1524,6 +1524,75 @@ jobs:
           path.write_text(text)
           PY
 
+      - name: Generate HallsChat Digital Asset Links association
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Derive both values from the exact permanent release key used to sign this APK.
+          CERT_SHA256="$(keytool -exportcert \
+            -keystore android/app/hallschat-release.keystore \
+            -storetype PKCS12 \
+            -storepass "$HALLSCHAT_ANDROID_KEYSTORE_PASSWORD" \
+            -alias "$HALLSCHAT_ANDROID_KEY_ALIAS" \
+            | openssl dgst -sha256 -binary | od -An -v -tx1 | tr -d ' \n' | tr '[:lower:]' '[:upper:]' | sed 's/../&:/g; s/:$//')"
+          ANDROID_KEY_HASH="$(keytool -exportcert \
+            -keystore android/app/hallschat-release.keystore \
+            -storetype PKCS12 \
+            -storepass "$HALLSCHAT_ANDROID_KEYSTORE_PASSWORD" \
+            -alias "$HALLSCHAT_ANDROID_KEY_ALIAS" \
+            | openssl dgst -sha256 -binary | openssl base64 -A | tr '+/' '-_' | tr -d '=')"
+
+          test -n "$CERT_SHA256"
+          test -n "$ANDROID_KEY_HASH"
+          mkdir -p public/.well-known
+          python3 - "$CERT_SHA256" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          fingerprint = sys.argv[1]
+          data = [
+              {
+                  "relation": [
+                      "delegate_permission/common.handle_all_urls",
+                      "delegate_permission/common.get_login_creds"
+                  ],
+                  "target": {
+                      "namespace": "android_app",
+                      "package_name": "com.kingshall.hallschat",
+                      "sha256_cert_fingerprints": [fingerprint]
+                  }
+              },
+              {
+                  "relation": ["delegate_permission/common.get_login_creds"],
+                  "target": {
+                      "namespace": "web",
+                      "site": "https://hallschat.kingshall.online"
+                  }
+              }
+          ]
+          Path("public/.well-known/assetlinks.json").write_text(
+              json.dumps(data, indent=2) + "\\n", encoding="utf-8"
+          )
+          PY
+
+          echo "::notice::HallsChat Android origin for Render: android:apk-key-hash:$ANDROID_KEY_HASH"
+          echo "HALLSCHAT_ANDROID_ORIGIN=android:apk-key-hash:$ANDROID_KEY_HASH" >> "$GITHUB_STEP_SUMMARY"
+          echo "SHA-256 signing certificate: $CERT_SHA256" >> "$GITHUB_STEP_SUMMARY"
+
+          # Publish the domain association file from the frontend's main branch.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/.well-known/assetlinks.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Configure HallsChat Android WebAuthn domain association"
+            git push origin HEAD:main
+          else
+            echo "HallsChat assetlinks.json is already current."
+          fi
+
       - name: Build signed HallsChat production APK
         working-directory: android
         run: ./gradlew --no-daemon --stacktrace --console=plain assembleRelease
