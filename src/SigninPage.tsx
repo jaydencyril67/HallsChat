@@ -268,8 +268,21 @@ export default function SigninPage() {
     if (!externalLogin?.requestId) return;
     let stopped = false;
     let timer: number | undefined;
+    let expiryTimer: number | undefined;
     const requestId = externalLogin.requestId;
     const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+    const expireLocally = () => {
+      if (stopped) return;
+      stopped = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+      setExternalLogin(null);
+      setExternalNotice("");
+      setExternalError("The external sign-in request expired. Start again on this device.");
+    };
+    const expiresAt = new Date(externalLogin.expiresAt).getTime();
+    if (Number.isFinite(expiresAt)) {
+      expiryTimer = window.setTimeout(expireLocally, Math.max(0, expiresAt - Date.now()));
+    }
     const poll = async () => {
       try {
         const response = await fetch(apiBase + "/api/auth/kingshall/external/status", {
@@ -310,7 +323,11 @@ export default function SigninPage() {
       if (!stopped) timer = window.setTimeout(() => { void poll(); }, 1800);
     };
     timer = window.setTimeout(() => { void poll(); }, 1500);
-    return () => { stopped = true; if (timer !== undefined) window.clearTimeout(timer); };
+    return () => {
+      stopped = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+      if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
+    };
   }, [externalLogin?.requestId]);
 
   const glass = { border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-surface, rgba(25,20,24,.88))", boxShadow: "inset 0 1px 0 rgba(255,255,255,.06)" } as const;
