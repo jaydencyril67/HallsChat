@@ -142,7 +142,7 @@ jobs:
           text = path.read_text(encoding="utf-8")
           permission = 'android.permission.CAMERA'
           if f'android:name="{permission}"' not in text:
-              text = text.replace('</manifest>', f'    <uses-permission android:name="{permission}" />\\n</manifest>', 1)
+              text = text.replace('</manifest>', f'    <uses-permission android:name="{permission}" />\n</manifest>', 1)
           if f'android:name="{permission}"' not in text:
               raise SystemExit('AndroidManifest.xml is missing CAMERA permission after Capacitor sync')
           path.write_text(text, encoding="utf-8")
