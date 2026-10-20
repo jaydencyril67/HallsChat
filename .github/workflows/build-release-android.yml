@@ -1530,6 +1530,15 @@ jobs:
         run: |
           set -euo pipefail
 
+          # GitHub Actions gives each step a fresh shell. Re-load the credentials
+          # from the signing artifact downloaded by the Prepare release signing step.
+          test -f signing/hallschat-signing-credentials.txt
+          set -a
+          source signing/hallschat-signing-credentials.txt
+          set +a
+          test -n "${HALLSCHAT_ANDROID_KEYSTORE_PASSWORD:-}"
+          test -n "${HALLSCHAT_ANDROID_KEY_ALIAS:-}"
+
           # Derive both values from the exact permanent release key used to sign this APK.
           CERT_SHA256="$(keytool -exportcert \
             -keystore android/app/hallschat-release.keystore \
