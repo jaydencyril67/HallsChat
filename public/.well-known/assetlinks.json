@@ -1,0 +1,24 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.kingshall.hallschat",
+      "sha256_cert_fingerprints": [
+        "0E:D0:8D:6A:50:C0:0F:EF:B0:6E:2B:DD:83:C1:5C:78:4A:B8:A7:F3:32:18:2B:9E:A5:A7:D6:74:6E:9B:BE:75"
+      ]
+    }
+  },
+  {
+    "relation": [
+      "delegate_permission/common.get_login_creds"
+    ],
+    "target": {
+      "namespace": "web",
+      "site": "https://hallschat.kingshall.online"
+    }
+  }
+]
