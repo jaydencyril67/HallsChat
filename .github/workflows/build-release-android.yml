@@ -961,7 +961,7 @@ jobs:
                   // Android can report an empty picker as a cancelled result, which the web UI cannot distinguish.
                   Account[] registered = AccountManager.get(getContext()).getAccountsByType(ACCOUNT_TYPE);
                   boolean hasKingsHallEmail = false;
-                  for (Account account : registered) {
+                  for (android.accounts.Account account : registered) {
                       if (account.name != null && account.name.trim().contains("@")) {
                           hasKingsHallEmail = true;
                           break;
