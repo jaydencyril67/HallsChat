@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import type { Socket } from "socket.io-client";
 import VerificationBadge from "../VerificationBadge";
 import { Phone, PhoneOff, Video, VideoOff, Mic, MicOff, X, Minus } from "lucide-react";
+import { configureCallVideoSender, getCallVideoProfile, type CallVideoProfile } from "../utils/callVideoQuality";
 
 type Participant = { id: string; name?: string; username?: string; profilePicture?: string; isVerified?: boolean; verifiedAt?: string | null };
 type IncomingHallCall = { callId: string; groupId: string; kind: "audio" | "video"; caller: Participant; startedAt: number };
@@ -29,6 +30,7 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
   const [confirmPopoutPosition, setConfirmPopoutPosition] = useState({ left: 8, top: 8 });
   const localStreamRef = useRef<MediaStream | null>(null);
   const iceServersRef = useRef<RTCIceServer[]>(fallbackIceServers);
+  const videoProfileRef = useRef<CallVideoProfile>({ width: 640, height: 480, frameRate: 24, maxBitrate: 650_000, label: "balanced" });
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const peersRef = useRef<Map<string, PeerState>>(new Map());
   const pendingIceRef = useRef<Map<string, RTCIceCandidateInit[]>>(new Map());
@@ -67,7 +69,10 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
     const existing = peersRef.current.get(peerId);
     if (existing) return existing.pc;
     const pc = new RTCPeerConnection({ iceServers: iceServersRef.current });
-    localStreamRef.current?.getTracks().forEach(track => pc.addTrack(track, localStreamRef.current as MediaStream));
+    localStreamRef.current?.getTracks().forEach(track => {
+      const sender = pc.addTrack(track, localStreamRef.current as MediaStream);
+      if (track.kind === "video") configureCallVideoSender(sender, videoProfileRef.current);
+    });
     pc.onicecandidate = event => {
       if (event.candidate) socketRef.current?.emit("group-call:signal", { callId: callIdRef.current, toUserId: peerId, signalType: "ice", payload: event.candidate.toJSON() });
     };
@@ -107,6 +112,8 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
         iceServersRef.current = fallbackIceServers;
       }
     }
+    const videoProfile = getCallVideoProfile();
+    videoProfileRef.current = videoProfile;
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         // Ask Android/WebView for its built-in acoustic echo canceller and denoiser.
@@ -116,9 +123,10 @@ export default function HallsCallPanel({ socket, hallId, hallName, currentUserId
         channelCount: { ideal: 1 }
       },
       video: callKind === "video" ? {
-        width: { ideal: 640, max: 640 },
-        height: { ideal: 480, max: 480 },
-        frameRate: { ideal: 20, max: 20 },
+        // Choose capture dimensions and frame rate for this device/network tier.
+        width: { ideal: videoProfile.width, max: videoProfile.width },
+        height: { ideal: videoProfile.height, max: videoProfile.height },
+        frameRate: { ideal: videoProfile.frameRate, max: videoProfile.frameRate },
         facingMode: "user"
       } : false
     });
