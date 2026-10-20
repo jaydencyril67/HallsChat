@@ -42,7 +42,7 @@ function setSelectedBrowserAccount(email: string) {
 type SigninResult = { token?: string; user?: Record<string, unknown>; message?: string; error?: string; requiresExtraSecurity?: boolean; challengeToken?: string; methods?: Array<"2fa" | "biometric"> };
 type ExternalLoginStart = { requestId: string; loginCode: string; qrToken: string; expiresAt: string; appName: "CryBots" | "HallsChat"; deviceLabel: string };
 type ExternalLoginStatus = SigninResult & { status?: string };
-type NativeKingsHallAccountPlugin = { chooseAccount(): Promise<{ email?: string; cancelled?: boolean }> };
+type NativeKingsHallAccountPlugin = { hasAccounts(): Promise<{ hasAccount?: boolean }>; chooseAccount(): Promise<{ email?: string; cancelled?: boolean; noAccount?: boolean }> };
 const DeviceAccount = registerPlugin<NativeKingsHallAccountPlugin>("KingsHallAccount");
 
 export default function SigninPage() {
@@ -148,9 +148,20 @@ export default function SigninPage() {
       await new Promise(resolve => window.setTimeout(resolve, 250));
       if (Capacitor.isNativePlatform()) {
         if (!Capacitor.isPluginAvailable("KingsHallAccount")) throw new Error("This HallsChat app needs an update to use the KingsHall account manager.");
-        const selected = await DeviceAccount.chooseAccount();
+        // Keep the spinner visible for five seconds while checking the native account store.
+        const availability = await DeviceAccount.hasAccounts();
         const remainingLoadingTime = 5000 - (Date.now() - loadingStartedAt);
         if (remainingLoadingTime > 0) await new Promise(resolve => window.setTimeout(resolve, remainingLoadingTime));
+        if (!availability.hasAccount) {
+          setShowNoAccountModal(true);
+          return;
+        }
+        // Only open Android's account picker after the five-second loading state has completed.
+        const selected = await DeviceAccount.chooseAccount();
+        if (selected.noAccount) {
+          setShowNoAccountModal(true);
+          return;
+        }
         if (selected.cancelled) {
           setNotice("Account selection was cancelled.");
           return;
