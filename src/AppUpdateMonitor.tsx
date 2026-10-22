@@ -2,13 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Download } from "lucide-react";
 import { NativeAppUpdate } from "./utils/nativeAppUpdate";
+import { openCrownStoreApp } from "./utils/crownStore";
 
 type UpdateCheckResponse = {
   updateAvailable: boolean;
   installedVersion?: string;
   latestVersion?: string;
   tag?: string;
-  downloadUrl?: string;
   releaseNotes?: string;
   releaseUrl?: string;
 };
@@ -19,7 +19,6 @@ export default function AppUpdateMonitor() {
   const [update, setUpdate] = useState<UpdateCheckResponse | null>(null);
   const [hidden, setHidden] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
-  const [installing, setInstalling] = useState(false);
 
   const checkForUpdate = useCallback(async () => {
     if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return;
@@ -33,7 +32,7 @@ export default function AppUpdateMonitor() {
       );
       if (!response.ok) return;
       const data = await response.json() as UpdateCheckResponse;
-      if (data.updateAvailable && data.downloadUrl && data.latestVersion) {
+      if (data.updateAvailable && data.latestVersion) {
         setUpdate({ ...data, installedVersion: appInfo.versionName });
         setHidden(false);
       } else {
@@ -64,37 +63,9 @@ export default function AppUpdateMonitor() {
     };
   }, [checkForUpdate]);
 
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android" || !NativeAppUpdate.addListener) return;
-    let listenerHandle: { remove: () => Promise<void> } | undefined;
-    void NativeAppUpdate.addListener("downloadError", event => {
-      setInstalling(false);
-      setActionMessage(event.message || "The APK download or installer could not complete.");
-    }).then(handle => { listenerHandle = handle; }).catch(() => {
-      // The update card remains usable if optional native diagnostics cannot attach.
-    });
-    return () => { if (listenerHandle) void listenerHandle.remove(); };
-  }, []);
-
-  const startUpdate = async () => {
-    if (!update?.downloadUrl || installing) return;
-    setInstalling(true);
-    setActionMessage("Preparing the update…");
-    try {
-      const result = await NativeAppUpdate.downloadAndInstall({ url: update.downloadUrl });
-      if (result.requiresPermission) {
-        setInstalling(false);
-        setActionMessage("Allow HallsChat to install unknown apps in Android settings, return here, then tap Update now again.");
-      } else {
-        setActionMessage("The APK is downloading. Android will ask you to approve the update when it finishes.");
-      }
-    } catch {
-      setInstalling(false);
-      setActionMessage("The in-app installer could not start. Use Settings → Download App → Android APK instead.");
-      window.setTimeout(() => {
-        if (update.downloadUrl) window.open(update.downloadUrl, "_blank", "noopener,noreferrer");
-      }, 500);
-    }
+  const startUpdate = () => {
+    if (!update?.latestVersion) return;
+    openCrownStoreApp("halls-chat", setActionMessage);
   };
 
   if (!update || hidden || !Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") return null;
@@ -108,16 +79,9 @@ export default function AppUpdateMonitor() {
         {actionMessage && <p className="hallschat-update-message">{actionMessage}</p>}
       </div>
       <div className="hallschat-update-actions">
-        {installing ? (
-          <div className="hallschat-update-progress" role="status" aria-live="polite">
-            <span className="hallschat-update-spinner" aria-hidden="true" />
-            APK downloading…
-          </div>
-        ) : (
-          <button type="button" className="hallschat-update-primary" onClick={() => void startUpdate()}>
-            <Download size={15} aria-hidden="true" /> Update now
-          </button>
-        )}
+        <button type="button" className="hallschat-update-primary" onClick={startUpdate}>
+          <Download size={15} aria-hidden="true" /> Open CrownStore to update
+        </button>
         <button type="button" className="hallschat-update-later" onClick={() => setHidden(true)}>Later</button>
       </div>
     </aside>
