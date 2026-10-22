@@ -4,13 +4,13 @@ import { PushNotifications } from "@capacitor/push-notifications";
 import { NativeAppUpdate } from "./utils/nativeAppUpdate";
 import AlertColorModal from "./AlertColorModal";
 import { navigate } from "./utils/navigate";
-import { useCallback, useEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import AppHeader from "./AppHeader";
 import NowBar from "./NowBar";
 import SecuritySettings from "./SecuritySettings";
+import { openCrownStoreApp } from "./utils/crownStore";
 
 type BeforeInstallPromptEvent = Event & { readonly platforms: string[]; readonly userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>; prompt: () => Promise<void> };
-const HALLSCHAT_APK_URL = "https://hallschat.kingshall.online/downloads/HallsChat.apk";
 type AlertTypeKey = "chats" | "posts" | "stories" | "comments" | "follows" | "likes" | "calls" | "mentions" | "communities" | "systemUpdates" | "accountSecurity";
 const DEFAULT_ALERT_TYPES: Record<AlertTypeKey, boolean> = {
   chats: true, posts: true, stories: true, comments: true, follows: true, likes: true, calls: true, mentions: true, communities: true, systemUpdates: true, accountSecurity: true
@@ -76,7 +76,7 @@ export default function ThemeSettingsPage() {
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [pwaInstalled, setPwaInstalled] = useState(() => window.matchMedia("(display-mode: standalone)").matches || (window.navigator as Navigator & { standalone?: boolean }).standalone === true);
   const [downloadAppMessage, setDownloadAppMessage] = useState("");
-  const [apkUpdate, setApkUpdate] = useState<{ status: "checking" | "current" | "update" | "unknown"; installedVersion?: string; latestVersion?: string; downloadUrl?: string }>({ status: Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" ? "checking" : "unknown" });
+  const [apkUpdate, setApkUpdate] = useState<{ status: "checking" | "current" | "update" | "unknown"; installedVersion?: string; latestVersion?: string }>({ status: Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" ? "checking" : "unknown" });
   const [idleLogoutMinutes, setIdleLogoutMinutes] = useState<0 | 5 | 10 | 30>(() => {
     const saved = Number(localStorage.getItem("hallschat_idle_logout_minutes") || 0);
     return saved === 5 || saved === 10 || saved === 30 ? saved : 0;
@@ -267,8 +267,8 @@ export default function ThemeSettingsPage() {
       if (!appInfo?.versionName) throw new Error("Installed version unavailable");
       const response = await fetch(apiBase + "/api/notifications/app-update-check?installedVersion=" + encodeURIComponent(appInfo.versionName), { cache: "no-store" });
       if (!response.ok) throw new Error("Version check failed");
-      const data = await response.json() as { updateAvailable?: boolean; installedVersion?: string; latestVersion?: string; downloadUrl?: string };
-      setApkUpdate({ status: data.updateAvailable && data.downloadUrl ? "update" : "current", installedVersion: data.installedVersion || appInfo.versionName, latestVersion: data.latestVersion, downloadUrl: data.downloadUrl || HALLSCHAT_APK_URL });
+      const data = await response.json() as { updateAvailable?: boolean; installedVersion?: string; latestVersion?: string };
+      setApkUpdate({ status: data.latestVersion ? (data.updateAvailable ? "update" : "current") : "unknown", installedVersion: data.installedVersion || appInfo.versionName, latestVersion: data.latestVersion });
     } catch { setApkUpdate({ status: "unknown" }); }
   }, [apiBase]);
 
@@ -301,28 +301,9 @@ export default function ThemeSettingsPage() {
     return () => timers.forEach(timer => window.clearTimeout(timer));
   }, [maxDeviceMessage, alertTypesError, alertChannelsError, commentingError, readReceiptsError, visibilityError, callsPrivacyError, activeStatusError]);
 
-  const handleApkDownload = async (event: ReactMouseEvent<HTMLAnchorElement>) => {
+  const handleApkDownload = () => {
     setDownloadAppMenuOpen(false);
-    if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== "android") { setDownloadAppMessage("Opening the latest signed HallsChat APK download."); return; }
-    event.preventDefault();
-    if (apkUpdate.status === "checking") { setDownloadAppMessage("Checking your installed HallsChat version…"); await checkApkVersion(); return; }
-    if (apkUpdate.status === "current") { setDownloadAppMessage("You are already using the latest HallsChat APK" + (apkUpdate.latestVersion ? " (v" + apkUpdate.latestVersion + ")" : "") + "."); return; }
-    const downloadUrl = apkUpdate.downloadUrl || HALLSCHAT_APK_URL;
-    if (apkUpdate.status === "unknown") {
-      setDownloadAppMessage("Version check unavailable. Opening the latest APK release.");
-      await checkApkVersion();
-      window.setTimeout(() => window.open(HALLSCHAT_APK_URL, "_blank", "noopener,noreferrer"), 300);
-      return;
-    }
-    setDownloadAppMessage("Preparing HallsChat update v" + (apkUpdate.latestVersion || "latest") + "…");
-    try {
-      const result = await NativeAppUpdate.downloadAndInstall({ url: downloadUrl });
-      if (result.requiresPermission) setDownloadAppMessage("Allow HallsChat to install unknown apps in Android settings, return here, then tap Update again.");
-      else setDownloadAppMessage("The APK update is downloading. Android will ask you to approve it when it finishes.");
-    } catch {
-      setDownloadAppMessage("The in-app installer could not start. Opening the APK download in your browser.");
-      window.setTimeout(() => window.open(downloadUrl, "_blank", "noopener,noreferrer"), 300);
-    }
+    openCrownStoreApp("halls-chat", setDownloadAppMessage);
   };
 
   const handlePwaInstall = async () => {
@@ -1152,7 +1133,7 @@ export default function ThemeSettingsPage() {
           <span className="settings-theme-title">Download App</span>
           <span className="settings-theme-current" aria-live="polite">{pwaInstalled ? "PWA installed" : "APK · Web App"}</span>
           {Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && <>
-            <span className="settings-theme-current" aria-live="polite">{apkUpdate.status === "checking" ? "Checking latest APK version…" : apkUpdate.latestVersion ? "Latest APK available · v" + apkUpdate.latestVersion : "Latest APK version unavailable"}</span>
+            <span className="settings-theme-current" aria-live="polite">{apkUpdate.status === "checking" ? "Checking latest version…" : apkUpdate.latestVersion ? "Latest version · v" + apkUpdate.latestVersion + " in CrownStore" : "Latest version unavailable"}</span>
             <span className="settings-theme-current" aria-live="polite">{apkUpdate.installedVersion ? "Currently installed · v" + apkUpdate.installedVersion : apkUpdate.status === "checking" ? "Checking installed version…" : "Installed version unavailable"}</span>
             {apkUpdate.status === "update" && <span className="settings-theme-current">Update available</span>}
           </>}
@@ -1169,23 +1150,11 @@ export default function ThemeSettingsPage() {
             <MoreHorizontal size={21} />
           </button>
           {downloadAppMenuOpen && <div className="settings-theme-menu settings-download-app-menu" role="menu" aria-label="Download App options">
-            <button type="button" role="menuitem" className="settings-theme-menu-option" disabled aria-disabled="true">
+            <button type="button" role="menuitem" className="settings-theme-menu-option" onClick={handleApkDownload}>
               <Store size={16} aria-hidden="true" />
-              <span>KingsStore</span>
-              <span className="settings-download-app-note">Soon</span>
+              <span>{apkUpdate.status === "update" ? "Update in CrownStore" : "Open CrownStore"}</span>
+              <Download size={15} aria-hidden="true" />
             </button>
-            <a
-              role="menuitem"
-              className="settings-theme-menu-option settings-download-app-link"
-              href={HALLSCHAT_APK_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={handleApkDownload}
-            >
-              <Smartphone size={16} aria-hidden="true" />
-              <span>{Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && apkUpdate.status === "update" ? "Update APK" : "Android APK"}</span>
-              {Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && apkUpdate.status === "current" ? <Check size={15} aria-hidden="true" /> : <Download size={15} aria-hidden="true" />}
-            </a>
             <button type="button" role="menuitem" className="settings-theme-menu-option" onClick={() => void handlePwaInstall()}>
               <Globe size={16} aria-hidden="true" />
               <span>PWA (Web App)</span>
