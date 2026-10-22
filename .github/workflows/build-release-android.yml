@@ -6,7 +6,7 @@ on:
       build_apk:
         description: 'Build the HallsChat production APK'
         required: true
-        default: true
+        default: false
         type: boolean
 
 permissions:
@@ -16,10 +16,11 @@ permissions:
 
 concurrency:
   group: hallschat-release-apk
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build-release:
+    if: inputs.build_apk == true
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
