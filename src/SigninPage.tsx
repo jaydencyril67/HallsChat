@@ -39,7 +39,7 @@ function setSelectedBrowserAccount(email: string) {
   localStorage.setItem("kingshall_account_hint", selected);
   document.cookie = "kh_account_hint=" + encodeURIComponent(selected) + "; Domain=.kingshall.online; Path=/; Max-Age=31536000; Secure; SameSite=Lax";
 }
-type SigninResult = { token?: string; user?: Record<string, unknown>; message?: string; error?: string; requiresExtraSecurity?: boolean; challengeToken?: string; methods?: Array<"2fa" | "biometric"> };
+type SigninResult = { token?: string; user?: Record<string, unknown>; message?: string; error?: string; requiresExtraSecurity?: boolean; challengeToken?: string; methods?: Array<"2fa" | "biometric">; challengeSource?: "kingshall" | "app" };
 type ExternalLoginStart = { requestId: string; loginCode: string; qrToken: string; expiresAt: string; appName: "CryBots" | "HallsChat"; deviceLabel: string };
 type ExternalLoginStatus = SigninResult & { status?: string };
 type NativeKingsHallAccountPlugin = { hasAccounts(): Promise<{ hasAccount?: boolean }>; chooseAccount(): Promise<{ email?: string; cancelled?: boolean; noAccount?: boolean }> };
@@ -54,6 +54,7 @@ export default function SigninPage() {
   const [showNoAccountModal, setShowNoAccountModal] = useState(false);
   const [browserAccounts, setBrowserAccounts] = useState<string[]>([]);
   const [challengeToken, setChallengeToken] = useState("");
+  const [challengeSource, setChallengeSource] = useState<"kingshall" | "app">("app");
   const [extraMethods, setExtraMethods] = useState<Array<"2fa" | "biometric">>([]);
   const [extraMethod, setExtraMethod] = useState<"2fa" | "biometric" | "">("");
   const [extraCode, setExtraCode] = useState("");
@@ -102,10 +103,21 @@ export default function SigninPage() {
     try {
       const response = await fetch(apiBase + "/api/auth/kingshall/extra-security/verify-2fa", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ challengeToken, code: extraCode })
+        body: JSON.stringify({ challengeToken, code: extraCode, challengeSource })
       });
       const result = await response.json().catch(() => ({})) as SigninResult;
       if (!response.ok) throw new Error(result.message || "The authenticator code could not be verified.");
+      if (result.requiresExtraSecurity && result.challengeToken && result.methods?.length) {
+        setChallengeToken(result.challengeToken);
+        setChallengeSource(result.challengeSource === "kingshall" ? "kingshall" : "app");
+        setExtraMethods(result.methods);
+        setExtraMethod(result.methods.length === 1 ? result.methods[0] : "");
+        setExtraCode("");
+        setNotice(result.methods.length > 1
+          ? "KingsHall security verified. Choose an enabled HallsChat security method to finish signing in."
+          : "KingsHall security verified. Complete the enabled HallsChat security check to finish signing in.");
+        return;
+      }
       finishSignin(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "The authenticator code could not be verified.");
@@ -121,17 +133,28 @@ export default function SigninPage() {
     try {
       const optionsResponse = await fetch(apiBase + "/api/auth/kingshall/extra-security/biometric/options", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ challengeToken })
+        body: JSON.stringify({ challengeToken, challengeSource })
       });
       const options = await optionsResponse.json().catch(() => ({}));
       if (!optionsResponse.ok) throw new Error(options.message || "Unable to start biometric verification.");
       const credential = await authenticateWithPasskey(options);
       const verifyResponse = await fetch(apiBase + "/api/auth/kingshall/extra-security/biometric/verify", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ challengeToken, ...credential })
+        body: JSON.stringify({ challengeToken, challengeSource, ...credential })
       });
       const result = await verifyResponse.json().catch(() => ({})) as SigninResult;
       if (!verifyResponse.ok) throw new Error(result.message || "Biometric verification failed.");
+      if (result.requiresExtraSecurity && result.challengeToken && result.methods?.length) {
+        setChallengeToken(result.challengeToken);
+        setChallengeSource(result.challengeSource === "kingshall" ? "kingshall" : "app");
+        setExtraMethods(result.methods);
+        setExtraMethod(result.methods.length === 1 ? result.methods[0] : "");
+        setExtraCode("");
+        setNotice(result.methods.length > 1
+          ? "KingsHall security verified. Choose an enabled HallsChat security method to finish signing in."
+          : "KingsHall security verified. Complete the enabled HallsChat security check to finish signing in.");
+        return;
+      }
       finishSignin(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Biometric verification failed. Please try again.");
@@ -210,6 +233,7 @@ export default function SigninPage() {
       if (!response.ok) throw new Error(result.message || result.error || "KingsHall could not verify this Access Code.");
       if (result.requiresExtraSecurity && result.challengeToken && result.methods?.length) {
         setChallengeToken(result.challengeToken);
+        setChallengeSource(result.challengeSource === "kingshall" ? "kingshall" : "app");
         setExtraMethods(result.methods);
         setExtraMethod(result.methods.length === 1 ? result.methods[0] : "");
         setExtraCode("");
@@ -397,7 +421,7 @@ export default function SigninPage() {
             <p style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.5 }}>Confirm with the passkey or device biometric method bound to this HallsChat account.</p>
             <button type="button" style={glassButton} onClick={() => void verifyExtraBiometric()} disabled={submitting}>{submitting ? <LoadingDots /> : <><Fingerprint size={17} /> Verify biometric and continue</>}</button>
           </div>}
-          <button type="button" onClick={() => { setIdentity(""); setAccessCode(""); setChallengeToken(""); setExtraMethods([]); setExtraMethod(""); setExtraCode(""); setError(""); setNotice(""); }} style={{ border: 0, background: "transparent", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", padding: 8, fontWeight: 700, cursor: "pointer" }}>Cancel request</button>
+          <button type="button" onClick={() => { setIdentity(""); setAccessCode(""); setChallengeToken(""); setChallengeSource("app"); setExtraMethods([]); setExtraMethod(""); setExtraCode(""); setError(""); setNotice(""); }} style={{ border: 0, background: "transparent", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))", padding: 8, fontWeight: 700, cursor: "pointer" }}>Cancel request</button>
         </section>}
         {notice && <p role="status" style={{ margin: "16px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 13, lineHeight: 1.6 }}>{notice}</p>}
         {error && <p role="alert" style={{ margin: "16px 0 0", padding: "11px 13px", borderRadius: 12, background: "rgba(220,60,60,.10)", border: "1px solid rgba(220,80,80,.28)", color: "var(--theme-text, #fff)", fontSize: 13, lineHeight: 1.5 }}>{error}</p>}
