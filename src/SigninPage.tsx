@@ -58,6 +58,8 @@ export default function SigninPage() {
   const [extraMethod, setExtraMethod] = useState<"2fa" | "biometric" | "">("");
   const [extraCode, setExtraCode] = useState("");
   const [externalLogin, setExternalLogin] = useState<ExternalLoginStart | null>(null);
+  const [externalApproved, setExternalApproved] = useState(false);
+  const [externalAccessCode, setExternalAccessCode] = useState("");
   const [externalLoginBusy, setExternalLoginBusy] = useState(false);
   const [externalNotice, setExternalNotice] = useState("");
   const [externalError, setExternalError] = useState("");
@@ -227,6 +229,7 @@ export default function SigninPage() {
 
   async function startExternalLogin() {
     if (submitting || externalLoginBusy) return;
+    setExternalApproved(false); setExternalAccessCode("");
     setExternalLoginBusy(true); setExternalError(""); setExternalNotice("");
     const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     try {
@@ -248,7 +251,7 @@ export default function SigninPage() {
   async function cancelExternalLogin() {
     const request = externalLogin;
     if (!request) return;
-    setExternalLogin(null); setExternalLoginBusy(true); setExternalError("");
+    setExternalLogin(null); setExternalApproved(false); setExternalAccessCode(""); setExternalLoginBusy(true); setExternalError("");
     const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
     try {
       const response = await fetch(apiBase + "/api/auth/kingshall/external/cancel", {
@@ -264,6 +267,37 @@ export default function SigninPage() {
     }
   }
 
+  async function verifyExternalAccessCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const request = externalLogin;
+    if (!request || !externalApproved || externalAccessCode.length !== 6 || externalLoginBusy) return;
+    setExternalLoginBusy(true); setExternalError(""); setExternalNotice("");
+    const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+    try {
+      const response = await fetch(apiBase + "/api/auth/kingshall/external/verify-access-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId: request.requestId, accessCode: externalAccessCode })
+      });
+      const data = await response.json().catch(() => ({})) as SigninResult;
+      if (!response.ok) throw new Error(data.message || data.error || "KingsHall could not verify the Access Code.");
+      setExternalLogin(null);
+      setExternalApproved(false);
+      setExternalAccessCode("");
+      finishSignin(data);
+    } catch (e) {
+      setExternalError(e instanceof Error ? e.message : "KingsHall could not verify the Access Code.");
+      const status = (e as { response?: { status?: number } }).response?.status;
+      if ([409, 410, 423].includes(Number(status))) {
+        setExternalLogin(null);
+        setExternalApproved(false);
+      }
+    } finally {
+      setExternalLoginBusy(false);
+      setExternalAccessCode("");
+    }
+  }
+
   useEffect(() => {
     if (!externalLogin?.requestId) return;
     let stopped = false;
@@ -276,6 +310,7 @@ export default function SigninPage() {
       stopped = true;
       if (timer !== undefined) window.clearTimeout(timer);
       setExternalLogin(null);
+      setExternalApproved(false); setExternalAccessCode("");
       setExternalNotice("");
       setExternalError("The external sign-in request expired. Start again on this device.");
     };
@@ -296,21 +331,19 @@ export default function SigninPage() {
             setExternalError(data.message || "This external sign-in request is no longer valid.");
             return;
           }
+        } else if (data.status === "approved") {
+          stopped = true;
+          if (timer !== undefined) window.clearTimeout(timer);
+          setExternalApproved(true);
+          setExternalNotice("Device approved. Enter the KingsHall Access Code for that account to finish signing in.");
+          return;
         } else if (data.status === "authenticated") {
+          stopped = true;
+          if (timer !== undefined) window.clearTimeout(timer);
+          if (expiryTimer !== undefined) window.clearTimeout(expiryTimer);
           setExternalLogin(null);
-          if (data.requiresExtraSecurity && data.challengeToken && data.methods?.length) {
-            setIdentity(String((data.user as Record<string, unknown> | undefined)?.email || ""));
-            setChallengeToken(data.challengeToken);
-            setExtraMethods(data.methods);
-            setExtraMethod(data.methods.length === 1 ? data.methods[0] : "");
-            setExtraCode("");
-            setExternalNotice(data.methods.length > 1
-              ? "Device approved. Complete one enabled HallsChat security check to finish signing in."
-              : "Device approved. Complete the enabled HallsChat security check to finish signing in.");
-            return;
-          }
-          try { finishSignin(data); }
-          catch (e) { setExternalError(e instanceof Error ? e.message : "The approved session could not be completed."); }
+          setExternalApproved(false);
+          setExternalError("This external sign-in request must be restarted. Enter the Access Code after approving the device in KingsHall.");
           return;
         } else if (["denied", "expired", "consumed"].includes(String(data.status || ""))) {
           setExternalLogin(null);
@@ -401,7 +434,11 @@ export default function SigninPage() {
               <div aria-label={"One-time login code " + externalLogin.loginCode} style={{ fontSize: 27, letterSpacing: ".2em", fontWeight: 900, overflowWrap: "anywhere" }}>{externalLogin.loginCode}</div>
               <p style={{ margin: "6px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 11 }}>Expires {new Date(externalLogin.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
             </div>
-            <p role="status" style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>Waiting for approval from KingsHall…</p>
+            {!externalApproved ? <p role="status" style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>Waiting for approval from KingsHall…</p> : <form onSubmit={verifyExternalAccessCode} style={{ display: "grid", gap: 10, textAlign: "left" }}>
+            <label htmlFor="hallschat-external-access-code" style={{ fontSize: 12, fontWeight: 800 }}>KingsHall Access Code</label>
+            <input id="hallschat-external-access-code" type="password" inputMode="numeric" autoComplete="off" pattern="[0-9]{6}" maxLength={6} required value={externalAccessCode} onChange={event => setExternalAccessCode(event.target.value.replace(/\D/g, "").slice(0, 6))} style={glassInput} placeholder="Enter six-digit Access Code" />
+            <button type="submit" style={glassButton} disabled={externalLoginBusy || externalAccessCode.length !== 6}>{externalLoginBusy ? <LoadingDots /> : "Verify Access Code & Sign in"}</button>
+          </form>}
             <button type="button" style={{ ...glassButton, background: "transparent" }} disabled={externalLoginBusy} onClick={() => void cancelExternalLogin()}>Cancel external login</button>
           </>}
         </div>
