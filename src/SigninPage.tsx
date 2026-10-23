@@ -418,7 +418,7 @@ export default function SigninPage() {
               <div style={{ ...glass, borderRadius: 16, padding: 14, marginTop: 16, display: "grid", gap: 10, textAlign: "left" }}>
           <div>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 800 }}>Signing in on a device without KingsHall?</p>
-            <p style={{ margin: "5px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>Approve this device from your signed-in KingsHall account. No saved KingsHall account or Access Code is needed on this device.</p>
+            <p style={{ margin: "5px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>Approve this device from your signed-in KingsHall account, then enter that account’s six-digit Access Code here to finish signing in.</p>
           </div>
           {!externalLogin && <button type="button" style={glassButton} disabled={submitting || externalLoginBusy || !!challengeToken} onClick={() => void startExternalLogin()}>{externalLoginBusy ? <LoadingDots /> : "Use external-device login"}</button>}
           {externalNotice && <p role="status" style={{ margin: 0, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--theme-line, rgba(255,255,255,.2))", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>{externalNotice}</p>}
