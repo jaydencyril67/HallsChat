@@ -273,12 +273,14 @@ export default function SigninPage() {
     if (!request || !externalApproved || externalAccessCode.length !== 6 || externalLoginBusy) return;
     setExternalLoginBusy(true); setExternalError(""); setExternalNotice("");
     const apiBase = (import.meta.env.VITE_API_URL || "https://hallschats.onrender.com").replace(/\/$/, "");
+    let responseStatus = 0;
     try {
       const response = await fetch(apiBase + "/api/auth/kingshall/external/verify-access-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestId: request.requestId, accessCode: externalAccessCode })
       });
+      responseStatus = response.status;
       const data = await response.json().catch(() => ({})) as SigninResult;
       if (!response.ok) throw new Error(data.message || data.error || "KingsHall could not verify the Access Code.");
       setExternalLogin(null);
@@ -287,8 +289,7 @@ export default function SigninPage() {
       finishSignin(data);
     } catch (e) {
       setExternalError(e instanceof Error ? e.message : "KingsHall could not verify the Access Code.");
-      const status = (e as { response?: { status?: number } }).response?.status;
-      if ([409, 410, 423].includes(Number(status))) {
+      if ([409, 410, 423].includes(responseStatus)) {
         setExternalLogin(null);
         setExternalApproved(false);
       }
