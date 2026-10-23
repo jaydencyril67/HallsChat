@@ -322,7 +322,12 @@ export default function NowBar() {
                 <button
                   type="button"
                   className={`nowbar-action ${activeAction === label ? "nowbar-action-active" : ""}`}
-                  style={buttonColorSettings.enabled ? { borderColor: buttonColorSettings.color } : undefined}
+                  style={buttonColorSettings.enabled ? {
+                    borderColor: buttonColorSettings.color,
+                    borderWidth: "1.5px",
+                    color: buttonColorSettings.color,
+                    boxShadow: `0 0 0 1px ${buttonColorSettings.color}66, 0 0 10px ${buttonColorSettings.color}55, inset 0 0 5px ${buttonColorSettings.color}1f`
+                  } : undefined}
                   aria-label={label}
                   onClick={event => {
                     event.stopPropagation();
