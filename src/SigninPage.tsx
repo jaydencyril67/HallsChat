@@ -413,21 +413,24 @@ export default function SigninPage() {
           {externalNotice && <p role="status" style={{ margin: 0, padding: "10px 12px", borderRadius: 12, border: "1px solid var(--theme-line, rgba(255,255,255,.2))", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>{externalNotice}</p>}
           {externalError && <p role="alert" style={{ margin: 0, padding: "10px 12px", borderRadius: 12, background: "rgba(220,60,60,.10)", border: "1px solid rgba(220,80,80,.28)", color: "var(--theme-text, #fff)", fontSize: 12, lineHeight: 1.5 }}>{externalError}</p>}
           {externalLogin && <>
-            <p style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>In KingsHall, open External Login and scan this QR code, or enter the code below. This request expires in five minutes.</p>
-            <div style={{ justifySelf: "center", background: "#fff", padding: 10, borderRadius: 14 }}>
-              <QRCodeSVG value={JSON.stringify({ type: "kingshall-external-login-v1", requestId: externalLogin.requestId, qrToken: externalLogin.qrToken, appName: "HallsChat" })} size={196} level="M" includeMargin />
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <p style={{ margin: "3px 0 6px", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>ONE-TIME LOGIN CODE</p>
-              <div aria-label={"One-time login code " + externalLogin.loginCode} style={{ fontSize: 27, letterSpacing: ".2em", fontWeight: 900, overflowWrap: "anywhere" }}>{externalLogin.loginCode}</div>
-              <p style={{ margin: "6px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 11 }}>Expires {new Date(externalLogin.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
-            </div>
-            {!externalApproved ? <p role="status" style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>Waiting for approval from KingsHall…</p> : <form onSubmit={verifyExternalAccessCode} style={{ display: "grid", gap: 10, textAlign: "left" }}>
-            <label htmlFor="hallschat-external-access-code" style={{ fontSize: 12, fontWeight: 800 }}>KingsHall Access Code</label>
-            <input id="hallschat-external-access-code" type="password" inputMode="numeric" autoComplete="off" pattern="[0-9]{6}" maxLength={6} required value={externalAccessCode} onChange={event => setExternalAccessCode(event.target.value.replace(/\D/g, "").slice(0, 6))} style={glassInput} placeholder="Enter six-digit Access Code" />
-            <button type="submit" style={glassButton} disabled={externalLoginBusy || externalAccessCode.length !== 6}>{externalLoginBusy ? <LoadingDots /> : "Verify Access Code & Sign in"}</button>
-          </form>}
-            <button type="button" style={{ ...glassButton, background: "transparent" }} disabled={externalLoginBusy} onClick={() => void cancelExternalLogin()}>Cancel external login</button>
+<>{!externalApproved ? <>
+              <p style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12, lineHeight: 1.55 }}>In KingsHall, open External Login and scan this QR code, or enter the code below. This request expires in five minutes.</p>
+              <div style={{ justifySelf: "center", background: "#fff", padding: 10, borderRadius: 14 }}>
+                <QRCodeSVG value={JSON.stringify({ type: "kingshall-external-login-v1", requestId: externalLogin.requestId, qrToken: externalLogin.qrToken, appName: "HallsChat" })} size={196} level="M" includeMargin />
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ margin: "3px 0 6px", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>ONE-TIME LOGIN CODE</p>
+                <div aria-label={"One-time login code " + externalLogin.loginCode} style={{ fontSize: 27, letterSpacing: ".2em", fontWeight: 900, overflowWrap: "anywhere" }}>{externalLogin.loginCode}</div>
+                <p style={{ margin: "6px 0 0", color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 11 }}>Expires {new Date(externalLogin.expiresAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+              </div>
+              <p role="status" style={{ margin: 0, color: "var(--theme-text-muted, rgba(255,255,255,.72))", fontSize: 12 }}>Waiting for approval from KingsHall…</p>
+            </> : <form onSubmit={verifyExternalAccessCode} style={{ display: "grid", gap: 10, textAlign: "left" }}>
+              <div style={{ width: 52, height: 52, margin: "0 auto 4px", display: "grid", placeItems: "center", borderRadius: "50%", border: "1px solid var(--theme-line, rgba(255,255,255,.2))", background: "var(--theme-surface, rgba(255,255,255,.08))", color: "var(--theme-primary, var(--theme-accent, #f0b6c5))" }}><KeyRound size={23} /></div>
+              <p style={{ margin: 0, textAlign: "center", fontSize: 13, fontWeight: 800 }}>DEVICE APPROVED</p>
+              <label htmlFor="hallschat-external-access-code" style={{ fontSize: 12, fontWeight: 800 }}>KingsHall Access Code</label>
+              <input id="hallschat-external-access-code" type="password" inputMode="numeric" autoComplete="off" pattern="[0-9]{6}" maxLength={6} required value={externalAccessCode} onChange={event => setExternalAccessCode(event.target.value.replace(/\D/g, "").slice(0, 6))} style={glassInput} placeholder="Enter six-digit Access Code" />
+              <button type="submit" style={glassButton} disabled={externalLoginBusy || externalAccessCode.length !== 6}>{externalLoginBusy ? <LoadingDots /> : "Verify Access Code & Sign in"}</button>
+            </form>}</>            <button type="button" style={{ ...glassButton, background: "transparent" }} disabled={externalLoginBusy} onClick={() => void cancelExternalLogin()}>Cancel external login</button>
           </>}
         </div>
     </div>
