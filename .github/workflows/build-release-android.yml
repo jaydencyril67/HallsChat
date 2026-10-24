@@ -1331,6 +1331,9 @@ jobs:
             echo "HallsChat assetlinks.json is already current."
           fi
 
+      - name: Install native ecosystem APK launcher
+        run: python3 scripts/install-android-cross-app-launcher.py com.kingshall.hallschat
+
       - name: Build signed HallsChat production APK
         working-directory: android
         run: ./gradlew --no-daemon --stacktrace --console=plain assembleRelease
