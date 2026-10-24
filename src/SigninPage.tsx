@@ -90,13 +90,25 @@ export default function SigninPage() {
   }
 
   useEffect(() => {
-    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    const email = (hash.get("kingshall_account") || new URLSearchParams(window.location.search).get("kingshall_account") || "").trim().toLowerCase();
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const consumeReturnedAccount = () => {
+      const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const search = new URLSearchParams(window.location.search);
+      const email = (hash.get("kingshall_account") || search.get("kingshall_account") || "").trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
       localStorage.setItem("kingshall_account_hint", email);
-      setNotice("KingsHall account saved on this browser. Press Continue with KingsHall to check the account."); 
-      window.history.replaceState({}, "", window.location.pathname + window.location.search);
-    }
+      setNotice("KingsHall account saved on this browser. Press Continue with KingsHall to check the account.");
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.searchParams.delete("kingshall_account");
+      if (hash.has("kingshall_account")) cleanUrl.hash = "";
+      window.history.replaceState({}, "", cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+    };
+    consumeReturnedAccount();
+    window.addEventListener("popstate", consumeReturnedAccount);
+    window.addEventListener("hashchange", consumeReturnedAccount);
+    return () => {
+      window.removeEventListener("popstate", consumeReturnedAccount);
+      window.removeEventListener("hashchange", consumeReturnedAccount);
+    };
   }, []);
 
   function finishSignin(result: SigninResult) {
