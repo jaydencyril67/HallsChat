@@ -4,6 +4,7 @@ import { ArrowRight, KeyRound, ShieldCheck, LoaderCircle, Fingerprint } from "lu
 import { QRCodeSVG } from "qrcode.react";
 import { authenticateWithPasskey } from "./utils/webauthn";
 import { navigate } from "./utils/navigate";
+import { openEcosystemApp } from "./utils/crossAppLauncher";
 import LoadingDots from "./components/LoadingDots";
 
 const KH_SIGNIN = "https://kingshall.online/signin";
@@ -66,13 +67,25 @@ export default function SigninPage() {
   const [externalError, setExternalError] = useState("");
 
   function redirectToKingsHall() {
-    const url = new URL(KH_SIGNIN);
-    url.searchParams.set("app", "hallschat");
-    const callback = new URL(window.location.origin + "/signin");
+    const callback = new URL("https://hallschat.kingshall.online/signin");
     callback.searchParams.set("app", "hallschat");
     const requestedReturn = new URLSearchParams(window.location.search).get("returnTo") || "";
     if (requestedReturn.startsWith("/") && !requestedReturn.startsWith("//")) callback.searchParams.set("returnTo", requestedReturn);
+
+    const url = new URL(KH_SIGNIN);
+    url.searchParams.set("app", "hallschat");
     url.searchParams.set("returnTo", callback.toString());
+
+    // Native APKs hand off to the installed KingsHall app, not the web page.
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android" && Capacitor.isPluginAvailable("CrossAppLauncher")) {
+      const launchUrl = new URL("kingshall://signin");
+      launchUrl.searchParams.set("app", "hallschat");
+      launchUrl.searchParams.set("returnTo", callback.toString());
+      void openEcosystemApp("kingshall", "kingshall", launchUrl.toString(), setNotice);
+      return;
+    }
+
+    // Browser/PWA sessions still use the HTTPS sign-in handoff.
     window.location.assign(url.toString());
   }
 
