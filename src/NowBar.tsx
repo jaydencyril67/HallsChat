@@ -312,7 +312,7 @@ export default function NowBar() {
         {view === "title" ? (
           <div className="nowbar-title" aria-hidden="true">
             <span className="nowbar-orb" />
-            <span className={`nowbar-page-label ${pageTitle.length > 16 ? "nowbar-page-label-long" : pageTitle.length > 10 ? "nowbar-page-label-medium" : ""}`}>{pageTitle}</span>
+            <span className={`nowbar-page-label ${pageTitle.length > 16 ? "nowbar-page-label-long" : pageTitle.length > 10 ? "nowbar-page-label-medium" : ""}`} style={buttonColorSettings.enabled ? { color: buttonColorSettings.color, textShadow: `0 0 6px ${buttonColorSettings.color}aa, 0 0 14px ${buttonColorSettings.color}66` } : undefined}>{pageTitle}</span>
             <ChevronDown size={16} />
           </div>
         ) : (
