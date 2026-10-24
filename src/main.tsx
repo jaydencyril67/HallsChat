@@ -21,7 +21,8 @@ function handleNativeHallsChatLaunch(value: string) {
     if (requestedReturn.startsWith("/") && !requestedReturn.startsWith("//")) {
       routeParams.set("returnTo", requestedReturn);
     }
-    const route = "/signin" + (routeParams.size ? "?" + routeParams.toString() : "")
+    const query = routeParams.toString();
+    const route = "/signin" + (query ? "?" + query : "")
       + (email ? "#kingshall_account=" + encodeURIComponent(email) : "");
     window.history.replaceState({}, "", route);
     window.dispatchEvent(new PopStateEvent("popstate"));
