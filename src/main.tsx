@@ -16,7 +16,13 @@ function handleNativeHallsChatLaunch(value: string) {
     if (url.protocol !== "hallschat:" || url.hostname !== "signin") return;
     const params = new URLSearchParams(url.hash.replace(/^#/, ""));
     const email = (params.get("kingshall_account") || "").trim().toLowerCase();
-    const route = "/signin" + (email ? "#kingshall_account=" + encodeURIComponent(email) : "");
+    const routeParams = new URLSearchParams();
+    const requestedReturn = url.searchParams.get("returnTo") || "";
+    if (requestedReturn.startsWith("/") && !requestedReturn.startsWith("//")) {
+      routeParams.set("returnTo", requestedReturn);
+    }
+    const route = "/signin" + (routeParams.size ? "?" + routeParams.toString() : "")
+      + (email ? "#kingshall_account=" + encodeURIComponent(email) : "");
     window.history.replaceState({}, "", route);
     window.dispatchEvent(new PopStateEvent("popstate"));
   } catch {
